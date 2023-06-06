@@ -1,6 +1,8 @@
 import RootLayout from "layout/Root";
 import Home from "pages/Home";
 import React from "react";
+import PendingRequests from "pages/PendingRequests/PendingRequests";
+import RequestForm from "pages/AccountRequest/RequestForm";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 function App() {
@@ -8,7 +10,11 @@ function App() {
     {
       path: "/",
       element: <RootLayout />,
-      children: [{ index: true, element: <Home /> }],
+      children: [
+        { index: true, element: <Home /> },
+        { path: "account_request", element: <PendingRequests /> },
+        { path: "request_form", element: <RequestForm /> },
+      ],
     },
   ]);
 
