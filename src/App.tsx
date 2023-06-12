@@ -6,6 +6,8 @@ import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ErrorPage from "./utils/ErrorPage";
+import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 
 function App() {
   const router = createBrowserRouter([
@@ -18,7 +20,6 @@ function App() {
         {
           path: "users",
           element: <Users />,
-
           children: [
             {
               path: "new",
@@ -29,6 +30,22 @@ function App() {
               path: "edit/:id",
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
+            },
+          ],
+        },
+        {
+          path: "institutions",
+          element: <Institutions />,
+          loader: loadInstitutions,
+          children: [
+            {
+              path: "new",
+              element: <InstitutionEditor mode="create" />,
+            },
+            {
+              path: "edit/:id",
+              element: <InstitutionEditor mode="update" />,
+              loader: loadInstitution,
             },
           ],
         },

@@ -59,7 +59,7 @@ export interface IRole {
 }
 
 export interface IInstitution {
-  id: number;
+  id?: number;
   name: string;
 }
 
@@ -79,7 +79,7 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   let institutionsData: IFormOption[] = [{ label: "Select an Institution", value: "" }];
   let institutions: IInstitution[] = JSON.parse(institutionsList);
   institutions.forEach((institution) =>
-    institutionsData.push({ label: institution.name, value: institution.id })
+    institutionsData.push({ label: institution.name, value: institution.id! })
   );
   return institutionsData;
 };
@@ -140,7 +140,9 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
   let userData = {};
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
-    const userResponse = await axiosClient.get(`/users/${params.id}`);
+    const userResponse = await axiosClient.get(`/users/${params.id}`, {
+      transformResponse: transformUserResponse,
+    });
     userData = await userResponse.data;
   }
   const institutionsResponse = await axiosClient.get("/institutions", {
@@ -152,6 +154,5 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
 
   const institutions = await institutionsResponse.data;
   const roles = await rolesResponse.data;
-
   return { userData, roles, institutions };
 }
