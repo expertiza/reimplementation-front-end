@@ -1,7 +1,7 @@
 import {createColumnHelper, Row} from "@tanstack/react-table";
-import {EditIcon, RemoveUserIcon} from "components/Icons";
 import {Button} from "react-bootstrap";
 import {IUserResponse as IUser} from "./userUtil";
+import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -81,7 +81,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     cell: ({ row }) => (
       <>
         <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <EditIcon />
+          <BsPencilFill />
         </Button>
         <Button
           variant="outline-danger"
@@ -89,7 +89,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
           className="ms-sm-2"
           onClick={() => handleDelete(row)}
         >
-          <RemoveUserIcon />
+          <BsPersonXFill />
         </Button>
       </>
     ),

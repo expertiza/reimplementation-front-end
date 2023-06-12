@@ -3,13 +3,13 @@ import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {userColumns as USER_COLUMNS} from "./userColumns";
 import {Row as TRow} from "@tanstack/react-table";
-import {AddUserIcon} from "components/Icons";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import {alertActions} from "store/slices/alertSlice";
 import {useDispatch} from "react-redux";
 import DeleteUser from "./UserDelete";
 import {IUserResponse} from "./userUtil";
+import {BsPersonFillAdd} from "react-icons/bs";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -72,7 +72,7 @@ const Users = () => {
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
               <Button variant="outline-success" onClick={() => navigate("new")}>
-                <AddUserIcon />
+                <BsPersonFillAdd />
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
