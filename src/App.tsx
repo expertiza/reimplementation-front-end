@@ -8,6 +8,8 @@ import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ErrorPage from "./utils/ErrorPage";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
+import Roles, { loadRoles } from "./pages/Roles/Roles";
+import RoleEditor, { loadAvailableRoles } from "./pages/Roles/RoleEditor";
 
 function App() {
   const router = createBrowserRouter([
@@ -46,6 +48,24 @@ function App() {
               path: "edit/:id",
               element: <InstitutionEditor mode="update" />,
               loader: loadInstitution,
+            },
+          ],
+        },
+        {
+          id: "roles",
+          path: "roles",
+          element: <Roles />,
+          loader: loadRoles,
+          children: [
+            {
+              path: "new",
+              element: <RoleEditor mode="create" />,
+            },
+            {
+              id: "edit-role",
+              path: "edit/:id",
+              element: <RoleEditor mode="update" />,
+              loader: loadAvailableRoles,
             },
           ],
         },
