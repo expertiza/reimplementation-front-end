@@ -1,33 +1,10 @@
 import {IFormOption} from "components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
+import {IInstitution, IRole, IUserRequest, IUserResponse} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
-export interface IUserResponse {
-  id: number;
-  name: string;
-  email: string;
-  full_name: string;
-  email_on_review: boolean;
-  email_on_submission: boolean;
-  email_on_review_of_review: boolean;
-  role: { id: number; name: string };
-  parent: { id: number | null; name: string | null };
-  institution: { id: number | null; name: string | null };
-}
-
-export interface IUserRequest {
-  name: string;
-  email: string;
-  full_name: string;
-  role_id: number;
-  parent_id?: number | null;
-  institution_id: number;
-  email_on_review?: boolean;
-  email_on_submission?: boolean;
-  email_on_review_of_review?: boolean;
-}
 
 export enum EmailPreference {
   EMAIL_ON_REVIEW = "email_on_review",
@@ -50,17 +27,6 @@ export interface IUserFormValues {
   parent_id?: number | null;
   institution_id: number;
   emailPreferences: Array<PermittedEmailPreferences>;
-}
-
-export interface IRole {
-  id: number;
-  name: string;
-  parent_id: number;
-}
-
-export interface IInstitution {
-  id?: number;
-  name: string;
 }
 
 export const emailOptions: IFormOption[] = [
@@ -87,7 +53,7 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
 export const transformRolesResponse = (rolesList: string) => {
   let rolesData: IFormOption[] = [{ label: "Select a Role", value: "" }];
   let roles: IRole[] = JSON.parse(rolesList);
-  roles.forEach((role) => rolesData.push({ label: role.name, value: role.id }));
+  roles.forEach((role) => rolesData.push({ label: role.name, value: role.id! }));
   return rolesData;
 };
 

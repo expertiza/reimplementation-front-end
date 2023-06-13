@@ -8,8 +8,8 @@ import useAPI from "hooks/useAPI";
 import {alertActions} from "store/slices/alertSlice";
 import {useDispatch} from "react-redux";
 import DeleteUser from "./UserDelete";
-import {IUserResponse} from "./userUtil";
 import {BsPersonFillAdd} from "react-icons/bs";
+import {IUserResponse} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023

@@ -3,11 +3,11 @@ import {Outlet, useLoaderData, useNavigate} from "react-router-dom";
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {Row as TRow} from "@tanstack/react-table";
 import Table from "components/Table/Table";
-import {IInstitution} from "../Users/userUtil";
 import {institutionColumns as INSTITUTION_COLUMNS} from "./institutionColumns";
 import axiosClient from "../../utils/axios_client";
 import InstitutionDelete from "./InstitutionDelete";
 import {BsPlusSquareFill} from "react-icons/bs";
+import {IInstitution} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023

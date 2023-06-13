@@ -1,7 +1,7 @@
 import {createColumnHelper, Row} from "@tanstack/react-table";
 import {Button} from "react-bootstrap";
-import {IUserResponse as IUser} from "./userUtil";
 import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
+import {IUserResponse as IUser} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023

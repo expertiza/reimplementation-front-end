@@ -11,14 +11,11 @@ import {useLoaderData, useNavigate} from "react-router-dom";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
+import {IEditor} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
-
-interface IUserEditor {
-  mode: "create" | "update";
-}
 
 const initialValues: IUserFormValues = {
   name: "",
@@ -44,7 +41,7 @@ const validationSchema = Yup.object({
 });
 const loggedInUser = null;
 
-const UserEditor: React.FC<IUserEditor> = ({ mode }) => {
+const UserEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: userResponse, error: userError, sendRequest } = useAPI();
   const { userData, roles, institutions }: any = useLoaderData();
   const dispatch = useDispatch();

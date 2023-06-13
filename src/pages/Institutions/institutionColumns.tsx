@@ -1,7 +1,8 @@
 import {createColumnHelper, Row} from "@tanstack/react-table";
+import {MdOutlineDeleteForever as Remove} from "react-icons/md";
+import {BsPencilFill as Edit} from "react-icons/bs";
 import {Button} from "react-bootstrap";
-import {IInstitution} from "../Users/userUtil";
-import {BsFileXFill as Remove, BsPencilFill} from "react-icons/bs";
+import {IInstitution} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -27,11 +28,11 @@ export const institutionColumns = (handleEdit: Fn, handleDelete: Fn) => [
     cell: ({ row }) => (
       <>
         <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
+          <Edit />
         </Button>
         <Button
-          variant="outline-danger"
           size="sm"
+          variant="outline-danger"
           className="ms-sm-2"
           onClick={() => handleDelete(row)}
         >

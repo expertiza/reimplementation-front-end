@@ -8,16 +8,12 @@ import {useLoaderData, useNavigate} from "react-router-dom";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
-import {IInstitution} from "../Users/userUtil";
 import axiosClient from "../../utils/axios_client";
+import {IEditor, IInstitution} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023
  */
-
-interface IInstitutionEditor {
-  mode: "create" | "update";
-}
 
 const initialValues: IInstitution = {
   name: "",
@@ -30,7 +26,7 @@ const validationSchema = Yup.object({
     .max(36, "Institution name must be at most 36 characters"),
 });
 
-const InstitutionEditor: React.FC<IInstitutionEditor> = ({ mode }) => {
+const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: institutionResponse, error, sendRequest } = useAPI();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -94,12 +90,7 @@ const InstitutionEditor: React.FC<IInstitutionEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormInput
-                  controlId="institution-name"
-                  label="Institution Name"
-                  name="name"
-                  tooltip="Test"
-                />
+                <FormInput controlId="institution-name" label="Institution Name" name="name" />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
                     Close

@@ -4,7 +4,7 @@ import {useDispatch} from "react-redux";
 import {alertActions} from "store/slices/alertSlice";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
-import {IInstitution} from "../Users/userUtil";
+import {IInstitution} from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023
