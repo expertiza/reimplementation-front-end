@@ -61,7 +61,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
           } successfully!`,
         })
       );
-      navigate("/users");
+      navigate(-1);
     }
   }, [dispatch, mode, navigate, userData.name, userResponse]);
 

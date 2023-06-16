@@ -19,9 +19,6 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("name", {
     header: "Username",
     enableSorting: true,
-    // cell: ({ row }) => (
-    //   <Link to={`/users/${row.original.id}`}>{row.original.name}</Link>
-    // ),
   }),
 
   columnHelper.accessor("full_name", {
