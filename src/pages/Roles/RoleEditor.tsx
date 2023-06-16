@@ -25,8 +25,8 @@ const initialValues: IRole = {
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
-    .min(3, "Institution name must be at least 3 characters")
-    .max(16, "Institution name must be at most 16 characters"),
+    .min(3, "Role name must be at least 3 characters")
+    .max(16, "Role name must be at most 16 characters"),
 });
 
 const RoleEditor: React.FC<IEditor> = ({ mode }) => {
