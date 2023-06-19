@@ -1,6 +1,6 @@
 import React from "react";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { InfoIcon } from "./Icons";
+import {OverlayTrigger, Tooltip} from "react-bootstrap";
+import {FcInfo} from "react-icons/fc";
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -22,7 +22,7 @@ const ToolTip: React.FC<ToolTipProps> = (props) => {
       overlay={tooltip}
     >
       <span>
-        <InfoIcon />
+        <FcInfo />
       </span>
     </OverlayTrigger>
   );
