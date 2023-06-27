@@ -1,21 +1,26 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {Outlet, useLocation, useNavigate} from "react-router-dom";
-import {Button, Col, Container, Row} from "react-bootstrap";
-import {userColumns as USER_COLUMNS} from "./userColumns";
-import {Row as TRow} from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { userColumns as USER_COLUMNS } from "./userColumns";
+import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import {alertActions} from "store/slices/alertSlice";
-import {useDispatch} from "react-redux";
+import { alertActions } from "store/slices/alertSlice";
+import { useDispatch, useSelector } from "react-redux";
 import DeleteUser from "./UserDelete";
-import {BsPersonFillAdd} from "react-icons/bs";
-import {IUserResponse} from "../../utils/interfaces";
+import { BsPersonFillAdd } from "react-icons/bs";
+import { IUserResponse, ROLE } from "../../utils/interfaces";
+import { RootState } from "../../store/store";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
 const Users = () => {
   const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -26,8 +31,8 @@ const Users = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchUsers({ url: "/users" });
-  }, [fetchUsers, location, showDeleteConfirmation.visible]);
+    if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
+  }, [fetchUsers, location, showDeleteConfirmation.visible, auth.user.id]);
 
   // Error alert
   useEffect(() => {
@@ -83,7 +88,10 @@ const Users = () => {
             <Table
               data={tableData}
               columns={tableColumns}
-              columnVisibility={{ id: false, institution: false }}
+              columnVisibility={{
+                id: false,
+                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+              }}
             />
           </Row>
         </Container>

@@ -1,6 +1,6 @@
-import {IFormOption} from "components/Form/interfaces";
+import { IFormOption } from "components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
-import {IInstitution, IRole, IUserRequest, IUserResponse} from "../../utils/interfaces";
+import { IInstitution, IRole, IUserRequest, IUserResponse } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -114,7 +114,7 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
   });
-  const rolesResponse = await axiosClient.get("/roles", {
+  const rolesResponse = await axiosClient.get("/roles/subordinate_roles", {
     transformResponse: transformRolesResponse,
   });
 

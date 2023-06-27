@@ -1,17 +1,17 @@
-import React, {useEffect} from "react";
-import {Form, Formik, FormikHelpers} from "formik";
-import {Button, InputGroup, Modal} from "react-bootstrap";
+import React, { useEffect } from "react";
+import { Form, Formik, FormikHelpers } from "formik";
+import { Button, InputGroup, Modal } from "react-bootstrap";
 import FormInput from "components/Form/FormInput";
-import {alertActions} from "store/slices/alertSlice";
-import {useDispatch} from "react-redux";
-import {useNavigate, useRouteLoaderData} from "react-router-dom";
-import {HttpMethod} from "utils/httpMethods";
+import { alertActions } from "store/slices/alertSlice";
+import { useDispatch } from "react-redux";
+import { useNavigate, useRouteLoaderData } from "react-router-dom";
+import { HttpMethod } from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
-import {IEditor, IRole} from "../../utils/interfaces";
+import { IEditor, IRole } from "../../utils/interfaces";
 import FormSelect from "../../components/Form/FormSelect";
-import {transformRolesResponse} from "../Users/userUtil";
+import { transformRolesResponse } from "../Users/userUtil";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -45,7 +45,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Role ${mode}d successfully!`,
         })
       );
-      navigate("/roles");
+      navigate("/administrator/roles");
     }
   }, [dispatch, mode, navigate, roleResponse]);
 
@@ -71,7 +71,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate("/roles");
+  const handleClose = () => navigate("/administrator/roles");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -118,7 +118,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
   );
 };
 
-export async function loadAvailableRoles({ params }: any) {
+export async function loadAvailableRole({ params }: any) {
   const roleResponse = await axiosClient.get(`roles/${params.id}`);
   return await roleResponse.data;
 }

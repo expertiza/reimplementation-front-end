@@ -1,7 +1,7 @@
 /**
  * @author Ankur Mundra on June, 2023
  */
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import React, { useCallback, useMemo, useState } from "react";
 import { IUserResponse } from "../../utils/interfaces";
 import { Row as TRow } from "@tanstack/table-core/build/lib/types";
@@ -11,12 +11,9 @@ import DeleteUser from "../Users/UserDelete";
 import Table from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
 
-interface IManageUserTypesProps {
-  user_role: "Instructor" | "Admin" | "Super Admin";
-}
-
-const ManageUserTypes: React.FC<IManageUserTypesProps> = ({ user_role }) => {
+const ManageUserTypes: React.FC = () => {
   const navigate = useNavigate();
+  const { user_type } = useParams();
   const data: any = useLoaderData();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
@@ -45,7 +42,7 @@ const ManageUserTypes: React.FC<IManageUserTypesProps> = ({ user_role }) => {
     <Container fluid className="px-md-4">
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
-          <h1>Manage {user_role}</h1>
+          <h1>Manage {user_type!.valueOf()}</h1>
         </Col>
         <hr />
       </Row>
@@ -76,10 +73,16 @@ const ManageUserTypes: React.FC<IManageUserTypesProps> = ({ user_role }) => {
 // add loader function to load role specific users
 
 export async function loader({ request }: { request: Request }) {
-  let role_name = request.url.split("/").pop();
-  role_name = role_name?.substring(0, role_name.length - 1);
-  const response = await axiosClient.get(`users/role/${role_name}`);
-  return await response.data;
+  let role_name = request.url.split("/").pop()!;
+  let role = ["administrators", "instructors", "super_administrators"].find(
+    (role) => role === role_name
+  );
+  if (role) {
+    role = role.substring(0, role.length - 1);
+    const response = await axiosClient.get(`/users/role/${role}`);
+    return response.data;
+  }
+  throw new Error("404 not found! No such route exists");
 }
 
 export default ManageUserTypes;

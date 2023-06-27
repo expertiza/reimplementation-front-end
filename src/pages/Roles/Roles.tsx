@@ -1,12 +1,12 @@
-import {useCallback, useMemo, useState} from "react";
-import {Outlet, useLoaderData, useNavigate} from "react-router-dom";
-import {Button, Col, Container, Row} from "react-bootstrap";
-import {Row as TRow} from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
+import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import axiosClient from "../../utils/axios_client";
-import {BsPlusSquareFill} from "react-icons/bs";
-import {IRole} from "../../utils/interfaces";
-import {roleColumns as ROLE_COLUMNS} from "./roleColumns";
+import { BsPlusSquareFill } from "react-icons/bs";
+import { IRole } from "../../utils/interfaces";
+import { roleColumns as ROLE_COLUMNS } from "./roleColumns";
 import DeleteRole from "./RoleDelete";
 
 /**
@@ -66,7 +66,8 @@ const Roles = () => {
               data={tableData}
               columns={tableColumns}
               tableSize={{ span: 6, offset: 3 }}
-              showGlobalFilter={false}
+              showColumnFilter={false}
+              showPagination={false}
             />
           </Row>
         </Container>

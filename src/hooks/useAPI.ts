@@ -1,5 +1,6 @@
-import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
-import {useCallback, useState} from "react";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { useCallback, useState } from "react";
+import { getAuthToken } from "../utils/auth";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -18,6 +19,14 @@ const useAPI = () => {
 
   // Learn about Axios Request Config at https://github.com/axios/axios#request-config
   const sendRequest = useCallback((requestConfig: AxiosRequestConfig) => {
+    const token = getAuthToken();
+    if (token) {
+      requestConfig.headers = {
+        ...requestConfig.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+
     setIsLoading(true);
     setError("");
     let errorMessage = "";

@@ -1,15 +1,15 @@
-import React, {useEffect} from "react";
-import {Form, Formik, FormikHelpers} from "formik";
-import {Button, Modal} from "react-bootstrap";
+import React, { useEffect } from "react";
+import { Form, Formik, FormikHelpers } from "formik";
+import { Button, Modal } from "react-bootstrap";
 import FormInput from "components/Form/FormInput";
-import {alertActions} from "store/slices/alertSlice";
-import {useDispatch} from "react-redux";
-import {useLoaderData, useNavigate} from "react-router-dom";
-import {HttpMethod} from "utils/httpMethods";
+import { alertActions } from "store/slices/alertSlice";
+import { useDispatch } from "react-redux";
+import { useLoaderData, useNavigate } from "react-router-dom";
+import { HttpMethod } from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
-import {IEditor, IInstitution} from "../../utils/interfaces";
+import { IEditor, IInstitution } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -23,7 +23,7 @@ const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
     .min(3, "Institution name must be at least 3 characters")
-    .max(36, "Institution name must be at most 36 characters"),
+    .max(50, "Institution name must be at most 36 characters"),
 });
 
 const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
@@ -45,7 +45,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Institution ${mode}d successfully!`,
         })
       );
-      navigate("/institutions");
+      navigate("/administrator/institutions");
     }
   }, [dispatch, mode, navigate, institutionResponse]);
 
@@ -71,7 +71,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate("/institutions");
+  const handleClose = () => navigate("/administrator/institutions");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">

@@ -1,17 +1,18 @@
-import React, {useEffect} from "react";
-import {emailOptions, IUserFormValues, transformUserRequest} from "./userUtil";
-import {Form, Formik, FormikHelpers} from "formik";
-import {Button, Col, InputGroup, Modal, Row} from "react-bootstrap";
+import React, { useEffect } from "react";
+import { emailOptions, IUserFormValues, transformUserRequest } from "./userUtil";
+import { Form, Formik, FormikHelpers } from "formik";
+import { Button, Col, InputGroup, Modal, Row } from "react-bootstrap";
 import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
 import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
-import {alertActions} from "store/slices/alertSlice";
-import {useDispatch} from "react-redux";
-import {useLoaderData, useNavigate} from "react-router-dom";
-import {HttpMethod} from "utils/httpMethods";
+import { alertActions } from "store/slices/alertSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
+import { HttpMethod } from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
-import {IEditor} from "../../utils/interfaces";
+import { IEditor, ROLE } from "../../utils/interfaces";
+import { RootState } from "../../store/store";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -39,16 +40,21 @@ const validationSchema = Yup.object({
   role_id: Yup.string().required("Required").nonNullable(),
   institution_id: Yup.string().required("Required").nonNullable(),
 });
-const loggedInUser = null;
 
 const UserEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: userResponse, error: userError, sendRequest } = useAPI();
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
   const { userData, roles, institutions }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Get the logged-in user from the session
-  initialValues.parent_id = loggedInUser;
+  // logged-in user is the parent of the user being created and the institution is the same as the parent's
+  initialValues.parent_id = auth.user.id;
+  initialValues.institution_id = auth.user.institution_id;
 
   // Close the modal if the user is updated successfully and navigate to the users page
   useEffect(() => {
@@ -56,14 +62,12 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} ${
-            mode === "create" ? "created" : "updated"
-          } successfully!`,
+          message: `User ${userData.name} ${mode}d successfully!`,
         })
       );
-      navigate(-1);
+      navigate(location.state?.from ? location.state.from : "/users");
     }
-  }, [dispatch, mode, navigate, userData.name, userResponse]);
+  }, [dispatch, mode, navigate, userData.name, userResponse, location.state?.from]);
 
   // Show the error message if the user is not updated successfully
   useEffect(() => {
@@ -90,7 +94,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate("/users");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : "/users");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -146,7 +150,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormSelect
                   controlId="user-institution"
                   name="institution_id"
-                  disabled={mode === "update"}
+                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={institutions}
                   inputGroupPrepend={
                     <InputGroup.Text id="user-inst-prep">Institution</InputGroup.Text>

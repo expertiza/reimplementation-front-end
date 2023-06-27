@@ -1,6 +1,6 @@
 import React from "react";
-import {Alert, Button, Container} from "react-bootstrap";
-import {useNavigate, useRouteError} from "react-router-dom";
+import { Alert, Button, Container } from "react-bootstrap";
+import { useNavigate, useRouteError } from "react-router-dom";
 import Header from "../layout/Header";
 
 /**
@@ -9,6 +9,7 @@ import Header from "../layout/Header";
 const ErrorPage: React.FC = () => {
   const error: any = useRouteError();
   const navigate = useNavigate();
+  console.log("ErrorPage: ", error);
 
   return (
     <>
@@ -17,12 +18,12 @@ const ErrorPage: React.FC = () => {
         <div>
           <Alert variant="danger">
             <Alert.Heading>Oops! Something went wrong.</Alert.Heading>
-            <p>{error.message}</p>
+            <p>{error.message || error}</p>
             <p>{error.data}</p>
             <p>{error.response && error.response.data.error}</p>
             <hr />
             <div className="d-flex justify-content-end">
-              <Button variant="outline-danger" onClick={() => navigate("/")}>
+              <Button variant="secondary" onClick={() => navigate("/")}>
                 Go Home
               </Button>
             </div>

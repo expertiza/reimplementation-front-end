@@ -1,16 +1,22 @@
-import RootLayout from "layout/Root";
-import Home from "pages/Home";
 import React from "react";
+import Home from "pages/Home";
+import RootLayout from "layout/Root";
+import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import ErrorPage from "./utils/ErrorPage";
-import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
+import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
-import RoleEditor, { loadAvailableRoles } from "./pages/Roles/RoleEditor";
-import ManageUserTypes, { loader as userLoader } from "./pages/Administrator/ManageUserTypes";
+import Login from "./pages/Authentication/Login";
+import Logout from "./pages/Authentication/Logout";
+import ProtectedRoute from "./router/ProtectedRoute";
+import { ROLE } from "./utils/interfaces";
+import AdministratorLayout from "./layout/Administrator";
+import NotFound from "./router/NotFound";
 
 function App() {
   const router = createBrowserRouter([
@@ -19,10 +25,12 @@ function App() {
       element: <RootLayout />,
       errorElement: <ErrorPage />,
       children: [
-        { index: true, element: <Home /> },
+        { index: true, element: <ProtectedRoute element={<Home />} /> },
+        { path: "login", element: <Login /> },
+        { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
         {
           path: "users",
-          element: <Users />,
+          element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
           children: [
             {
               path: "new",
@@ -37,84 +45,63 @@ function App() {
           ],
         },
         {
-          id: "roles",
-          path: "roles",
-          element: <Roles />,
-          loader: loadRoles,
+          path: "administrator",
+          element: (
+            <ProtectedRoute element={<AdministratorLayout />} leastPrivilegeRole={ROLE.ADMIN} />
+          ),
           children: [
             {
-              path: "new",
-              element: <RoleEditor mode="create" />,
+              id: "roles",
+              path: "roles",
+              element: <Roles />,
+              loader: loadRoles,
+              children: [
+                {
+                  path: "new",
+                  element: <RoleEditor mode="create" />,
+                },
+                {
+                  id: "edit-role",
+                  path: "edit/:id",
+                  element: <RoleEditor mode="update" />,
+                  loader: loadAvailableRole,
+                },
+              ],
             },
             {
-              id: "edit-role",
-              path: "edit/:id",
-              element: <RoleEditor mode="update" />,
-              loader: loadAvailableRoles,
+              path: "institutions",
+              element: <Institutions />,
+              loader: loadInstitutions,
+              children: [
+                {
+                  path: "new",
+                  element: <InstitutionEditor mode="create" />,
+                },
+                {
+                  path: "edit/:id",
+                  element: <InstitutionEditor mode="update" />,
+                  loader: loadInstitution,
+                },
+              ],
+            },
+            {
+              path: ":user_type",
+              element: <ManageUserTypes />,
+              loader: loadUsers,
+              children: [
+                {
+                  path: "new",
+                  element: <Navigate to="/users/new" />,
+                },
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/users/edit/:id" />,
+                },
+              ],
             },
           ],
         },
-        {
-          path: "institutions",
-          element: <Institutions />,
-          loader: loadInstitutions,
-          children: [
-            {
-              path: "new",
-              element: <InstitutionEditor mode="create" />,
-            },
-            {
-              path: "edit/:id",
-              element: <InstitutionEditor mode="update" />,
-              loader: loadInstitution,
-            },
-          ],
-        },
-        {
-          path: "instructors",
-          element: <ManageUserTypes user_role="Instructor" />,
-          loader: userLoader,
-          children: [
-            {
-              path: "new",
-              element: <Navigate to="/users/new" />,
-            },
-            {
-              path: "edit/:id",
-              element: <Navigate to="/users/edit/:id" />,
-            },
-          ],
-        },
-        {
-          path: "administrators",
-          element: <ManageUserTypes user_role="Admin" />,
-          loader: userLoader,
-          children: [
-            {
-              path: "new",
-              element: <Navigate to="/users/new" />,
-            },
-            {
-              path: "edit/:id",
-              element: <Navigate to="/users/edit/:id" />,
-            },
-          ],
-        },
-        {
-          path: "super_administrators",
-          element: <ManageUserTypes user_role="Super Admin" />,
-          loader: userLoader,
-          children: [
-            {
-              path: "new",
-              element: <Navigate to="/users/new" />,
-            },
-            {
-              path: "edit/:id",
-              element: <Navigate to="/users/edit/:id" />,
-            },
-          ],
-        },
+        { path: "*", element: <NotFound /> },
       ],
     },
   ]);

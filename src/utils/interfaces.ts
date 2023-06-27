@@ -41,3 +41,19 @@ export interface IUserRequest {
   email_on_submission?: boolean;
   email_on_review_of_review?: boolean;
 }
+
+export interface ILoggedInUser {
+  id: number;
+  name: string;
+  full_name: string;
+  role: string;
+  institution_id: number;
+}
+
+export enum ROLE {
+  SUPER_ADMIN = "Super Administrator",
+  ADMIN = "Administrator",
+  INSTRUCTOR = "Instructor",
+  TA = "Teaching Assistant",
+  STUDENT = "Student",
+}
