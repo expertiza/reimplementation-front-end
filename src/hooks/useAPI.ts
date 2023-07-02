@@ -5,7 +5,7 @@ import {useCallback, useState} from "react";
  * @author Ankur Mundra on April, 2023
  */
 
-axios.defaults.baseURL = "http://localhost:3002/api/v1";
+axios.defaults.baseURL = "http://localhost:3000/api/v1";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 axios.defaults.headers.put["Content-Type"] = "application/json";

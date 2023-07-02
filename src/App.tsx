@@ -11,7 +11,8 @@ import InstitutionEditor, { loadInstitution } from "./pages/Institutions/Institu
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import RoleEditor, { loadAvailableRoles } from "./pages/Roles/RoleEditor";
 import ManageUserTypes, { loader as userLoader } from "./pages/Administrator/ManageUserTypes";
-
+import PendingRequests from "pages/PendingRequests/PendingRequests";
+import RequestForm from "pages/AccountRequest/RequestForm";
 function App() {
   const router = createBrowserRouter([
     {
@@ -114,6 +115,15 @@ function App() {
               element: <Navigate to="/users/edit/:id" />,
             },
           ],
+        },
+        {
+          path: "account_requests",
+          element: <PendingRequests />,
+        },
+        {
+          path: "request_form",
+          element: <RequestForm />,
+          loader: loadUserDataRolesAndInstitutions,
         },
       ],
     },

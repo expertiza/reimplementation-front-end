@@ -1,14 +1,14 @@
 import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
-import React, { useEffect } from "react";
-import { IInstitution, IRole, IUserFormValues } from "./accountUtil";
+import React from "react";
+import { IAccountRequestForm } from "./accountUtil";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
 import { Button, Col, InputGroup } from "react-bootstrap";
-import axios from "axios";
-
-const initialValues: IUserFormValues = {
+import { HttpMethod } from "utils/httpMethods";
+import { useLoaderData } from "react-router-dom";
+const initialValues: IAccountRequestForm = {
   role_id: 0,
   username: "",
   full_name: "",
@@ -31,36 +31,26 @@ const validationSchema = Yup.object({
 });
 
 const RequestForm: React.FC = () => {
-  const { data: roles, sendRequest: fetchRoles } = useAPI();
-  const { data: institutions, sendRequest: fetchInstitutions } = useAPI();
+  const { roles, institutions }: any = useLoaderData();
+  const { sendRequest } = useAPI();
 
-  useEffect(() => {
-    fetchRoles({
-      url: "/roles",
-      transformResponse: (response) => {
-        return JSON.parse(response);
-      },
+  const onSubmit = async (
+    values: IAccountRequestForm,
+    submitProps: FormikHelpers<IAccountRequestForm>
+  ) => {
+    let method: HttpMethod = HttpMethod.POST;
+    let url: string = "/account_requests";
+    sendRequest({
+      url: url,
+      method: method,
+      data: values,
     });
-    fetchInstitutions({
-      url: "/institutions",
-      transformResponse: (response) => {
-        return JSON.parse(response);
-      },
-    });
-  }, [fetchRoles, fetchInstitutions]);
-
-  const onSubmit = async (values: IUserFormValues, submitProps: FormikHelpers<IUserFormValues>) => {
-    try {
-      const response = await axios.post("http://127.0.0.1:3000/api/v1/account_requests", values);
-      console.log("Form submitted successfully:", response.data);
-      submitProps.resetForm();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
+    submitProps.resetForm();
   };
+
   return (
-    <div>
-      <h2>Request Account Form</h2>
+    <div style={{ marginTop: "20px" }}>
+      <h2>Request New User</h2>
       <Formik
         initialValues={initialValues}
         onSubmit={onSubmit}
@@ -74,15 +64,7 @@ const RequestForm: React.FC = () => {
               <FormSelect
                 controlId="user-role"
                 name="role_id"
-                options={[
-                  { value: 0, label: "" },
-                  ...roles.map((role: IRole) => {
-                    return {
-                      label: role.name,
-                      value: role.id,
-                    };
-                  }),
-                ]}
+                options={roles}
                 inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
               />
             </Col>
@@ -104,15 +86,7 @@ const RequestForm: React.FC = () => {
               <FormSelect
                 controlId="user-institution"
                 name="institution_id"
-                options={[
-                  { value: 0, label: "" },
-                  ...institutions.map((institution: IInstitution) => {
-                    return {
-                      label: institution.name,
-                      value: institution.id,
-                    };
-                  }),
-                ]}
+                options={institutions}
                 inputGroupPrepend={
                   <InputGroup.Text id="user-inst-prep">Institution</InputGroup.Text>
                 }
@@ -126,21 +100,23 @@ const RequestForm: React.FC = () => {
               />
             </Col>
 
-            <Button variant="outline-secondary" type="reset">
-              Reset
-            </Button>
-            <Button
-              variant="outline-success"
-              type="submit"
-              disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-            >
-              Submit
-            </Button>
+            <div style={{ marginTop: "20px" }}>
+              <Button variant="outline-secondary" type="reset">
+                Reset
+              </Button>
+              <span style={{ marginLeft: "10px" }}></span>
+              <Button
+                variant="success"
+                type="submit"
+                disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+              >
+                Submit
+              </Button>
+            </div>
           </Form>
         )}
       </Formik>
     </div>
   );
 };
-
 export default RequestForm;
