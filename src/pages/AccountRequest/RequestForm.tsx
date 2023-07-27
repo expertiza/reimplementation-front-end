@@ -1,13 +1,15 @@
 import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
-import React from "react";
+import React, { useEffect } from "react";
 import { IAccountRequestForm } from "./accountUtil";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
-import { Button, Col, InputGroup } from "react-bootstrap";
+import { Button, Col, InputGroup, Container, Row } from "react-bootstrap";
 import { HttpMethod } from "utils/httpMethods";
 import { useLoaderData } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
+import { useDispatch } from "react-redux";
 const initialValues: IAccountRequestForm = {
   role_id: 0,
   username: "",
@@ -32,7 +34,13 @@ const validationSchema = Yup.object({
 
 const RequestForm: React.FC = () => {
   const { roles, institutions }: any = useLoaderData();
-  const { sendRequest } = useAPI();
+  const { error, sendRequest } = useAPI();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (error) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
+    }
+  }, [error, dispatch]);
 
   const onSubmit = async (
     values: IAccountRequestForm,
@@ -49,7 +57,7 @@ const RequestForm: React.FC = () => {
   };
 
   return (
-    <div style={{ marginTop: "20px" }}>
+    <Container className="mt-4 px-0">
       <h2>Request New User</h2>
       <Formik
         initialValues={initialValues}
@@ -59,7 +67,7 @@ const RequestForm: React.FC = () => {
         enableReinitialize={true}
       >
         {(formik) => (
-          <Form style={{ marginTop: "20px", marginLeft: "10px" }}>
+          <Form className="mt-4 ml-3">
             <Col md={2}>
               <FormSelect
                 controlId="user-role"
@@ -100,23 +108,27 @@ const RequestForm: React.FC = () => {
               />
             </Col>
 
-            <div style={{ marginTop: "20px" }}>
-              <Button variant="outline-secondary" type="reset">
-                Reset
-              </Button>
-              <span style={{ marginLeft: "10px" }}></span>
-              <Button
-                variant="success"
-                type="submit"
-                disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-              >
-                Submit
-              </Button>
-            </div>
+            <Container className="mt-4">
+              <Row>
+                <Col md={12} className="d-flex justify-content-front">
+                  <Button variant="outline-secondary" type="reset">
+                    Reset
+                  </Button>
+                  <Button
+                    variant="success"
+                    type="submit"
+                    disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+                    className="ms-2"
+                  >
+                    Submit
+                  </Button>
+                </Col>
+              </Row>
+            </Container>
           </Form>
         )}
       </Formik>
-    </div>
+    </Container>
   );
 };
 export default RequestForm;

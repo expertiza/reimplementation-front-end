@@ -49,7 +49,7 @@ const Header = () => {
                 <NavDropdown.Item as={Link} to="super_administrators">
                   Super Administrators
                 </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="account_request">
+                <NavDropdown.Item as={Link} to="account_requests">
                   Pending Requests
                 </NavDropdown.Item>
               </NavDropdown>

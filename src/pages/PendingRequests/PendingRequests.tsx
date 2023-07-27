@@ -5,27 +5,31 @@ import { REQUEST_COLUMNS } from "./RequestColumns";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
 import ModalComponent from "components/Modal";
+import { useDispatch } from "react-redux";
+import { alertActions } from "store/slices/alertSlice";
 
 const PendingRequests = () => {
   const [showCurrent, setCurrentData] = useState(true);
-  const [loading, setLoading] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<{ id: any } | null>({ id: null });
   const [action, setAction] = useState<"accept" | "reject" | null>(null);
   const { error, isLoading, data: dataResponse, sendRequest: fetchData } = useAPI();
   const { sendRequest } = useAPI();
-  // useEffect(() => {
-  //   fetchData({ url: "/account_requests/pending" });
-  // }, [showCurrent]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     let endpoint = showCurrent ? "pending" : "processed";
-    setLoading(true);
     fetchData({ url: "/account_requests/" + endpoint });
-    setLoading(false);
   }, [fetchData, showCurrent]);
 
   const showSearchBar = true;
+
+  // Error alert
+  useEffect(() => {
+    if (error) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
+    }
+  }, [error, dispatch]);
 
   const handleAccept = async (row: { id: any }) => {
     setShowModal(true);
@@ -62,21 +66,19 @@ const PendingRequests = () => {
   );
   return (
     <Container>
-      <Row>
-        <Col md={{ span: 1, offset: 0 }} style={{ marginTop: "20px" }}>
+      <Row className="mt-4">
+        <Col md={1} className="d-flex justify-content-front">
           <Button onClick={() => setCurrentData(true)}>Current</Button>
-        </Col>
-        <Col md={{ span: 1 }} style={{ marginLeft: "-30px", marginTop: "20px" }}>
           <Button
             onClick={() => {
               setCurrentData(false);
-              console.log("History button clicked");
             }}
+            className="ms-2"
           >
             History
           </Button>
         </Col>
-        {loading ? (
+        {isLoading ? (
           <>Loading...</>
         ) : (
           <Table data={tableData} columns={tableColumns} showGlobalFilter={showSearchBar} />
