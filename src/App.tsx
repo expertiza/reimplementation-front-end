@@ -5,6 +5,7 @@ import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
+import Etc, { loadEtc } from "./pages/Assignments/Etc"; 
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -13,6 +14,7 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
+import Assignment from "./pages/Assignments/Assignment"
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
@@ -28,6 +30,17 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        {
+          path: "assignments",
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            {
+              path: "etc",
+              element: <Etc />,
+              loader: loadEtc,
+            }
+          ],
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
