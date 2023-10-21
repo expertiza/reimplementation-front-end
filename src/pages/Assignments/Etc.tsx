@@ -20,7 +20,14 @@ const Etc = () => {
         
     return (
         <>
-        <h1>Hey!</h1>
+        <div className="container">
+            <div className="alert alert-success mt-4" role="alert">
+                This is a success alert—check it out!
+            </div>
+            <div className="alert alert-danger" role="alert">
+                This is a danger alert—check it out!
+            </div>
+        </div>
         </>
     );
 };
