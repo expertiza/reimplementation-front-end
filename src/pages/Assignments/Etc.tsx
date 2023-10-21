@@ -4,8 +4,8 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import axiosClient from "../../utils/axios_client";
-//import TextExample from '../../components/TextExample';
 import useAPI from "hooks/useAPI";
+import EtcPage from '../../components/Assignment/EtcPage';
 
 import axios from "axios";
 const Etc = () => {
@@ -27,7 +27,14 @@ const Etc = () => {
             <div className="alert alert-danger" role="alert">
                 This is a danger alert—check it out!
             </div>
+            <h1>Edit Assignment</h1>
+            <p>General | Ruberics | Review Strategy | Due Dates | Badges | Etc</p>
+            <EtcPage/>
+            <br></br>
+            <Button className="mt-1">Save</Button>|            
+            <a href={'/assignments'} style={{margin: "2px"}} >Back</a>
         </div>
+        
         </>
     );
 };
