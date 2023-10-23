@@ -1,6 +1,6 @@
 import { IFormOption } from "components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
-import { IInstitution, IRole, IUserRequest, IUserResponse } from "../../utils/interfaces";
+import { IInstitution, IRole, IParticipantRequest, IParticipantResponse } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -17,7 +17,7 @@ type PermittedEmailPreferences =
   | EmailPreference.EMAIL_ON_SUBMISSION
   | EmailPreference.EMAIL_ON_META_REVIEW;
 
-export interface IUserFormValues {
+export interface IParticipantFormValues {
   id?: number;
   name: string;
   email: string;
@@ -57,9 +57,9 @@ export const transformRolesResponse = (rolesList: string) => {
   return rolesData;
 };
 
-export const transformUserRequest = (values: IUserFormValues) => {
+export const transformParticipantRequest = (values: IParticipantFormValues) => {
   // const parent_id = values.parent_id ? values.parent_id : null;
-  const user: IUserRequest = {
+  const participant: IParticipantRequest = {
     name: values.name,
     email: values.email,
     role_id: values.role_id,
@@ -72,44 +72,44 @@ export const transformUserRequest = (values: IUserFormValues) => {
       EmailPreference.EMAIL_ON_META_REVIEW
     ),
   };
-  return JSON.stringify(user);
+  return JSON.stringify(participant);
 };
 
-export const transformUserResponse = (userResponse: string) => {
-  const user: IUserResponse = JSON.parse(userResponse);
-  const parent_id = user.parent.id ? user.parent.id : null;
-  const institution_id = user.institution.id ? user.institution.id : -1;
-  const userValues: IUserFormValues = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
-    role_id: user.role.id,
+export const transformParticipantResponse = (participantResponse: string) => {
+  const participant: IParticipantResponse = JSON.parse(participantResponse);
+  const parent_id = participant.parent.id ? participant.parent.id : null;
+  const institution_id = participant.institution.id ? participant.institution.id : -1;
+  const participantValues: IParticipantFormValues = {
+    id: participant.id,
+    name: participant.name,
+    email: participant.email,
+    firstName: participant.full_name.split(",")[1].trim(),
+    lastName: participant.full_name.split(",")[0].trim(),
+    role_id: participant.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
     emailPreferences: [],
   };
-  if (user.email_on_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
+  if (participant.email_on_review) {
+    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
   }
-  if (user.email_on_submission) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
+  if (participant.email_on_submission) {
+    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
   }
-  if (user.email_on_review_of_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
+  if (participant.email_on_review_of_review) {
+    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
   }
-  return userValues;
+  return participantValues;
 };
 
-export async function loadUserDataRolesAndInstitutions({ params }: any) {
-  let userData = {};
-  // if params contains id, then we are editing a user, so we need to load the user data
+export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
+  let participantData = {};
+  // if params contains id, then we are editing a participant, so we need to load the participant data
   if (params.id) {
-    const userResponse = await axiosClient.get(`/users/${params.id}`, {
-      transformResponse: transformUserResponse,
+    const participantResponse = await axiosClient.get(`/participants/${params.id}`, {
+      transformResponse: transformParticipantResponse,
     });
-    userData = await userResponse.data;
+    participantData = await participantResponse.data;
   }
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
@@ -120,5 +120,5 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
 
   const institutions = await institutionsResponse.data;
   const roles = await rolesResponse.data;
-  return { userData, roles, institutions };
+  return { participantData, roles, institutions };
 }
