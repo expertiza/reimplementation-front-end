@@ -1,22 +1,22 @@
-import React from "react";
-import Home from "pages/Home";
 import RootLayout from "layout/Root";
-import ErrorPage from "./router/ErrorPage";
+import Home from "pages/Home";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import AdministratorLayout from "./layout/Administrator";
+import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
+import Login from "./pages/Authentication/Login";
+import Logout from "./pages/Authentication/Logout";
+import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
+import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import Participants from "./pages/Participants/Participant";
+import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
+import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
-import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
-import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
-import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
-import Roles, { loadRoles } from "./pages/Roles/Roles";
-import Login from "./pages/Authentication/Login";
-import Logout from "./pages/Authentication/Logout";
+import ErrorPage from "./router/ErrorPage";
+import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import AdministratorLayout from "./layout/Administrator";
-import NotFound from "./router/NotFound";
 
 function App() {
   const router = createBrowserRouter([
@@ -31,6 +31,22 @@ function App() {
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            {
+              path: "new",
+              element: <UserEditor mode="create" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+            {
+              path: "edit/:id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+          ],
+        },
+        {
+          path: "participants",
+          element: <ProtectedRoute element={<Participants />} leastPrivilegeRole={ROLE.TA} />,
           children: [
             {
               path: "new",
