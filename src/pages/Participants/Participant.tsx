@@ -8,15 +8,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
-import { IUserResponse, ROLE } from "../../utils/interfaces";
-import DeleteUser from "./ParticipantDelete";
-import { userColumns as USER_COLUMNS } from "./participantColumns";
+import { IParticipantResponse, ROLE } from "../../utils/interfaces";
+import DeleteParticipant from "./ParticipantDelete";
+import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
 const Participants = () => {
-  const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
+  const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -27,12 +27,12 @@ const Participants = () => {
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
-    data?: IUserResponse;
+    data?: IParticipantResponse;
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
-  }, [fetchUsers, location, showDeleteConfirmation.visible, auth.user.id]);
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${auth.participant.id}/managed` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.participant.id]);
 
   // Error alert
   useEffect(() => {
@@ -41,26 +41,26 @@ const Participants = () => {
     }
   }, [error, dispatch]);
 
-  const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteParticipantHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<IUserResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<IParticipantResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
   );
 
   const onDeleteHandle = useCallback(
-    (row: TRow<IUserResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
+    (row: TRow<IParticipantResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
   const tableColumns = useMemo(
-    () => USER_COLUMNS(onEditHandle, onDeleteHandle),
+    () => PARPTICIPANT_COLUMNS(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 
   const tableData = useMemo(
-    () => (isLoading || !userResponse?.data ? [] : userResponse.data),
-    [userResponse?.data, isLoading]
+    () => (isLoading || !participantResponse?.data ? [] : participantResponse.data),
+    [participantResponse?.data, isLoading]
   );
 
   return (
@@ -81,7 +81,7 @@ const Participants = () => {
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
-              <DeleteUser userData={showDeleteConfirmation.data!} onClose={onDeleteUserHandler} />
+              <DeleteParticipant participantData={showDeleteConfirmation.data!} onClose={onDeleteParticipantHandler} />
             )}
           </Row>
           <Row>
@@ -90,7 +90,7 @@ const Participants = () => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                institution: auth.participant.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
             />
           </Row>
