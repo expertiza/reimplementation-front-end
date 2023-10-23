@@ -4,44 +4,44 @@ import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
-import { IUserResponse as IUser } from "../../utils/interfaces";
+import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
 
-interface IDeleteUser {
-  userData: IUser;
+interface IDeleteParticipant {
+  participantData: IParticipant;
   onClose: () => void;
 }
 
-const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
-  const { data: deletedUser, error: userError, sendRequest: deleteUser } = useAPI();
+const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onClose }) => {
+  const { data: deletedParticipant, error: participantError, sendRequest: deleteParticipant } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
   // Delete user
   const deleteHandler = () =>
-    deleteUser({ url: `/users/${userData.id}`, method: HttpMethod.DELETE });
+    deleteParticipant({ url: `/users/${participantData.id}`, method: HttpMethod.DELETE });
 
   // Show error if any
   useEffect(() => {
-    if (userError) dispatch(alertActions.showAlert({ variant: "danger", message: userError }));
-  }, [userError, dispatch]);
+    if (participantError) dispatch(alertActions.showAlert({ variant: "danger", message: participantError }));
+  }, [participantError, dispatch]);
 
   // Close modal if user is deleted
   useEffect(() => {
-    if (deletedUser?.status && deletedUser?.status >= 200 && deletedUser?.status < 300) {
+    if (deletedParticipant?.status && deletedParticipant?.status >= 200 && deletedParticipant?.status < 300) {
       setShow(false);
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} deleted successfully!`,
+          message: `User ${participantData.name} deleted successfully!`,
         })
       );
       onClose();
     }
-  }, [deletedUser?.status, dispatch, onClose, userData.name]);
+  }, [deletedParticipant?.status, dispatch, onClose, participantData.name]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,11 +51,11 @@ const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete User</Modal.Title>
+        <Modal.Title>Delete Participant</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete user <b>{userData.name}?</b>
+          Are you sure you want to delete participant <b>{participantData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
@@ -70,4 +70,4 @@ const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
   );
 };
 
-export default DeleteUser;
+export default DeleteParticipant;
