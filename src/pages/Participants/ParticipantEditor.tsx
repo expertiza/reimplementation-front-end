@@ -51,24 +51,24 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // logged-in user is the parent of the user being created and the institution is the same as the parent's
+  // logged-in participant is the parent of the participant being created and the institution is the same as the parent's
   initialValues.parent_id = auth.participant.id;
   initialValues.institution_id = auth.participant.institution_id;
 
-  // Close the modal if the user is updated successfully and navigate to the users page
+  // Close the modal if the participant is updated successfully and navigate to the participants page
   useEffect(() => {
     if (participantResponse && participantResponse.status >= 200 && participantResponse.status < 300) {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${participantData.name} ${mode}d successfully!`,
+          message: `Participant ${participantData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/users");
+      navigate(location.state?.from ? location.state.from : "/participants");
     }
   }, [dispatch, mode, navigate, participantData.name, participantResponse, location.state?.from]);
 
-  // Show the error message if the user is not updated successfully
+  // Show the error message if the participant is not updated successfully
   useEffect(() => {
     participantError && dispatch(alertActions.showAlert({ variant: "danger", message: participantError }));
   }, [participantError, dispatch]);
@@ -82,13 +82,13 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
       method = HttpMethod.PATCH;
     }
 
-    // to be used to display message when user is created
+    // to be used to display message when participant is created
     participantData.name = values.name;
     sendRequest({
       url: url,
       method: method,
       data: values,
-      transformRequest: transformUserRequest,
+      transformRequest: transformParticipantRequest,
     });
     submitProps.setSubmitting(false);
   };
@@ -123,7 +123,7 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
                   label="Participantname"
                   name="name"
                   disabled={mode === "update"}
-                  inputGroupPrepend={<InputGroup.Text id="user-name-prep">@</InputGroup.Text>}
+                  inputGroupPrepend={<InputGroup.Text id="participant-name-prep">@</InputGroup.Text>}
                 />
                 <Row>
                   <FormInput
