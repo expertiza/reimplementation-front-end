@@ -52,8 +52,8 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
   const location = useLocation();
 
   // logged-in participant is the parent of the participant being created and the institution is the same as the parent's
-  initialValues.parent_id = auth.participant.id;
-  initialValues.institution_id = auth.participant.institution_id;
+  initialValues.parent_id = auth.user.id;
+  initialValues.institution_id = auth.user.institution_id;
 
   // Close the modal if the participant is updated successfully and navigate to the participants page
   useEffect(() => {
@@ -149,7 +149,7 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormSelect
                   controlId="participant-institution"
                   name="institution_id"
-                  disabled={mode === "update" || auth.participant.role !== ROLE.SUPER_ADMIN.valueOf()}
+                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={institutions}
                   inputGroupPrepend={
                     <InputGroup.Text id="participant-inst-prep">Institution</InputGroup.Text>

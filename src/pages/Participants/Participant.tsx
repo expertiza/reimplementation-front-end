@@ -31,8 +31,8 @@ const Participants = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${auth.participant.id}/managed` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.participant.id]);
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${auth.user.id}/managed` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id]);
 
   // Error alert
   useEffect(() => {
@@ -90,7 +90,7 @@ const Participants = () => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-                institution: auth.participant.role === ROLE.SUPER_ADMIN.valueOf(),
+                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
             />
           </Row>
