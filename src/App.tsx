@@ -1,5 +1,7 @@
 import RootLayout from "layout/Root";
 import Home from "pages/Home";
+import Participants from "pages/Participants/Participant";
+import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
@@ -7,7 +9,7 @@ import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
-import Participants from "./pages/Participants/Participant";
+import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Users from "./pages/Users/User";
@@ -45,18 +47,34 @@ function App() {
           ],
         },
         {
-          path: "participants",
-          element: <ProtectedRoute element={<Participants />} leastPrivilegeRole={ROLE.TA} />,
+          path: "student_tasks/participants",
+          element: <Participants type="student_tasks" />,
           children: [
             {
               path: "new",
-              element: <UserEditor mode="create" />,
-              loader: loadUserDataRolesAndInstitutions,
+              element: <ParticipantEditor mode="create" type="student_tasks" />,
+              loader: loadParticipantDataRolesAndInstitutions,
             },
             {
               path: "edit/:id",
-              element: <UserEditor mode="update" />,
-              loader: loadUserDataRolesAndInstitutions,
+              element: <ParticipantEditor mode="update" type="student_tasks" />,
+              loader: loadParticipantDataRolesAndInstitutions,
+            },
+          ]
+        },
+        {
+          path: "courses/participants",
+          element: <Participants type="course" />,
+          children: [
+            {
+              path: "new",
+              element: <ParticipantEditor mode="create" type="course" />,
+              loader: loadParticipantDataRolesAndInstitutions,
+            },
+            {
+              path: "edit/:id",
+              element: <ParticipantEditor mode="update" type="course" />,
+              loader: loadParticipantDataRolesAndInstitutions,
             },
           ],
         },
