@@ -22,7 +22,7 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
 
   // Delete user
   const deleteHandler = () =>
-    deleteParticipant({ url: `/users/${participantData.id}`, method: HttpMethod.DELETE });
+    deleteParticipant({ url: `/participants/${participantData.id}`, method: HttpMethod.DELETE });
 
   // Show error if any
   useEffect(() => {

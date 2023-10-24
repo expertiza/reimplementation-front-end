@@ -1,7 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,9 +13,14 @@ import DeleteParticipant from "./ParticipantDelete";
 import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve on October, 2023
  */
-const Participants = () => {
+
+interface IModel {
+  type: string;
+}
+
+const Participants: React.FC<IModel> = ({ type }) => {
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -31,8 +36,8 @@ const Participants = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${auth.user.id}/managed` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id]);
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type]);
 
   // Error alert
   useEffect(() => {
@@ -44,8 +49,8 @@ const Participants = () => {
   const onDeleteParticipantHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => navigate(`edit/${row.original.id}`),
-    [navigate]
+    (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
+    [navigate, type]
   );
 
   const onDeleteHandle = useCallback(

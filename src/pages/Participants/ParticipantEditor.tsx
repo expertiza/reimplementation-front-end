@@ -11,7 +11,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
 import { RootState } from "../../store/store";
-import { IEditor, ROLE } from "../../utils/interfaces";
+import { ROLE } from "../../utils/interfaces";
 import { IParticipantFormValues, emailOptions, transformParticipantRequest } from "./participantUtil";
 /**
  * @author Ankur Mundra on April, 2023
@@ -27,6 +27,11 @@ const initialValues: IParticipantFormValues = {
   emailPreferences: [],
 };
 
+interface IParticipantEditor {
+  mode: "create" | "update";
+  type: string;
+}
+
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
@@ -40,7 +45,7 @@ const validationSchema = Yup.object({
   institution_id: Yup.string().required("Required").nonNullable(),
 });
 
-const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
+const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
   const { data: participantResponse, error: participantError, sendRequest } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -64,9 +69,9 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Participant ${participantData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/participants");
+      navigate(location.state?.from ? location.state.from : `/${type}/participants`);
     }
-  }, [dispatch, mode, navigate, participantData.name, participantResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, participantData.name, participantResponse, location.state?.from, type]);
 
   // Show the error message if the participant is not updated successfully
   useEffect(() => {
@@ -93,7 +98,7 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : "/participants");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : `/${type}/participants`);  
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -120,7 +125,7 @@ const ParticipantEditor: React.FC<IEditor> = ({ mode }) => {
                 />
                 <FormInput
                   controlId="participant-name"
-                  label="Participantname"
+                  label="Participant Name"
                   name="name"
                   disabled={mode === "update"}
                   inputGroupPrepend={<InputGroup.Text id="participant-name-prep">@</InputGroup.Text>}
