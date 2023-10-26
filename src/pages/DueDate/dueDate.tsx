@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./DueDate.css"; // Assuming you've created a CSS file for styling
 
 const DueDate: React.FC = () => {
   // State for form values
@@ -24,32 +25,32 @@ const DueDate: React.FC = () => {
   };
 
   return (
-    <div>
-      {/* Top elements outside the form */}
-      <div>
-        <input
-          type="checkbox"
-          checked={useTeamFormationDeadline}
-          onChange={(e) => setUseTeamFormationDeadline(e.target.checked)}
-        />
-        Use team formation deadline
-      </div>
-      <div>
-        <label>Timezone:</label>
-        <span>Timezone Value</span>
-      </div>
-      <div>
-        <input
-          type="checkbox"
-          checked={useMetaReviewDeadline}
-          onChange={(e) => setUseMetaReviewDeadline(e.target.checked)}
-        />
-        Use meta-review deadline
+    <div className="due-date-container">
+      <div className="checkbox-section">
+        <div>
+          <label>Timezone:</label>
+          <span>Timezone Value</span>
+        </div>
+        <div className="checkbox-item">
+          <input
+            type="checkbox"
+            checked={useTeamFormationDeadline}
+            onChange={(e) => setUseTeamFormationDeadline(e.target.checked)}
+          />
+          Use team formation deadline
+        </div>
+        <div className="checkbox-item">
+          <input
+            type="checkbox"
+            checked={useMetaReviewDeadline}
+            onChange={(e) => setUseMetaReviewDeadline(e.target.checked)}
+          />
+          Use meta-review deadline
+        </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <table>
+      <form onSubmit={handleSubmit} className="due-date-form">
+        <table className="deadline-table">
           <thead>
             <tr>
               <th>Deadline type</th>
@@ -62,7 +63,7 @@ const DueDate: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
+          <tr>
               <td>
                 <select
                   value={deadlineType}
@@ -132,22 +133,20 @@ const DueDate: React.FC = () => {
           </tbody>
         </table>
 
-        {/* Checkbox and dropdown button for late policy */}
-        <div>
-          <input type="checkbox" />
-          Use the late policy for this assignment
-          <select>
+          <div className="late-policy-section">
+            <input type="checkbox" className="late-policy-checkbox" />
+            Use the late policy for this assignment
+            <select>
             <option>Random Dropdown Option 1</option>
-            <option>Random Dropdown Option 2</option>
-            {/* Add more options as needed */}
-          </select>
-          <a href="#">New Late Policy</a>
-        </div>
+              <option>Random Dropdown Option 2</option>
+              {/* Add more options as needed */}
+            </select>
+            <a href="#" className="new-late-policy-link">New Late Policy</a>
+          </div>
 
-        {/* Save and Back buttons */}
-        <div>
-          <button type="submit">Save</button>
-          <button type="button">Back</button>
+        <div className="buttons-section">
+          <button type="submit" className="save-btn">Save</button>
+          <button type="button" className="back-btn">Back</button>
         </div>
       </form>
     </div>
