@@ -17,6 +17,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
+import Questionnaire from "./pages/Questionnaire/questionnaire";
 
 function App() {
   const router = createBrowserRouter([
@@ -99,13 +100,20 @@ function App() {
                 },
               ],
             },
+            // Add the "Questionnaire" route here
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+            },
           ],
         },
         { path: "*", element: <NotFound /> },
+        // Add the "Questionnaire" route here if it's not under the administrator section
+        { path: "questionnaire", element: <Questionnaire /> },
       ],
     },
   ]);
-
+  
   return <RouterProvider router={router} />;
 }
 
