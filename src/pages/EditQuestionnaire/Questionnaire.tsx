@@ -136,10 +136,21 @@ const Questionnaire = () => {
             </select>
           </div>
         </div>
+        <button
+            type="button"
+            style={{ borderColor: "black" }}
+            className="btn btn-light m-2"
+          >
+            Update questionnaire parameters
+          </button>
         <hr />
         <div className="row m-2">
           <div className="col-1">
-            <button type="button" className="btn btn-primary">
+            <button
+              type="button"
+              style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
+              className="btn btn-primary"
+            >
               Add
             </button>
           </div>
@@ -157,60 +168,125 @@ const Questionnaire = () => {
             <input className="form-control" type="text" placeholder="1"></input>
           </div>
         </div>
-<br/>
-<div className="row m-2">
-              <div className="col-1">Action</div>
-              <div className="col-1">
-                Seq
-              </div>
-              <div className="col-3">
-                Question
-              </div>
-              <div className="col-1">
-                Type
-              </div>
-              <div className="col-1">
-                Weight
-              </div>
-            </div>
+        <br />
+        <div className="row m-2">
+          <div className="col-1">
+            <strong>Action</strong>
+          </div>
+          <div className="col-1">
+            <strong>Seq</strong>
+          </div>
+          <div className="col-3">
+            <strong>Question</strong>
+          </div>
+          <div className="col-1">
+            <strong>Type</strong>
+          </div>
+          <div className="col-1">
+            <strong>Weight</strong>
+          </div>
+        </div>
         {sample_questionnaire.data.map((item) => {
           return (
             <div className="row m-2">
-              <div className="col-1"><a href="/">Remove</a></div>
               <div className="col-1">
-                <input className="form-control" type="text" value={item.seq}></input>
+                <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
+                  Remove
+                </a>
+              </div>
+              <div className="col-1">
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.seq}
+                ></input>
               </div>
               <div className="col-3">
-                <input className="form-control" type="text" value={item.question}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.question}
+                ></input>
               </div>
               <div className="col-1">
-                <input className="form-control" type="text" value={item.type}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.type}
+                  disabled
+                ></input>
               </div>
               <div className="col-1">
-                <input className="form-control" type="text" value={item.weight}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.weight}
+                ></input>
               </div>
               text_area_size
               <div className="col-1">
-                 <input className="form-control" type="text" value={item.text_area_size}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.text_area_size}
+                ></input>
               </div>
               max_label
               <div className="col-1">
-                 <input className="form-control" type="text" value={item.max_label}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.max_label}
+                ></input>
               </div>
               min_label
               <div className="col-1">
-                 <input className="form-control" type="text" value={item.min_label}></input>
+                <input
+                  className="form-control"
+                  style={{ borderColor: "black" }}
+                  type="text"
+                  value={item.min_label}
+                ></input>
               </div>
             </div>
           );
         })}
-        <div className="col-2 m-2">
-            <button type="button" className="btn btn-primary">
-              Save all questions
-            </button>
-          </div>
-        <hr/>
-        <div><a href="/">Import Questionnaire</a> | <a href="/">Export Questionnaire</a></div>
+        <div className="row m-2">
+        <div className="col-6">
+          <button
+            type="button"
+            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
+            className="btn btn-primary"
+          >
+            Save all questions
+          </button>
+        </div>
+        <div className="col-6">
+          <button
+            type="button"
+            style={{ borderColor: "black" }}
+            className="btn btn-light"
+          >
+            Edit/View Advice
+          </button>
+        </div>
+        </div>
+        <hr />
+        <div>
+          <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
+            Import Questionnaire
+          </a>{" "}
+          |{" "}
+          <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
+            Export Questionnaire
+          </a>
+        </div>
       </div>
     </div>
   );
