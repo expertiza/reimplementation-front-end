@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 const Questionnaire = () => {
   const sample_questionnaire = {
     title: "Edit Teammate Review",
@@ -103,46 +104,59 @@ const Questionnaire = () => {
       },
     ],
   };
+  const [minScore, setMinScore] = useState(0);
+  const [maxScore, setMaxScore] = useState(5);
+  const [isPrivate, setIsPrivate] = useState(false);
+
   return (
     <div>
       <div className="container">
         <h1 className="mt-4">{sample_questionnaire.title}</h1>
         <div className="row m-2">
-          <div className="col-1">Name:</div>
-          <div className="col-4">
+          <div className="col-6">
+            Min item score:
             <input
               className="form-control"
-              type="text"
-              placeholder="Copy of copy of new teammate review"
+              type="number"
+              value={minScore}
+              onChange={(e) => setMinScore(parseInt(e.target.value, 10))}
+              // Using parseInt to convert the input value to a number
             ></input>
           </div>
         </div>
         <div className="row m-2">
-          <div className="col-2">Min item score:</div>
-          <div className="col-2">
-            <input className="form-control" type="text" placeholder="0"></input>
-          </div>
-          <div className="col-2">Max item score:</div>
-          <div className="col-2">
-            <input className="form-control" type="text" placeholder="5"></input>
-          </div>
-          <div className="col-2">Is this Teammate review private:</div>
-          <div className="col-2">
-            <select className="form-select">
-              <option value="yes">yes</option>
-              <option value="no" selected>
-                no
-              </option>
-            </select>
+          <div className="col-6">
+            Max item score:
+            <input
+              className="form-control"
+              type="number"
+              value={maxScore}
+              onChange={(e) => setMaxScore(parseInt(e.target.value, 10))}
+              // Using parseInt to convert the input value to a number
+            ></input>
           </div>
         </div>
-        <button
-            type="button"
-            style={{ borderColor: "black" }}
-            className="btn btn-light m-2"
-          >
-            Update questionnaire parameters
-          </button>
+        <div className="row m-2">
+          <div className="col-6">
+            Is this Teammate review private:
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={() => setIsPrivate(!isPrivate)}
+            />
+          </div>
+        </div>
+        <div className="row m-2">
+          <div className="col-6">
+            <button
+              type="button"
+              style={{ borderColor: "black" }}
+              className="btn btn-light m-2"
+            >
+              Update questionnaire parameters
+            </button>
+          </div>
+        </div>
         <hr />
         <div className="row m-2">
           <div className="col-1">
