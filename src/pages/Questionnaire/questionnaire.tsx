@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Questionnaire.css'; // Import the CSS file for styles
 
 function Questionnaire() {
   const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
@@ -34,11 +35,11 @@ function Questionnaire() {
   };
 
   return (
-    <div>
+    <div className="questionnaire-container">
       <h1>Questionnaire List</h1>
       <button onClick={handleAddButtonClick}>Add</button>
 
-      <br></br>
+      <br />
 
       <label>
         <input
@@ -49,7 +50,7 @@ function Questionnaire() {
         Display my items only
       </label>
 
-      <table>
+      <table className="questionnaire-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -59,9 +60,7 @@ function Questionnaire() {
         <tbody>
           {questionnaireItems.map((item, index) => (
             <tr key={index}>
-              <td onClick={() => handleItemClick(index)}>
-                {item}
-              </td>
+              <td onClick={() => handleItemClick(index)}>{item}</td>
               <td>
                 <button onClick={() => handleExpandButtonClick(index)}>+</button>
               </td>
