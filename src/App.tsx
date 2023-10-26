@@ -1,5 +1,6 @@
 import React from "react";
 import Home from "pages/Home";
+import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
 import RootLayout from "layout/Root";
 import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
@@ -28,6 +29,7 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        {path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
