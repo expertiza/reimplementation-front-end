@@ -1,13 +1,76 @@
-/**
- * @author Ankur Mundra on May, 2023
- */
-const Questionnaire = () => {
-    return (
-      <div>
-        <h1>Welcome to questionnaire page</h1>
-      </div>
-    );
+import React, { useState } from 'react';
+
+function Questionnaire() {
+  const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
+
+  const questionnaireItems = [
+    'Review',
+    'Metareview',
+    'Author Feedback',
+    'Teammate Review',
+    'Assignment Survey',
+    'Global Survey',
+    'Course Survey',
+    'Bookmark Rating',
+  ];
+
+  const handleAddButtonClick = () => {
+    console.log('Add button clicked');
+    // Add your logic for adding questionnaire items here
   };
-  
-  export default Questionnaire;
-  
+
+  const handleItemClick = (index: number) => {
+    if (expandedItem === index) {
+      setExpandedItem(null);
+    } else {
+      setExpandedItem(index);
+    }
+  };
+
+  const handleExpandButtonClick = (index: number) => {
+    console.log(`Expand button clicked for item ${index}`);
+    // Add your logic for expanding questionnaire items here
+  };
+
+  return (
+    <div>
+      <h1>Questionnaire List</h1>
+      <button onClick={handleAddButtonClick}>Add</button>
+
+      <br></br>
+
+      <label>
+        <input
+          type="checkbox"
+          checked={showOnlyMyItems}
+          onChange={() => setShowOnlyMyItems(!showOnlyMyItems)}
+        />
+        Display my items only
+      </label>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {questionnaireItems.map((item, index) => (
+            <tr key={index}>
+              <td onClick={() => handleItemClick(index)}>
+                {item}
+              </td>
+              <td>
+                <button onClick={() => handleExpandButtonClick(index)}>+</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default Questionnaire;
