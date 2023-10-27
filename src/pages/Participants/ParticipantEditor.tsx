@@ -14,7 +14,7 @@ import { RootState } from "../../store/store";
 import { ROLE } from "../../utils/interfaces";
 import { IParticipantFormValues, emailOptions, transformParticipantRequest } from "./participantUtil";
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Mrityunjay Joshi on October, 2023
  */
 
 const initialValues: IParticipantFormValues = {
