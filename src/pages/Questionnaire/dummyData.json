@@ -1,0 +1,43 @@
+[
+    {
+      "name": "Review",
+      "creationDate": "2023-01-10",
+      "updatedDate": "2023-01-15"
+    },
+    {
+      "name": "Metareview",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+    },
+    {
+      "name": "Author Feedback",
+      "creationDate": "2023-03-20",
+      "updatedDate": "2023-03-25"
+    },
+    {
+      "name": "Teammate Review",
+      "creationDate": "2023-04-15",
+      "updatedDate": "2023-04-20"
+    },
+    {
+      "name": "Assignment Survey",
+      "creationDate": "2023-05-01",
+      "updatedDate": "2023-05-06"
+    },
+    {
+      "name": "Global Survey",
+      "creationDate": "2023-06-10",
+      "updatedDate": "2023-06-15"
+    },
+    {
+      "name": "Course Survey",
+      "creationDate": "2023-07-20",
+      "updatedDate": "2023-07-25"
+    },
+    {
+      "name": "Bookmark Rating",
+      "creationDate": "2023-08-05",
+      "updatedDate": "2023-08-10"
+    }
+  ]
+  
