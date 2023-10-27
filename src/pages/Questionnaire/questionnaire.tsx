@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import './Questionnaire.css';
+import {Button} from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import dummyData from './dummyData.json';
+import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
+import {BiCopy}from "react-icons/bi";
+import { BsPlusSquareFill } from "react-icons/bs";
+
 
 function Questionnaire() {
   const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
@@ -73,11 +78,11 @@ function Questionnaire() {
               <tr>
                 <td onClick={() => handleItemClick(index)}>{item.name}</td>
                 <td>
-                  <FontAwesomeIcon icon={faTrash} onClick={() => handleDelete(item)} />
-                  <span className="icon-space"></span>
-                  <FontAwesomeIcon icon={faPencilAlt} onClick={() => handleEdit(item)} />
-                  <span className="icon-space"></span>
-                  <FontAwesomeIcon icon={faEye} onClick={() => handleShow(item)} />
+                
+                <Button variant="outline-success" onClick={() => handleAddButtonClick}>
+                <BsPlusSquareFill />
+              </Button>
+                  
                 </td>
               </tr>
               {expandedItem === index && (
@@ -104,11 +109,26 @@ function Questionnaire() {
             <td>{item.creationDate}</td>
             <td>{item.updatedDate}</td>
             <td>
-              <FontAwesomeIcon icon={faTrash} onClick={() => handleDelete(item)} />
+            
+            <Button
+          variant="outline-danger"
+          size="sm"
+          className="ms-sm-2"
+          onClick={() => handleDelete(item)}
+        >
+          <BsPersonXFill />
+        </Button>
               <span className="icon-space"></span>
-              <FontAwesomeIcon icon={faPencilAlt} onClick={() => handleEdit(item)} />
+              <Button variant="outline-warning" size="sm" onClick={() => handleEdit(item)}>
+          <BsPencilFill />
+        </Button>
+        
               <span className="icon-space"></span>
-              <FontAwesomeIcon icon={faEye} onClick={() => handleShow(item)} />
+              
+              <Button variant="outline-warning" size="sm" onClick={() => handleShow(item)}>
+          <BiCopy />
+        </Button>
+              
             </td>
 
           </tr>
