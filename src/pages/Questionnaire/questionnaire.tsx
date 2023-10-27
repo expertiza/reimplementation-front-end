@@ -7,6 +7,7 @@ import dummyData from './dummyData.json';
 function Questionnaire() {
   const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'default' | null>(null);
 
   const questionnaireItems = dummyData; // Use dummy data for items
 
@@ -44,6 +45,22 @@ function Questionnaire() {
     // Add your logic for showing the item here
   };
 
+  const handleSortByName = () => {
+    if (sortOrder === 'asc') {
+      setSortOrder('desc');
+    } else {
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedQuestionnaireItems = [...questionnaireItems];
+
+  if (sortOrder === 'asc') {
+    sortedQuestionnaireItems.sort();
+  } else if (sortOrder === 'desc') {
+    sortedQuestionnaireItems.sort().reverse();
+  }
+
   return (
     <div className="questionnaire-container">
       <h1>Questionnaire List</h1>
@@ -63,12 +80,14 @@ function Questionnaire() {
       <table className="questionnaire-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th onClick={handleSortByName}>
+              Name {sortOrder === 'asc' && '↑'} {sortOrder === 'desc' && '↓'} {sortOrder === null && '↑↓'}
+            </th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {questionnaireItems.map((item, index) => (
+          {sortedQuestionnaireItems.map((item, index) => (
             <React.Fragment key={index}>
               <tr>
                 <td onClick={() => handleItemClick(index)}>{item.name}</td>
