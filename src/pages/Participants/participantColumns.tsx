@@ -4,7 +4,7 @@ import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Divit Kalathil on October, 2023
  */
 
 type Fn = (row: Row<IParticipant>) => void;

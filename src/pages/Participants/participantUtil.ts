@@ -1,9 +1,9 @@
 import { IFormOption } from "components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
-import { IInstitution, IRole, IParticipantRequest, IParticipantResponse } from "../../utils/interfaces";
+import { IInstitution, IParticipantRequest, IParticipantResponse, IRole } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Divit Kalathil on October, 2023
  */
 
 export enum EmailPreference {

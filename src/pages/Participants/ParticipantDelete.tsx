@@ -7,7 +7,7 @@ import useAPI from "../../hooks/useAPI";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve on October, 2023
  */
 
 interface IDeleteParticipant {
