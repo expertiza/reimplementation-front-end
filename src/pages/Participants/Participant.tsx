@@ -17,7 +17,7 @@ import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns
  */
 
 interface IModel {
-  type: string;
+  type: "student_tasks" | "courses";
 }
 
 const Participants: React.FC<IModel> = ({ type }) => {

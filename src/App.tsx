@@ -64,16 +64,16 @@ function App() {
         },
         {
           path: "courses/participants",
-          element: <Participants type="course" />,
+          element: <Participants type="courses" />,
           children: [
             {
               path: "new",
-              element: <ParticipantEditor mode="create" type="course" />,
+              element: <ParticipantEditor mode="create" type="courses" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
             {
               path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="course" />,
+              element: <ParticipantEditor mode="update" type="courses" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
           ],
