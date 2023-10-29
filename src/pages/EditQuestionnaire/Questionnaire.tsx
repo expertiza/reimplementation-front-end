@@ -177,7 +177,7 @@ const Questionnaire = () => {
         </div>
         <div className="row m-2">
           <div className="col-6">
-            Is this Teammate review private:
+            Is this Teammate review private:{' '} 
             <input
               type="checkbox"
               checked={isPrivate}
@@ -197,34 +197,15 @@ const Questionnaire = () => {
           </div>
         </div>
         <hr />
-        <div className="row m-2">
-        <div className="col-1">
-            <input className="form-control" type="text" placeholder="1"></input>
-          </div>
-          more
-          <div className="col-2">
-            <select className="form-select">
-              <option value="Criterion" selected>
-                Criterion
-              </option>
-            </select>
-          </div>
-          question(s)
-        </div>
-        <br />
-        <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
-            className="btn btn-primary"
-          >
-            Add Question
-          </button>       
+             
         <div className="row m-2">
           <div className="col-1">Seq</div>
           <div className="col-3">Question</div>
           <div className="col-1">Type</div>
           <div className="col-1">Weight</div>
-          <div className="col-3"></div>
+          <div className="col-1">Text_area_size</div>
+          <div className="col-2">Max_label</div>
+          <div className="col-2">Min_label</div>
           <div className="col-1">Action</div>
         </div>
         {sample_questionnaire.data.map((item) => {
@@ -251,11 +232,19 @@ const Questionnaire = () => {
               <select
                 className="form-select"
                 style={{ borderColor: "black" }}
-                value={item.type}
+                defaultValue = {item.type}
               >
-                <option value="C1">C1</option>
-                <option value="C2">C2</option>
-                <option value="C3">C3</option>
+                <option value="Criterion">Criterion</option>
+                <option value="Scale">Scale</option>
+                <option value="Cake">Cake</option>
+                <option value="Dropdown">Dropdown</option>
+                <option value="Checkbox">Checkbox</option>
+                <option value="TextArea">TextArea</option>
+                <option value="TextField">TextField</option>
+                <option value="UploadFile">UploadFile</option>
+                <option value="SectionHeader">SectionHeader</option>
+                <option value="TableHeader">TableHeader</option>
+                <option value="ColumnHeader">ColumnHeader</option>
               </select>
               </div>
               <div className="col-1">
@@ -268,9 +257,7 @@ const Questionnaire = () => {
                   value={item.weight}
                 ></input>
               </div>
-              <div className="col-3">
-              text_area_size
-              <div className="row m-2">
+              <div className="col-1">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
@@ -279,8 +266,7 @@ const Questionnaire = () => {
                   defaultValue="80, 1"
                 ></input>
               </div>
-              max_label
-              <div className="row m-2">
+              <div className="col-2">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
@@ -288,22 +274,18 @@ const Questionnaire = () => {
                   value={item.max_label}
                 ></input>
               </div>
-              min_label
-              <div className="row m-2">
+              <div className="col-2">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
                   type="text"
                   value={item.min_label}
                 ></input>
-              </div>
-              </div>
-              
+              </div>              
               <div className="col-1">
               <button
                 type="button"
-                style={{marginBottom: '20px' }}
-                className="btn btn-light m-2"
+                className="btn btn-light"
               >
                 Remove
               </button>  
@@ -311,6 +293,48 @@ const Questionnaire = () => {
             </div>
           );
         })}
+        <br /> 
+        <div className="row m-2">
+        <br /> 
+        <div className="col-1">
+            <input className="form-control" type="text" placeholder="1"></input>
+        </div>
+        <div className="col-1">
+        <p style={{ fontSize: "18px", paddingLeft: 0, paddingRight: 0 }}>
+          more
+        </p>
+        </div>
+        <div className="col-2">
+            <select className="form-select">
+            <option value="Criterion">Criterion</option>
+            <option value="Scale">Scale</option>
+            <option value="Cake">Cake</option>
+            <option value="Dropdown">Dropdown</option>
+            <option value="Checkbox">Checkbox</option>
+            <option value="TextArea">TextArea</option>
+            <option value="TextField">TextField</option>
+            <option value="UploadFile">UploadFile</option>
+            <option value="SectionHeader">SectionHeader</option>
+            <option value="TableHeader">TableHeader</option>
+            <option value="ColumnHeader">ColumnHeader</option>
+            </select>
+        </div>
+        <div className="col-1">
+        <p style={{ fontSize: "18px" }}>
+        question(s)
+        </p>
+        </div>
+        <div className="col-2">
+        <button
+            type="button"
+            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
+            className="btn btn-primary"
+          >
+            Add Question
+          </button> 
+          </div>
+        </div>
+        <br /> 
         <div className="row m-2">
         <div className="col-2">
           <button
