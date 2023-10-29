@@ -1,4 +1,20 @@
 import React, { useState } from "react";
+import ImportModal from "./ImportModal";
+import ExportModal from "./ExportModal";
+
+interface ImportedData {
+  title: string;
+  data: Array<{
+    seq: number;
+    question: string;
+    type: string;
+    weight: number;
+    text_area_size: string;
+    max_label: string;
+    min_label: string;
+  }>;
+}
+
 const Questionnaire = () => {
   const sample_questionnaire = {
     title: "Edit Teammate Review",
@@ -108,6 +124,29 @@ const Questionnaire = () => {
   const [maxScore, setMaxScore] = useState(5);
   const [isPrivate, setIsPrivate] = useState(false);
 
+  const [questionnaireData, setQuestionnaireData] = useState(sample_questionnaire);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // Function to export questionnaire data
+  const exportQuestionnaire = () => {
+    const dataToExport = JSON.stringify(questionnaireData);
+    const blob = new Blob([dataToExport], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "questionnaire.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // Function to handle imported data
+  const handleFileChange = (importedData: ImportedData) => {
+    setQuestionnaireData(importedData);
+  };
+
+
   return (
     <div>
       <div className="container">
@@ -138,7 +177,7 @@ const Questionnaire = () => {
         </div>
         <div className="row m-2">
           <div className="col-6">
-            Is this Teammate review private:
+            Is this Teammate review private:{' '} 
             <input
               type="checkbox"
               checked={isPrivate}
@@ -158,63 +197,28 @@ const Questionnaire = () => {
           </div>
         </div>
         <hr />
+             
         <div className="row m-2">
-          <div className="col-1">
-            <button
-              type="button"
-              style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
-              className="btn btn-primary"
-            >
-              Add
-            </button>
-          </div>
-          more
-          <div className="col-2">
-            <select className="form-select">
-              <option value="Criterion" selected>
-                Criterion
-              </option>
-            </select>
-          </div>
-          question(s)
-          <div className="mr-6 col-2">Add question weight</div>
-          <div className="col-1">
-            <input className="form-control" type="text" placeholder="1"></input>
-          </div>
-        </div>
-        <br />
-        <div className="row m-2">
-          <div className="col-1">
-            <strong>Action</strong>
-          </div>
-          <div className="col-1">
-            <strong>Seq</strong>
-          </div>
-          <div className="col-3">
-            <strong>Question</strong>
-          </div>
-          <div className="col-1">
-            <strong>Type</strong>
-          </div>
-          <div className="col-1">
-            <strong>Weight</strong>
-          </div>
+          <div className="col-1">Seq</div>
+          <div className="col-3">Question</div>
+          <div className="col-1">Type</div>
+          <div className="col-1">Weight</div>
+          <div className="col-1">Text_area_size</div>
+          <div className="col-2">Max_label</div>
+          <div className="col-2">Min_label</div>
+          <div className="col-1">Action</div>
         </div>
         {sample_questionnaire.data.map((item) => {
           return (
             <div className="row m-2">
-              <div className="col-1">
-                <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
-                  Remove
-                </a>
-              </div>
-              <div className="col-1">
+              <div className="col-1" >
                 <input
                   className="form-control"
-                  style={{ borderColor: "black" }}
+                  style={{ borderColor: "black",width: "50px" }}
                   type="text"
                   value={item.seq}
-                ></input>
+                  disabled
+                />
               </div>
               <div className="col-3">
                 <input
@@ -225,33 +229,44 @@ const Questionnaire = () => {
                 ></input>
               </div>
               <div className="col-1">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.type}
-                  disabled
-                ></input>
+              <select
+                className="form-select"
+                style={{ borderColor: "black" }}
+                defaultValue = {item.type}
+              >
+                <option value="Criterion">Criterion</option>
+                <option value="Scale">Scale</option>
+                <option value="Cake">Cake</option>
+                <option value="Dropdown">Dropdown</option>
+                <option value="Checkbox">Checkbox</option>
+                <option value="TextArea">TextArea</option>
+                <option value="TextField">TextField</option>
+                <option value="UploadFile">UploadFile</option>
+                <option value="SectionHeader">SectionHeader</option>
+                <option value="TableHeader">TableHeader</option>
+                <option value="ColumnHeader">ColumnHeader</option>
+              </select>
               </div>
               <div className="col-1">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
-                  type="text"
+                  type="number"
+                  placeholder="1"
+                  pattern="[0-9]*" // Only allow numeric values
                   value={item.weight}
                 ></input>
               </div>
-              text_area_size
               <div className="col-1">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
                   type="text"
                   value={item.text_area_size}
+                  defaultValue="80, 1"
                 ></input>
               </div>
-              max_label
-              <div className="col-1">
+              <div className="col-2">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
@@ -259,20 +274,69 @@ const Questionnaire = () => {
                   value={item.max_label}
                 ></input>
               </div>
-              min_label
-              <div className="col-1">
+              <div className="col-2">
                 <input
                   className="form-control"
                   style={{ borderColor: "black" }}
                   type="text"
                   value={item.min_label}
                 ></input>
+              </div>              
+              <div className="col-1">
+              <button
+                type="button"
+                className="btn btn-light"
+              >
+                Remove
+              </button>  
               </div>
             </div>
           );
         })}
+        <br /> 
         <div className="row m-2">
-        <div className="col-6">
+        <br /> 
+        <div className="col-1">
+            <input className="form-control" type="text" placeholder="1"></input>
+        </div>
+        <div className="col-1">
+        <p style={{ fontSize: "18px", paddingLeft: 0, paddingRight: 0 }}>
+          more
+        </p>
+        </div>
+        <div className="col-2">
+            <select className="form-select">
+            <option value="Criterion">Criterion</option>
+            <option value="Scale">Scale</option>
+            <option value="Cake">Cake</option>
+            <option value="Dropdown">Dropdown</option>
+            <option value="Checkbox">Checkbox</option>
+            <option value="TextArea">TextArea</option>
+            <option value="TextField">TextField</option>
+            <option value="UploadFile">UploadFile</option>
+            <option value="SectionHeader">SectionHeader</option>
+            <option value="TableHeader">TableHeader</option>
+            <option value="ColumnHeader">ColumnHeader</option>
+            </select>
+        </div>
+        <div className="col-1">
+        <p style={{ fontSize: "18px" }}>
+        question(s)
+        </p>
+        </div>
+        <div className="col-2">
+        <button
+            type="button"
+            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
+            className="btn btn-primary"
+          >
+            Add Question
+          </button> 
+          </div>
+        </div>
+        <br /> 
+        <div className="row m-2">
+        <div className="col-2">
           <button
             type="button"
             style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
@@ -281,7 +345,9 @@ const Questionnaire = () => {
             Save all questions
           </button>
         </div>
-        <div className="col-6">
+        </div>
+        <div className="row m-2">
+        <div className="col-2">
           <button
             type="button"
             style={{ borderColor: "black" }}
@@ -293,13 +359,37 @@ const Questionnaire = () => {
         </div>
         <hr />
         <div>
-          <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
-            Import Questionnaire
-          </a>{" "}
-          |{" "}
-          <a href="/" style={{ color: "#b28b66", textDecoration: "none" }}>
-            Export Questionnaire
-          </a>
+          <div>
+            <a
+             
+              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
+              onClick={() => setShowImportModal(true)}
+            >
+              Import Questionnaire
+            </a>{" "}
+            |
+            <a
+             
+              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
+              onClick={() => setShowExportModal(true)}
+            >
+              Export Questionnaire
+            </a>
+          </div>
+
+          {/* Render import and export modals conditionally */}
+          {showImportModal && (
+            <ImportModal
+              onClose={() => setShowImportModal(false)}
+              onImport={handleFileChange}
+            />
+          )}
+          {showExportModal && (
+            <ExportModal
+              onClose={() => setShowExportModal(false)}
+              onExport={exportQuestionnaire}
+            />
+          )}
         </div>
       </div>
     </div>
