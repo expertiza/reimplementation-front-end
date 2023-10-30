@@ -38,7 +38,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
 
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type]);
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id]);
 
   // Error alert
   useEffect(() => {
