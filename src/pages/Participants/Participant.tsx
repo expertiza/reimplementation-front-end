@@ -18,9 +18,10 @@ import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns
 
 interface IModel {
   type: "student_tasks" | "courses";
+  id: Number;
 }
 
-const Participants: React.FC<IModel> = ({ type }) => {
+const Participants: React.FC<IModel> = ({ type, id }) => {
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -36,7 +37,7 @@ const Participants: React.FC<IModel> = ({ type }) => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}` });
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
   }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type]);
 
   // Error alert

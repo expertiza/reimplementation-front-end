@@ -48,7 +48,8 @@ function App() {
         },
         {
           path: "student_tasks/participants",
-          element: <Participants type="student_tasks" />,
+          // TODO: The id here should be dynamic and should be received from the parent component
+          element: <Participants type="student_tasks" id={1} />,
           children: [
             {
               path: "new",
@@ -64,7 +65,8 @@ function App() {
         },
         {
           path: "courses/participants",
-          element: <Participants type="courses" />,
+          // TODO: The id here should be dynamic and should be received from the parent component
+          element: <Participants type="courses" id={1} />,
           children: [
             {
               path: "new",
