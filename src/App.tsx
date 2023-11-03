@@ -5,7 +5,8 @@ import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
-import Etc, { loadEtc } from "./pages/Assignments/Etc"; 
+import Etc from "./pages/Assignments/d"; 
+import { loadTeams } from "pages/Assignments/Etc/Teams/CreateTeam";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -19,6 +20,13 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
+import AssignReviews from "pages/Assignments/Etc/AssignReviewer";
+import ViewSubmission from "pages/Assignments/Etc/ViewSubmission";
+import CreateTeam from "pages/Assignments/Etc/Teams/CreateTeam"
+// import AddParticipant from "pages/Assignments/Etc/AddParticipant";
+// import DelayedJob from "pages/Assignments/Etc/DelayedJob";
+// import ViewReports from "pages/Assignments/Etc/ViewReports";
+// import ViewScores from "pages/Assignments/Etc/ViewScores";
 
 function App() {
   const router = createBrowserRouter([
@@ -32,14 +40,25 @@ function App() {
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
         {
           path: "assignments",
-          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />
+        },
+        {
+          path: "assignments/etc",
+          element: <ProtectedRoute element={<Etc />} leastPrivilegeRole={ROLE.TA} />,
           children: [
             {
-              path: "etc",
-              element: <Etc />,
-              loader: loadEtc,
-            }
-          ],
+              path: "assignReviewer",
+              element: <AssignReviews />,
+            },
+            {
+              path: "submissions",
+              element: <ViewSubmission />,
+            },
+            {
+              path: "teams",
+              element: <CreateTeam />
+            }          
+          ]
         },
         {
           path: "users",

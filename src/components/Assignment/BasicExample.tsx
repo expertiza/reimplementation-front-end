@@ -8,7 +8,7 @@ interface BasicExampleProps {
 
 function BasicExample(props: BasicExampleProps) {
   return (
-    <Card style={{ width: '13rem' }}>
+    <Card bg='light'>
       <Card.Body>
         <Card.Title>
           {props.icon}

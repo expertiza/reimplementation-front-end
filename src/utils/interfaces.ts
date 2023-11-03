@@ -6,6 +6,11 @@ export interface IEditor {
   mode: "create" | "update";
 }
 
+export interface ITeam {
+  id?: number;
+  name: string;
+  age: number;
+}
 export interface IRole {
   id?: number;
   name: string;
