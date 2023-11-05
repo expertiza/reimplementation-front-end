@@ -1,24 +1,25 @@
-import RootLayout from "layout/Root";
+import React from "react";
 import Home from "pages/Home";
-import Participants from "pages/Participants/Participant";
-import ParticipantEditor from "pages/Participants/ParticipantEditor";
+import RootLayout from "layout/Root";
+import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
-import AdministratorLayout from "./layout/Administrator";
-import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
-import Login from "./pages/Authentication/Login";
-import Logout from "./pages/Authentication/Logout";
-import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
-import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
-import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
-import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
-import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import ErrorPage from "./router/ErrorPage";
-import NotFound from "./router/NotFound";
+import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
+import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
+import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
+import Roles, { loadRoles } from "./pages/Roles/Roles";
+import Login from "./pages/Authentication/Login";
+import Logout from "./pages/Authentication/Logout";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import AdministratorLayout from "./layout/Administrator";
+import NotFound from "./router/NotFound";
+import Participants from "pages/Participants/Participant";
+import ParticipantEditor from "pages/Participants/ParticipantEditor";
+import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
 
 function App() {
   const router = createBrowserRouter([
