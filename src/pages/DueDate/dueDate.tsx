@@ -23,6 +23,25 @@ const DueDate: React.FC = () => {
     // Reset form fields if needed
     // ...
   };
+// Static data for an additional row
+const staticRowData = {
+  deadlineType: 'Round 1: Submission',
+  dateTime: '12/01/2023, 11:59 PM', // Replace with an appropriate date and time
+  submissionAllowed: 'Yes',
+  reviewAllowed: 'Yes',
+  teammateReviewAllowed: 'Yes',
+  metaReviewAllowed: 'Yes',
+  reminderHours: '1',
+};
+const staticRowData2 = {
+  deadlineType: 'Round 1: Review',
+  dateTime: '12/05/2023, 11:59 PM',
+  submissionAllowed: 'Yes',
+  reviewAllowed: 'Yes',
+  teammateReviewAllowed: 'No',
+  metaReviewAllowed: 'No',
+  reminderHours: '2',
+};
 
   return (
     <div className="due-date-container">
@@ -64,14 +83,33 @@ const DueDate: React.FC = () => {
           </thead>
           <tbody>
           <tr>
+          <td>{staticRowData.deadlineType}</td>
+          <td>{staticRowData.dateTime}</td>
+          <td>{staticRowData.submissionAllowed}</td>
+          <td>{staticRowData.reviewAllowed}</td>
+          <td>{staticRowData.teammateReviewAllowed}</td>
+          <td>{staticRowData.metaReviewAllowed}</td>
+          <td>{staticRowData.reminderHours}</td>
+        </tr>
+
+        <tr>
+          <td>{staticRowData2.deadlineType}</td>
+          <td>{staticRowData2.dateTime}</td>
+          <td>{staticRowData2.submissionAllowed}</td>
+          <td>{staticRowData2.reviewAllowed}</td>
+          <td>{staticRowData2.teammateReviewAllowed}</td>
+          <td>{staticRowData2.metaReviewAllowed}</td>
+          <td>{staticRowData2.reminderHours}</td>
+        </tr>
+          <tr>
               <td>
                 <select
                   value={deadlineType}
                   onChange={(e) => setDeadlineType(e.target.value)}
                 >
                   <option value="">Select Deadline Type</option>
-                  <option value="Round 1: Submission">Round 1: Submission</option>
-                  <option value="Round 1: Review">Round 1: Review</option>
+                  <option value="Round 2: Submission">Round 2: Submission</option>
+                  <option value="Round 2: Review">Round 2: Review</option>
                   {/* Add more options as needed */}
                 </select>
               </td>
