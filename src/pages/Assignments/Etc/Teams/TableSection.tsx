@@ -24,9 +24,7 @@ export const TableSection = ({ personDetails, index }) => {
           <span> </span>
           <GiCrossMark color="red" size={20}/>
           <span> </span>
-          <div style={{color: '#bf721f'}}>
-            <MdOutlineEdit size={20}></MdOutlineEdit>
-          </div>
+            <MdOutlineEdit style={{color: '#bf721f'}} size={20}></MdOutlineEdit>
         </td>
       </tr>
       {isOpen && <TableRow personDetails={personDetails} />}
