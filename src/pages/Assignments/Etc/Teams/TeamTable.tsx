@@ -60,13 +60,13 @@
 import {info} from "../data/info"
 import { TableSection } from "./TableSection";
 
-export const TeamTable = () => {
+export const TeamTable = (props) => {
   return (
     <table>
       <thead>
         <td></td>
         <th>Team Name</th>
-        <th></th>
+        <th>{props.teams[0].name}</th>
         <th>Actions</th>
       </thead>
       {info.map((personDetails, index) => (

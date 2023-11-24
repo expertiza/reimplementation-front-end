@@ -1,3 +1,4 @@
+import {GiCrossMark} from 'react-icons/gi'
 
 export const TableRow = ({ personDetails }) => {
     return (
@@ -13,6 +14,11 @@ export const TableRow = ({ personDetails }) => {
           <td style={{paddingLeft:'20px'}}>{index+1}</td>
           <td></td>
           <td>{person.email}</td>
+          <td>
+            <a href="https://google.com">
+              <GiCrossMark color="red" size={20}/>
+            </a>
+          </td>
         </tr>
       ))}
       </>
