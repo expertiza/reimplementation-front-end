@@ -3,7 +3,7 @@ import { TableRow } from "./TableRow";
 import useOpenController from "../../../../hooks/useOpenController";
 import {FcPlus} from 'react-icons/fc';
 import {GiCrossMark} from 'react-icons/gi';
-import {BiSolidPencil} from 'react-icons/bi';
+import {MdOutlineEdit} from 'react-icons/md';
 
 export const TableSection = ({ personDetails, index }) => {
   const { isOpen, toggle } = useOpenController(false);
@@ -24,7 +24,9 @@ export const TableSection = ({ personDetails, index }) => {
           <span> </span>
           <GiCrossMark color="red" size={20}/>
           <span> </span>
-          <BiSolidPencil color="yellow" size={20}></BiSolidPencil>
+          <div style={{color: '#bf721f'}}>
+            <MdOutlineEdit size={20}></MdOutlineEdit>
+          </div>
         </td>
       </tr>
       {isOpen && <TableRow personDetails={personDetails} />}
