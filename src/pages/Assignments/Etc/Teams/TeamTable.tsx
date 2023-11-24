@@ -66,7 +66,7 @@ export const TeamTable = (props) => {
       <thead>
         <td></td>
         <th>Team Name</th>
-        <th>{props.teams[0].name}</th>
+        <th>{props.teams.name}</th>
         <th>Actions</th>
       </thead>
       {info.map((personDetails, index) => (
