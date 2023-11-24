@@ -17,7 +17,6 @@ export const TableSection = ({ personDetails, index }) => {
           <b>Team : {index}</b>
         </td>
         <td></td>
-        <td></td>
         <td>
           {/* Button */}
           <FcPlus size={20}/>

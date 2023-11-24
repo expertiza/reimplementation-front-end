@@ -66,8 +66,7 @@ export const Teams = () => {
       <thead>
         <td></td>
         <th>Team Name</th>
-        <th>Email</th>
-        <th>Name</th>
+        <th></th>
         <th>Actions</th>
       </thead>
       {info.map((personDetails, index) => (
