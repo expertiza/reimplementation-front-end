@@ -6,7 +6,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import Etc from "./pages/Assignments/Etc"; 
-import { loadTeams } from "pages/Assignments/Etc/Teams/CreateTeam";
+import { loadTeams } from "./pages/Assignments/Etc/Teams/Teams";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -22,7 +22,7 @@ import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
 import AssignReviews from "pages/Assignments/Etc/AssignReviewer";
 import ViewSubmission from "pages/Assignments/Etc/ViewSubmission";
-import CreateTeam from "pages/Assignments/Etc/Teams/CreateTeam"
+import Teams from "pages/Assignments/Etc/Teams/Teams"
 // import AddParticipant from "pages/Assignments/Etc/AddParticipant";
 // import DelayedJob from "pages/Assignments/Etc/DelayedJob";
 // import ViewReports from "pages/Assignments/Etc/ViewReports";
@@ -56,7 +56,8 @@ function App() {
             },
             {
               path: "teams",
-              element: <CreateTeam />
+              element: <Teams />,
+              loader: loadTeams
             }          
           ]
         },
