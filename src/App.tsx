@@ -5,7 +5,7 @@ import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
-import Etc from "./pages/Assignments/d"; 
+import Etc from "./pages/Assignments/Etc"; 
 import { loadTeams } from "pages/Assignments/Etc/Teams/CreateTeam";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";

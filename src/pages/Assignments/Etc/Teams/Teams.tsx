@@ -60,7 +60,7 @@
 import {info} from "../data/info"
 import { TableSection } from "./TableSection";
 
-export const Table = () => {
+export const Teams = () => {
   return (
     <table>
       <thead>
@@ -76,3 +76,5 @@ export const Table = () => {
     </table>
   );
 };
+
+export default Teams;

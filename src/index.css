@@ -1,7 +1,3 @@
-* {
-  box-sizing: border-box;
-}
-
 html {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -176,4 +172,8 @@ button {
 .button-td {
   padding: 0 10px;
   width: 2px;
+}
+
+* {
+  box-sizing: border-box;
 }
