@@ -15,17 +15,30 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import LanguageIcon from "@mui/icons-material/Language";
+import Tooltip from "@mui/material/Tooltip";
 
 function Courses() {
   const action = (
     <>
-      <ModeEditIcon className="m-2" />
-      <CloseIcon className="m-2" />
-      <ContentCopyIcon className="m-2" />
+      <Tooltip title="Edit Course">
+        <ModeEditIcon className="m-2" />
+      </Tooltip>
+      <Tooltip title="Delete Course">
+        <CloseIcon className="m-2" />
+      </Tooltip>
+      <Tooltip title="Copy Course">
+        <ContentCopyIcon className="m-2" />
+      </Tooltip>
       <br />
-      <PersonAddIcon className="m-2" />
-      <GroupAddIcon className="m-2" />
-      <LanguageIcon className="m-2" />
+      <Tooltip title="Add Person">
+        <PersonAddIcon className="m-2" />
+      </Tooltip>
+      <Tooltip title="Add Group">
+        <GroupAddIcon className="m-2" />
+      </Tooltip>
+      <Tooltip title="Language">
+        <LanguageIcon className="m-2" />
+      </Tooltip>
     </>
   );
   const columns = [
