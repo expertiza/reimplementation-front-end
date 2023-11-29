@@ -1,79 +1,126 @@
-// import { useCallback, useMemo, useState } from "react";
-// import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
-// import Table from "components/Table/Table";
-// import { Row as TRow } from "@tanstack/react-table";
-// import { Tab, Tabs, Col, Container, Row } from "react-bootstrap";
-// import { BsPlusSquareFill } from "react-icons/bs";
-// import { roleColumns as ROLE_COLUMNS } from "./teamColumns";
-// import {ITeam} from "../../../../utils/interfaces";
-// const Teams = () => {
-//     const tableData = [
-//         { id: 1, name: "John", age: 30 },
-//         { id: 2, name: "Alice", age: 25 },
-//         { id: 3, name: "Bob", age: 35 },
-//         { id: 4, name: "Eve", age: 28 },
-//       ];
-//       const navigate = useNavigate();
-//       const roles: any = useLoaderData();
-    
-      
-//       const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
-//         visible: boolean;
-//         data?: ITeam;
-//       }>({ visible: false });
-    
-//       const onDeleteRoleHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
-    
-//       const onEditHandle = useCallback(
-//         (row: TRow<ITeam>) => navigate(`edit/${row.original.id}`),
-//         [navigate]
-//       );
-    
-//       const onDeleteHandle = useCallback(
-//         (row: TRow<ITeam>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
-//         []
-//       );
-    
-//       const tableColumns = useMemo(
-//         () => ROLE_COLUMNS(onEditHandle, onDeleteHandle),
-//         [onDeleteHandle, onEditHandle]
-//       );
-//     return (
-//         <>
-//         <Container fluid className="px-md-4">          
-//           <Row>
-//             <Table
-//               data={tableData}
-//               columns={tableColumns}
-//               tableSize={{ span: 6, offset: 3 }}
-//               showColumnFilter={false}
-//               showPagination={false}
-//             />
-//           </Row>
-//         </Container>
-//         </>
-//     )
-// };
-
-// export default Teams;
-
-import {info} from "../data/info"
-import { TableSection } from "./TableSection";
-
-export const TeamTable = (props) => {
-  return (
-    <table>
-      <thead>
-        <td></td>
-        <th>Team Name</th>
-        <th>{props.teams.name}</th>
-        <th>Actions</th>
-      </thead>
-      {info.map((personDetails, index) => (
-        <TableSection personDetails={personDetails} index={index} />
-      ))}
-    </table>
-  );
+import { TableSection } from "./TableSection.jsx";
+import useOpenController from "../../../../hooks/useOpenController.js"
+import { useState,useEffect } from "react";
+type User = {
+  id: number;
+  unityId: string;
 };
 
-export default TeamTable;
+type Team = {
+  [teamName: string]: User[];
+};
+
+
+export const TeamTable = ({teams}:{teams:any}) : React.ReactNode => {
+
+  const [teamData, setTeamData] = useState<Team | null>(null);
+  const { isOpen, toggle } = useOpenController(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://64460e44ee791e1e29f5be26.mockapi.io/api/v1/name/testing2');
+        const data = await response.json();
+        delete data[data.length-1].id
+        setTeamData(data[data.length-1])
+      } catch (error) {
+        console.error('Error fetching team data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleEditTeamName = (oldTeamName: string, newTeamName: string) => {
+    if (teamData && newTeamName !== null && newTeamName.trim() !== '') {
+      const updatedTeamData = { ...teamData };
+      updatedTeamData[newTeamName] = updatedTeamData[oldTeamName];
+      delete updatedTeamData[oldTeamName];
+      setTeamData(updatedTeamData);
+      sendTeamDataToServer(updatedTeamData);
+    }
+  };
+
+  const handleAddNewUser = (teamName: string) => {
+    if (teamData) {
+      const newUnityId = prompt('Enter the Unity ID for the new user');
+      if (newUnityId) {
+        const newUser: User = {
+          id: teamData[teamName].length + 1, // Using timestamp as a simple way to generate a unique ID
+          unityId: newUnityId,
+        };
+
+        const updatedTeamData = { ...teamData };
+        updatedTeamData[teamName].push(newUser);
+        setTeamData(updatedTeamData);
+        sendTeamDataToServer(updatedTeamData);
+      }
+    }
+  };
+
+  const handleDeleteUser = (teamName: string, userId: number) => {
+    if (teamData) {
+      const updatedTeamData = { ...teamData };
+      updatedTeamData[teamName] = updatedTeamData[teamName].filter((user) => user.id !== userId);
+      setTeamData(updatedTeamData);
+      sendTeamDataToServer(updatedTeamData);
+    }
+  };
+
+  const handleCreateNewTeam = () => {
+    const newTeamName = prompt('Enter the name for the new team');
+    if (newTeamName) {
+      if (teamData) {
+        const updatedTeamData = { ...teamData, [newTeamName]: [] };
+        setTeamData(updatedTeamData);
+        sendTeamDataToServer(updatedTeamData);
+      }
+    }
+  };
+
+  const handleDeleteTeam = (teamName: string) => {
+    if (teamData) {
+      const updatedTeamData = { ...teamData };
+      delete updatedTeamData[teamName];
+      setTeamData(updatedTeamData);
+      sendTeamDataToServer(updatedTeamData);
+    }
+  };
+
+  const sendTeamDataToServer = async (data: Team) => {
+    try {
+      // Replace this URL with your server endpoint
+      await fetch('https://64460e44ee791e1e29f5be26.mockapi.io/api/v1/name/testing2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Error sending team data to the server:', error);
+    }
+  };
+
+  if (!teamData) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <>
+    <table>
+      <thead>
+        <tr>
+        <th></th>
+        <th>Team Name</th>
+        <th></th>
+        <th>Actions</th>
+        </tr>
+      </thead>
+      {Object.entries(teamData).map(([teamName, users]) => (
+        <TableSection handleAddNewUser={handleAddNewUser} handleDeleteUser={handleDeleteUser} handleDeleteTeam={handleDeleteTeam} handleEditTeamName={handleEditTeamName}personDetails={users} index={teamName} />
+      ))}
+    </table>
+    <button onClick={handleCreateNewTeam}>Create New Team</button>
+    </>
+  );
+};
