@@ -17,6 +17,11 @@ export interface IInstitution {
   name: string;
 }
 
+export interface IUserTeam {
+  id?: number;
+  email: string;
+}
+
 export interface IUserResponse {
   id: number;
   name: string;

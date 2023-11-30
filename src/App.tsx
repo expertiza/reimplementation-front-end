@@ -5,6 +5,8 @@ import ErrorPage from "./router/ErrorPage";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
+import Etc from "./pages/Assignments/Etc"; 
+import { loadTeams } from "./pages/Assignments/Etc/Teams/Teams";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -13,10 +15,18 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
+import Assignment from "./pages/Assignments/Assignment"
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
+import AssignReviews from "pages/Assignments/Etc/AssignReviewer";
+import ViewSubmission from "pages/Assignments/Etc/ViewSubmission";
+import Teams from "pages/Assignments/Etc/Teams/Teams"
+// import AddParticipant from "pages/Assignments/Etc/AddParticipant";
+// import DelayedJob from "pages/Assignments/Etc/DelayedJob";
+// import ViewReports from "pages/Assignments/Etc/ViewReports";
+// import ViewScores from "pages/Assignments/Etc/ViewScores";
 
 function App() {
   const router = createBrowserRouter([
@@ -28,6 +38,29 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        {
+          path: "assignments",
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />
+        },
+        {
+          path: "assignments/etc",
+          element: <ProtectedRoute element={<Etc />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            {
+              path: "assignReviewer",
+              element: <AssignReviews />,
+            },
+            {
+              path: "submissions",
+              element: <ViewSubmission />,
+            },
+            {
+              path: "teams",
+              element: <Teams />,
+              loader: loadTeams
+            }          
+          ]
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
