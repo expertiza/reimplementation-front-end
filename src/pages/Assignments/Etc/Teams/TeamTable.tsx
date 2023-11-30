@@ -1,34 +1,27 @@
-import { TableSection } from "./TableSection.jsx";
-import useOpenController from "../../../../hooks/useOpenController.js"
+import { TableSection } from "./TableSection";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { Row as TRow } from "@tanstack/react-table";
+import useOpenController from "../../../../hooks/useOpenController"
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { useState,useEffect } from "react";
+import { IUserTeam } from "../../../../utils/interfaces";
+
 type User = {
-  id: number;
-  unityId: string;
+
 };
 
-type Team = {
-  [teamName: string]: User[];
+type teamData = {
+  [teamName: string]: {}
 };
 
 
 export const TeamTable = ({teams}:{teams:any}) : React.ReactNode => {
 
-  const [teamData, setTeamData] = useState<Team | null>(null);
-  const { isOpen, toggle } = useOpenController(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://64460e44ee791e1e29f5be26.mockapi.io/api/v1/name/testing2');
-        const data = await response.json();
-        delete data[data.length-1].id
-        setTeamData(data[data.length-1])
-      } catch (error) {
-        console.error('Error fetching team data:', error);
-      }
-    };
-    fetchData();
-  }, []);
+  const team: teamData = useLoaderData() as teamData;
+  const [teamData, setTeamData] = useState<teamData | null>(team);
+  console.log(teamData);
 
   const handleEditTeamName = (oldTeamName: string, newTeamName: string) => {
     if (teamData && newTeamName !== null && newTeamName.trim() !== '') {
@@ -42,8 +35,8 @@ export const TeamTable = ({teams}:{teams:any}) : React.ReactNode => {
 
   const handleAddNewUser = (teamName: string) => {
     if (teamData) {
-      const newUnityId = prompt('Enter the Unity ID for the new user');
-      if (newUnityId) {
+      const newEmail = prompt('Enter the Email ID for the new user');
+      if (newEmail) {
         const newUser: User = {
           id: teamData[teamName].length + 1, // Using timestamp as a simple way to generate a unique ID
           unityId: newUnityId,

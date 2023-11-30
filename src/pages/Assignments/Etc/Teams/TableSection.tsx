@@ -1,5 +1,5 @@
 import { ExpendableButton } from "./ExpendableButton";
-import { TableRow } from "./TableRow";
+import { UserRow } from "./UserRow";
 import useOpenController from "../../../../hooks/useOpenController"
 import {FcPlus} from 'react-icons/fc';
 import {GiCrossMark} from 'react-icons/gi';
@@ -34,7 +34,7 @@ export const TableSection = ({handleAddNewUser,handleDeleteUser ,handleDeleteTea
             </button>
           </td>
       </tr>
-      {isOpen && <TableRow handleDeleteUser={handleDeleteUser} personDetails={personDetails} teamName={index}/>}
+      {isOpen && <UserRow handleDeleteUser={handleDeleteUser} personDetails={personDetails} teamName={index}/>}
     </tbody>
   );
 };

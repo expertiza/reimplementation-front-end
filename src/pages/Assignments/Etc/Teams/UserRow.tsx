@@ -1,6 +1,6 @@
 import {GiCrossMark} from 'react-icons/gi';
 
-export const TableRow = ({ teamName,handleDeleteUser,personDetails }:{ teamName: any,handleDeleteUser: any,personDetails: any }) => {
+export const UserRow = ({ teamName,handleDeleteUser,personDetails }:{ teamName: any,handleDeleteUser: any,personDetails: any }) => {
   return (
     <>
     <tr>
@@ -13,7 +13,7 @@ export const TableRow = ({ teamName,handleDeleteUser,personDetails }:{ teamName:
       <tr key={id}>
         <td style={{paddingLeft:'20px'}}>{id+1}</td>
         <td></td>
-        <td>{person.unityId}</td>
+        <td>{person.name}</td>
         <td>
         <button onClick={() => handleDeleteUser(teamName, person.id)}>
               <GiCrossMark color="red" size={20}/>
