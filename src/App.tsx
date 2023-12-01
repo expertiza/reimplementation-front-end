@@ -18,6 +18,9 @@ import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
 
+import Assignment from './pages/Assignments/Assignment'
+
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -28,6 +31,10 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        {
+          path: "assignments",
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />, // Adjust as needed
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
