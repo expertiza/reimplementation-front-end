@@ -118,7 +118,7 @@ function Courses() {
   };
 
   const handleDelete_inner = (index) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this action?");
+    const isConfirmed = window.confirm("Are you sure you want to delete this assignment?");
     
     if (isConfirmed) {
       const updatedData = [...innerrowData];
@@ -143,6 +143,19 @@ function Courses() {
 
   const handleCopy = (rowData) => {
     console.log("Copy row:", rowData);
+    const copiedRowData = tableData[rowData];
+    const updatedTableData = [...tableData];
+    updatedTableData.splice(rowData + 1, 0, [...copiedRowData]);
+    setTableData(updatedTableData);
+  };
+
+  const handleCopy_inner = (rowData) => {
+    console.log("Copy row:", rowData);
+    const rowIndex = innerrowData.findIndex((row) => row === rowData);
+    const copiedRowData = innerrowData[rowIndex];
+    const updatedTableData = [...innerrowData];
+    updatedTableData.splice(rowIndex + 1, 0, [...copiedRowData]);
+    setinnerrowData(updatedTableData);
   };
 
   const action_inner = (rowData) => [
@@ -188,7 +201,7 @@ function Courses() {
           backgroundColor: 'white',
           border: 'none',
         }}
-        onClick={() => handleCopy(rowData)}
+        onClick={() => handleCopy_inner(rowData)}
       >
         <img
           src="/assets/icons/copy.png"
