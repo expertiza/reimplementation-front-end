@@ -227,7 +227,21 @@ function Courses() {
         <img src="/assets/icons/copy.png" alt="Copy" style={{ width: "20px", height: "20px" }} />
       </Button>
     </Tooltip>,
-    <Tooltip key="add-person" title="Add Person">
+    <Tooltip key="remove-from-course" title="Remove From Course">
+    <Button
+      style={{
+        padding: "6px",
+        color: "default",
+        backgroundColor: "white",
+        border: "none",
+      }}
+      onClick={() => handleCopy_inner(rowData)}
+    > 
+      <img src="/assets/icons/book.PNG" alt="Remove From Course" style={{ width: "20px", height: "20px" }} />
+    </Button>
+  </Tooltip>,
+  <br></br>,
+    <Tooltip key="add-participants" title="Add Participants">
       <Button
         style={{
           padding: "6px",
@@ -244,7 +258,24 @@ function Courses() {
         />
       </Button>
     </Tooltip>,
-    <Tooltip key="add-analytics" title="Add Group">
+    <Tooltip key="create-teams" title="Create Teams">
+    <Button
+      style={{
+        padding: "6px",
+        color: "default",
+        backgroundColor: "white",
+        border: "none",
+      }}
+      onClick={() => handleLanguage(rowData)}
+    >
+      <img
+        src="/assets/icons/create-teams-24.png"
+        alt="Create Teams"
+        style={{ width: "20px", height: "20px" }}
+      />
+    </Button>
+  </Tooltip>,
+    <Tooltip key="assign-reviewers" title="Assign Reviewers">
       <Button
         style={{
           padding: "6px",
@@ -255,60 +286,30 @@ function Courses() {
         onClick={() => handleAddGroup(rowData)}
       >
         <img
-          src="/assets/icons/add_analytics.png"
-          alt="Add Analytics"
+          src="/assets/icons/assign-reviewers-24.png"
+          alt="Assign Reviewers"
           style={{ width: "20px", height: "20px" }}
         />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="add-professor" title="Add Professor">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/add_professor.png"
-          alt="Add Professor"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="create-teams" title="Create Teams">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/create-teams-24.png"
-          alt="Create Teams"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="earth" title="Earth">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img src="/assets/icons/earth.png" alt="Earth" style={{ width: "20px", height: "20px" }} />
       </Button>
     </Tooltip>,
     <Tooltip key="view-submission" title="View Submission">
+    <Button
+      style={{
+        padding: "6px",
+        color: "default",
+        backgroundColor: "white",
+        border: "none",
+      }}
+      onClick={() => handleLanguage(rowData)}
+    >
+      <img
+        src="/assets/icons/view-submissions-24.png"
+        alt="View Submission"
+        style={{ width: "20px", height: "20px" }}
+      />
+    </Button>
+  </Tooltip>,
+    <Tooltip key="view-scores" title="View Scores">
       <Button
         style={{
           padding: "6px",
@@ -319,12 +320,27 @@ function Courses() {
         onClick={() => handleLanguage(rowData)}
       >
         <img
-          src="/assets/icons/view-submissions-24.png"
-          alt="View Submission"
+          src="/assets/icons/view-scores-24.png"
+          alt="View Scores"
           style={{ width: "20px", height: "20px" }}
         />
       </Button>
     </Tooltip>,
+    <br></br>,
+    <Tooltip key="view-report" title="View Reports">
+      <Button
+        style={{
+          padding: "6px",
+          color: "default",
+          backgroundColor: "white",
+          border: "none",
+        }}
+        onClick={() => handleLanguage(rowData)}
+      >
+        <img src="/assets/icons/view-review-report-24.png" alt="View Report" style={{ width: "20px", height: "20px" }} />
+      </Button>
+    </Tooltip>,
+    
   ];
 
   const action = (rowData) => [
@@ -526,16 +542,16 @@ function Courses() {
                     <TableCell>
                       <strong>Assignment Name</strong>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="left">
                       <strong>Institution</strong>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="left">
                       <strong>Creation Date</strong>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="left">
                       <strong>Updated Date</strong>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="left">
                       <strong>Actions</strong>
                     </TableCell>
                   </TableRow>
@@ -549,16 +565,16 @@ function Courses() {
                       <TableCell component="th" scope="row">
                         {row[0]} {/* Display Assignment Name */}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="left">
                         {row[1]} {/* Display Institution */}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="left">
                         {row[2]} {/* Display Creation Date */}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="left">
                         {row[3]} {/* Display Updated Date */}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="left">
                         {action_inner(row, index)}{" "}
                         {/* Pass the entire row data to the action function */}
                       </TableCell>
