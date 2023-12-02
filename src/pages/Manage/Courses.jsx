@@ -1,15 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import MUIDataTable from "mui-datatables";
 import { BsHouseAddFill } from "react-icons/bs";
-import {
-  Table,
-  TableContainer,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper,
-} from "@mui/material";
+import {Table,TableContainer,TableHead,TableBody,TableRow,TableCell,Paper,} from "@mui/material";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -156,7 +148,7 @@ function Courses() {
   const action_inner = (rowData, index) => [
     <CustomTooltip
       key="edit"
-      title="Edit Course"
+      title="Edit"
       handler={handleInnerEdit}
       rowData={rowData}
       index={index}
@@ -164,14 +156,14 @@ function Courses() {
     />,
     <CustomTooltip
       key="delete"
-      title="Delete Course"
+      title="Delete"
       handler={handleDelete_inner}
       rowData={rowData}
       src="/assets/icons/delete.png"
     />,
     <CustomTooltip
       key="copy"
-      title="Copy Course"
+      title="Copy"
       handler={handleCopy_inner}
       rowData={rowData}
       src="/assets/icons/copy.png"
