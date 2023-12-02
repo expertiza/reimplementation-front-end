@@ -31,7 +31,7 @@ const Courses = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/users/${auth.course.id}/managed` });
+    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses/${auth.course.id}/managed` });
   }, [fetchCourses, location, showDeleteConfirmation.visible, auth.course.id]);
 
   // Error alert
@@ -41,7 +41,7 @@ const Courses = () => {
     }
   }, [error, dispatch]);
 
-  const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteCourseHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),

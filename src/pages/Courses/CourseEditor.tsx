@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import { emailOptions, IUserFormValues, transformUserRequest } from "./userUtil";
+import { emailOptions, ICourseFormValues, transformCourseRequest } from "./CourseUtil";
 import { Form, Formik, FormikHelpers } from "formik";
 import { Button, Col, InputGroup, Modal, Row } from "react-bootstrap";
 import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
 import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux"; 
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "hooks/useAPI";
@@ -18,22 +18,20 @@ import { RootState } from "../../store/store";
  * @author Ankur Mundra on April, 2023
  */
 
-const initialValues: IUserFormValues = {
+const initialValues: ICourseFormValues = {
   name: "",
-  email: "",
-  firstName: "",
-  lastName: "",
-  role_id: -1,
-  institution_id: -1,
-  emailPreferences: [],
+  direcotry: "",
+  creator: "",
+  instructor: "",
+  Creation: "",
+  updated: "",
 };
 
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
-    .matches(/^[a-z]+$/, "Username must be in lowercase")
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be at most 20 characters"),
+    .min(3, "Course name must be at least 3 characters")
+    .max(20, "Course name must be at most 20 characters"),
   email: Yup.string().required("Required").email("Invalid email format"),
   firstName: Yup.string().required("Required").nonNullable(),
   lastName: Yup.string().required("Required").nonNullable(),
@@ -42,69 +40,69 @@ const validationSchema = Yup.object({
 });
 
 const UserEditor: React.FC<IEditor> = ({ mode }) => {
-  const { data: userResponse, error: userError, sendRequest } = useAPI();
+  const { data: courseResponse, error: courseError, sendRequest } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  const { userData, roles, institutions }: any = useLoaderData();
+  const { courseData, roles, institutions }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   // logged-in user is the parent of the user being created and the institution is the same as the parent's
-  initialValues.parent_id = auth.user.id;
-  initialValues.institution_id = auth.user.institution_id;
+  initialValues.parent_id = auth.course.id;
+  initialValues.institution_id = auth.course.institution_id;
 
   // Close the modal if the user is updated successfully and navigate to the users page
   useEffect(() => {
-    if (userResponse && userResponse.status >= 200 && userResponse.status < 300) {
+    if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} ${mode}d successfully!`,
+          message: `User ${courseData.name} ${mode}d successfully!`,
         })
       );
       navigate(location.state?.from ? location.state.from : "/users");
     }
-  }, [dispatch, mode, navigate, userData.name, userResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, courseData.name, courseResponse, location.state?.from]);
 
   // Show the error message if the user is not updated successfully
   useEffect(() => {
-    userError && dispatch(alertActions.showAlert({ variant: "danger", message: userError }));
-  }, [userError, dispatch]);
+    courseError && dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
+  }, [courseError, dispatch]);
 
-  const onSubmit = (values: IUserFormValues, submitProps: FormikHelpers<IUserFormValues>) => {
+  const onSubmit = (values: ICourseFormValues, submitProps: FormikHelpers<ICourseFormValues>) => {
     let method: HttpMethod = HttpMethod.POST;
-    let url: string = "/users";
+    let url: string = "/courses";
 
     if (mode === "update") {
-      url = `/users/${values.id}`;
+      url = `/courses/${values.id}`;
       method = HttpMethod.PATCH;
     }
 
     // to be used to display message when user is created
-    userData.name = values.name;
+    courseData.name = values.name;
     sendRequest({
       url: url,
       method: method,
       data: values,
-      transformRequest: transformUserRequest,
+      transformRequest: transformCourseRequest,
     });
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : "/users");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update User" : "Create User"}</Modal.Title>
+        <Modal.Title>{mode === "update" ? "Update User" : "Create Course"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {userError && <p className="text-danger">{userError}</p>}
+        {courseError && <p className="text-danger">{courseError}</p>}
         <Formik
-          initialValues={mode === "update" ? userData : initialValues}
+          initialValues={mode === "update" ? courseData : initialValues}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
           validateOnChange={false}
@@ -166,7 +164,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update User" : "Create User"}
+                    {mode === "update" ? "Update Course" : "Create Course"}
                   </Button>
                 </Modal.Footer>
               </Form>
@@ -178,4 +176,4 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
   );
 };
 
-export default UserEditor;
+export default CourseEditor;
