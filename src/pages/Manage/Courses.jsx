@@ -43,6 +43,12 @@ function Courses() {
     ],
   ]);
 
+  const [innerrowData, setinnerrowData] = useState([
+    ["Final project (and design doc)", "-", "2023-11-10", "2023-11-10"],
+    ["Design exercise", "-", "2023-10-05", "2023-10-06"],
+    ["OSS Project and documentation", "-", "2023-09-30", "2023-09-30"],
+  ]);
+
   const [showModal, setShowModal] = useState(false);
   const [editRowData, setEditRowData] = useState({});
   const [editedData, setEditedData] = useState({});
@@ -75,6 +81,7 @@ function Courses() {
       },
     });
   const handleEdit = (rowData) => {
+    console.log(rowData)
     setShowModal(true);
     setEditRowData(tableData[rowData]);
     setEditedRowIndex(rowData);
@@ -104,8 +111,21 @@ function Courses() {
 
     if (isConfirmed) {
       const updatedData = [...tableData];
+      console.log(updatedData)
       updatedData.splice(index, 1);
       setTableData(updatedData);
+    }
+  };
+
+  const handleDelete_inner = (index) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this action?");
+    
+    if (isConfirmed) {
+      const updatedData = [...innerrowData];
+      console.log(updatedData)
+      updatedData.splice(index, 1);
+      console.log(updatedData)
+      setinnerrowData(updatedData);
     }
   };
 
@@ -124,6 +144,163 @@ function Courses() {
   const handleCopy = (rowData) => {
     console.log("Copy row:", rowData);
   };
+
+  const action_inner = (rowData) => [
+    <Tooltip key="edit" title="Edit Course">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleEdit(rowData)}
+      >
+        <img
+          src="/assets/icons/edit.png"
+          alt="Edit"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+    <Tooltip key="delete" title="Delete Course">
+    <Button
+      style={{
+        padding: '6px',
+        color: 'default',
+        backgroundColor: 'white',
+        border: 'none',
+      }}
+      onClick={() => handleDelete_inner(rowData)}
+    >
+      <img
+        src="/assets/icons/delete.png"
+        alt="Delete"
+        style={{ width: '20px', height: '20px' }}
+      />
+    </Button>
+  </Tooltip>,
+    <Tooltip key="copy" title="Copy Course">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleCopy(rowData)}
+      >
+        <img
+          src="/assets/icons/copy.png"
+          alt="Copy"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+    <Tooltip key="add-person" title="Add Person">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleAddPerson(rowData)}
+      >
+        <img
+          src="/assets/icons/add-participant-24.png"
+          alt="Add Person"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+    <Tooltip key="add-analytics" title="Add Group">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleAddGroup(rowData)}
+      >
+        <img
+          src="/assets/icons/add_analytics.png"
+          alt="Add Analytics"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+    <Tooltip key="add-professor" title="Add Professor">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleLanguage(rowData)}
+      >
+        <img
+          src="/assets/icons/add_professor.png"
+          alt="Add Professor"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+    <Tooltip key="create-teams" title="Create Teams">
+    <Button
+      style={{
+        padding: '6px',
+        color: 'default',
+        backgroundColor: 'white',
+        border: 'none',
+      }}
+      onClick={() => handleLanguage(rowData)}
+    >
+      <img
+        src="/assets/icons/create-teams-24.png"
+        alt="Create Teams"
+        style={{ width: '20px', height: '20px' }}
+      />
+    </Button>
+  </Tooltip>,
+  <Tooltip key="earth" title="Earth">
+  <Button
+    style={{
+      padding: '6px',
+      color: 'default',
+      backgroundColor: 'white',
+      border: 'none',
+    }}
+    onClick={() => handleLanguage(rowData)}
+  >
+    <img
+      src="/assets/icons/earth.png"
+      alt="Earth"
+      style={{ width: '20px', height: '20px' }}
+    />
+  </Button>
+</Tooltip>,
+<Tooltip key="view-submission" title="View Submission">
+      <Button
+        style={{
+          padding: '6px',
+          color: 'default',
+          backgroundColor: 'white',
+          border: 'none',
+        }}
+        onClick={() => handleLanguage(rowData)}
+      >
+        <img
+          src="/assets/icons/view-submissions-24.png"
+          alt="View Submission"
+          style={{ width: '20px', height: '20px' }}
+        />
+      </Button>
+    </Tooltip>,
+  ];
+
 
   const action = (rowData) => [
     <Tooltip key="edit" title="Edit Course">
@@ -268,15 +445,18 @@ function Courses() {
       </Button>
     </Tooltip>,
   ];
-  function createData(name, institution, creation_date, updated_date, action) {
-    return { name, institution, creation_date, updated_date, action };
-  }
 
-  const rows = [
-    createData("Final project (and design doc)", "-", "2023-11-10", "2023-11-10", action),
-    createData("Design exercise", "-", "2023-10-05", "2023-10-06", action),
-    createData("OSS Project and documentation", "-", "2023-09-30", "2023-09-30", action),
-  ];
+
+  // function createData(name, institution, creation_date, updated_date, action) {
+  //   return { name, institution, creation_date, updated_date, action };
+  // }
+
+  // const rows = [
+  //   createData("Final project (and design doc)", "-", "2023-11-10", "2023-11-10", action_inner),
+  //   createData("Design exercise", "-", "2023-10-05", "2023-10-06", action_inner),
+  //   createData("OSS Project and documentation", "-", "2023-09-30", "2023-09-30", action_inner),
+  // ]; 
+
   const columns = [
     {
       name: "Name",
@@ -336,19 +516,22 @@ function Courses() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row, index) => (
-                    <TableRow
-                      key={row.name}
-                      style={{ backgroundColor: index % 2 === 0 ? "white" : "#f9f9f9" }}
-                    >
+                  {innerrowData.map((row, index) => (
+                    <TableRow key={index} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9' }}>
                       <TableCell component="th" scope="row">
-                        {row.name}
+                        {row[0]} {/* Display Assignment Name */}
                       </TableCell>
-                      <TableCell align="right">{row.institution}</TableCell>
-                      <TableCell align="right">{row.creation_date}</TableCell>
-                      <TableCell align="right">{row.updated_date}</TableCell>
                       <TableCell align="right">
-                        {action(row)} {/* Pass the row data to the action function */}
+                        {row[1]} {/* Display Institution */}
+                      </TableCell>
+                      <TableCell align="right">
+                        {row[2]} {/* Display Creation Date */}
+                      </TableCell>
+                      <TableCell align="right">
+                        {row[3]} {/* Display Updated Date */}
+                      </TableCell>
+                      <TableCell align="right">
+                        {action_inner(row)} {/* Pass the entire row data to the action function */}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -360,6 +543,7 @@ function Courses() {
       );
     },
   };
+
 
   return (
     <>
