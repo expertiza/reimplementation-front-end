@@ -10,10 +10,10 @@ import {
   TableCell,
   Paper,
 } from "@mui/material";
-import Tooltip from "@mui/material/Tooltip";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CustomTooltip from "./utils/Tooltip";
 import EditModal from "./utils/Modal";
 
 function Courses() {
@@ -184,319 +184,150 @@ function Courses() {
   };
 
   const action_inner = (rowData, index) => [
-    <Tooltip key="edit" title="Edit Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleInnerEdit(rowData, index)}
-      >
-        <img src="/assets/icons/edit.png" alt="Edit" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="delete" title="Delete Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleDelete_inner(rowData)}
-      >
-        <img
-          src="/assets/icons/delete.png"
-          alt="Delete"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="copy" title="Copy Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleCopy_inner(rowData)}
-      >
-        <img src="/assets/icons/copy.png" alt="Copy" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="remove-from-course" title="Remove From Course">
-    <Button
-      style={{
-        padding: "6px",
-        color: "default",
-        backgroundColor: "white",
-        border: "none",
-      }}
-      onClick={() => handleCopy_inner(rowData)}
-    > 
-      <img src="/assets/icons/book.PNG" alt="Remove From Course" style={{ width: "20px", height: "20px" }} />
-    </Button>
-  </Tooltip>,
-  <br></br>,
-    <Tooltip key="add-participants" title="Add Participants">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleAddPerson(rowData)}
-      >
-        <img
-          src="/assets/icons/add-participant-24.png"
-          alt="Add Person"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="create-teams" title="Create Teams">
-    <Button
-      style={{
-        padding: "6px",
-        color: "default",
-        backgroundColor: "white",
-        border: "none",
-      }}
-      onClick={() => handleLanguage(rowData)}
-    >
-      <img
-        src="/assets/icons/create-teams-24.png"
-        alt="Create Teams"
-        style={{ width: "20px", height: "20px" }}
-      />
-    </Button>
-  </Tooltip>,
-    <Tooltip key="assign-reviewers" title="Assign Reviewers">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleAddGroup(rowData)}
-      >
-        <img
-          src="/assets/icons/assign-reviewers-24.png"
-          alt="Assign Reviewers"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="view-submission" title="View Submission">
-    <Button
-      style={{
-        padding: "6px",
-        color: "default",
-        backgroundColor: "white",
-        border: "none",
-      }}
-      onClick={() => handleLanguage(rowData)}
-    >
-      <img
-        src="/assets/icons/view-submissions-24.png"
-        alt="View Submission"
-        style={{ width: "20px", height: "20px" }}
-      />
-    </Button>
-  </Tooltip>,
-    <Tooltip key="view-scores" title="View Scores">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/view-scores-24.png"
-          alt="View Scores"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <br></br>,
-    <Tooltip key="view-report" title="View Reports">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img src="/assets/icons/view-review-report-24.png" alt="View Report" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    
+    <CustomTooltip
+      key="edit"
+      title="Edit Course"
+      handler={handleInnerEdit}
+      rowData={rowData}
+      index={index}
+      src="/assets/icons/edit.png"
+    />,
+    <CustomTooltip
+      key="delete"
+      title="Delete Course"
+      handler={handleDelete_inner}
+      rowData={rowData}
+      src="/assets/icons/delete.png"
+    />,
+    <CustomTooltip
+      key="copy"
+      title="Copy Course"
+      handler={handleCopy_inner}
+      rowData={rowData}
+      src="/assets/icons/copy.png"
+    />,
+    <CustomTooltip
+      key="remove-from-course"
+      title="Remove From Course"
+      handler={handleCopy_inner}
+      rowData={rowData}
+      src="/assets/icons/book.PNG"
+    />,
+    <br />,
+    <CustomTooltip
+      key="add-participants"
+      title="Add Participants"
+      handler={handleAddPerson}
+      rowData={rowData}
+      src="/assets/icons/add-participant-24.png"
+    />,
+    <CustomTooltip
+      key="create-teams"
+      title="Create Teams"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/create-teams-24.png"
+    />,
+    <CustomTooltip
+      key="assign-reviewers"
+      title="Assign Reviewers"
+      handler={handleAddGroup}
+      rowData={rowData}
+      src="/assets/icons/assign-reviewers-24.png"
+    />,
+    <CustomTooltip
+      key="view-submission"
+      title="View Submission"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/view-submissions-24.png"
+    />,
+    <CustomTooltip
+      key="view-scores"
+      title="View Scores"
+      handler={handleLanguage}
+      rowData={rowData}
+      index={index}
+      src="/assets/icons/view-scores-24.png"
+    />,
+    <br />,
+    <CustomTooltip
+      key="view-report"
+      title="View Reports"
+      handler={handleLanguage}
+      rowData={rowData}
+      index={index}
+      src="/assets/icons/view-review-report-24.png"
+    />,
   ];
 
   const action = (rowData) => [
-    <Tooltip key="edit" title="Edit Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleEdit(rowData)}
-      >
-        <img src="/assets/icons/edit.png" alt="Edit" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="delete" title="Delete Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleDelete(rowData)}
-      >
-        <img
-          src="/assets/icons/delete.png"
-          alt="Delete"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="copy" title="Copy Course">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleCopy(rowData)}
-      >
-        <img src="/assets/icons/copy.png" alt="Copy" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    <br></br>,
-    <Tooltip key="add-ta" title="Add TA">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleAddPerson(rowData)}
-      >
-        <img
-          src="/assets/icons/add_professor.png"
-          alt="Add TA"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="create-assignment" title="Create Assignment">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleAddGroup(rowData)}
-      >
-        <img
-          src="/assets/icons/add_analytics.png"
-          alt="Create Assignment"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="add-participants" title="Add Participant">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/add-participant-24.png"
-          alt="Add Participant"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="create-teams" title="Create Teams">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/create-teams-24.png"
-          alt="Create Teams"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="view-grade-summary" title="View Grade Summary">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img src="/assets/icons/earth.png" alt="Earth" style={{ width: "20px", height: "20px" }} />
-      </Button>
-    </Tooltip>,
-    <Tooltip key="view-aggregated-teammate-and-mentor-review" title="View Aggregated Teammate And Mentor Review">
-      <Button
-        style={{
-          padding: "6px",
-          color: "default",
-          backgroundColor: "white",
-          border: "none",
-        }}
-        onClick={() => handleLanguage(rowData)}
-      >
-        <img
-          src="/assets/icons/view-submissions-24.png"
-          alt="View Aggregated Teammate And Mentor Review"
-          style={{ width: "20px", height: "20px" }}
-        />
-      </Button>
-    </Tooltip>,
+    <CustomTooltip
+      key="edit"
+      title="Edit Course"
+      handler={handleEdit}
+      rowData={rowData}
+      index={index}
+      src="/assets/icons/edit.png"
+    />,
+    <CustomTooltip
+      key="delete"
+      title="Delete Course"
+      handler={handleDelete}
+      rowData={rowData}
+      src="/assets/icons/delete.png"
+    />,
+    <CustomTooltip
+      key="copy"
+      title="Copy Course"
+      handler={handleCopy}
+      rowData={rowData}
+      src="/assets/icons/copy.png"
+    />,
+    <br />,
+    <CustomTooltip
+      key="add-ta"
+      title="Add TA"
+      handler={handleAddPerson}
+      rowData={rowData}
+      src="/assets/icons/add_professor.png"
+    />,
+    <CustomTooltip
+      key="create-assignment"
+      title="Create Assignment"
+      handler={handleAddGroup}
+      rowData={rowData}
+      src="/assets/icons/add_analytics.png"
+    />,
+    <CustomTooltip
+      key="add-participants"
+      title="Add Participant"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/add-participant-24.png"
+    />,
+    <CustomTooltip
+      key="create-teams"
+      title="Create Teams"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/create-teams-24.png"
+    />,
+    <CustomTooltip
+      key="view-grade-summary"
+      title="View Grade Summary"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/earth.png"
+    />,
+    <CustomTooltip
+      key="view-aggregated-teammate-and-mentor-review"
+      title="View Aggregated Teammate And Mentor Review"
+      handler={handleLanguage}
+      rowData={rowData}
+      src="/assets/icons/view-submissions-24.png"
+    />,
   ];
-
-  // function createData(name, institution, creation_date, updated_date, action) {
-  //   return { name, institution, creation_date, updated_date, action };
-  // }
-
-  // const rows = [
-  //   createData("Final project (and design doc)", "-", "2023-11-10", "2023-11-10", action_inner),
-  //   createData("Design exercise", "-", "2023-10-05", "2023-10-06", action_inner),
-  //   createData("OSS Project and documentation", "-", "2023-09-30", "2023-09-30", action_inner),
-  // ];
 
   const columns = [
     {
@@ -563,21 +394,12 @@ function Courses() {
                       style={{ backgroundColor: index % 2 === 0 ? "white" : "#f9f9f9" }}
                     >
                       <TableCell component="th" scope="row">
-                        {row[0]} {/* Display Assignment Name */}
+                        {row[0]}
                       </TableCell>
-                      <TableCell align="left">
-                        {row[1]} {/* Display Institution */}
-                      </TableCell>
-                      <TableCell align="left">
-                        {row[2]} {/* Display Creation Date */}
-                      </TableCell>
-                      <TableCell align="left">
-                        {row[3]} {/* Display Updated Date */}
-                      </TableCell>
-                      <TableCell align="left">
-                        {action_inner(row, index)}{" "}
-                        {/* Pass the entire row data to the action function */}
-                      </TableCell>
+                      <TableCell align="left">{row[1]}</TableCell>
+                      <TableCell align="left">{row[2]}</TableCell>
+                      <TableCell align="left">{row[3]}</TableCell>
+                      <TableCell align="left">{action_inner(row, index)} </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -620,60 +442,6 @@ function Courses() {
         handleInputChange={handleInnerInputChange}
         editRowData={editInnerRowData}
       />
-      {/* <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Row</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="name">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter Name"
-                defaultValue={editRowData[0]}
-                onChange={(e) => handleInputChange(e, 0)}
-              />
-            </Form.Group>
-            <Form.Group controlId="institution">
-              <Form.Label>Institution</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter Institution"
-                defaultValue={editRowData[1]}
-                onChange={(e) => handleInputChange(e, 1)}
-              />
-            </Form.Group>
-            <Form.Group controlId="creationDate">
-              <Form.Label>Creation Date</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter Creation Date"
-                defaultValue={editRowData[2]}
-                onChange={(e) => handleInputChange(e, 2)}
-              />
-            </Form.Group>
-            <Form.Group controlId="updatedDate">
-              <Form.Label>Updated Date</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter Updated Date"
-                defaultValue={editRowData[3]}
-                onChange={(e) => handleInputChange(e, 3)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSaveEdit}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal> */}
       <center style={{ padding: "20px" }}>
         <ThemeProvider theme={getMuiTheme()}>
           <MUIDataTable data={tableData} columns={columns} options={options} />
