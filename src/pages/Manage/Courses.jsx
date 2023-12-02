@@ -371,7 +371,8 @@ function Courses() {
         <img src="/assets/icons/copy.png" alt="Copy" style={{ width: "20px", height: "20px" }} />
       </Button>
     </Tooltip>,
-    <Tooltip key="add-person" title="Add Person">
+    <br></br>,
+    <Tooltip key="add-ta" title="Add TA">
       <Button
         style={{
           padding: "6px",
@@ -382,13 +383,13 @@ function Courses() {
         onClick={() => handleAddPerson(rowData)}
       >
         <img
-          src="/assets/icons/add-participant-24.png"
-          alt="Add Person"
+          src="/assets/icons/add_professor.png"
+          alt="Add TA"
           style={{ width: "20px", height: "20px" }}
         />
       </Button>
     </Tooltip>,
-    <Tooltip key="add-analytics" title="Add Group">
+    <Tooltip key="create-assignment" title="Create Assignment">
       <Button
         style={{
           padding: "6px",
@@ -400,12 +401,12 @@ function Courses() {
       >
         <img
           src="/assets/icons/add_analytics.png"
-          alt="Add Analytics"
+          alt="Create Assignment"
           style={{ width: "20px", height: "20px" }}
         />
       </Button>
     </Tooltip>,
-    <Tooltip key="add-professor" title="Add Professor">
+    <Tooltip key="add-participants" title="Add Participant">
       <Button
         style={{
           padding: "6px",
@@ -416,8 +417,8 @@ function Courses() {
         onClick={() => handleLanguage(rowData)}
       >
         <img
-          src="/assets/icons/add_professor.png"
-          alt="Add Professor"
+          src="/assets/icons/add-participant-24.png"
+          alt="Add Participant"
           style={{ width: "20px", height: "20px" }}
         />
       </Button>
@@ -439,7 +440,7 @@ function Courses() {
         />
       </Button>
     </Tooltip>,
-    <Tooltip key="earth" title="Earth">
+    <Tooltip key="view-grade-summary" title="View Grade Summary">
       <Button
         style={{
           padding: "6px",
@@ -452,7 +453,7 @@ function Courses() {
         <img src="/assets/icons/earth.png" alt="Earth" style={{ width: "20px", height: "20px" }} />
       </Button>
     </Tooltip>,
-    <Tooltip key="view-submission" title="View Submission">
+    <Tooltip key="view-aggregated-teammate-and-mentor-review" title="View Aggregated Teammate And Mentor Review">
       <Button
         style={{
           padding: "6px",
@@ -464,7 +465,7 @@ function Courses() {
       >
         <img
           src="/assets/icons/view-submissions-24.png"
-          alt="View Submission"
+          alt="View Aggregated Teammate And Mentor Review"
           style={{ width: "20px", height: "20px" }}
         />
       </Button>
