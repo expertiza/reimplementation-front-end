@@ -91,10 +91,13 @@ function Courses() {
   };
 
   const handleDelete = (index) => {
-    const updatedData = [...tableData];
-    console.log('Add updatedData:', updatedData);
-    updatedData.splice(index, 1);
-    setTableData(updatedData);
+    const isConfirmed = window.confirm("Are you sure you want to delete this course?");
+    
+    if (isConfirmed) {
+      const updatedData = [...tableData];
+      updatedData.splice(index, 1);
+      setTableData(updatedData);
+    }
   };
 
   const handleAddPerson = (rowData) => {
@@ -337,17 +340,19 @@ function Courses() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                {rows.map((row, index) => (
-                      <TableRow key={row.name} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9' }}>
-                        <TableCell component="th" scope="row">
-                          {row.name}
-                        </TableCell>
-                        <TableCell align="right">{row.institution}</TableCell>
-                        <TableCell align="right">{row.creation_date}</TableCell>
-                        <TableCell align="right">{row.updated_date}</TableCell>
-                        <TableCell align="right">{row.action}</TableCell>
-                      </TableRow>
-                    ))}
+                  {rows.map((row, index) => (
+                    <TableRow key={row.name} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9' }}>
+                      <TableCell component="th" scope="row">
+                        {row.name}
+                      </TableCell>
+                      <TableCell align="right">{row.institution}</TableCell>
+                      <TableCell align="right">{row.creation_date}</TableCell>
+                      <TableCell align="right">{row.updated_date}</TableCell>
+                      <TableCell align="right">
+                        {action(row)} {/* Pass the row data to the action function */}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
