@@ -1,18 +1,15 @@
-import React, { useEffect } from "react";
-import { emailOptions, ITAFormValues, transformTARequest } from "./TAUtil";
-import { Form, Formik, FormikHelpers } from "formik";
-import { Button, Col, InputGroup, Modal, Row } from "react-bootstrap";
-import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
 import FormInput from "components/Form/FormInput";
-import FormSelect from "components/Form/FormSelect";
-import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { HttpMethod } from "utils/httpMethods";
+import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
+import React, { useEffect } from "react";
+import { Button, InputGroup, Modal } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
+import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
-import { IEditor, ROLE } from "../../utils/interfaces";
-import { RootState } from "../../store/store";
+import { IEditor } from "../../utils/interfaces";
+import { ITAFormValues, transformTARequest } from "./TAUtil";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -20,41 +17,21 @@ import { RootState } from "../../store/store";
 
 const initialValues: ITAFormValues = {
   name: "",
-  email: "",
-  firstName: "",
-  lastName: "",
-  role_id: -1,
-  institution_id: -1,
-  emailPreferences: [],
 };
 
 const validationSchema = Yup.object({
-  name: Yup.string()
-    .required("Required")
-    .matches(/^[a-z]+$/, "TAname must be in lowercase")
-    .min(3, "TAname must be at least 3 characters")
-    .max(20, "TAname must be at most 20 characters"),
-  email: Yup.string().required("Required").email("Invalid email format"),
-  firstName: Yup.string().required("Required").nonNullable(),
-  lastName: Yup.string().required("Required").nonNullable(),
-  role_id: Yup.string().required("Required").nonNullable(),
-  institution_id: Yup.string().required("Required").nonNullable(),
+  name: Yup.string().required("Required").nonNullable(),
 });
 
 const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: TAResponse, error: TAError, sendRequest } = useAPI();
-  const auth = useSelector(
-    (state: RootState) => state.authentication,
-    (prev, next) => prev.isAuthenticated === next.isAuthenticated
-  );
-  const { TAData, roles, institutions }: any = useLoaderData();
+  const TAData = { ...initialValues };
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams();
 
   // logged-in TA is the parent of the TA being created and the institution is the same as the parent's
-  initialValues.parent_id = auth.user.id;
-  initialValues.institution_id = auth.user.institution_id;
 
   // Close the modal if the TA is updated successfully and navigate to the TAs page
   useEffect(() => {
@@ -76,12 +53,11 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
 
   const onSubmit = (values: ITAFormValues, submitProps: FormikHelpers<ITAFormValues>) => {
     let method: HttpMethod = HttpMethod.POST;
-    let url: string = "/TAs";
-
-    if (mode === "update") {
-      url = `/TAs/${values.id}`;
-      method = HttpMethod.PATCH;
-    }
+    const { courseId } = params;
+    // ToDo: Need to create API in the backend for this call. 
+    // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed. 
+    // Currently we send the username of the user we want to add as the TA for the course.
+    let url: string = `/courses/${courseId}/add_ta`;
 
     // to be used to display message when TA is created
     TAData.name = values.name;
@@ -94,17 +70,17 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : "/TAs");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update TA" : "Create TA"}</Modal.Title>
+        <Modal.Title>Create TA</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {TAError && <p className="text-danger">{TAError}</p>}
         <Formik
-          initialValues={mode === "update" ? TAData : initialValues}
+          initialValues={initialValues}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
           validateOnChange={false}
@@ -113,47 +89,13 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormSelect
-                  controlId="TA-role"
-                  name="role_id"
-                  options={roles}
-                  inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
-                />
                 <FormInput
                   controlId="TA-name"
-                  label="TAname"
+                  label="Teaching Assistant Name"
                   name="name"
                   disabled={mode === "update"}
-                  inputGroupPrepend={<InputGroup.Text id="TA-name-prep">@</InputGroup.Text>}
-                />
-                <Row>
-                  <FormInput
-                    as={Col}
-                    controlId="TA-first-name"
-                    label="First name"
-                    name="firstName"
-                  />
-                  <FormInput
-                    as={Col}
-                    controlId="TA-last-name"
-                    label="Last name"
-                    name="lastName"
-                  />
-                </Row>
-                <FormInput controlId="TA-email" label="Email" name="email" />
-                <FormCheckBoxGroup
-                  controlId="email-pref"
-                  label="Email Preferences"
-                  name="emailPreferences"
-                  options={emailOptions}
-                />
-                <FormSelect
-                  controlId="TA-institution"
-                  name="institution_id"
-                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
-                  options={institutions}
                   inputGroupPrepend={
-                    <InputGroup.Text id="TA-inst-prep">Institution</InputGroup.Text>
+                    <InputGroup.Text id="TA-name-prep">Enter a user login</InputGroup.Text>
                   }
                 />
                 <Modal.Footer>
@@ -166,7 +108,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update TA" : "Create TA"}
+                    {"Create TA"}
                   </Button>
                 </Modal.Footer>
               </Form>

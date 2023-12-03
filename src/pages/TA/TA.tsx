@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { TAColumns as TA_COLUMNS } from "./TAColumns";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
-import DeleteTA from "./TADelete";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
-import { ITAResponse, ROLE } from "../../utils/interfaces";
+import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
+import { ITAResponse, ROLE } from "../../utils/interfaces";
+import { TAColumns as TA_COLUMNS } from "./TAColumns";
+import DeleteTA from "./TADelete";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -24,6 +24,7 @@ const TAs = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const params = useParams();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -31,8 +32,10 @@ const TAs = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchTAs({ url: `/TAs/${auth.user.id}/managed` });
-  }, [fetchTAs, location, showDeleteConfirmation.visible, auth.user.id]);
+    const { courseId } = params;
+    // ToDo: This API in the backend is not working properly needs to be fixed.
+    if (!showDeleteConfirmation.visible) fetchTAs({ url: `/courses/${courseId}/tas` });
+  }, [fetchTAs, location, showDeleteConfirmation.visible, auth.user.id, params]);
 
   // Error alert
   useEffect(() => {
@@ -43,19 +46,14 @@ const TAs = () => {
 
   const onDeleteTAHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
-  const onEditHandle = useCallback(
-    (row: TRow<ITAResponse>) => navigate(`edit/${row.original.id}`),
-    [navigate]
-  );
-
   const onDeleteHandle = useCallback(
     (row: TRow<ITAResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
   const tableColumns = useMemo(
-    () => TA_COLUMNS(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
+    () => TA_COLUMNS(onDeleteHandle),
+    [onDeleteHandle]
   );
 
   const tableData = useMemo(
@@ -63,40 +61,50 @@ const TAs = () => {
     [TAResponse?.data, isLoading]
   );
 
+  const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
+
   return (
-    <>
-      <Outlet />
-      <main>
-        <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
-            <Col className="text-center">
-              <h1>Manage TAs</h1>
-            </Col>
-            <hr />
-          </Row>
-          <Row>
-            <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPersonFillAdd />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <DeleteTA TAData={showDeleteConfirmation.data!} onClose={onDeleteTAHandler} />
-            )}
-          </Row>
-          <Row>
-            <Table
-              data={tableData}
-              columns={tableColumns}
-              columnVisibility={{
-                id: false,
-                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
-              }}
-            />
-          </Row>
-        </Container>
-      </main>
-    </>
+    // Unable to use fullscreen modal with proper size breakdowns since the react-bootstrap version is below 5.
+    // Therefore the max size is at xl.
+    // ToDo: After dependency has been updated do change the size of the Modal.
+    <Modal size="xl" centered show={true} onHide={handleClose} backdrop="static">
+      <Modal.Header closeButton>
+        <Modal.Title>Manage TAs</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Outlet />
+        <main>
+          <Container fluid className="px-md-4">
+            <Row className="mt-md-2 mb-md-2">
+              <Col className="text-center">
+                <h1>Manage TAs</h1>
+              </Col>
+              <hr />
+            </Row>
+            <Row>
+              <Col md={{ span: 1, offset: 11 }}>
+                <Button variant="outline-success" onClick={() => navigate("new")}>
+                  <BsPersonFillAdd />
+                </Button>
+              </Col>
+              {showDeleteConfirmation.visible && (
+                <DeleteTA TAData={showDeleteConfirmation.data!} onClose={onDeleteTAHandler} />
+              )}
+            </Row>
+            <Row>
+              <Table
+                data={tableData}
+                columns={tableColumns}
+                columnVisibility={{
+                  id: false,
+                  institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                }}
+              />
+            </Row>
+          </Container>
+        </main>
+      </Modal.Body>
+    </Modal>
   );
 };
 

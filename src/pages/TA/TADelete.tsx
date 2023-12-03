@@ -1,10 +1,11 @@
-import React, {useEffect, useState} from "react";
-import {Button, Modal} from "react-bootstrap";
-import {useDispatch} from "react-redux";
-import {alertActions} from "store/slices/alertSlice";
-import {HttpMethod} from "utils/httpMethods";
+import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router";
+import { alertActions } from "store/slices/alertSlice";
+import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
-import {ITAResponse as ITA} from "../../utils/interfaces";
+import { ITAResponse as ITA } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -19,10 +20,13 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
   const { data: deletedTA, error: TAError, sendRequest: deleteTA } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
+  const params = useParams();
 
   // Delete TA
-  const deleteHandler = () =>
-    deleteTA({ url: `/TAs/${TAData.id}`, method: HttpMethod.DELETE });
+  const deleteHandler = () => {
+    const { courseId } = params;
+    deleteTA({ url: `/courses/${courseId}/TAs/${TAData.id}`, method: HttpMethod.DELETE });
+  };
 
   // Show error if any
   useEffect(() => {
