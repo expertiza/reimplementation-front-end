@@ -1,25 +1,25 @@
-import React from "react";
-import Home from "pages/Home";
-import RootLayout from "layout/Root";
-import ErrorPage from "./router/ErrorPage";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
-import Users from "./pages/Users/User";
-import UserEditor from "./pages/Users/UserEditor";
-import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
+
+import AdministratorLayout from "./layout/Administrator";
+import Assignment from './pages/Assignments/Assignment'
+import AssignmentEditor from "pages/Assignments/AssignmentEditor";
+import ErrorPage from "./router/ErrorPage";
+import Home from "pages/Home";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
+import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import AdministratorLayout from "./layout/Administrator";
-import NotFound from "./router/NotFound";
-
-import Assignment from './pages/Assignments/Assignment'
-
+import React from "react";
+import RootLayout from "layout/Root";
+import UserEditor from "./pages/Users/UserEditor";
+import Users from "./pages/Users/User";
+import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 
 function App() {
   const router = createBrowserRouter([
@@ -34,6 +34,18 @@ function App() {
         {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />, // Adjust as needed
+          children: [
+            {
+              path: "new",
+              element: <AssignmentEditor mode="create" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+            {
+              path: "edit/:id",
+              element: <AssignmentEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+          ],
         },
         {
           path: "users",
