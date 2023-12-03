@@ -17,6 +17,11 @@ export interface IInstitution {
   name: string;
 }
 
+export interface IInstructor {
+  id?: number;
+  name: string;
+}
+
 export interface IUserResponse {
   id: number;
   name: string;
@@ -75,9 +80,28 @@ export interface ILoggedInUser {
   institution_id: number;
 }
 
-export interface ICourseResponse{}
+export interface ICourseResponse{
+  id: number;
+  name: string;
+  directory_path: string;
+  info: string;
+  private: boolean;
+  created_at: Date;
+  updated_at: Date;
+  institution_id: number;
+  instructor_id: number;
+  institution: { id: number | null; name: string | null };
+  instructor: { id: number | null; name: string | null };
+}
 
-export interface ICourseRequest{}
+export interface ICourseRequest{
+  name: string;
+  directory_path: string;
+  info: string;
+  private: boolean;
+  institution_id: number;
+  instructor_id: number;
+}
 
 export enum ROLE {
   SUPER_ADMIN = "Super Administrator",
