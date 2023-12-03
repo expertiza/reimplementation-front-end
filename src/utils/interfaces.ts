@@ -62,14 +62,6 @@ export interface ITAResponse {
 
 export interface ITARequest {
   name: string;
-  email: string;
-  full_name: string;
-  role_id: number;
-  parent_id?: number | null;
-  institution_id: number;
-  email_on_review?: boolean;
-  email_on_submission?: boolean;
-  email_on_review_of_review?: boolean;
 }
 
 export interface ILoggedInUser {
