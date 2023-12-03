@@ -30,6 +30,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
+  const { courseId } = params;
 
   // logged-in TA is the parent of the TA being created and the institution is the same as the parent's
 
@@ -53,7 +54,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
 
   const onSubmit = (values: ITAFormValues, submitProps: FormikHelpers<ITAFormValues>) => {
     let method: HttpMethod = HttpMethod.POST;
-    const { courseId } = params;
+    
     // ToDo: Need to create API in the backend for this call. 
     // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed. 
     // Currently we send the username of the user we want to add as the TA for the course.
@@ -70,7 +71,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
