@@ -1,4 +1,4 @@
-import { BsFileText, BsPencilFill, BsPersonXFill } from "react-icons/bs";
+import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { Row, createColumnHelper } from "@tanstack/react-table";
 
 import { Button } from "react-bootstrap";
@@ -7,38 +7,21 @@ import { IAssignmentResponse as IAssignment } from "../../utils/interfaces";
 type Fn = (row: Row<IAssignment>) => void;
 const columnHelper = createColumnHelper<IAssignment>();
 export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn) => [
-  columnHelper.accessor("id", {
-    header: "Id",
-    enableColumnFilter: false,
-    enableSorting: false,
+  columnHelper.accessor("name", {
+    header: "Name",
   }),
 
-  columnHelper.accessor("title", {
-    header: "Title",
-    enableSorting: true,
+  columnHelper.accessor("courseName", {
+    header: "Course Name",
   }),
 
-  columnHelper.accessor("description", {
-    header: "Description",
-    enableSorting: true,
-    enableMultiSort: true,
+  columnHelper.accessor("creationDate", {
+    header: "Creation Date",
   }),
 
-  columnHelper.accessor("due_date", {
-    header: "Due Date",
+  columnHelper.accessor("updatedDate", {
+    header: "Updated Date",
   }),
-
-  // Add other assignment-specific columns as needed
-
-  columnHelper.group({
-    id: "assignment_details",
-    header: "Assignment Details",
-    columns: [
-      // Add more assignment-specific columns within this group
-    ],
-  }),
-
- 
 
   columnHelper.display({
     id: "actions",

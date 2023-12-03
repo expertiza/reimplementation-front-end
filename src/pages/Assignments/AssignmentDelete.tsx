@@ -39,12 +39,12 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Assignment ${assignmentData.title} deleted successfully!`,
+          message: `Assignment ${assignmentData.name} deleted successfully!`, // Updated to use 'name'
         })
       );
       onClose();
     }
-  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.title]);
+  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name]); // Updated to use 'name'
 
   const closeHandler = () => {
     setShow(false);
@@ -58,7 +58,7 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete assignment <b>{assignmentData.title}?</b>
+          Are you sure you want to delete assignment <b>{assignmentData.name}?</b> {/* Updated to use 'name' */}
         </p>
       </Modal.Body>
       <Modal.Footer>

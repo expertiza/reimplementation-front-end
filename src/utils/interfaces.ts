@@ -60,11 +60,13 @@ export enum ROLE {
 
 export interface IAssignmentResponse {
   id: number;
-  title: string;
-  description: string;
-  due_date: string; // You may want to use a specific date type instead of string
-  // Add other properties specific to assignments
+  name: string;
+  courseName: string;
+  creationDate: Date; 
+  updatedDate: Date; 
+  
 }
+
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
