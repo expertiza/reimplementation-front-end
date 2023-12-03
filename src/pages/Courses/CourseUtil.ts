@@ -1,45 +1,31 @@
 import { IFormOption } from "components/Form/interfaces";
+import { getPrivilegeFromID, hasAllPrivilegesOf } from "utils/util";
 import axiosClient from "../../utils/axios_client";
-import { IInstitution, IRole, IUserRequest, IUserResponse } from "../../utils/interfaces";
+import { ICourseRequest, ICourseResponse, IInstitution, IInstructor, IUserRequest, ROLE } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
 
-export enum EmailPreference {
-  EMAIL_ON_REVIEW = "email_on_review",
-  EMAIL_ON_SUBMISSION = "email_on_submission",
-  EMAIL_ON_META_REVIEW = "email_on_review_of_review",
+export enum CourseVisibility {
+  PRIVATE = "private",
 }
 
-type PermittedEmailPreferences =
-  | EmailPreference.EMAIL_ON_REVIEW
-  | EmailPreference.EMAIL_ON_SUBMISSION
-  | EmailPreference.EMAIL_ON_META_REVIEW;
+type PermittedCourseVisibility = CourseVisibility.PRIVATE
 
-export interface IUserFormValues {
+export const courseVisibility: IFormOption[] = [
+  { label: "Private Course", value: CourseVisibility.PRIVATE },
+];
+
+export interface ICourseFormValues {
   id?: number;
   name: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role_id: number;
-  parent_id?: number | null;
+  directory: string;
+  info: string;
+  private: Array<PermittedCourseVisibility>;
   institution_id: number;
-  emailPreferences: Array<PermittedEmailPreferences>;
+  instructor_id: number;
 }
-
-export const emailOptions: IFormOption[] = [
-  { label: "When someone else reviews my work", value: EmailPreference.EMAIL_ON_REVIEW },
-  {
-    label: "When someone else submits work I am assigned to review",
-    value: EmailPreference.EMAIL_ON_SUBMISSION,
-  },
-  {
-    label: "When someone else reviews one of my reviews (meta-reviews my work)",
-    value: EmailPreference.EMAIL_ON_META_REVIEW,
-  },
-];
 
 export const transformInstitutionsResponse = (institutionsList: string) => {
   let institutionsData: IFormOption[] = [{ label: "Select an Institution", value: "" }];
@@ -50,75 +36,86 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   return institutionsData;
 };
 
-export const transformRolesResponse = (rolesList: string) => {
-  let rolesData: IFormOption[] = [{ label: "Select a Role", value: "" }];
-  let roles: IRole[] = JSON.parse(rolesList);
-  roles.forEach((role) => rolesData.push({ label: role.name, value: role.id! }));
-  return rolesData;
+export const transformInstructorResponse = (instructorList: string) => {
+  let instructorData: IFormOption[] = [{ label: "Select an Instructor", value: "" }];
+  let instructor: IInstructor[] = JSON.parse(instructorList);
+  instructor.forEach((instructor) =>
+    instructorData.push({ label: instructor.name, value: instructor.id! })
+  );
+  return instructorData;
 };
 
-export const transformUserRequest = (values: IUserFormValues) => {
-  // const parent_id = values.parent_id ? values.parent_id : null;
-  const user: IUserRequest = {
+export const transformCourseRequest = (values: ICourseFormValues) => {
+  const course: ICourseRequest = {
     name: values.name,
-    email: values.email,
-    role_id: values.role_id,
-    parent_id: values.parent_id,
+    directory_path: values.directory,
+    info: values.info,
+    private: values.private.includes(CourseVisibility.PRIVATE),
     institution_id: values.institution_id,
-    full_name: values.lastName + ", " + values.firstName,
-    email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
-    email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
-    email_on_review_of_review: values.emailPreferences.includes(
-      EmailPreference.EMAIL_ON_META_REVIEW
-    ),
+    instructor_id: values.instructor_id,
   };
-  return JSON.stringify(user);
-};
+  return JSON.stringify(course);
+}
 
-export const transformUserResponse = (userResponse: string) => {
-  const user: IUserResponse = JSON.parse(userResponse);
-  const parent_id = user.parent.id ? user.parent.id : null;
-  const institution_id = user.institution.id ? user.institution.id : -1;
-  const userValues: IUserFormValues = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
-    role_id: user.role.id,
-    parent_id: parent_id,
+export const transformCourseResponse = (courseResponse: string) => {
+  const course: ICourseResponse = JSON.parse(courseResponse);
+  console.log(course);
+  const institution_id = course.institution_id ? course.institution_id : -1;
+  const instructor_id = course.instructor_id ? course.instructor_id : -1;
+  const courseValues: ICourseFormValues = {
+    id: course.id,
+    name: course.name,
+    directory: course.directory_path,
+    info: course.info,
     institution_id: institution_id,
-    emailPreferences: [],
-  };
-  if (user.email_on_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
+    instructor_id: instructor_id,
+    private: course.private ? [CourseVisibility.PRIVATE] : []
   }
-  if (user.email_on_submission) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
-  }
-  if (user.email_on_review_of_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
-  }
-  return userValues;
-};
+  return courseValues;
+}
 
-export async function loadUserDataRolesAndInstitutions({ params }: any) {
-  let userData = {};
+export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
+  let courseData = {};
+
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
-    const userResponse = await axiosClient.get(`/users/${params.id}`, {
-      transformResponse: transformUserResponse,
+    const courseResponse = await axiosClient.get(`/courses/${params.id}`, {
+      transformResponse: transformCourseResponse,
     });
-    userData = await userResponse.data;
+    courseData = await courseResponse.data;
   }
+
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
   });
-  const rolesResponse = await axiosClient.get("/roles/subordinate_roles", {
-    transformResponse: transformRolesResponse,
-  });
-
   const institutions = await institutionsResponse.data;
-  const roles = await rolesResponse.data;
-  return { userData, roles, institutions };
+
+  // ToDo: Create an API to just fetch instructors, so here in the frontend we won't have to filter out the users based on the role.
+  const usersResponse = await axiosClient.get("/users", {
+    transformResponse: transformInstructorResponse,
+  });
+  const users = await usersResponse.data;
+  
+  const instructors = users.filter((user: IUserRequest) => !hasAllPrivilegesOf(getPrivilegeFromID(user.role_id), ROLE.TA));
+
+  return { courseData, institutions, instructors }
 }
+
+export const noSpacesSpecialCharsQuotes = (value: string) => {
+  // Check for spaces
+  if (/\s/.test(value)) {
+    return false;
+  }
+
+  // Check for special characters
+  if (/[^a-zA-Z0-9]/.test(value)) {
+    return false;
+  }
+
+  // Check for quotes
+  if (/["']/.test(value)) {
+    return false;
+  }
+
+  return true;
+};

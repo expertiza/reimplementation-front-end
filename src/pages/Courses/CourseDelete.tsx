@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
-import {Button, Modal} from "react-bootstrap";
-import {useDispatch} from "react-redux";
-import {alertActions} from "store/slices/alertSlice";
-import {HttpMethod} from "utils/httpMethods";
+import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { alertActions } from "store/slices/alertSlice";
+import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
-import {ICourseResponse as ICourse} from "../../utils/interfaces";
+import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
  * @author Mrityunjay Joshi on December, 2023
@@ -22,7 +22,7 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
 
   // Delete user
   const deleteHandler = () =>
-    DeleteCourse({ url: `/users/${courseData.id}`, method: HttpMethod.DELETE });
+    DeleteCourse({ url: `/courses/${courseData.id}`, method: HttpMethod.DELETE });
 
   // Show error if any
   useEffect(() => {

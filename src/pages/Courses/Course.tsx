@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
-import DeleteCourse from "./CourseDelete";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
-import { ICourseResponse, ROLE } from "../../utils/interfaces";
+import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
+import { ICourseResponse, ROLE } from "../../utils/interfaces";
+import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
+import DeleteCourse from "./CourseDelete";
 
 /**
  * @author Mrityunjay Joshi on December, 2023
@@ -31,7 +31,8 @@ const Courses = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses/${auth.user.id}/managed` });
+    // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
+    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses` });
   }, [fetchCourses, location, showDeleteConfirmation.visible, auth.user.id]);
 
   // Error alert
@@ -63,6 +64,27 @@ const Courses = () => {
     [CourseResponse?.data, isLoading]
   );
 
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  };
+  
+  const formattedTableData = tableData.map((item: any) => ({
+    ...item,
+    created_at: formatDate(item.created_at),
+    updated_at: formatDate(item.updated_at),
+  }));
+  
+  console.log(formattedTableData);
+
   return (
     <>
       <Outlet />
@@ -86,7 +108,7 @@ const Courses = () => {
           </Row>
           <Row>
             <Table
-              data={tableData}
+              data={formattedTableData}
               columns={tableColumns}
               columnVisibility={{
                 id: false,

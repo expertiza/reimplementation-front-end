@@ -1,7 +1,7 @@
-import {createColumnHelper, Row} from "@tanstack/react-table";
-import {Button} from "react-bootstrap";
-import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
-import {ICourseResponse as ICourse} from "../../utils/interfaces";
+import { createColumnHelper, Row } from "@tanstack/react-table";
+import { Button } from "react-bootstrap";
+import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
+import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
  * @author Mrityunjay Joshi on December, 2023
@@ -10,11 +10,6 @@ import {ICourseResponse as ICourse} from "../../utils/interfaces";
 type Fn = (row: Row<ICourse>) => void;
 const columnHelper = createColumnHelper<ICourse>();
 export const courseColumns = (handleEdit: Fn, handleDelete: Fn) => [
-  // columnHelper.accessor("id", {
-  //   header: "Id",
-  //   enableColumnFilter: false,
-  //   enableSorting: false,
-  // }),
 
   columnHelper.accessor("name", {
     id: "name",
@@ -23,19 +18,20 @@ export const courseColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableColumnFilter: true,
   }),
 
-  columnHelper.accessor("Institution", {
+  columnHelper.accessor("institution.name", {
+    id: "institution",
     header: "Institution",
     enableSorting: true,
     enableMultiSort: true,
   }),
 
 
-  columnHelper.accessor("Creation", {
+  columnHelper.accessor("created_at", {
     header: "Creation Date",
     enableSorting: true,
   }),
 
-  columnHelper.accessor("Updated", {
+  columnHelper.accessor("updated_at", {
     header: "Updated Date",
     enableSorting: true,
   }),
