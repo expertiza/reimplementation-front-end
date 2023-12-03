@@ -1,6 +1,7 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
+import { MdContentCopy, MdDelete } from "react-icons/md";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
@@ -9,7 +10,7 @@ import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 type Fn = (row: Row<ICourse>) => void;
 const columnHelper = createColumnHelper<ICourse>();
-export const courseColumns = (handleEdit: Fn, handleDelete: Fn) => [
+export const courseColumns = (handleEdit: Fn, handleDelete: Fn, handleTA: Fn, handleCopy: Fn) => [
 
   columnHelper.accessor("name", {
     id: "name",
@@ -50,10 +51,13 @@ export const courseColumns = (handleEdit: Fn, handleDelete: Fn) => [
           className="ms-sm-2"
           onClick={() => handleDelete(row)}
         >
+          <MdDelete />
+        </Button>
+        <Button variant="outline-info" size="sm" className="ms-sm-2" onClick={() => handleTA(row)}>
           <BsPersonXFill />
         </Button>
-        <Button variant="contained" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
+        <Button variant="outline-primary" size="sm" className="ms-sm-2" onClick={() => handleCopy(row)}>
+          <MdContentCopy />
         </Button>
       </>
     ),

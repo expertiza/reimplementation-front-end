@@ -3,13 +3,14 @@ import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { BsPersonFillAdd } from "react-icons/bs";
+import { RiHealthBookLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
+import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 
 /**
@@ -30,6 +31,11 @@ const Courses = () => {
     data?: ICourseResponse;
   }>({ visible: false });
 
+  const [showCopyConfirmation, setShowCopyConfirmation] = useState<{
+    visible: boolean;
+    data?: ICourseResponse;
+  }>({ visible: false });
+
   useEffect(() => {
     // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
     if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses` });
@@ -44,8 +50,15 @@ const Courses = () => {
 
   const onDeleteCourseHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
+  const onCopyCourseHandler = useCallback(() => setShowCopyConfirmation({ visible: false }), []);
+
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),
+    [navigate]
+  );
+
+  const onTAHandle = useCallback(
+    (row: TRow<ICourseResponse>) => navigate(`${row.original.id}/tas`),
     [navigate]
   );
 
@@ -54,9 +67,14 @@ const Courses = () => {
     []
   );
 
+  const onCopyHandle = useCallback(
+    (row: TRow<ICourseResponse>) => setShowCopyConfirmation({ visible: true, data: row.original }),
+    []
+  );
+
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
+    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
   const tableData = useMemo(
@@ -99,11 +117,14 @@ const Courses = () => {
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
               <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPersonFillAdd />
+                <RiHealthBookLine />
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
               <DeleteCourse courseData={showDeleteConfirmation.data!} onClose={onDeleteCourseHandler} />
+            )}
+            {showCopyConfirmation.visible && (
+              <CopyCourse courseData={showCopyConfirmation.data!} onClose={onCopyCourseHandler} />
             )}
           </Row>
           <Row>

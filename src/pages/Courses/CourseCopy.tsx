@@ -10,38 +10,38 @@ import { ICourseResponse as ICourse } from "../../utils/interfaces";
  * @author Mrityunjay Joshi on December, 2023
  */
 
-interface IDeleteCourse {
+interface ICopyCourse {
   courseData: ICourse;
   onClose: () => void;
 }
 
-const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
-  const { data: deletedCourse, error: courseError, sendRequest: DeleteCourse } = useAPI();
+const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
+  const { data: copiedCourse, error: courseError, sendRequest: CopyCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
-  // Delete course
-  const deleteHandler = () =>
-    DeleteCourse({ url: `/courses/${courseData.id}`, method: HttpMethod.DELETE });
+  // Copy course
+  const copyHandler = () =>
+    CopyCourse({ url: `/courses/${courseData.id}/copy`, method: HttpMethod.GET });
 
   // Show error if any
   useEffect(() => {
     if (courseError) dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
   }, [courseError, dispatch]);
 
-  // Close modal if course is deleted
+  // Close modal if course is copied
   useEffect(() => {
-    if (deletedCourse?.status && deletedCourse?.status >= 200 && deletedCourse?.status < 300) {
+    if (copiedCourse?.status && copiedCourse?.status >= 200 && copiedCourse?.status < 300) {
       setShow(false);
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Course ${courseData.name} deleted successfully!`,
+          message: `Course ${courseData.name} copied successfully!`,
         })
       );
       onClose();
     }
-  }, [deletedCourse?.status, dispatch, onClose, courseData.name]);
+  }, [copiedCourse?.status, dispatch, onClose, courseData.name]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,23 +51,23 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Course</Modal.Title>
+        <Modal.Title>Copy Course</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete course <b>{courseData.name}?</b>
+          Are you sure you want to copy course <b>{courseData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
           Cancel
         </Button>
-        <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+        <Button variant="outline-primary" onClick={copyHandler}>
+          Copy
         </Button>
       </Modal.Footer>
     </Modal>
   );
 };
 
-export default DeleteCourse;
+export default CopyCourse;

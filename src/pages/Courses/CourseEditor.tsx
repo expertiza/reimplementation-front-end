@@ -53,20 +53,20 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
 
   initialValues.institution_id = auth.user.institution_id;
 
-  // Close the modal if the user is updated successfully and navigate to the courses page
+  // Close the modal if the course is updated successfully and navigate to the courses page
   useEffect(() => {
     if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${courseData.name} ${mode}d successfully!`,
+          message: `Course ${courseData.name} ${mode}d successfully!`,
         })
       );
       navigate(location.state?.from ? location.state.from : "/courses");
     }
   }, [dispatch, mode, navigate, courseData.name, courseResponse, location.state?.from]);
 
-  // Show the error message if the user is not updated successfully
+  // Show the error message if the course is not updated successfully
   useEffect(() => {
     courseError && dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
   }, [courseError, dispatch]);
@@ -80,7 +80,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
       method = HttpMethod.PATCH;
     }
 
-    // to be used to display message when user is created
+    // to be used to display message when course is created
     courseData.name = values.name;
     sendRequest({
       url: url,
@@ -133,7 +133,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   label="Name"
                   name="name"
                   disabled={mode === "update"}
-                  inputGroupPrepend={<InputGroup.Text id="user-name-prep">@</InputGroup.Text>}
+                  inputGroupPrepend={<InputGroup.Text id="course-name-prep">@</InputGroup.Text>}
                 />
                 <FormInput
                   controlId="directory"
