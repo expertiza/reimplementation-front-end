@@ -1,22 +1,24 @@
-import React from "react";
-import Home from "pages/Home";
 import RootLayout from "layout/Root";
-import ErrorPage from "./router/ErrorPage";
+import Courses from "pages/Courses/Course";
+import CourseEditor from "pages/Courses/CourseEditor";
+import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
+import Home from "pages/Home";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
-import Users from "./pages/Users/User";
-import UserEditor from "./pages/Users/UserEditor";
-import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
+import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
+import Login from "./pages/Authentication/Login";
+import Logout from "./pages/Authentication/Logout";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
-import Login from "./pages/Authentication/Login";
-import Logout from "./pages/Authentication/Logout";
+import Users from "./pages/Users/User";
+import UserEditor from "./pages/Users/UserEditor";
+import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
+import ErrorPage from "./router/ErrorPage";
+import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import AdministratorLayout from "./layout/Administrator";
-import NotFound from "./router/NotFound";
 
 function App() {
   const router = createBrowserRouter([
@@ -41,6 +43,22 @@ function App() {
               path: "edit/:id",
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
+            },
+          ],
+        },
+        {
+          path: "courses",
+          element: <ProtectedRoute element={<Courses />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            {
+              path: "new",
+              element: <CourseEditor mode="create" />,
+              loader: loadCourseInstructorDataAndInstitutions,
+            },
+            {
+              path: "edit/:id",
+              element: <CourseEditor mode="update" />,
+              loader: loadCourseInstructorDataAndInstitutions,
             },
           ],
         },
