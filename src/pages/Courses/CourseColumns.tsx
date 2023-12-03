@@ -4,43 +4,40 @@ import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
 import {ICourseResponse as ICourse} from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Mrityunjay Joshi on December, 2023
  */
 
 type Fn = (row: Row<ICourse>) => void;
 const columnHelper = createColumnHelper<ICourse>();
 export const courseColumns = (handleEdit: Fn, handleDelete: Fn) => [
-  columnHelper.accessor("id", {
-    header: "Id",
-    enableColumnFilter: false,
-    enableSorting: false,
-  }),
+  // columnHelper.accessor("id", {
+  //   header: "Id",
+  //   enableColumnFilter: false,
+  //   enableSorting: false,
+  // }),
 
   columnHelper.accessor("name", {
-    header: "Course name",
+    id: "name",
+    header: "Name",
     enableSorting: true,
+    enableColumnFilter: true,
   }),
 
-  columnHelper.accessor("Directory", {
-    header: "Directory",
+  columnHelper.accessor("Institution", {
+    header: "Institution",
     enableSorting: true,
     enableMultiSort: true,
   }),
 
-  columnHelper.accessor("Instructor", {
-    header: "Instructor",
-  }),
 
   columnHelper.accessor("Creation", {
-    id: "Creation",
     header: "Creation Date",
-    enableColumnFilter: false,
+    enableSorting: true,
   }),
 
   columnHelper.accessor("Updated", {
-    id: "Updated",
     header: "Updated Date",
-    enableColumnFilter: false,
+    enableSorting: true,
   }),
   
   columnHelper.display({

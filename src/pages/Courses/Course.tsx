@@ -13,7 +13,7 @@ import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { RootState } from "../../store/store";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Mrityunjay Joshi on December, 2023
  */
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
@@ -31,8 +31,8 @@ const Courses = () => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses/${auth.course.id}/managed` });
-  }, [fetchCourses, location, showDeleteConfirmation.visible, auth.course.id]);
+    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses/${auth.user.id}/managed` });
+  }, [fetchCourses, location, showDeleteConfirmation.visible, auth.user.id]);
 
   // Error alert
   useEffect(() => {
@@ -59,8 +59,8 @@ const Courses = () => {
   );
 
   const tableData = useMemo(
-    () => (isLoading || !courseResponse?.data ? [] : courseResponse.data),
-    [courseResponse?.data, isLoading]
+    () => (isLoading || !CourseResponse?.data ? [] : CourseResponse.data),
+    [CourseResponse?.data, isLoading]
   );
 
   return (
@@ -90,7 +90,7 @@ const Courses = () => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-                institution: auth.course.role === ROLE.SUPER_ADMIN.valueOf(),
+                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
             />
           </Row>

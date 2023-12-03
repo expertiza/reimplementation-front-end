@@ -75,6 +75,10 @@ export interface ILoggedInUser {
   institution_id: number;
 }
 
+export interface ICourseResponse{}
+
+export interface ICourseRequest{}
+
 export enum ROLE {
   SUPER_ADMIN = "Super Administrator",
   ADMIN = "Administrator",
