@@ -3,6 +3,8 @@ import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
 import Home from "pages/Home";
+import TA from "pages/TA/TA";
+import TAEditor from "pages/TA/TAEditor";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
@@ -60,6 +62,19 @@ function App() {
               element: <CourseEditor mode="update" />,
               loader: loadCourseInstructorDataAndInstitutions,
             },
+            {
+              path: ":courseId/tas",
+              element: <ProtectedRoute element={<TA />} leastPrivilegeRole={ROLE.TA} />,
+              children: [
+                {
+                  path: "new",
+                  element: <TAEditor mode="create" />,
+                },
+              ]
+            },
+            // ToDo: Integrate Course Participants here. More information for it can be found: https://github.com/expertiza/reimplementation-front-end/pull/17
+            // This can be done in the same way as how it is done for TAs
+            // Where we reroute the user to appropriate page by selecting a specific course id and then display all the participants.
           ],
         },
         {
