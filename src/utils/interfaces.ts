@@ -62,7 +62,7 @@ export interface IAssignmentResponse {
   id: number;
   name: string;
   course_id: number;
-  courseName: string;
+  course_name: string;
   created_at: Date; 
   updated_at: Date; 
   
@@ -75,3 +75,4 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   // Transform response as needed
   return assignment;
 };
+

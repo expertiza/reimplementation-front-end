@@ -16,6 +16,7 @@ export interface IAssignmentResponse {
   description: string;
   dueDate: string; 
   course_id: number;
+  course_name:string;
 }
 
 
