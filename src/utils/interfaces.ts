@@ -61,9 +61,10 @@ export enum ROLE {
 export interface IAssignmentResponse {
   id: number;
   name: string;
+  course_id: number;
   courseName: string;
-  creationDate: Date; 
-  updatedDate: Date; 
+  created_at: Date; 
+  updated_at: Date; 
   
 }
 

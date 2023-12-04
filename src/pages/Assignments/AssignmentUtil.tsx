@@ -12,9 +12,10 @@ export interface IAssignmentRequest {
 
 export interface IAssignmentResponse {
   id: number;
-  name: string; // Updated attribute
+  name: string; 
   description: string;
   dueDate: string; 
+  course_id: number;
 }
 
 

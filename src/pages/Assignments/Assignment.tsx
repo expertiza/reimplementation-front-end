@@ -28,8 +28,13 @@ const Assignments = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
+  
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchAssignments({ url: `/assignments` });
+    if (!showDeleteConfirmation.visible)
+    {
+        fetchAssignments({ url: `/assignments` });
+    } 
+   console.log(fetchAssignments)
   }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
 
   // Error alert
@@ -52,14 +57,18 @@ const Assignments = () => {
   );
 
   const tableColumns = useMemo(
-    () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle), // Assuming you have assignmentColumns similar to userColumns
+    () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle), 
     [onDeleteHandle, onEditHandle]
   );
 
   const tableData = useMemo(
     () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
     [assignmentResponse?.data, isLoading]
+
   );
+  
+  
+  
 
   return (
     <>

@@ -15,11 +15,11 @@ export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Course Name",
   }),
 
-  columnHelper.accessor("creationDate", {
+  columnHelper.accessor("created_at", {
     header: "Creation Date",
   }),
 
-  columnHelper.accessor("updatedDate", {
+  columnHelper.accessor("updated_at", {
     header: "Updated Date",
   }),
 
