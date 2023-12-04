@@ -5,7 +5,7 @@ import axiosClient from "../../utils/axios_client";
 
 export interface IAssignmentRequest {
   id?: number;
-  name: string; // Updated attribute
+  name: string; 
   description: string;
   dueDate: string; 
 }

@@ -3,10 +3,10 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns"; // Assuming you have assignmentColumns similar to userColumns
-import { BsFileText } from "react-icons/bs"; // Assuming you have an appropriate icon for assignments
-import DeleteAssignment from "./AssignmentDelete"; // Assuming you have an AssignmentDelete component
-import { IAssignmentResponse } from "../../utils/interfaces"; // Assuming you have the interface for assignments
+import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns";
+import { BsFileText } from "react-icons/bs";
+import DeleteAssignment from "./AssignmentDelete";
+import { IAssignmentResponse } from "../../utils/interfaces";
 import { RootState } from "../../store/store";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
@@ -143,7 +143,7 @@ useEffect(() => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-                // Add other visibility conditions if needed for assignments
+               
               }}
             />
           </Row>
