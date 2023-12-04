@@ -34,6 +34,10 @@ const Assignments = () => {
     if (!showDeleteConfirmation.visible) fetchAssignments({ url: `/assignments` });
   }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
 
+
+  
+  
+
   // Error alert
   useEffect(() => {
     if (error) {
@@ -65,11 +69,14 @@ const Assignments = () => {
   );
   
 
-  const { data: courseNames,  sendRequest } = useAPI();
-  const [courseNamesState, setCourseNames] = useState<string[]>([]);
-  useEffect(() => {
-    const fetchCourseNames = async () => {
-      const namesPromises = tableData.map((data: IAssignmentResponse) =>
+  const { data: courseNames, sendRequest } = useAPI();
+const [courseNamesState, setCourseNames] = useState<string[]>([]);
+
+useEffect(() => {
+  const fetchCourseNames = async () => {
+    // Check if assignment data is available
+    if (assignmentResponse && assignmentResponse.data) {
+      const namesPromises = assignmentResponse.data.map((data: IAssignmentResponse) =>
         sendRequest({ method: 'GET', url: `/courses/${data.course_id}` })
       );
       const responses = await Promise.all(namesPromises);
@@ -77,7 +84,6 @@ const Assignments = () => {
       // Extract course names from responses
       const names = responses.map((response) => {
         if (response && response.data) {
-          
           return response.data.course_name;
         } else {
           return null;
@@ -85,34 +91,22 @@ const Assignments = () => {
       });
 
       setCourseNames(names);
-      
-    };
+    }
+  
+  };
 
+  // Check if assignment data is available before fetching course names
+  if (assignmentResponse && assignmentResponse.data) {
     fetchCourseNames();
-   
-  }, [tableData, sendRequest]);
+  }
+}, [assignmentResponse, sendRequest]);
 
   
-  // Check if courseNames is defined before accessing its data property
-//   if (courseNames && courseNames.data) {
-//     console.log('Course names data:');
-//     courseNames.data.map((course: { name: string })  => {
-//         console.log(course.name);
-//     });
-// } else {
-//     console.log('Course names is undefined or does not have data property');
-// }
+ 
 
 
-if (courseNames && courseNames.data) {
-    console.log('Course names data:', courseNames.data.name);
-    
-  } else {
-    console.log('Course names is undefined or does not have data property');
-  } 
-  
 
-
+   console.log(tableData);
 
   if (isLoading) {
     return <p>Loading...</p>;
