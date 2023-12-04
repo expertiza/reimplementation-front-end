@@ -17,6 +17,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
+import Courses from "./pages/Manage/Courses";
 
 function App() {
   const router = createBrowserRouter([
@@ -101,6 +102,7 @@ function App() {
             },
           ],
         },
+        { path: "courses", element: <ProtectedRoute element={<Courses />} /> },
         { path: "*", element: <NotFound /> },
       ],
     },
