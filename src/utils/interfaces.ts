@@ -57,3 +57,22 @@ export enum ROLE {
   TA = "Teaching Assistant",
   STUDENT = "Student",
 }
+
+export interface IAssignmentResponse {
+  id: number;
+  name: string;
+  course_id: number;
+  course_name: string;
+  created_at: Date; 
+  updated_at: Date; 
+  
+}
+
+
+// Assuming that your transformation function for assignment responses might look like this
+export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
+  const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
+  // Transform response as needed
+  return assignment;
+};
+
