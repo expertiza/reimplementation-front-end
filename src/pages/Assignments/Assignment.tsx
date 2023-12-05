@@ -14,7 +14,7 @@ import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
 const Assignments = () => {
-    const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
+  const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
 
 
   const auth = useSelector(
@@ -31,22 +31,9 @@ const Assignments = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-
- 
-
-
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchAssignments({ url: `/assignments` });
   }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
-
-
-
-
-
-
- 
- 
-
 
   // Error alert
   useEffect(() => {
@@ -55,27 +42,22 @@ const Assignments = () => {
     }
   }, [error, dispatch]);
 
-
   const onDeleteAssignmentHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
-
 
   const onEditHandle = useCallback(
     (row: TRow<IAssignmentResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
   );
 
-
   const onDeleteHandle = useCallback(
     (row: TRow<IAssignmentResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
-
   const tableColumns = useMemo(
     () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
-
 
   const tableData = useMemo(
     () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
@@ -83,10 +65,6 @@ const Assignments = () => {
 
 
   );
- 
-
-
-  
 
   return (
     <>
@@ -115,7 +93,7 @@ const Assignments = () => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-               
+
               }}
             />
           </Row>
