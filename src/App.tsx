@@ -5,6 +5,7 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import Home from "pages/Home";
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
+import { loadTAs } from "pages/TA/TAUtil";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
@@ -69,6 +70,7 @@ function App() {
                 {
                   path: "new",
                   element: <TAEditor mode="create" />,
+                  loader: loadTAs,
                 },
               ]
             },

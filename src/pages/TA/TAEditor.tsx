@@ -1,10 +1,10 @@
-import FormInput from "components/Form/FormInput";
+import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
 import React, { useEffect } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
@@ -12,7 +12,8 @@ import { IEditor } from "../../utils/interfaces";
 import { ITAFormValues, transformTARequest } from "./TAUtil";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Divit Kalathil, on December, 2023
  */
 
 const initialValues: ITAFormValues = {
@@ -26,6 +27,8 @@ const validationSchema = Yup.object({
 const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: TAResponse, error: TAError, sendRequest } = useAPI();
   const TAData = { ...initialValues };
+
+  const { taUsers }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,19 +56,17 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   }, [TAError, dispatch]);
 
   const onSubmit = (values: ITAFormValues, submitProps: FormikHelpers<ITAFormValues>) => {
-    let method: HttpMethod = HttpMethod.POST;
-    
+    let method: HttpMethod = HttpMethod.GET;
     // ToDo: Need to create API in the backend for this call. 
     // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed. 
     // Currently we send the username of the user we want to add as the TA for the course.
-    let url: string = `/courses/${courseId}/add_ta`;
+    let url: string = `/courses/${courseId}/add_ta/${values.name}`;
 
     // to be used to display message when TA is created
-    TAData.name = values.name;
     sendRequest({
       url: url,
       method: method,
-      data: values,
+      data: {},
       transformRequest: transformTARequest,
     });
     submitProps.setSubmitting(false);
@@ -76,7 +77,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>Create TA</Modal.Title>
+        <Modal.Title>Add TA</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {TAError && <p className="text-danger">{TAError}</p>}
@@ -90,13 +91,13 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormInput
+                <FormSelect
                   controlId="TA-name"
                   label="Teaching Assistant Name"
                   name="name"
-                  disabled={mode === "update"}
+                  options={taUsers}
                   inputGroupPrepend={
-                    <InputGroup.Text id="TA-name-prep">Enter a user login</InputGroup.Text>
+                    <InputGroup.Text id="TA-name-prep">TA</InputGroup.Text>
                   }
                 />
                 <Modal.Footer>
@@ -109,7 +110,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {"Create TA"}
+                    "Add TA"
                   </Button>
                 </Modal.Footer>
               </Form>

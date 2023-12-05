@@ -1,12 +1,21 @@
-import { ITARequest } from "../../utils/interfaces";
+import { IFormOption } from "components/Form/interfaces";
+import axiosClient from "utils/axios_client";
+import { ITA, ITARequest } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Divit Kalathil, on December, 2023
  */
 
 export interface ITAFormValues {
-  id?: number;
   name: string;
+}
+
+export const transformTAResponse = (taList: string) => {
+  let taData: IFormOption[] = [{ label: "Select a TA", value: "" }]; 
+  let tas: ITA[] = JSON.parse(taList);
+  tas.forEach((ta) => taData.push({ label: ta.name, value: ta.id! }));
+  return taData;
 }
 
 export const transformTARequest = (values: ITAFormValues) => {
@@ -16,3 +25,14 @@ export const transformTARequest = (values: ITAFormValues) => {
   };
   return JSON.stringify(TA);
 };
+
+export async function loadTAs({ params }: any) {
+
+  const taRoleUsersResponse = await axiosClient.get(`/users/role/Teaching Assistant`, {
+    transformResponse: transformTAResponse
+  })
+  const taUsers = taRoleUsersResponse.data;
+  console.log(taUsers);
+
+  return { taUsers };
+}
