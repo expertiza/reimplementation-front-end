@@ -93,11 +93,6 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/student_tasks">
                   Assignments
                 </Nav.Link>
-                {hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
-                  <Nav.Link as={Link} to="/courses">
-                    Courses
-                  </Nav.Link>
-                )}
                 <Nav.Link as={Link} to="/profile">
                   Profile
                 </Nav.Link>
