@@ -16,6 +16,7 @@ import useAPI from "hooks/useAPI";
 const Assignments = () => {
     const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
 
+
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -24,19 +25,28 @@ const Assignments = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-  
+
+ 
+
+
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchAssignments({ url: `/assignments` });
   }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
 
 
-  
-  
+
+
+
+
+ 
+ 
+
 
   // Error alert
   useEffect(() => {
@@ -45,76 +55,38 @@ const Assignments = () => {
     }
   }, [error, dispatch]);
 
+
   const onDeleteAssignmentHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+
 
   const onEditHandle = useCallback(
     (row: TRow<IAssignmentResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
   );
 
+
   const onDeleteHandle = useCallback(
     (row: TRow<IAssignmentResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
+
   const tableColumns = useMemo(
-    () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle), 
+    () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
+
 
   const tableData = useMemo(
     () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
     [assignmentResponse?.data, isLoading]
 
+
   );
-  
-
-  const { data: courseNames, sendRequest } = useAPI();
-const [courseNamesState, setCourseNames] = useState<string[]>([]);
-
-useEffect(() => {
-  const fetchCourseNames = async () => {
-    // Check if assignment data is available
-    if (assignmentResponse && assignmentResponse.data) {
-      const namesPromises = assignmentResponse.data.map((data: IAssignmentResponse) =>
-        sendRequest({ method: 'GET', url: `/courses/${data.course_id}` })
-      );
-      const responses = await Promise.all(namesPromises);
-
-      // Extract course names from responses
-      const names = responses.map((response) => {
-        if (response && response.data) {
-          return response.data.course_name;
-        } else {
-          return null;
-        }
-      });
-
-      setCourseNames(names);
-    }
-  
-  };
-
-  // Check if assignment data is available before fetching course names
-  if (assignmentResponse && assignmentResponse.data) {
-    fetchCourseNames();
-  }
-}, [assignmentResponse, sendRequest]);
-
-  
  
 
 
-
-   console.log(tableData);
-
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
+  
 
   return (
     <>
@@ -153,4 +125,8 @@ useEffect(() => {
   );
 };
 
+
 export default Assignments;
+
+
+
