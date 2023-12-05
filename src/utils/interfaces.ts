@@ -62,7 +62,7 @@ export interface IAssignmentResponse {
   id: number;
   name: string;
   course_id: number;
-  course_name: string;
+  courseName: string;
   created_at: Date; 
   updated_at: Date; 
   

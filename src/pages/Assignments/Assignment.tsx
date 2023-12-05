@@ -13,9 +13,12 @@ import Table from "components/Table/Table";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
+
+
 const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
-
+  const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
+  
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -25,15 +28,49 @@ const Assignments = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IAssignmentResponse;
   }>({ visible: false });
 
+  // useEffect(() => {
+  //   if (!showDeleteConfirmation.visible) 
+  //   {
+  //     fetchAssignments({ url: `/assignments` });
+  //     fetchCourses({url: '/courses'});
+  //   }
+  // }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [assignments, courses] = await Promise.all([
+        fetchAssignments({ url: `/assignments` }),
+        fetchCourses({ url: '/courses' }),
+      ]);
+      // Handle the responses as needed
+    } catch (err) {
+      // Handle any errors that occur during the fetch
+      console.error("Error fetching data:", err);
+    }
+  }, [fetchAssignments, fetchCourses]);
+  
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchAssignments({ url: `/assignments` });
-  }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
+    if (!showDeleteConfirmation.visible) {
+      fetchData();
+    }
+  }, [fetchData, showDeleteConfirmation.visible, auth.user.id]);
+
+  let mergedData: Array<any & { courseName?: string }> = [];
+
+  if (assignmentResponse && coursesResponse) {
+     mergedData = assignmentResponse.data.map((assignment: any) => {
+      const course = coursesResponse.data.find((c: any) => c.id === assignment.course_id);
+      return { ...assignment, courseName: course ? course.name : 'Unknown' };
+    });
+    console.log(mergedData);
+  }
+
+
 
   // Error alert
   useEffect(() => {
@@ -59,12 +96,28 @@ const Assignments = () => {
     [onDeleteHandle, onEditHandle]
   );
 
+  // const tableData = useMemo(
+  //   () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
+  //   [assignmentResponse?.data, isLoading]
+
+
+  // );
   const tableData = useMemo(
-    () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
-    [assignmentResponse?.data, isLoading]
-
-
+    () => (isLoading || !mergedData?.length ? [] : mergedData),
+    [mergedData, isLoading]
   );
+
+console.log("Assignment Response:", assignmentResponse);
+console.log("Courses Response:", coursesResponse);
+console.log("Merged Data:", mergedData);
+console.log("Is Loading:", isLoading);
+console.log("Table Data:", tableData);
+
+  // const tableData = useMemo(() => {
+  //   return isLoading || !mergedData.length ? [] : mergedData;
+  // }, [mergedData, isLoading]);
+
+  
 
   return (
     <>
