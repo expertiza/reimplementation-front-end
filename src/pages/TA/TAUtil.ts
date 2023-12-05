@@ -30,9 +30,8 @@ export async function loadTAs({ params }: any) {
 
   const taRoleUsersResponse = await axiosClient.get(`/users/role/Teaching Assistant`, {
     transformResponse: transformTAResponse
-  })
+  });
   const taUsers = taRoleUsersResponse.data;
-  console.log(taUsers);
 
   return { taUsers };
 }
