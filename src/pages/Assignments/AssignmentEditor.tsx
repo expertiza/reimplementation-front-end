@@ -1,9 +1,9 @@
 import * as Yup from "yup";
 
-import { Button, Modal } from "react-bootstrap";
+import { Button, FormSelect, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
-import { IAssignmentRequest, transformAssignmentRequest } from "./AssignmentUtil";
-import { IEditor, ROLE } from "../../utils/interfaces";
+import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
+import { IEditor} from "../../utils/interfaces";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
@@ -13,24 +13,34 @@ import { HttpMethod } from "utils/httpMethods";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
+import FormCheckbox from "components/Form/FormCheckBox";
 
-const initialValues: IAssignmentRequest = {
+const initialValues: IAssignmentFormValues = {
   name: "",
-  description: "",
-  dueDate: "",
+  directory_path: "",
+  // dir: "",
+  spec_location:"",
+  private:false,
+  show_template_review:false,
+  require_quiz:false,
+  has_badge:false,
+  staggered_deadline:false,
+  is_calibrated:false,
   // Add other assignment-specific initial values
 };
 
 const validationSchema = Yup.object({
-  name: Yup.string().required("Required"),
-  description: Yup.string().required("Required"),
+  name: Yup.string().required("Required")
   // Add other assignment-specific validation rules
 });
 
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
-  const auth = useSelector((state: RootState) => state.authentication);
-  const { assignmentData }: any = useLoaderData(); // Adjust as needed
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
+  const assignmentData : any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,10 +49,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (
       assignmentResponse &&
-      assignmentResponse.status &&
       assignmentResponse.status >= 200 &&
-      assignmentResponse.status < 300 &&
-      assignmentData
+      assignmentResponse.status < 300
     ) {
       dispatch(
         alertActions.showAlert({
@@ -60,19 +68,18 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   }, [assignmentError, dispatch]);
 
   const onSubmit = (
-    values: IAssignmentRequest,
-    submitProps: FormikHelpers<IAssignmentRequest>
+    values: IAssignmentFormValues,
+    submitProps: FormikHelpers<IAssignmentFormValues>
   ) => {
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/assignments";
-
     if (mode === "update") {
       url = `/assignments/${values.id}`;
       method = HttpMethod.PATCH;
     }
-
     // to be used to display message when assignment is created
     assignmentData.name = values.name;
+    console.log(values);
     sendRequest({
       url: url,
       method: method,
@@ -101,10 +108,16 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormInput controlId="assignment-name" label="Name" name="name" />
-                <FormInput controlId="assignment-description" label="Description" name="description" />
-                {/* Add other assignment-specific form fields here */}
-
+                <FormInput controlId="assignment-name" label="Assignment Name" name="name" />
+                <FormInput controlId="assignment-directory_path" label="Submission Directory" name="directory_path" />
+                {/* <FormInput controlId="assignment-dir" label="Submission Directory" name="dir" /> */}
+                <FormInput controlId="assignment-spec_location" label="Description URL" name="spec_location" />
+                <FormCheckbox controlId="assignment-private" label="Private Assignment" name="private" />
+                <FormCheckbox controlId="assignment-subdir" label="Show Teammate Reviews?" name="show_teammate_review" />
+                <FormCheckbox controlId="assignment-subdir" label="Has quiz?" name="require_quiz" />
+                <FormCheckbox controlId="assignment-subdir" label="Has badge?" name="has_badge" />  
+                <FormCheckbox controlId="assignment-subdir" label="Staggered deadline assignment?" name="staggered_deadline" />  
+                <FormCheckbox controlId="assignment-subdir" label="Calibration for training?" name="is_calibrated" />    
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
                     Close
