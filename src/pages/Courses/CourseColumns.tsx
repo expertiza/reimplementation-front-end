@@ -5,6 +5,7 @@ import { MdContentCopy, MdDelete } from "react-icons/md";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
+ * @author Atharva Thorve, on December, 2023
  * @author Mrityunjay Joshi on December, 2023
  */
 
@@ -17,6 +18,7 @@ export const courseColumns = (handleEdit: Fn, handleDelete: Fn, handleTA: Fn, ha
     header: "Name",
     enableSorting: true,
     enableColumnFilter: true,
+    enableGlobalFilter: false
   }),
 
   columnHelper.accessor("institution.name", {
@@ -24,17 +26,22 @@ export const courseColumns = (handleEdit: Fn, handleDelete: Fn, handleTA: Fn, ha
     header: "Institution",
     enableSorting: true,
     enableMultiSort: true,
+    enableGlobalFilter: false
   }),
 
 
   columnHelper.accessor("created_at", {
     header: "Creation Date",
     enableSorting: true,
+    enableColumnFilter: false,
+    enableGlobalFilter: false
   }),
 
   columnHelper.accessor("updated_at", {
     header: "Updated Date",
     enableSorting: true,
+    enableColumnFilter: false,
+    enableGlobalFilter: false
   }),
   
   columnHelper.display({

@@ -15,7 +15,8 @@ import { IEditor, ROLE } from "../../utils/interfaces";
 import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transformCourseRequest } from "./CourseUtil";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Mrityunjay Joshi, on December, 2023
  */
 
 const initialValues: ICourseFormValues = {
@@ -133,7 +134,6 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   label="Name"
                   name="name"
                   disabled={mode === "update"}
-                  inputGroupPrepend={<InputGroup.Text id="course-name-prep">@</InputGroup.Text>}
                 />
                 <FormInput
                   controlId="directory"

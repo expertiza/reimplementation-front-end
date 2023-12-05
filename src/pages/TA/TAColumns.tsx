@@ -4,7 +4,8 @@ import { BsPersonXFill } from "react-icons/bs";
 import { ITAResponse as ITA } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Divit Kalathil, on December, 2023
  */
 
 type Fn = (row: Row<ITA>) => void;

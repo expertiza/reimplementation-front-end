@@ -12,12 +12,15 @@ import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
+import { formatDate, mergeDataAndNames } from "./CourseUtil";
 
 /**
+ * @author Atharva Thorve, on December, 2023 
  * @author Mrityunjay Joshi on December, 2023
  */
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
+  const { data: InstitutionResponse, sendRequest: fetchInstitutions} = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -38,8 +41,12 @@ const Courses = () => {
 
   useEffect(() => {
     // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
-    if (!showDeleteConfirmation.visible) fetchCourses({ url: `/courses` });
-  }, [fetchCourses, location, showDeleteConfirmation.visible, auth.user.id]);
+    if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible){
+      fetchCourses({ url: `/courses` });
+      // ToDo: Remove this API call later after the above ToDo is completed
+      fetchInstitutions({ url: `/institutions` });
+    }
+  }, [fetchCourses, fetchInstitutions, location, showDeleteConfirmation.visible, auth.user.id, showCopyConfirmation.visible]);
 
   // Error alert
   useEffect(() => {
@@ -77,32 +84,24 @@ const Courses = () => {
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
-  const tableData = useMemo(
+  let tableData = useMemo(
     () => (isLoading || !CourseResponse?.data ? [] : CourseResponse.data),
     [CourseResponse?.data, isLoading]
   );
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
-  };
+  const institutionData = useMemo(
+    () => (isLoading || !InstitutionResponse?.data ? [] : InstitutionResponse.data),
+    [InstitutionResponse?.data, isLoading]
+  );
   
+  tableData = mergeDataAndNames(tableData, institutionData);
+
   const formattedTableData = tableData.map((item: any) => ({
     ...item,
     created_at: formatDate(item.created_at),
     updated_at: formatDate(item.updated_at),
   }));
   
-  console.log(formattedTableData);
-
   return (
     <>
       <Outlet />
@@ -115,7 +114,7 @@ const Courses = () => {
             <hr />
           </Row>
           <Row>
-            <Col md={{ span: 1, offset: 11 }}>
+            <Col md={{ span: 1, offset: 11 }} style={{paddingBottom: "10px"}}>
               <Button variant="outline-success" onClick={() => navigate("new")}>
                 <RiHealthBookLine />
               </Button>
@@ -129,6 +128,7 @@ const Courses = () => {
           </Row>
           <Row>
             <Table
+              showGlobalFilter={false}
               data={formattedTableData}
               columns={tableColumns}
               columnVisibility={{

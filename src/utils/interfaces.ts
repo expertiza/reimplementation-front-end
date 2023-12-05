@@ -22,6 +22,11 @@ export interface IInstructor {
   name: string;
 }
 
+export interface ITA {
+  id?: number;
+  name: string;
+}
+
 export interface IUserResponse {
   id: number;
   name: string;
@@ -93,6 +98,11 @@ export interface ICourseRequest{
   private: boolean;
   institution_id: number;
   instructor_id: number;
+}
+
+export interface IInstitutionResponse {
+  id: number;
+  name: string;
 }
 
 export enum ROLE {

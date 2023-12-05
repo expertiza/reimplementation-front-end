@@ -8,7 +8,8 @@ import useAPI from "../../hooks/useAPI";
 import { ITAResponse as ITA } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Divit Kalathil, on December, 2023
  */
 
 interface IDeleteTA {

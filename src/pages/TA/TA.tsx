@@ -13,7 +13,8 @@ import { TAColumns as TA_COLUMNS } from "./TAColumns";
 import DeleteTA from "./TADelete";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Divit Kalathil, on December, 2023
  */
 const TAs = () => {
   const { error, isLoading, data: TAResponse, sendRequest: fetchTAs } = useAPI();
@@ -82,7 +83,7 @@ const TAs = () => {
               <hr />
             </Row>
             <Row>
-              <Col md={{ span: 1, offset: 11 }}>
+              <Col md={{ span: 1, offset: 11 }} style={{paddingBottom: "10px"}}>
                 <Button variant="outline-success" onClick={() => navigate("new")}>
                   <BsPersonFillAdd />
                 </Button>
@@ -93,6 +94,7 @@ const TAs = () => {
             </Row>
             <Row>
               <Table
+                showGlobalFilter={false}
                 data={tableData}
                 columns={tableColumns}
                 columnVisibility={{

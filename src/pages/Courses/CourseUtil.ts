@@ -1,10 +1,11 @@
 import { IFormOption } from "components/Form/interfaces";
 import { getPrivilegeFromID, hasAllPrivilegesOf } from "utils/util";
 import axiosClient from "../../utils/axios_client";
-import { ICourseRequest, ICourseResponse, IInstitution, IInstructor, IUserRequest, ROLE } from "../../utils/interfaces";
+import { ICourseRequest, ICourseResponse, IInstitution, IInstitutionResponse, IInstructor, IUserRequest, ROLE } from "../../utils/interfaces";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve, on December, 2023
+ * @author Mrityunjay Joshi, on December, 2023
  */
 
 export enum CourseVisibility {
@@ -59,7 +60,6 @@ export const transformCourseRequest = (values: ICourseFormValues) => {
 
 export const transformCourseResponse = (courseResponse: string) => {
   const course: ICourseResponse = JSON.parse(courseResponse);
-  console.log(course);
   const institution_id = course.institution_id ? course.institution_id : -1;
   const instructor_id = course.instructor_id ? course.instructor_id : -1;
   const courseValues: ICourseFormValues = {
@@ -101,6 +101,7 @@ export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
   return { courseData, institutions, instructors }
 }
 
+// Input Validation for the Directory path of the course
 export const noSpacesSpecialCharsQuotes = (value: string) => {
   // Check for spaces
   if (/\s/.test(value)) {
@@ -118,4 +119,37 @@ export const noSpacesSpecialCharsQuotes = (value: string) => {
   }
 
   return true;
+};
+
+// Function to format the date from ISO to "Dec 4, 2023, 7:35 PM" format.
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true,
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
+
+// Function to merge data and names
+export const mergeDataAndNames = (data: ICourseResponse[], names: IInstitutionResponse[]): any => {
+  return data.map((dataObj) => {
+    const matchingNameObject = names.find((nameObj) => nameObj.id === dataObj.institution_id);
+
+    if (matchingNameObject) {
+      return {
+        ...dataObj,
+        institution: {
+          id: matchingNameObject.id,
+          name: matchingNameObject.name,
+        },
+      };
+    }
+
+    return dataObj;
+  });
 };

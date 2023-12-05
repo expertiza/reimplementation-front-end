@@ -7,6 +7,7 @@ import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
+ * @author Atharva Thorve, on December, 2023
  * @author Mrityunjay Joshi on December, 2023
  */
 
