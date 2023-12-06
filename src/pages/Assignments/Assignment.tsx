@@ -33,13 +33,6 @@ const Assignments = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-  // useEffect(() => {
-  //   if (!showDeleteConfirmation.visible) 
-  //   {
-  //     fetchAssignments({ url: `/assignments` });
-  //     fetchCourses({url: '/courses'});
-  //   }
-  // }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -67,7 +60,6 @@ const Assignments = () => {
       const course = coursesResponse.data.find((c: any) => c.id === assignment.course_id);
       return { ...assignment, courseName: course ? course.name : 'Unknown' };
     });
-    console.log(mergedData);
   }
 
 
@@ -96,28 +88,10 @@ const Assignments = () => {
     [onDeleteHandle, onEditHandle]
   );
 
-  // const tableData = useMemo(
-  //   () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
-  //   [assignmentResponse?.data, isLoading]
-
-
-  // );
   const tableData = useMemo(
     () => (isLoading || !mergedData?.length ? [] : mergedData),
     [mergedData, isLoading]
   );
-
-console.log("Assignment Response:", assignmentResponse);
-console.log("Courses Response:", coursesResponse);
-console.log("Merged Data:", mergedData);
-console.log("Is Loading:", isLoading);
-console.log("Table Data:", tableData);
-
-  // const tableData = useMemo(() => {
-  //   return isLoading || !mergedData.length ? [] : mergedData;
-  // }, [mergedData, isLoading]);
-
-  
 
   return (
     <>

@@ -20,6 +20,7 @@ import RootLayout from "layout/Root";
 import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
+import { loadAssignment } from "pages/Assignments/AssignmentUtil";
 
 function App() {
   const router = createBrowserRouter([
@@ -38,12 +39,12 @@ function App() {
             {
               path: "new",
               element: <AssignmentEditor mode="create" />,
-              loader: loadUserDataRolesAndInstitutions,
+              loader: loadAssignment,
             },
             {
               path: "edit/:id",
               element: <AssignmentEditor mode="update" />,
-              loader: loadUserDataRolesAndInstitutions,
+              loader: loadAssignment,
             },
           ],
         },

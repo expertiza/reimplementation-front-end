@@ -42,6 +42,18 @@ export interface IUserRequest {
   email_on_review_of_review?: boolean;
 }
 
+export interface IAssignmentRequest {
+  name: string,
+  directory_path: string,
+  spec_location:string,
+  private:boolean,
+  show_template_review: boolean,
+  require_quiz:boolean,
+  has_badge:boolean,
+  staggered_deadline:boolean,
+  is_calibrated:boolean,
+}
+
 export interface ILoggedInUser {
   id: number;
   name: string;
@@ -65,6 +77,14 @@ export interface IAssignmentResponse {
   courseName: string;
   created_at: Date; 
   updated_at: Date; 
+  directory_path: string;
+  spec_location:string;
+  private:boolean;
+  show_template_review: boolean;
+  require_quiz:boolean;
+  has_badge:boolean;
+  staggered_deadline:boolean;
+  is_calibrated:boolean;
   
 }
 
