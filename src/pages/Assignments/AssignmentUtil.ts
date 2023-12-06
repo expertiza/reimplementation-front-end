@@ -1,6 +1,4 @@
 import { IAssignmentRequest, IAssignmentResponse } from "../../utils/interfaces";
-
-import { IFormOption } from "components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
 
 export interface IAssignmentFormValues {
@@ -15,20 +13,6 @@ export interface IAssignmentFormValues {
   staggered_deadline:boolean;
   is_calibrated:boolean;
 }
-
-// export interface IAssignmentResponse {
-//   id: number;
-//   name: string; 
-//   directory_path: string;
-//   spec_location:string;
-//   private:boolean;
-//   show_template_review: boolean;
-//   require_quiz:boolean;
-//   has_badge:boolean;
-//   staggered_deadline:boolean;
-//   is_calibrated:boolean;
-// }
-
 
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
