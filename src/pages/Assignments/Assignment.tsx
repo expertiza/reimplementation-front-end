@@ -33,13 +33,6 @@ const Assignments = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-  // useEffect(() => {
-  //   if (!showDeleteConfirmation.visible) 
-  //   {
-  //     fetchAssignments({ url: `/assignments` });
-  //     fetchCourses({url: '/courses'});
-  //   }
-  // }, [fetchAssignments, location, showDeleteConfirmation.visible, auth.user.id]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -95,23 +88,10 @@ const Assignments = () => {
     [onDeleteHandle, onEditHandle]
   );
 
-  // const tableData = useMemo(
-  //   () => (isLoading || !assignmentResponse?.data ? [] : assignmentResponse.data),
-  //   [assignmentResponse?.data, isLoading]
-
-
-  // );
   const tableData = useMemo(
     () => (isLoading || !mergedData?.length ? [] : mergedData),
     [mergedData, isLoading]
   );
-
-
-  // const tableData = useMemo(() => {
-  //   return isLoading || !mergedData.length ? [] : mergedData;
-  // }, [mergedData, isLoading]);
-
-  
 
   return (
     <>
