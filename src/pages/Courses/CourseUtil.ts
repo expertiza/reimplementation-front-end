@@ -7,17 +7,21 @@ import { ICourseRequest, ICourseResponse, IInstitution, IInstitutionResponse, II
  * @author Atharva Thorve, on December, 2023
  * @author Mrityunjay Joshi, on December, 2023
  */
+// Course Utility Functions and Constants
 
+// Enumeration for course visibility options
 export enum CourseVisibility {
   PRIVATE = "private",
 }
 
 type PermittedCourseVisibility = CourseVisibility.PRIVATE
 
+// Form options for course visibility
 export const courseVisibility: IFormOption[] = [
   { label: "Private Course", value: CourseVisibility.PRIVATE },
 ];
 
+// Interface for course form values
 export interface ICourseFormValues {
   id?: number;
   name: string;
@@ -28,6 +32,7 @@ export interface ICourseFormValues {
   instructor_id: number;
 }
 
+// Transform institutions response into form options
 export const transformInstitutionsResponse = (institutionsList: string) => {
   let institutionsData: IFormOption[] = [{ label: "Select an Institution", value: "" }];
   let institutions: IInstitution[] = JSON.parse(institutionsList);
@@ -37,6 +42,7 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   return institutionsData;
 };
 
+// Transform instructor response into form options
 export const transformInstructorResponse = (instructorList: string) => {
   let instructorData: IFormOption[] = [{ label: "Select an Instructor", value: "" }];
   let instructor: IInstructor[] = JSON.parse(instructorList);
@@ -46,6 +52,7 @@ export const transformInstructorResponse = (instructorList: string) => {
   return instructorData;
 };
 
+// Transform course form values into request payload
 export const transformCourseRequest = (values: ICourseFormValues) => {
   const course: ICourseRequest = {
     name: values.name,
@@ -58,6 +65,7 @@ export const transformCourseRequest = (values: ICourseFormValues) => {
   return JSON.stringify(course);
 }
 
+// Transform course response into form values
 export const transformCourseResponse = (courseResponse: string) => {
   const course: ICourseResponse = JSON.parse(courseResponse);
   const institution_id = course.institution_id ? course.institution_id : -1;
@@ -74,6 +82,7 @@ export const transformCourseResponse = (courseResponse: string) => {
   return courseValues;
 }
 
+// Load course, instructor, and institution data
 export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
   let courseData = {};
 
@@ -85,6 +94,7 @@ export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
     courseData = await courseResponse.data;
   }
 
+  // Load institutions data
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
   });
