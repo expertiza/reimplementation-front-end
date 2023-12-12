@@ -14,6 +14,8 @@ import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 import { formatDate, mergeDataAndNames } from "./CourseUtil";
 
+// Courses Component: Displays and manages courses, including CRUD operations.
+
 /**
  * @author Atharva Thorve, on December, 2023 
  * @author Mrityunjay Joshi on December, 2023
@@ -29,6 +31,7 @@ const Courses = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
+  // State for delete and copy confirmation modals
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: ICourseResponse;
@@ -48,17 +51,19 @@ const Courses = () => {
     }
   }, [fetchCourses, fetchInstitutions, location, showDeleteConfirmation.visible, auth.user.id, showCopyConfirmation.visible]);
 
-  // Error alert
+  // Error alert for API errors
   useEffect(() => {
     if (error) {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
   }, [error, dispatch]);
 
+  // Callbacks for handling delete and copy confirmation modals
   const onDeleteCourseHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onCopyCourseHandler = useCallback(() => setShowCopyConfirmation({ visible: false }), []);
 
+  // Callbacks for navigation and modal handling
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
@@ -101,6 +106,8 @@ const Courses = () => {
     created_at: formatDate(item.created_at),
     updated_at: formatDate(item.updated_at),
   }));
+
+  // Render the Courses component
   
   return (
     <>
