@@ -1,3 +1,4 @@
+// Importing necessary interfaces and modules
 import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
@@ -53,6 +54,7 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
     onClose();
   };
 
+  // Pop-up Function to delete TA
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>

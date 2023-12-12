@@ -1,3 +1,4 @@
+// Importing necessary interfaces and modules
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
@@ -28,6 +29,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: TAResponse, error: TAError, sendRequest } = useAPI();
   const TAData = { ...initialValues };
 
+  // Load data from the server
   const { taUsers }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -73,7 +75,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   };
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
-
+  //Validation of TA Entry 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>

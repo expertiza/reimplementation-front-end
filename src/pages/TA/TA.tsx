@@ -1,3 +1,5 @@
+// Importing necessary interfaces and modules
+
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";

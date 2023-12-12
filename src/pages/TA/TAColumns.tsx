@@ -1,3 +1,4 @@
+// Importing necessary interfaces and modules
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPersonXFill } from "react-icons/bs";
@@ -16,18 +17,18 @@ export const TAColumns = (handleDelete: Fn) => [
     enableColumnFilter: false,
     enableSorting: false,
   }),
-
+  //create TA Name column Header
   columnHelper.accessor("name", {
     header: "TA Name",
     enableSorting: true,
   }),
-
+  //create Full TA Name column Header
   columnHelper.accessor("full_name", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,
   }),
-
+  //create Email column Header
   columnHelper.accessor("email", {
     header: "Email",
   }),
