@@ -11,17 +11,20 @@ import { ICourseResponse as ICourse } from "../../utils/interfaces";
  * @author Mrityunjay Joshi on December, 2023
  */
 
+// CopyCourse Component: Modal for copying a course.
+
 interface ICopyCourse {
   courseData: ICourse;
   onClose: () => void;
 }
 
 const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
+  // State and hook declarations
   const { data: copiedCourse, error: courseError, sendRequest: CopyCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
-  // Copy course
+  // Function to initiate the course copy process
   const copyHandler = () =>
     CopyCourse({ url: `/courses/${courseData.id}/copy`, method: HttpMethod.GET });
 
@@ -44,11 +47,13 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
     }
   }, [copiedCourse?.status, dispatch, onClose, courseData.name]);
 
+  // Function to close the modal
   const closeHandler = () => {
     setShow(false);
     onClose();
   };
 
+  // Render the CopyCourse modal
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
