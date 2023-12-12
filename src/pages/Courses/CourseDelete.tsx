@@ -11,12 +11,15 @@ import { ICourseResponse as ICourse } from "../../utils/interfaces";
  * @author Mrityunjay Joshi on December, 2023
  */
 
+// DeleteCourse Component: Modal for deleting a course
+
 interface IDeleteCourse {
   courseData: ICourse;
   onClose: () => void;
 }
 
 const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
+  // State and hook declarations
   const { data: deletedCourse, error: courseError, sendRequest: DeleteCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -44,11 +47,13 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
     }
   }, [deletedCourse?.status, dispatch, onClose, courseData.name]);
 
+  // Function to close the modal
   const closeHandler = () => {
     setShow(false);
     onClose();
   };
 
+  // Render the DeleteCourse modal
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
