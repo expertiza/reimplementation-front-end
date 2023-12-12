@@ -19,6 +19,7 @@ import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transf
  * @author Mrityunjay Joshi, on December, 2023
  */
 
+// CourseEditor Component: Modal for creating or updating a course.
 const initialValues: ICourseFormValues = {
   name: "",
   directory: "",
@@ -28,6 +29,7 @@ const initialValues: ICourseFormValues = {
   info: "",
 };
 
+// Validation schema for the course form
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
@@ -42,6 +44,8 @@ const validationSchema = Yup.object({
 });
 
 const CourseEditor: React.FC<IEditor> = ({ mode }) => {
+
+  // API hook for making requests
   const { data: courseResponse, error: courseError, sendRequest } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -72,6 +76,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
     courseError && dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
   }, [courseError, dispatch]);
 
+  // Function to handle form submission
   const onSubmit = (values: ICourseFormValues, submitProps: FormikHelpers<ICourseFormValues>) => {
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/courses";
@@ -92,8 +97,10 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
+  // Function to close the modal
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
 
+  // Render the CourseEditor modal
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
