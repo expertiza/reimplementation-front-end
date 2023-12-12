@@ -50,23 +50,30 @@ function App() {
           ],
         },
         {
+          // Routing for courses, so the URL will be https://<domain>.com/courses
+          // This route is protected and only TAs can view it.
           path: "courses",
           element: <ProtectedRoute element={<Courses />} leastPrivilegeRole={ROLE.TA} />,
           children: [
+            // Child route for courses https://<domain>.com/courses/new
+            // The loader runs the function it has been provided with when the component is loaded on the DOM
             {
               path: "new",
               element: <CourseEditor mode="create" />,
               loader: loadCourseInstructorDataAndInstitutions,
             },
+            // Child route for courses https://<domain>.com/courses/edit/:id
             {
               path: "edit/:id",
               element: <CourseEditor mode="update" />,
               loader: loadCourseInstructorDataAndInstitutions,
             },
+            // Child route for courses https://<domain>.com/courses/:courseId/tas
             {
               path: ":courseId/tas",
               element: <ProtectedRoute element={<TA />} leastPrivilegeRole={ROLE.TA} />,
               children: [
+                // Child route for TA component https://<domain>.com/courses/:courseId/tas/new
                 {
                   path: "new",
                   element: <TAEditor mode="create" />,
