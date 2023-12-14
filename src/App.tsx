@@ -17,6 +17,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AdministratorLayout from "./layout/Administrator";
 import NotFound from "./router/NotFound";
+import DueDate from "./pages/DueDate/dueDate";
 
 function App() {
   const router = createBrowserRouter([
@@ -43,6 +44,10 @@ function App() {
               loader: loadUserDataRolesAndInstitutions,
             },
           ],
+        },
+        {
+          path: "duedate",
+          element: <ProtectedRoute element={<DueDate />} leastPrivilegeRole={ROLE.ADMIN} />,
         },
         {
           path: "administrator",
