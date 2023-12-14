@@ -13,7 +13,7 @@ const DueDate: React.FC = () => {
   const [metaReviewAllowed, setMetaReviewAllowed] = useState("Yes");
   const [reminderHours, setReminderHours] = useState("");
 
-  // Handle form submission
+  // Below code is written to manage form submission for Due Date changes
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -23,7 +23,8 @@ const DueDate: React.FC = () => {
     // Reset form fields if needed
     // ...
   };
-// Static data for an additional row
+
+// Static data for an additional row in the table
 const staticRowData = {
   deadlineType: 'Round 1: Submission',
   dateTime: '12/01/2023, 11:59 PM', // Replace with an appropriate date and time
@@ -46,10 +47,12 @@ const staticRowData2 = {
   return (
     <div className="due-date-container">
       <div className="checkbox-section">
+        {/* Display and control time zone */}
         <div>
-          <label>Timezone:</label>
-          <span>Timezone Value</span>
+          <label>Time zone : </label>
+          <span>Eastern Standard Time (US & Canada)</span>
         </div>
+        {/* Checkbox for using team formation deadline */}
         <div className="checkbox-item">
           <input
             type="checkbox"
@@ -58,6 +61,7 @@ const staticRowData2 = {
           />
           Use team formation deadline
         </div>
+        {/* Checkbox for using meta-review deadline */}
         <div className="checkbox-item">
           <input
             type="checkbox"
@@ -82,6 +86,7 @@ const staticRowData2 = {
             </tr>
           </thead>
           <tbody>
+          {/* Display static deadline table; This can be replaced later when data fetched from backend */}
           <tr>
           <td>{staticRowData.deadlineType}</td>
           <td>{staticRowData.dateTime}</td>
@@ -101,6 +106,7 @@ const staticRowData2 = {
           <td>{staticRowData2.metaReviewAllowed}</td>
           <td>{staticRowData2.reminderHours}</td>
         </tr>
+          {/* Form for adding new deadline */}
           <tr>
               <td>
                 <select
@@ -162,26 +168,33 @@ const staticRowData2 = {
                   onChange={(e) => setReminderHours(e.target.value)}
                 >
                   <option value="">Select Hours</option>
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="2">4</option>
+                  <option value="2">8</option>
+                  <option value="2">16</option>
+                  <option value="2">32</option>
+                  <option value="2">64</option>
+                  <option value="2">96</option>
                   {/* Add more options as needed */}
                 </select>
               </td>
             </tr>
           </tbody>
         </table>
-
+          {/* Checkbox for using late policy */}
           <div className="late-policy-section">
             <input type="checkbox" className="late-policy-checkbox" />
             Use the late policy for this assignment
             <select>
-            <option>Random Dropdown Option 1</option>
+              <option>Random Dropdown Option 1</option>
               <option>Random Dropdown Option 2</option>
+              <option>Random Dropdown Option 3</option>
               {/* Add more options as needed */}
             </select>
             <a href="#" className="new-late-policy-link">New Late Policy</a>
           </div>
-
+        {/* Save and Back buttons */}
         <div className="buttons-section">
           <button type="submit" className="save-btn">Save</button>
           <button type="button" className="back-btn">Back</button>
