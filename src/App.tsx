@@ -1,3 +1,6 @@
+import React from "react";
+import Home from "pages/Home";
+import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
 import RootLayout from "layout/Root";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
@@ -33,6 +36,7 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        {path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
