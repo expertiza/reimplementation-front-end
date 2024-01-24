@@ -7,6 +7,22 @@ interface Privileges {
   [key: string]: number;
 }
 
+interface PrivilegeID {
+  [key: number]: string;
+}
+
+const privilegeID: PrivilegeID = {
+  1: "Student",
+  2: "Teaching Assistant",
+  3: "Instructor",
+  4: "Administrator",
+  5: "Super Administrator",
+}
+
+export function getPrivilegeFromID(roleId: number): string {
+  return privilegeID[roleId];
+}
+
 const privileges: Privileges = {
   Student: 1,
   "Teaching Assistant": 2,

@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { userColumns as USER_COLUMNS } from "./userColumns";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
-import DeleteUser from "./UserDelete";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
-import { IUserResponse, ROLE } from "../../utils/interfaces";
+import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
+import { IUserResponse, ROLE } from "../../utils/interfaces";
+import DeleteUser from "./UserDelete";
+import { userColumns as USER_COLUMNS } from "./userColumns";
 
 /**
  * @author Ankur Mundra on April, 2023
