@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import {createBrowserRouter,Navigate,RouterProvider} from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Login from "./pages/Authentication/Login";
@@ -9,13 +9,12 @@ import Institutions, { loadInstitutions } from "./pages/Institutions/Institution
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from './pages/Assignments/Assignment'
-import AssignmentEditor from "pages/Assignments/AssignmentEditor";
+import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
+import { loadAssignment } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import AdministratorLayout from "./layout/Administrator";
-import NotFound from "./router/NotFound";
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
@@ -32,7 +31,6 @@ import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
 
-
 function App() {
   const router = createBrowserRouter([
     {
@@ -43,10 +41,10 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
-        {path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
+        { path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
         {
           path: "assignments",
-          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />, // Adjust as needed
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
           children: [
             {
               path: "new",
@@ -78,7 +76,6 @@ function App() {
         },
         {
           path: "student_tasks/participants",
-          // TODO: The id here should be dynamic and should be received from the parent component
           element: <Participants type="student_tasks" id={1} />,
           children: [
             {
@@ -95,7 +92,6 @@ function App() {
         },
         {
           path: "courses/participants",
-          // TODO: The id here should be dynamic and should be received from the parent component
           element: <Participants type="courses" id={1} />,
           children: [
             {
@@ -108,30 +104,27 @@ function App() {
               element: <ParticipantEditor mode="update" type="courses" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
-          // Routing for courses, so the URL will be https://<domain>.com/courses
-          // This route is protected and only TAs can view it.
+          ],
+        },
+        // Fixed the missing comma and added an opening curly brace
+        {
           path: "courses",
           element: <ProtectedRoute element={<Courses />} leastPrivilegeRole={ROLE.TA} />,
           children: [
-            // Child route for courses https://<domain>.com/courses/new
-            // The loader runs the function it has been provided with when the component is loaded on the DOM
             {
               path: "new",
               element: <CourseEditor mode="create" />,
               loader: loadCourseInstructorDataAndInstitutions,
             },
-            // Child route for courses https://<domain>.com/courses/edit/:id
             {
               path: "edit/:id",
               element: <CourseEditor mode="update" />,
               loader: loadCourseInstructorDataAndInstitutions,
             },
-            // Child route for courses https://<domain>.com/courses/:courseId/tas
             {
               path: ":courseId/tas",
               element: <ProtectedRoute element={<TA />} leastPrivilegeRole={ROLE.TA} />,
               children: [
-                // Child route for TA component https://<domain>.com/courses/:courseId/tas/new
                 {
                   path: "new",
                   element: <TAEditor mode="create" />,
@@ -139,10 +132,7 @@ function App() {
                 },
               ]
             },
-            // ToDo: Integrate Course Participants here. More information for it can be found: https://github.com/expertiza/reimplementation-front-end/pull/17
-            // This can be done in the same way as how it is done for TAs
-            // Where we reroute the user to appropriate page by selecting a specific course id and then display all the participants.
-          ],
+          ], // Added the missing closing curly brace
         },
         {
           path: "administrator",
