@@ -12,9 +12,12 @@ import Assignment from './pages/Assignments/Assignment'
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
 import { loadAssignment } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
-import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+<<<<<<< HEAD
+=======
+import NotFound from "./router/NotFound";
+>>>>>>> 2c7a58c8dabb52a38c66530e4dd8407beece819a
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
@@ -189,13 +192,20 @@ function App() {
                 },
               ],
             },
+            // Add the "Questionnaire" route here
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+            },
           ],
         },
         { path: "*", element: <NotFound /> },
+        // Add the "Questionnaire" route here if it's not under the administrator section
+        { path: "questionnaire", element: <Questionnaire /> },
       ],
     },
   ]);
-
+  
   return <RouterProvider router={router} />;
 }
 

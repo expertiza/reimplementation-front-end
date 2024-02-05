@@ -65,7 +65,6 @@ Implemented the UI according to requirements given under task 2:
 ![image](https://github.com/subhang51011/reimplementation-front-end/assets/56782318/d1bafff1-9c73-4e6c-8847-7230f9e15e54)
 ![image](https://github.com/subhang51011/reimplementation-front-end/assets/56782318/c7dc72f5-5b2b-44de-919d-f672a2355abb)
 
-
 Implemented import modal:
 ![image](https://github.com/subhang51011/reimplementation-front-end/assets/56782318/b6070758-3a91-4445-8708-6d3d59566808)
 
@@ -86,3 +85,5 @@ Kartiki Bhandakkar
 - Shreya Vaidya <svaidya6@ncsu.edu>
 - Shonil Bhide <sbhide@ncsu.edu>
 - Subhang Boorlagadda <sboorla@ncsu.edu>
+
+To learn React, check out the [React documentation](https://reactjs.org/).
