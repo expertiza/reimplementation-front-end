@@ -14,10 +14,7 @@ import { loadAssignment } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-<<<<<<< HEAD
-=======
 import NotFound from "./router/NotFound";
->>>>>>> 2c7a58c8dabb52a38c66530e4dd8407beece819a
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
