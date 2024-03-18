@@ -23,7 +23,8 @@ const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
     .min(3, "Institution name must be at least 3 characters")
-    .max(50, "Institution name must be at most 36 characters"),
+    .max(50, "Institution name must be at most 36 characters")
+    .matches(/^[^\d]+$/, 'Institution name cannot be numeric'),
 });
 
 const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
