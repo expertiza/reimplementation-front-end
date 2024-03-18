@@ -8,12 +8,22 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { IRole } from "../../utils/interfaces";
 import { roleColumns as ROLE_COLUMNS } from "./roleColumns";
 import DeleteRole from "./RoleDelete";
+import { access } from './Access';
 
 /**
  * @author Ankur Mundra on June, 2023
  */
 
+interface RoleLogin {
+  isAuthenticated: string;
+  authToken: string;
+  user: any;
+}
+
 const Roles = () => {
+  const roleLoginString: string | null = localStorage.getItem("persist:authentication");
+  const roleLogin: RoleLogin | null = roleLoginString ? JSON.parse(roleLoginString) : null;
+
   const navigate = useNavigate();
   const roles: any = useLoaderData();
 
@@ -25,7 +35,13 @@ const Roles = () => {
   const onDeleteRoleHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<IRole>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<IRole>) => {
+      if(access[JSON.parse(roleLogin?.user).role].indexOf(row.original.name) != -1){
+        navigate(`edit/${row.original.id}`)
+      } else {
+        window.alert("You do not have access to edit this role.");
+      }
+    },
     [navigate]
   );
 
