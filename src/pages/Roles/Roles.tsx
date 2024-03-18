@@ -97,6 +97,7 @@ const Roles = () => {
   );
 };
 
+// API => Load Roles data
 export async function loadRoles() {
   const rolesResponse = await axiosClient.get("/roles");
   return await rolesResponse.data;
