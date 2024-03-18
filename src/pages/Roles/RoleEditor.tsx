@@ -102,6 +102,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
                     Close
                   </Button>
                   <Button
+                    className="create-role-button" // Added class name for styling
                     variant="outline-success"
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
@@ -124,3 +125,5 @@ export async function loadAvailableRole({ params }: any) {
 }
 
 export default RoleEditor;
+
+
