@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import axiosClient from "../../utils/axios_client";
@@ -69,9 +69,14 @@ const Roles = () => {
           </Row>
           <Row className="mb-1">
             <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPlusSquareFill />
-              </Button>
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="tooltip-create-new-role">Create New Role</Tooltip>}
+              >
+                <Button variant="outline-success" onClick={() => navigate("new")}>
+                  <BsPlusSquareFill />
+                </Button>
+              </OverlayTrigger>
             </Col>
             {showDeleteConfirmation.visible && (
               <DeleteRole roleData={showDeleteConfirmation.data!} onClose={onDeleteRoleHandler} />
@@ -81,7 +86,7 @@ const Roles = () => {
             <Table
               data={tableData}
               columns={tableColumns}
-              tableSize={{ span: 6, offset: 3 }}
+              tableSize={{ span: 12, offset: 0 }}
               showColumnFilter={false}
               showPagination={false}
             />
@@ -98,3 +103,4 @@ export async function loadRoles() {
 }
 
 export default Roles;
+

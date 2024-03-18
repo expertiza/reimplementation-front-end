@@ -24,9 +24,14 @@ const initialValues: IRole = {
 
 const validationSchema = Yup.object({
   name: Yup.string()
-    .required("Required")
-    .min(3, "Institution name must be at least 3 characters")
-    .max(16, "Institution name must be at most 16 characters"),
+    .required("Role Name is required")
+    .min(3, "Role name must be at least 3 characters")
+    .max(16, "Role name must be at most 16 characters")
+    .matches(/^[^\d]+$/, 'Role name cannot be numeric'),
+  parent_id: Yup.number().test('not-self-parent', 'Role cannot be its own parent', function(value, { parent }) {
+    const { id } = parent;
+    return value !== id;
+  })
 });
 
 const RoleEditor: React.FC<IEditor> = ({ mode }) => {
@@ -84,7 +89,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
           initialValues={mode === "update" ? role : initialValues}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
-          validateOnChange={false}
+          validateOnChange={true}
           enableReinitialize={true}
         >
           {(formik) => {
@@ -102,6 +107,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
                     Close
                   </Button>
                   <Button
+                    className="create-role-button" // Added class name for styling
                     variant="outline-success"
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
@@ -124,3 +130,5 @@ export async function loadAvailableRole({ params }: any) {
 }
 
 export default RoleEditor;
+
+
