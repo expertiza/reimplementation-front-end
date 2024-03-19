@@ -1,0 +1,143 @@
+.table-container {
+  max-width: 70%; /* Set the maximum width of the table container */
+}
+
+/* These are the colors used for coloring
+ * score cells within the heatgrid for the
+ * grades view.
+ */
+
+/* This is a null space in the table. Just leave
+ * it the way it is for now.
+ */
+.c0 {
+  background-color: #d3d3d3;
+}
+
+/* This is a red, indicative of a poor score. */
+.c1 {
+  background-color: #ff8080;
+}
+
+/* This is an orange. */
+.c2 {
+  background-color: #FD992D;
+}
+
+/* This is a yellow, indicative of a median score. */
+.c3 {
+  background-color: #FFEC8B;
+}
+
+/* This is a light green. */
+.c4 {
+  background-color: #BCED91;
+}
+
+/* This is a green, indicative of a good score. */
+.c5 {
+  background-color: #2DE636;
+}
+
+.cf {
+  background-color: #FFFFFF;
+}
+
+/* To color the grades in the summary report  */
+.grade-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: black;
+  line-height: 30px;
+  text-align: center;
+}
+
+/* To underline scores which have a comment. */
+.underlined {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.tbl_heat {
+  border: 1px solid black;
+  width: 100%; /* Set the width of the table to 100% */
+  font-size: 10px; /* Adjust font size for table content */
+  text-align: center; /* Center align table content */
+  table-layout: fixed; /* Fix the layout of the table */
+}
+
+.tbl_heat td {
+  cursor: pointer;
+  padding: 8px; /* Adjust padding of table cells */
+  border: 1px black solid;
+  width: auto; /* Set the width of table cells to auto */
+  font-size: 11px; /* Adjust font size for table data */
+  table-layout: fixed;
+}
+
+.tbl_heat th {
+  border: 1px black solid;
+  padding: 10px; /* Adjust padding of table headers */
+  font-size: 11px; /* Adjust font size for table headers */
+  background-color: #f2f2f2; /* Background color for table headers */
+  //white-space: nowrap; /* Prevent wrapping of content */
+  width: auto; /* Set the width of table headers to auto */
+  table-layout: fixed;
+}
+
+.hiddenRow {
+  padding: 0 !important;
+}
+
+.spn_tooltip {
+  padding-left: 30px;
+  color: grey;
+  font-size: small;
+}
+
+.spn_qsttog {
+  padding-left: 30px;
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+  font-size: small;
+}
+
+
+// Add classes for E2100 Tag Reports for Students to style the new HeatGrid of review tags
+
+.action_row {
+  border: 1px black solid;
+  padding: 1px 2px 2px 1px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.tag_heat_grid {
+  padding: 0;
+  spacing: 0;
+  border: 1px solid black;
+  position: relative;
+  float: right;
+  top: 0px;
+  right: 0px;
+  z-index: 2;
+}
+
+.tag_heat_grid th {
+  border: 1px solid black;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tag_heat_grid td {
+  border: 0.5px solid black;
+  font-size: 8px;
+}
+
+.tag_heat_grid_criterion {
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
