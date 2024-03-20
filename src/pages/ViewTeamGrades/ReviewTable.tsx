@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './grades.scss';
 import ShowSubmission from './ShowSubmission'; // Import the ShowSubmission component
+import { Link } from 'react-router-dom';
 
 interface ReviewData {
   questionNumber: string;
@@ -149,7 +150,7 @@ const ReviewTable: React.FC = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-2">Summary Report for assignment: Program 2</h2>
-      <h5 className="text-xl font-semibold mb-1">Team: Nisarg_Chaitanya_Sagar</h5>
+      <h5 className="text-xl font-semibold mb-1">Team: Thala4AReason</h5>
       <h5 className="mb-4">Average peer review score: <span className={averageScoreColorClass}>{averagePeerReviewScore}</span></h5>
       <ShowSubmission />
       <div className="table-container">
@@ -191,8 +192,18 @@ const ReviewTable: React.FC = () => {
         </table>
       </div>
       <p className="mt-4">
-        Team members: (Chaitanya Srusti) (Nisarg Nilesh Doshi) (Malick, Kashika) (Sagar Dama)
+        Team members: (Chaitanya Srusti) (Nisarg Nilesh Doshi) (Aniruddha Rajnekar)(Malick, Kashika) 
       </p>
+      <br></br>
+      <p className="mt-4">
+        <h3>Grade and comment for submission</h3>
+        Grade: Grade for submission<br></br>
+        Comment: Comment for submission<br></br>
+        Late Penalty: 0<br></br>
+      </p>
+      <Link to="/">
+        Back
+      </Link>
     </div>
   );
 };
