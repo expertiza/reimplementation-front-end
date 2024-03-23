@@ -7,7 +7,7 @@ import { IRole } from "../../utils/interfaces";
 type Fn = (row: Row<IRole>) => void;
 const columnHelper = createColumnHelper<IRole>();
 
-export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
+export const roleColumns = (handleEdit: Fn, handleDelete: Fn, parentNames: Record<number, string>) => [
   columnHelper.accessor("id", {
     header: "Id",
     enableColumnFilter: false,
@@ -20,9 +20,15 @@ export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor("parent_id", {
-    header: "Parent Id",
+    header: "Parent Id",  
     enableSorting: true,
     enableColumnFilter: false,
+  }),
+
+  columnHelper.display({
+    id: "parent_name",
+    header: "Parent Name",
+    cell: ({ row }) => parentNames[row.original.parent_id] || " ", // Render parent name or " " if not found
   }),
 
   columnHelper.display({
