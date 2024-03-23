@@ -7,18 +7,22 @@ import { IRole } from "../../utils/interfaces";
 type Fn = (row: Row<IRole>) => void;
 const columnHelper = createColumnHelper<IRole>();
 
+// EXPORT ROLE COLUMNS
 export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
+  // ROLE ID COLUMN
   columnHelper.accessor("id", {
     header: "Id",
     enableColumnFilter: false,
     enableSorting: false,
   }),
 
+  // ROLE NAME COLUMN
   columnHelper.accessor("name", {
     header: "Role Name",
     enableSorting: true,
   }),
 
+  // ROLE PARENT ID COLUMN
   columnHelper.accessor("parent_id", {
     header: "Parent Id",
     enableSorting: true,
