@@ -7,55 +7,71 @@ import { IRole } from "../../utils/interfaces";
 type Fn = (row: Row<IRole>) => void;
 const columnHelper = createColumnHelper<IRole>();
 
-// EXPORT ROLE COLUMNS
+type ButtonSize = 'sm' | 'lg' | undefined;
+
+interface OverlayTriggerButtonProps {
+  id: string;
+  variant: string;
+  size: ButtonSize;
+  onClick: () => void;
+  children: React.ReactNode;
+  tooltip: string;
+}
+
+const OverlayTriggerButton: React.FC<OverlayTriggerButtonProps> = ({
+  id,
+  variant,
+  size,
+  onClick,
+  children,
+  tooltip,
+}) => (
+  <OverlayTrigger placement="top" overlay={<Tooltip id={`tooltip-${id}`}>{tooltip}</Tooltip>}>
+    <Button variant={variant} size={size} onClick={onClick}>
+      {children}
+    </Button>
+  </OverlayTrigger>
+);
+
 export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
-  // ROLE ID COLUMN
   columnHelper.accessor("id", {
     header: "Id",
     enableColumnFilter: false,
     enableSorting: false,
   }),
-
-  // ROLE NAME COLUMN
   columnHelper.accessor("name", {
     header: "Role Name",
     enableSorting: true,
   }),
-
-  // ROLE PARENT ID COLUMN
   columnHelper.accessor("parent_id", {
     header: "Parent Id",
     enableSorting: true,
     enableColumnFilter: false,
   }),
-
   columnHelper.display({
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id={`tooltip-edit-${row.original.id}`}>Edit</Tooltip>}
+        <OverlayTriggerButton
+          id={`edit-${row.original.id}`}
+          variant="outline-warning"
+          size="sm"
+          onClick={() => handleEdit(row)}
+          tooltip="Edit"
         >
-          <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-            <Edit />
-          </Button>
-        </OverlayTrigger>
+          <Edit />
+        </OverlayTriggerButton>
 
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id={`tooltip-delete-${row.original.id}`}>Delete</Tooltip>}
+        <OverlayTriggerButton
+          id={`delete-${row.original.id}`}
+          variant="outline-danger"
+          size="sm"
+          onClick={() => handleDelete(row)}
+          tooltip="Delete"
         >
-          <Button
-            size="sm"
-            variant="outline-danger"
-            className="ms-sm-2"
-            onClick={() => handleDelete(row)}
-          >
-            <Remove />
-          </Button>
-        </OverlayTrigger>
+          <Remove />
+        </OverlayTriggerButton>
       </>
     ),
   }),
