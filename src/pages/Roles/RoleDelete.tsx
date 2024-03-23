@@ -10,29 +10,36 @@ import {IRole} from "../../utils/interfaces";
  * @author Ankur Mundra on June, 2023
  */
 
+// DELETE ROLE INTERFACE
 interface IDeleteRole {
   roleData: IRole;
   onClose: () => void;
 }
 
+// DEFAULT EXPORT FUNCTION
 const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
+  // API CUSTOM HOOK
   const { data: response, error: roleError, sendRequest: deleteRole } = useAPI();
+
+  // STATE MANAGEMENT
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
-  // Delete user
+  // DELETE USER
   const deleteHandler = () =>
     deleteRole({ url: `/roles/${roleData.id}`, method: HttpMethod.DELETE });
 
-  // Show error if any
+  // SHOW ERRORS
   useEffect(() => {
     if (roleError) dispatch(alertActions.showAlert({ variant: "danger", message: roleError }));
   }, [roleError, dispatch]);
 
-  // Close modal if user is deleted
+  // CLOSE MODAL IF USER IS DELETED
   useEffect(() => {
     if (response?.status && response?.status >= 200 && response?.status < 300) {
       setShow(false);
+
+      // SHOW ALERT
       dispatch(
         alertActions.showAlert({
           variant: "success",
@@ -43,11 +50,13 @@ const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
     }
   }, [response?.status, dispatch, onClose, roleData.name]);
 
+  // CLOSE FUNCTION
   const closeHandler = () => {
     setShow(false);
     onClose();
   };
 
+  // RENDER DOM
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
