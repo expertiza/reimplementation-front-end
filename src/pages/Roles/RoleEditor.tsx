@@ -1,3 +1,4 @@
+// IMPORTS
 import React, { useEffect } from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { Button, InputGroup, Modal } from "react-bootstrap";
@@ -17,11 +18,13 @@ import { transformRolesResponse } from "../Users/userUtil";
  * @author Ankur Mundra on June, 2023
  */
 
+// DEFAULT VALUE
 const initialValues: IRole = {
   name: "",
   parent_id: -1,
 };
 
+// FORM VALIDATION
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Role Name is required")
@@ -34,14 +37,16 @@ const validationSchema = Yup.object({
   })
 });
 
+// DEFAULT EXPORT FUNCTION
 const RoleEditor: React.FC<IEditor> = ({ mode }) => {
+  // API CUSTOM HOOK
   const { data: roleResponse, error, sendRequest } = useAPI();
   const availableRoles = transformRolesResponse(JSON.stringify(useRouteLoaderData("roles")));
   const role: any = useRouteLoaderData("edit-role");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Close the modal if the role is updated successfully and navigate to the institutions page
+  // CLOSE THE MODAL IF THE ROLE IS UPDATED SUCCESSFULLY AND NAVIGATE TO THE INSTITUTIONS PAGE
   useEffect(() => {
     if (roleResponse && roleResponse.status >= 200 && roleResponse.status < 300) {
       dispatch(
@@ -54,11 +59,12 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
     }
   }, [dispatch, mode, navigate, roleResponse]);
 
-  // Show the error message if the role is not updated successfully
+  // SHOW THE ERROR MESSAGE IF THE ROLE IS NOT UPDATED SUCCESSFULLY
   useEffect(() => {
     error && dispatch(alertActions.showAlert({ variant: "danger", message: error }));
   }, [error, dispatch]);
 
+  // SUBMIT HANDLER
   const onSubmit = (values: IRole, submitProps: FormikHelpers<IRole>) => {
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/roles";
@@ -68,6 +74,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
       method = HttpMethod.PATCH;
     }
 
+    // ADD DATA TO API CALL
     sendRequest({
       url: url,
       method: method,
@@ -76,8 +83,10 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
+  // CLOSE EDITOR
   const handleClose = () => navigate("/administrator/roles");
 
+  // RENDER DOM
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
