@@ -99,7 +99,7 @@ const Roles = () => {
               columns={tableColumns}
               tableSize={{ span: 12, offset: 0 }}
               showColumnFilter={false}
-              showPagination={false}
+              showPagination={true}
             />
           </Row>
         </Container>
