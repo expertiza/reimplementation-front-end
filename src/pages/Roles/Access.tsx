@@ -1,3 +1,4 @@
+// ROLE TO ACCESS LEVEL ARRAY
 export const access: Record<string, string[]> = {
     "Student": ['Student'],
     "Teaching Assistant": ["Teaching Assistant", "Student"],
