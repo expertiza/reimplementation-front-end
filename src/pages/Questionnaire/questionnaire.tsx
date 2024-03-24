@@ -21,7 +21,7 @@ const Questionnaires = () => {
   // we pass in dummyData as the default data.  
   const [tableData, setTableData] = useState(dummyData);
   
-  const onHandle = () => {
+  const onHandleNew = () => {
 	let newObject = loadNewQuestionnaire();
 	setTableData(newObject);
   }
