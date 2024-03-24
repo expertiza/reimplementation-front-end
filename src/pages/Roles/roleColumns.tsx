@@ -35,9 +35,7 @@ const OverlayTriggerButton = ({
   </OverlayTrigger>
 );
 
-// FUNCTION TO EXPORT ROLE COLUMNS CONFIGURATION
-export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
-  // COLUMN FOR DISPLAYING ROLE ID
+export const roleColumns = (handleEdit: Fn, handleDelete: Fn, parentNames: Record<number, string>) => [
   columnHelper.accessor("id", {
     header: "Id",
     enableColumnFilter: false, // DISABLING FILTER FOR ID COLUMN
@@ -52,12 +50,16 @@ export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
 
   // COLUMN FOR DISPLAYING ROLE PARENT ID WITH SORTING ENABLED
   columnHelper.accessor("parent_id", {
-    header: "Parent Id",
+    header: "Parent Id",  
     enableSorting: true,
-    enableColumnFilter: false, // DISABLING FILTER FOR PARENT ID COLUMN
+    enableColumnFilter: false,
   }),
 
-  // COLUMN FOR DISPLAYING ACTION BUTTONS (EDIT, DELETE) FOR EACH ROLE
+  columnHelper.display({
+    id: "parent_name",
+    header: "Parent Name",
+    cell: ({ row }) => parentNames[row.original.parent_id] || " ", // Render parent name or " " if not found
+  }),
   columnHelper.display({
     id: "actions",
     header: "Actions",

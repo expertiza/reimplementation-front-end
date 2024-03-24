@@ -38,6 +38,14 @@ const Roles = () => {
     data?: IRole;
   }>({ visible: false });
 
+  const parentNameMap: Record<number, string> = {};
+  roles.forEach((role: IRole) => {
+  if (role && typeof role.id === 'number') {
+    parentNameMap[role.id] = role.name;
+  }
+});
+
+
   // CALLBACKS
   const onDeleteRoleHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
@@ -50,7 +58,7 @@ const Roles = () => {
       }
     },
     [navigate]
-  );
+  );  
 
   const onDeleteHandle = useCallback(
     (row: TRow<IRole>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
@@ -59,8 +67,8 @@ const Roles = () => {
 
   // DATA POPULATE
   const tableColumns = useMemo(
-    () => ROLE_COLUMNS(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
+    () => ROLE_COLUMNS(onEditHandle, onDeleteHandle, parentNameMap),
+    [onDeleteHandle, onEditHandle,  parentNameMap]
   );
   const tableData = useMemo(() => roles, [roles]);
 

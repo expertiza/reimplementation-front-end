@@ -47,6 +47,7 @@ const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
         })
       );
       onClose();
+      window.location.reload();
     }
   }, [response?.status, dispatch, onClose, roleData.name]);
 
