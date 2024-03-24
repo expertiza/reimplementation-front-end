@@ -1,5 +1,5 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
-import { Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
@@ -9,6 +9,7 @@ import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
+const tooltip = <Tooltip id="tooltip">Delete Participant</Tooltip>;
 export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("id", {
     header: "Id",
@@ -16,28 +17,28 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
+  columnHelper.accessor("user.name", {
     header: "Participant Name",
     enableSorting: true,
   }),
 
-  columnHelper.accessor("full_name", {
+  columnHelper.accessor("user.full_name", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,
   }),
 
-  columnHelper.accessor("email", {
+  columnHelper.accessor("user.email", {
     header: "Email",
   }),
 
-  columnHelper.accessor("role.name", {
+  columnHelper.accessor("user.role.name", {
     id: "role",
     header: "Role",
     enableColumnFilter: false,
   }),
 
-  columnHelper.accessor("parent.name", {
+  columnHelper.accessor("user.parent.name", {
     id: "parent",
     header: "Parent",
     enableColumnFilter: false,
@@ -47,19 +48,19 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     id: "email_preferences",
     header: "Email Preferences",
     columns: [
-      columnHelper.accessor("email_on_review", {
+      columnHelper.accessor("user.email_on_review", {
         header: "Review",
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,
       }),
-      columnHelper.accessor("email_on_submission", {
+      columnHelper.accessor("user.email_on_submission", {
         header: "Submission",
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,
       }),
-      columnHelper.accessor("email_on_review_of_review", {
+      columnHelper.accessor("user.email_on_review_of_review", {
         header: "Meta Review",
         enableSorting: false,
         enableColumnFilter: false,
@@ -67,7 +68,7 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
       }),
     ],
   }),
-  columnHelper.accessor("institution.name", {
+  columnHelper.accessor("user.institution.name", {
     id: "institution",
     header: "Institution",
     enableColumnFilter: false,
@@ -77,17 +78,16 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
-        </Button>
-        <Button
-          variant="outline-danger"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleDelete(row)}
-        >
-          <BsPersonXFill />
-        </Button>
+        <OverlayTrigger overlay={tooltip} placement="bottom">
+          <Button
+            variant="outline-danger"
+            size="sm"
+            className="ms-sm-2"
+            onClick={() => handleDelete(row)}
+          >
+            <BsPersonXFill />
+          </Button>
+        </OverlayTrigger>
       </>
     ),
   }),

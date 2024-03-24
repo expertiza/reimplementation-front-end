@@ -75,33 +75,34 @@ function App() {
           ],
         },
         {
-          path: "student_tasks/participants",
-          element: <Participants type="student_tasks" id={1} />,
+          path: "student_tasks/:typeId/participants",
+          element: <Participants type="student_tasks" />,
           children: [
             {
               path: "new",
               element: <ParticipantEditor mode="create" type="student_tasks" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
-            {
-              path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="student_tasks" />,
-              loader: loadParticipantDataRolesAndInstitutions,
-            },
           ]
         },
         {
-          path: "courses/participants",
-          element: <Participants type="courses" id={1} />,
+          path: "courses/:typeId/participants",
+          element: <Participants type="courses" />,
           children: [
             {
               path: "new",
               element: <ParticipantEditor mode="create" type="courses" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
+          ],
+        },
+        {
+          path: "assignments/:typeId/participants",
+          element: <Participants type="assignments" />,
+          children: [
             {
-              path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="courses" />,
+              path: "new",
+              element: <ParticipantEditor mode="create" type="assignments" />,
               loader: loadParticipantDataRolesAndInstitutions,
             },
           ],

@@ -5,23 +5,24 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
 import DeleteParticipant from "./ParticipantDelete";
 import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 /**
  * @author Atharva Thorve on October, 2023
  */
 
 interface IModel {
-  type: "student_tasks" | "courses";
-  id: Number;
+  type: "student_tasks" | "courses" | "assignments";
 }
 
-const Participants: React.FC<IModel> = ({ type, id }) => {
+const Participants: React.FC<IModel> = ({ type }) => {
+  const tooltip = <Tooltip id="tooltip">Add Participant</Tooltip>;
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -30,6 +31,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { typeId } = useParams();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -37,8 +39,9 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id]);
+    if (!showDeleteConfirmation.visible)
+      fetchParticipants({ url: `/${type}/${typeId}/participants` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, typeId]);
 
   // Error alert
   useEffect(() => {
@@ -47,15 +50,20 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     }
   }, [error, dispatch]);
 
-  const onDeleteParticipantHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteParticipantHandler = useCallback(
+    () => setShowDeleteConfirmation({ visible: false }),
+    []
+  );
 
   const onEditHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
-    [navigate, type]
+    (row: TRow<IParticipantResponse>) =>
+      navigate(`/${type}/${typeId}/participants/edit/${row.original.id}`),
+    [navigate, type, typeId]
   );
 
   const onDeleteHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
+    (row: TRow<IParticipantResponse>) =>
+      setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
@@ -64,10 +72,12 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     [onDeleteHandle, onEditHandle]
   );
 
-  const tableData = useMemo(
+  let tableData = useMemo(
     () => (isLoading || !participantResponse?.data ? [] : participantResponse.data),
     [participantResponse?.data, isLoading]
   );
+
+  console.log(participantResponse);
 
   return (
     <>
@@ -82,12 +92,17 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPersonFillAdd />
-              </Button>
+              <OverlayTrigger overlay={tooltip} placement="bottom">
+                <Button variant="outline-success" onClick={() => navigate("new")}>
+                  <BsPersonFillAdd />
+                </Button>
+              </OverlayTrigger>
             </Col>
             {showDeleteConfirmation.visible && (
-              <DeleteParticipant participantData={showDeleteConfirmation.data!} onClose={onDeleteParticipantHandler} />
+              <DeleteParticipant
+                participantData={showDeleteConfirmation.data!}
+                onClose={onDeleteParticipantHandler}
+              />
             )}
           </Row>
           <Row>

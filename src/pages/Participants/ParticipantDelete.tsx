@@ -36,12 +36,12 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${participantData.name} deleted successfully!`,
+          message: `User ${participantData.user.name} deleted successfully!`,
         })
       );
       onClose();
     }
-  }, [deletedParticipant?.status, dispatch, onClose, participantData.name]);
+  }, [deletedParticipant?.status, dispatch, onClose, participantData.user.name]);
 
   const closeHandler = () => {
     setShow(false);
@@ -55,7 +55,7 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete participant <b>{participantData.name}?</b>
+          Are you sure you want to delete participant <b>{participantData.user.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>

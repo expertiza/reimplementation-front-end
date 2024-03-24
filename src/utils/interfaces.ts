@@ -40,18 +40,11 @@ export interface IUserResponse {
   institution: { id: number | null; name: string | null };
 }
 
-
 export interface IParticipantResponse {
   id: number;
-  name: string;
-  email: string;
-  full_name: string;
-  email_on_review: boolean;
-  email_on_submission: boolean;
-  email_on_review_of_review: boolean;
-  role: { id: number; name: string };
-  parent: { id: number | null; name: string | null };
-  institution: { id: number | null; name: string | null };
+  user: IUserResponse;
+  assignment_id?: number;
+  course_id?: number;
 }
 
 export interface IUserRequest {
@@ -67,26 +60,20 @@ export interface IUserRequest {
 }
 
 export interface IParticipantRequest {
-  name: string;
-  email: string;
-  full_name: string;
-  role_id: number;
-  parent_id?: number | null;
-  institution_id: number;
-  email_on_review?: boolean;
-  email_on_submission?: boolean;
-  email_on_review_of_review?: boolean;
+  user_id: number;
+  assignment_id?: number;
+  course_id?: number;
 }
 export interface IAssignmentRequest {
-  name: string,
-  directory_path: string,
-  spec_location:string,
-  private:boolean,
-  show_template_review: boolean,
-  require_quiz:boolean,
-  has_badge:boolean,
-  staggered_deadline:boolean,
-  is_calibrated:boolean,
+  name: string;
+  directory_path: string;
+  spec_location: string;
+  private: boolean;
+  show_template_review: boolean;
+  require_quiz: boolean;
+  has_badge: boolean;
+  staggered_deadline: boolean;
+  is_calibrated: boolean;
 }
 
 export interface ITAResponse {
@@ -114,7 +101,7 @@ export interface ILoggedInUser {
   institution_id: number;
 }
 
-export interface ICourseResponse{
+export interface ICourseResponse {
   id: number;
   name: string;
   directory_path: string;
@@ -128,7 +115,7 @@ export interface ICourseResponse{
   instructor: { id: number | null; name: string | null };
 }
 
-export interface ICourseRequest{
+export interface ICourseRequest {
   name: string;
   directory_path: string;
   info: string;
@@ -155,19 +142,17 @@ export interface IAssignmentResponse {
   name: string;
   course_id: number;
   courseName: string;
-  created_at: Date; 
-  updated_at: Date; 
+  created_at: Date;
+  updated_at: Date;
   directory_path: string;
-  spec_location:string;
-  private:boolean;
+  spec_location: string;
+  private: boolean;
   show_template_review: boolean;
-  require_quiz:boolean;
-  has_badge:boolean;
-  staggered_deadline:boolean;
-  is_calibrated:boolean;
-  
+  require_quiz: boolean;
+  has_badge: boolean;
+  staggered_deadline: boolean;
+  is_calibrated: boolean;
 }
-
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
@@ -175,4 +160,3 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   // Transform response as needed
   return assignment;
 };
-
