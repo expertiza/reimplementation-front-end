@@ -39,7 +39,6 @@ const Questionnaires = () => {
 
 
   const onEditHandle = (row: TRow<IQuestionnaire>) => {
-    console.log(row.original.name);
 	var index = dummyData.findIndex(item => item.name === row.original.name);
 	var new_obj = [{
 	  "id": 10,
@@ -54,7 +53,16 @@ const Questionnaires = () => {
   
   
   const onDeleteHandle = (row: TRow<IQuestionnaire>) => {
-    
+    var index = dummyData.findIndex(item => item.name === row.original.name);
+	var new_obj = [{
+	  "id": 10,
+      "name": "",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	new_obj.pop();
+	new_obj = deleteQuestionnaire(index);
+	setTableData(new_obj);
   }
  
 
@@ -146,6 +154,22 @@ const editQuestionnaire = (index: number) => {
 	}]; 
 	new_obj.pop()
 	dummyData[index].name = name;
+	new_obj = new_obj.concat(dummyData);
+	
+  return new_obj; 
+}
+
+const deleteQuestionnaire = (index: number) => {
+  var new_obj = [{
+	  "id": 10,
+      "name": "",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	new_obj.pop()
+	
+	dummyData.splice(index,1);
+	
 	new_obj = new_obj.concat(dummyData);
 	
   return new_obj; 

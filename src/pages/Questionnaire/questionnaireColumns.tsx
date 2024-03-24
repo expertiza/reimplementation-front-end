@@ -34,7 +34,7 @@ export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn) => [
           size="sm"
           variant="outline-danger"
           className="ms-sm-2"
-		  onClick={() => handleDelete(row)}
+		  onClick={() => { if (window.confirm('Are you sure you wish to delete this item?')) handleDelete(row)}}
         >
           <Remove />
         </Button>
