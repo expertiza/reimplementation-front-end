@@ -27,6 +27,13 @@ export interface ITA {
   name: string;
 }
 
+export interface IQuestionnaire {
+  id?: number;
+  name: string;
+  creationDate: string; 
+  updatedDate: string; 
+}
+
 export interface IUserResponse {
   id: number;
   name: string;

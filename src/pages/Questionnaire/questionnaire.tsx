@@ -1,167 +1,159 @@
-import React, { useState } from 'react';
-import './Questionnaire.css';
-import {Button} from "react-bootstrap";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
-import dummyData from './dummyData.json';
-import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
-import {BiCopy}from "react-icons/bi";
+import React, { useCallback, useMemo, useState } from "react";
+import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
+import { Button, Col, Container, Row, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Row as TRow } from "@tanstack/react-table";
+import Table from "components/Table/Table";
+import { questionnaireColumns as QUESTIONNAIRE_COLUMNS } from "./questionnaireColumns";
+import axiosClient from "../../utils/axios_client";
 import { BsPlusSquareFill } from "react-icons/bs";
+import { IQuestionnaire } from "../../utils/interfaces";
+import dummyData from './dummyData.json';
+import QuestionnaireDelete from "./QuestionnaireDelete";
 
+/**
+ * @author Jeffrey Riehle on March, 2024
+ */
 
-function Questionnaire() {
-  const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'default' | null>(null);
-
-  const questionnaireItems = dummyData; // Use dummy data for items
-
-  const handleAddButtonClick = () => {
-    console.log('Add button clicked');
-    // Add your logic for adding questionnaire items here
-  };
-  type QuestionnaireItem = {
-    name: string;
-    creationDate: string;
-    updatedDate: string;
-    };
+const Questionnaires = () => {
   
-
-  const handleItemClick = (index: number) => {
-    if (expandedItem === index) {
-      setExpandedItem(null);
-    } else {
-      setExpandedItem(index);
-    }
-  };
-
-  const handleDelete = (item: QuestionnaireItem) => {
-    console.log(`Delete button clicked for item:`, item);
-    // Add your logic for deleting the item here
-  };
-
-  const handleEdit = (item: QuestionnaireItem) => {
-    console.log(`Edit button clicked for item:`, item);
-    // Add your logic for editing the item here
-  };
-
-  const handleShow = (item: QuestionnaireItem) => {
-    console.log(`Show button clicked for item:`, item);
-    // Add your logic for showing the item here
-  };
-
-  const handleSortByName = () => {
-    if (sortOrder === 'asc') {
-      setSortOrder('desc');
-    } else {
-      setSortOrder('asc');
-    }
-  };
-
-  const sortedQuestionnaireItems = [...questionnaireItems];
-
-  if (sortOrder === 'asc') {
-    sortedQuestionnaireItems.sort();
-  } else if (sortOrder === 'desc') {
-    sortedQuestionnaireItems.sort().reverse();
+  // useState allows us to dynamically update data without refreshing the page. 
+  // tableData is the variable we want to update, setTableData is the function we will use to update it. 
+  // we pass in dummyData as the default data.  
+  const [tableData, setTableData] = useState(dummyData);
+  
+  const onHandleNew = () => {
+	let newObject = loadNewQuestionnaire();
+	setTableData(newObject);
   }
 
-  return (
-    <div className="questionnaire-container">
-      <h1>Questionnaire List</h1>
-      <button onClick={handleAddButtonClick}>Add</button>
+  const [displayDeleteConfirmation, setDisplayDeleteConfirmation] = useState<{
+    visible: boolean;
+    data?: IQuestionnaire;
+  }>({ visible: false });
 
-      <br />
 
-      <label>
-        <input
-          type="checkbox"
-          checked={showOnlyMyItems}
-          onChange={() => setShowOnlyMyItems(!showOnlyMyItems)}
-        />
-        Display my items only
-      </label>
+  const editHandler = (row: TRow<IQuestionnaire>) => {
+	var index = dummyData.findIndex(item => item.name === row.original.name);
+	let newObject = editQuestionnaire(index);
+	setTableData(newObject);
+  }
+  
+  
+  const deleteHandler = (row: TRow<IQuestionnaire>) => {
+    var index = dummyData.findIndex(item => item.name === row.original.name);
+	let newObject = discardQuestionnaire(index);
+	setTableData(newObject);
+  }
+ 
 
-      <table className="questionnaire-table">
-        <thead>
-          <tr>
-            <th onClick={handleSortByName}>
-              Name {sortOrder === 'asc' && '↑'} {sortOrder === 'desc' && '↓'} {sortOrder === null && '↑↓'}
-            </th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedQuestionnaireItems.map((item, index) => (
-            <React.Fragment key={index}>
-              <tr>
-                <td onClick={() => handleItemClick(index)}>{item.name}</td>
-                <td>
-                
-                <Button variant="outline-success" onClick={() => handleAddButtonClick}>
-                <BsPlusSquareFill />
-              </Button>
-                  
-                </td>
-              </tr>
-              {expandedItem === index && (
-  <tr className="expanded-row">
-    <td colSpan={4}>
-      <table className='expanded-row centered-table'>
-        <tbody>
-          <tr>
-            <th><strong>Name:</strong></th>
-            
-           
-          
-            <th><strong>Creation Date:</strong></th>
-           
-          
-            <th><strong>Updated Date:</strong></th>
-            
-          
-            <th><strong>Actions:</strong></th>
-            
-            
-          </tr>
-          <tr> <td>{item.name}</td>
-            <td>{item.creationDate}</td>
-            <td>{item.updatedDate}</td>
-            <td>
-            
-            <Button
-          variant="outline-danger"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleDelete(item)}
-        >
-          <BsPersonXFill />
-        </Button>
-              <span className="icon-space"></span>
-              <Button variant="outline-warning" size="sm" onClick={() => handleEdit(item)}>
-          <BsPencilFill />
-        </Button>
-        
-              <span className="icon-space"></span>
-              
-              <Button variant="outline-warning" size="sm" onClick={() => handleShow(item)}>
-          <BiCopy />
-        </Button>
-              
-            </td>
-
-          </tr>
-        </tbody>
-      </table>
-    </td>
-  </tr>
-)}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+  const tableColumns = useMemo(
+    () => QUESTIONNAIRE_COLUMNS(editHandler, deleteHandler),
+    [editHandler, deleteHandler]
   );
+
+ 
+
+  return (
+    <>
+      <Outlet />
+      <main>
+        <Container fluid className="px-md-4">
+          <Row className="mt-md-2 mb-md-2">
+            <Col className="text-center">
+              <h1>Manage Questionnaires</h1>
+            </Col>
+            <hr />
+          </Row>
+		  <Row>
+            <Col md={{ span: 1, offset: 8 }}>
+
+			  <OverlayTrigger overlay={<Tooltip>Create Questionnaire</Tooltip>}>
+                <Button variant="outline-success" onClick={() => onHandleNew()}>
+                  <BsPlusSquareFill />
+                </Button>
+		      </OverlayTrigger>
+            </Col>
+
+          </Row>
+          <Row>
+            <Table
+              data={tableData}
+              columns={tableColumns}
+              showColumnFilter={false}
+              columnVisibility={{ id: false }}
+              tableSize={{ span: 6, offset: 3 }}
+            />
+          </Row>
+        </Container>
+      </main>
+    </>
+  );
+};
+
+const loadNewQuestionnaire = () => {
+  let name = (prompt("Please enter the questionnaire name:", "") as string);
+  if (name == null || name == ""){
+    //no name entered on prompt. 
+	return dummyData;
+  }
+  
+  // In order for the data in the table to update we need to pass back a new object.  
+  var newObject = [{
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	newObject = newObject.concat(dummyData);
+  
+  // Update the data in our JSON dummy data as well so the table remains up to date if the user navigates away and back to this page.  
+  dummyData.push({
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	});
+	
+  return newObject; 
 }
 
-export default Questionnaire;
+const editQuestionnaire = (index: number) => {
+  let name = (prompt("Please enter the questionnaire name:", "") as string);
+  if (name == null || name == ""){
+    //no name entered on prompt. 
+	return dummyData;
+  }
+  
+  // In order for the data in the table to update we need to pass back a new object. 
+  var newObject = [{
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	newObject.pop()
+	dummyData[index].name = name;
+	newObject = newObject.concat(dummyData);
+	
+  return newObject; 
+}
+
+const discardQuestionnaire = (index: number) => {
+
+  // In order for the data in the table to update we need to pass back a new object. 
+  var newObject = [{
+	  "id": 10,
+      "name": "",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	newObject.pop()
+	
+	dummyData.splice(index,1);
+	
+	newObject = newObject.concat(dummyData);
+	
+  return newObject; 
+}
+
+export default Questionnaires;

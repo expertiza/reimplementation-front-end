@@ -23,7 +23,8 @@ import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+import EditQuestionnaire from "pages/EditQuestionnaire/Questionnaire";
+import Questionnaire from "pages/Questionnaire/questionnaire";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
@@ -41,7 +42,8 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
-        { path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
+        { path: "edit-questionnaire", element: <ProtectedRoute element={<EditQuestionnaire />} /> },
+		{ path: "questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
         {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
@@ -197,8 +199,7 @@ function App() {
           ],
         },
         { path: "*", element: <NotFound /> },
-        // Add the "Questionnaire" route here if it's not under the administrator section
-        { path: "questionnaire", element: <Questionnaire /> },
+        
       ],
     },
   ]);
