@@ -81,10 +81,15 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
       data: values,
     });
     submitProps.setSubmitting(false);
+    navigate("/administrator/roles");
+    window.location.reload();
   };
 
   // CLOSE EDITOR
-  const handleClose = () => navigate("/administrator/roles");
+  const handleClose = () => {
+    navigate("/administrator/roles");
+    window.location.reload();
+  };
 
   // RENDER DOM
   return (
