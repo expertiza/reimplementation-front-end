@@ -19,12 +19,13 @@ const initialValues: IInstitution = {
   name: "",
 };
 
+// YUM PACKAGE USED FOR FORM VALIDATIONS
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
-    .min(3, "Institution name must be at least 3 characters")
-    .max(50, "Institution name must be at most 36 characters")
-    .matches(/^[^\d]+$/, 'Institution name cannot be numeric'),
+    .min(3, "Institution name must be at least 3 characters")   // VALIDATES WHETHER THE NAME IS ATLEAST 3 CHARACTERS 
+    .max(50, "Institution name must be at most 36 characters")  // VALIDATES WHETHER THE NAME IS ATMOST 36 CHARACTERS 
+    .matches(/^[^\d]+$/, 'Institution name cannot be numeric'), // VALIDATES WHETHER THE NAME HAS NUMERIC CHARACTERS IN IT 
 });
 
 const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
