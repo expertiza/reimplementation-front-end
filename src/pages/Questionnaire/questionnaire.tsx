@@ -21,34 +21,34 @@ const Questionnaires = () => {
   // we pass in dummyData as the default data.  
   const [tableData, setTableData] = useState(dummyData);
   
-  const onHandleNew = () => {
-	let new_obj = getNewQuestionnaire();
-	setTableData(new_obj);
+  const onHandle = () => {
+	let newObject = loadNewQuestionnaire();
+	setTableData(newObject);
   }
 
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
+  const [displayDeleteConfirmation, setDisplayDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IQuestionnaire;
   }>({ visible: false });
 
 
-  const onEditHandle = (row: TRow<IQuestionnaire>) => {
+  const editHandler = (row: TRow<IQuestionnaire>) => {
 	var index = dummyData.findIndex(item => item.name === row.original.name);
-	let new_obj = editQuestionnaire(index);
-	setTableData(new_obj);
+	let newObject = editQuestionnaire(index);
+	setTableData(newObject);
   }
   
   
-  const onDeleteHandle = (row: TRow<IQuestionnaire>) => {
+  const deleteHandler = (row: TRow<IQuestionnaire>) => {
     var index = dummyData.findIndex(item => item.name === row.original.name);
-	let new_obj = deleteQuestionnaire(index);
-	setTableData(new_obj);
+	let newObject = discardQuestionnaire(index);
+	setTableData(newObject);
   }
  
 
   const tableColumns = useMemo(
-    () => QUESTIONNAIRE_COLUMNS(onEditHandle, onDeleteHandle),
-    [onEditHandle, onDeleteHandle]
+    () => QUESTIONNAIRE_COLUMNS(editHandler, deleteHandler),
+    [editHandler, deleteHandler]
   );
 
  
@@ -66,7 +66,7 @@ const Questionnaires = () => {
           </Row>
 		  <Row>
             <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-success" onClick={() => onHandleNew()}>
+              <Button variant="outline-success" onClick={() => onHandle()}>
                 <BsPlusSquareFill />
               </Button>
             </Col>
@@ -87,7 +87,7 @@ const Questionnaires = () => {
   );
 };
 
-const getNewQuestionnaire = () => {
+const loadNewQuestionnaire = () => {
   let name = (prompt("Please enter the questionnaire name:", "") as string);
   if (name == null || name == ""){
     //no name entered on prompt. 
@@ -95,13 +95,13 @@ const getNewQuestionnaire = () => {
   }
   
   // In order for the data in the table to update we need to pass back a new object.  
-  var new_obj = [{
+  var newObject = [{
 	  "id": 10,
       "name": name,
       "creationDate": "2023-02-05",
       "updatedDate": "2023-02-10"
 	}]; 
-	new_obj = new_obj.concat(dummyData);
+	newObject = newObject.concat(dummyData);
   
   // Update the data in our JSON dummy data as well so the table remains up to date if the user navigates away and back to this page.  
   dummyData.push({
@@ -111,7 +111,7 @@ const getNewQuestionnaire = () => {
       "updatedDate": "2023-02-10"
 	});
 	
-  return new_obj; 
+  return newObject; 
 }
 
 const editQuestionnaire = (index: number) => {
@@ -122,35 +122,35 @@ const editQuestionnaire = (index: number) => {
   }
   
   // In order for the data in the table to update we need to pass back a new object. 
-  var new_obj = [{
+  var newObject = [{
 	  "id": 10,
       "name": name,
       "creationDate": "2023-02-05",
       "updatedDate": "2023-02-10"
 	}]; 
-	new_obj.pop()
+	newObject.pop()
 	dummyData[index].name = name;
-	new_obj = new_obj.concat(dummyData);
+	newObject = newObject.concat(dummyData);
 	
-  return new_obj; 
+  return newObject; 
 }
 
-const deleteQuestionnaire = (index: number) => {
+const discardQuestionnaire = (index: number) => {
 
   // In order for the data in the table to update we need to pass back a new object. 
-  var new_obj = [{
+  var newObject = [{
 	  "id": 10,
       "name": "",
       "creationDate": "2023-02-05",
       "updatedDate": "2023-02-10"
 	}]; 
-	new_obj.pop()
+	newObject.pop()
 	
 	dummyData.splice(index,1);
 	
-	new_obj = new_obj.concat(dummyData);
+	newObject = newObject.concat(dummyData);
 	
-  return new_obj; 
+  return newObject; 
 }
 
 export default Questionnaires;
