@@ -18,6 +18,7 @@ import RowSelectCheckBox from "./RowSelectCheckBox";
 
 /**
  * @author Ankur Mundra on May, 2023
+ * @author David White on March, 2024
  */
 
 interface TableProps {
@@ -29,6 +30,10 @@ interface TableProps {
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
+  headerCellStyle?: React.CSSProperties;
+  // new property for search control
+  columnSearchMode?: 'none' | 'input' | 'dropdown';
+  dropdownOptions?: Record<string, string[]>; // if 'dropdown', provide options for each column
 }
 
 const Table: React.FC<TableProps> = ({
@@ -40,6 +45,11 @@ const Table: React.FC<TableProps> = ({
   onSelectionChange,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
+  headerCellStyle = {},
+  columnSearchMode = 'input',
+  // add dropdownOptions to enable dropdown choice
+  dropdownOptions = {},
+
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
@@ -143,7 +153,8 @@ const Table: React.FC<TableProps> = ({
       {showGlobalFilter && (
         <Row className="mb-md-2">
           <Col md={{ span: 4, offset: 4 }}>
-            <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />{" "}
+            {/* GlobalFilter allows searching across all columns */}
+            <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
           </Col>
         </Row>
       )}
@@ -151,52 +162,60 @@ const Table: React.FC<TableProps> = ({
         <Col md={tableSize}>
           <BTable striped hover responsive size="sm">
             <thead className="table-secondary">
-              {getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+            {getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <th key={header.id} colSpan={header.colSpan} style={headerCellStyle}>
+                      {header.isPlaceholder ? null : (
+                        <>
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none"
+                                : "",
+                              onClick: header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {/* Header content including the title and sorting indicators */}
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {{
+                              asc: " 🔼",
+                              desc: " 🔽",
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                          {/* Conditional rendering for column filters based on columnSearchMode */}
+                          {columnSearchMode === 'input' && header.column.getCanFilter() ? (
+                            // If columnSearchMode is 'input', render the ColumnFilter component
+                            <ColumnFilter column={header.column} />
+                          ) : columnSearchMode === 'dropdown' && header.column.getCanFilter() ? (
+                            // If columnSearchMode is 'dropdown', render a dropdown for filtering
+                            <ColumnFilter column={header.column} dropdownOptions={dropdownOptions[header.column.id]} />
+                          ) : null}
+                          {/* End of conditional rendering for column filters */}
+                        </>
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            ))}
+            </thead>
+            <tbody>
+            {getRowModel().rows.map((row) => {
+              return (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => {
                     return (
-                      <th key={header.id} colSpan={header.colSpan}>
-                        {header.isPlaceholder ? null : (
-                          <>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick: header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                            {showColumnFilter && header.column.getCanFilter() ? (
-                              <ColumnFilter column={header.column} />
-                            ) : null}
-                          </>
-                        )}
-                      </th>
+                      <td key={cell.id}>
+                        {/* Cell rendering for each row */}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
                     );
                   })}
                 </tr>
-              ))}
-            </thead>
-            <tbody>
-              {getRowModel().rows.map((row) => {
-                return (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <td key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
+              );
+            })}
             </tbody>
           </BTable>
           {showPagination && (
@@ -212,7 +231,7 @@ const Table: React.FC<TableProps> = ({
             />
           )}
         </Col>
-      </Row>
+    </Row>
     </Container>
   );
 };
