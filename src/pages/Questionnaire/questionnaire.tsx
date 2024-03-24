@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import { questionnaireColumns as QUESTIONNAIRE_COLUMNS } from "./questionnaireColumns";
@@ -66,9 +66,12 @@ const Questionnaires = () => {
           </Row>
 		  <Row>
             <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-success" onClick={() => onHandle()}>
-                <BsPlusSquareFill />
-              </Button>
+
+			  <OverlayTrigger overlay={<Tooltip>Create Questionnaire</Tooltip>}>
+                <Button variant="outline-success" onClick={() => onHandleNew()}>
+                  <BsPlusSquareFill />
+                </Button>
+		      </OverlayTrigger>
             </Col>
 
           </Row>
