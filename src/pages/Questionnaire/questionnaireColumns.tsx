@@ -1,7 +1,7 @@
 import {createColumnHelper, Row} from "@tanstack/react-table";
 import {MdOutlineDeleteForever as Remove} from "react-icons/md";
 import {BsPencilFill as Edit} from "react-icons/bs";
-import {Button} from "react-bootstrap";
+import {Button, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {IQuestionnaire} from "../../utils/interfaces";
 
 /**
@@ -26,18 +26,21 @@ export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn) => [
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
-      <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <Edit />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline-danger"
-          className="ms-sm-2"
-		  onClick={() => { if (window.confirm('Are you sure you wish to delete this item?')) handleDelete(row)}}
-        >
-          <Remove />
-        </Button>
+      <><OverlayTrigger overlay={<Tooltip>Edit</Tooltip>}>
+          <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
+            <Edit />
+          </Button>
+		</OverlayTrigger>
+		<OverlayTrigger overlay={<Tooltip>Delete</Tooltip>}>
+          <Button
+            size="sm"
+            variant="outline-danger"
+            className="ms-sm-2"
+		    onClick={() => { if (window.confirm('Are you sure you wish to delete this item?')) handleDelete(row)}}
+          >
+            <Remove />
+          </Button>
+		</OverlayTrigger>
       </>
     ),
   }),
