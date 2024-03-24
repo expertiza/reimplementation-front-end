@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { Row as TRow } from "@tanstack/react-table";
@@ -17,6 +17,20 @@ import QuestionnaireDelete from "./QuestionnaireDelete";
 const Questionnaires = () => {
   const navigate = useNavigate();
   const questionnaires: any = useLoaderData();
+  
+  const [tableData, setTableData] = useState(dummyData);
+  
+  const onHandleNew = () => {
+	var new_obj = [{
+	  "id": 10,
+      "name": "",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	new_obj.pop();
+	new_obj = getNewQuestionnaire();
+	setTableData(new_obj);
+  }
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -24,12 +38,27 @@ const Questionnaires = () => {
   }>({ visible: false });
 
 
+  const onEditHandle = (row: TRow<IQuestionnaire>) => {
+    tableData.push({
+	  "id": 10,
+      "name": "Test",
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	})
+  }
+  
+  
+  const onDeleteHandle = (row: TRow<IQuestionnaire>) => {
+    
+  }
+ 
+
   const tableColumns = useMemo(
-    () => QUESTIONNAIRE_COLUMNS(),
-    []
+    () => QUESTIONNAIRE_COLUMNS(onEditHandle, onDeleteHandle),
+    [onEditHandle, onDeleteHandle]
   );
 
-  const tableData = dummyData //useMemo(() => questionnaires, [questionnaires]);
+ 
 
   return (
     <>
@@ -41,6 +70,14 @@ const Questionnaires = () => {
               <h1>Manage Questionnaires</h1>
             </Col>
             <hr />
+          </Row>
+		  <Row>
+            <Col md={{ span: 1, offset: 8 }}>
+              <Button variant="outline-success" onClick={() => onHandleNew()}>
+                <BsPlusSquareFill />
+              </Button>
+            </Col>
+
           </Row>
           <Row>
             <Table
@@ -62,6 +99,33 @@ let data = {}
   data = dummyData;
   data = [{id:0, name:"test"}]
   return data;
+}
+
+const getNewQuestionnaire = () => {
+  let name = (prompt("Please enter the questionnaire name:", "") as string);
+  if (name == null || name == ""){
+    //no name entered on prompt. 
+	return dummyData;
+  }
+  
+  var new_obj = [{
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	new_obj = new_obj.concat(dummyData);
+	console.log(new_obj);
+	console.log(dummyData);
+	
+  dummyData.push({
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	});
+	
+  return new_obj; 
 }
 
 export default Questionnaires;

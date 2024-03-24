@@ -10,7 +10,7 @@ import {IQuestionnaire} from "../../utils/interfaces";
 
 type Fn = (row: Row<IQuestionnaire>) => void;
 const columnHelper = createColumnHelper<IQuestionnaire>();
-export const questionnaireColumns = () => [
+export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("id", {
     header: "Id",
     enableSorting: false,
@@ -27,13 +27,14 @@ export const questionnaireColumns = () => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button variant="outline-warning" size="sm">
+        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
           <Edit />
         </Button>
         <Button
           size="sm"
           variant="outline-danger"
           className="ms-sm-2"
+		  onClick={() => handleDelete(row)}
         >
           <Remove />
         </Button>
