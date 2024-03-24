@@ -39,12 +39,17 @@ const Questionnaires = () => {
 
 
   const onEditHandle = (row: TRow<IQuestionnaire>) => {
-    tableData.push({
+    console.log(row.original.name);
+	var index = dummyData.findIndex(item => item.name === row.original.name);
+	var new_obj = [{
 	  "id": 10,
-      "name": "Test",
+      "name": "",
       "creationDate": "2023-02-05",
       "updatedDate": "2023-02-10"
-	})
+	}]; 
+	new_obj.pop();
+	new_obj = editQuestionnaire(index);
+	setTableData(new_obj);
   }
   
   
@@ -115,8 +120,6 @@ const getNewQuestionnaire = () => {
       "updatedDate": "2023-02-10"
 	}]; 
 	new_obj = new_obj.concat(dummyData);
-	console.log(new_obj);
-	console.log(dummyData);
 	
   dummyData.push({
 	  "id": 10,
@@ -124,6 +127,26 @@ const getNewQuestionnaire = () => {
       "creationDate": "2023-02-05",
       "updatedDate": "2023-02-10"
 	});
+	
+  return new_obj; 
+}
+
+const editQuestionnaire = (index: number) => {
+  let name = (prompt("Please enter the questionnaire name:", "") as string);
+  if (name == null || name == ""){
+    //no name entered on prompt. 
+	return dummyData;
+  }
+  
+  var new_obj = [{
+	  "id": 10,
+      "name": name,
+      "creationDate": "2023-02-05",
+      "updatedDate": "2023-02-10"
+	}]; 
+	new_obj.pop()
+	dummyData[index].name = name;
+	new_obj = new_obj.concat(dummyData);
 	
   return new_obj; 
 }
