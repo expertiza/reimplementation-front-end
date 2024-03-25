@@ -176,3 +176,8 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   return assignment;
 };
 
+export interface Deadline {
+  id: number;
+  date: string;
+  description: string;
+}

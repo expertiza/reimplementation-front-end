@@ -30,8 +30,8 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
-import StudentTask from "./pages/StudentTask/student_task";
-import StudentTaskView from "./pages/StudentTaskViews/StudentTaskView";
+import StudentTask from "./pages/StudentTasks/StudentTask";
+import LazyLoadedStudentTaskView from "pages/StudentTaskViews/LazyStudentTaskView";
 
 
 
@@ -80,12 +80,12 @@ function App() {
           ],
         },
         {
-          path: "/student_task", // Define the path for the student_task section
+          path: "/student_tasks", // Define the path for the student_task section
           element: <StudentTask />, // Render the StudentTask component
         },
         {
-          path: "/student_task_view",
-          element: <StudentTaskView />
+          path: "/student_task_view/:id",
+          element: <LazyLoadedStudentTaskView />
         },
         
         {
