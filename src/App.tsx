@@ -31,7 +31,7 @@ import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
 import StudentTask from "./pages/StudentTasks/StudentTask";
-import StudentTaskView from "./pages/StudentTaskViews/StudentTaskView";
+import LazyLoadedStudentTaskView from "pages/StudentTaskViews/LazyStudentTaskView";
 
 
 
@@ -85,7 +85,7 @@ function App() {
         },
         {
           path: "/student_task_view/:id",
-          element: <StudentTaskView />
+          element: <LazyLoadedStudentTaskView />
         },
         
         {
