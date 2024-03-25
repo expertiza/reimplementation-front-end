@@ -47,7 +47,7 @@ const Table: React.FC<TableProps> = ({
       header: ({ table }: any) => {
         return (
           <RowSelectCheckBox
-            {...{
+            {...{ 
               checked: table.getIsAllRowsSelected(),
               indeterminate: table.getIsSomeRowsSelected(),
               onChange: table.getToggleAllRowsSelectedHandler(),
@@ -98,7 +98,6 @@ const Table: React.FC<TableProps> = ({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibilityState,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });

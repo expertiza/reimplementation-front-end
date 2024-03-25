@@ -2,7 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row, Tooltip } from "react-bootstrap";
 import { RiHealthBookLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -12,17 +12,23 @@ import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
-import { formatDate, mergeDataAndNames } from "./CourseUtil";
+import { formatDate, mergeDataAndNamesAndInstructors } from "./CourseUtil";
+import { OverlayTrigger } from "react-bootstrap";
+
+import CourseDetails from "./CourseDetails"; 
+import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 // Courses Component: Displays and manages courses, including CRUD operations.
 
 /**
- * @author Atharva Thorve, on December, 2023 
- * @author Mrityunjay Joshi on December, 2023
+ * @author Aniket Singh Shaktawat, on March, 2024 
+ * @author Pankhi Saini on March, 2024
+ * @author Siddharth Shah on March, 2024
  */
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions} = useAPI();
+  const { data: InstructorResponse, sendRequest: fetchInstructors} = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -30,6 +36,14 @@ const Courses = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+
+  // show course
+  const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
+  const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
+  const handleShowDetails = (course: ICourse) => {
+    setSelectedCourse(course);
+    setShowDetailsModal(true);
+  };
 
   // State for delete and copy confirmation modals
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
@@ -48,8 +62,9 @@ const Courses = () => {
       fetchCourses({ url: `/courses` });
       // ToDo: Remove this API call later after the above ToDo is completed
       fetchInstitutions({ url: `/institutions` });
+      fetchInstructors({ url: `/users` });
     }
-  }, [fetchCourses, fetchInstitutions, location, showDeleteConfirmation.visible, auth.user.id, showCopyConfirmation.visible]);
+  }, [fetchCourses, fetchInstitutions,fetchInstructors, location, showDeleteConfirmation.visible, auth.user.id, showCopyConfirmation.visible]);
 
   // Error alert for API errors
   useEffect(() => {
@@ -85,8 +100,8 @@ const Courses = () => {
   );
 
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
-    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle, handleShowDetails),
+    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle, handleShowDetails]
   );
 
   let tableData = useMemo(
@@ -98,14 +113,32 @@ const Courses = () => {
     () => (isLoading || !InstitutionResponse?.data ? [] : InstitutionResponse.data),
     [InstitutionResponse?.data, isLoading]
   );
+
+  const instructorData = useMemo(
+    () => (isLoading || !InstructorResponse?.data ? [] : InstructorResponse.data),
+    [InstructorResponse?.data, isLoading]
+  );
   
-  tableData = mergeDataAndNames(tableData, institutionData);
+  tableData = mergeDataAndNamesAndInstructors(tableData, institutionData, instructorData);
 
   const formattedTableData = tableData.map((item: any) => ({
     ...item,
     created_at: formatDate(item.created_at),
     updated_at: formatDate(item.updated_at),
   }));
+
+    // `auth.user.id` holds the ID of the logged-in user
+    const loggedInUserId = auth.user.id;
+    const loggedInUserRole = auth.user.role;
+
+    const visibleCourses = useMemo(() => {
+      // Show all courses to admin and superadmin roles
+      if (loggedInUserRole === ROLE.ADMIN.valueOf() || loggedInUserRole === ROLE.SUPER_ADMIN.valueOf()) {
+        return formattedTableData;
+      }
+      // Otherwise, only show courses where the logged-in user is the instructor
+      return formattedTableData.filter((CourseResponse: { instructor_id: number; }) => CourseResponse.instructor_id === loggedInUserId);
+    }, [formattedTableData, loggedInUserRole]);
 
   // Render the Courses component
   
@@ -116,15 +149,35 @@ const Courses = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Courses</h1>
+              <h1>
+              {auth.user.role === ROLE.INSTRUCTOR.valueOf() ? (
+                <>
+                  Instructed by: {auth.user.full_name}
+                </>
+              ) : auth.user.role === ROLE.TA.valueOf() ? (
+                <>
+                  Assisted by: {auth.user.full_name}
+                </>
+              ) : (
+                <>
+                  Manage Courses
+                </>
+              )}
+              </h1>
             </Col>
             <hr />
           </Row>
           <Row>
+
             <Col md={{ span: 1, offset: 11 }} style={{paddingBottom: "10px"}}>
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip>Add New Course</Tooltip>}
+              >
               <Button variant="outline-success" onClick={() => navigate("new")}>
                 <RiHealthBookLine />
               </Button>
+              </OverlayTrigger>
             </Col>
             {showDeleteConfirmation.visible && (
               <DeleteCourse courseData={showDeleteConfirmation.data!} onClose={onDeleteCourseHandler} />
@@ -136,16 +189,18 @@ const Courses = () => {
           <Row>
             <Table
               showGlobalFilter={false}
-              data={formattedTableData}
+              data={visibleCourses}
               columns={tableColumns}
               columnVisibility={{
                 id: false,
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                instructor: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
             />
           </Row>
         </Container>
       </main>
+      <CourseDetails show={showDetailsModal} onHide={() => setShowDetailsModal(false)} course={selectedCourse} />
     </>
   );
 };

@@ -132,6 +132,10 @@ function App() {
                 },
               ]
             },
+            // {
+            //   path: "statistics",
+            //   element: <CourseStatistics/>,
+            // }
           ], // Added the missing closing curly brace
         },
         {

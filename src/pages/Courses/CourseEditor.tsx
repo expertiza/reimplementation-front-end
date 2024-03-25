@@ -3,7 +3,7 @@ import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
@@ -14,9 +14,11 @@ import { RootState } from "../../store/store";
 import { IEditor, ROLE } from "../../utils/interfaces";
 import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transformCourseRequest } from "./CourseUtil";
 
+
 /**
- * @author Atharva Thorve, on December, 2023
- * @author Mrityunjay Joshi, on December, 2023
+ * @author Aniket Singh Shaktawat, on March, 2024 
+ * @author Pankhi Saini on March, 2024
+ * @author Siddharth Shah on March, 2024
  */
 
 // CourseEditor Component: Modal for creating or updating a course.
@@ -47,14 +49,42 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
 
   // API hook for making requests
   const { data: courseResponse, error: courseError, sendRequest } = useAPI();
+  const { data: users, sendRequest: fetchusers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  const { courseData, institutions, instructors }: any = useLoaderData();
+  const { courseData, institutions }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  interface IFormOption {
+    label: string;
+    value: string;
+  }
+
+  const [filteredInstructors, setFilteredInstructors] = useState<IFormOption[]>([]);
+
+
+  useEffect(() => {
+    fetchusers({url:'/users'});
+  }, [fetchusers]);
+
+// useEffect hook to update the instructors list whenever the 'users' data changes
+  useEffect(() => {
+    if (users) {
+      const instructorsList: IFormOption[] = [{ label: 'Select an Instructor', value: '' }];
+      const onlyInstructors = users.data.filter((user: any) => user.role.name === 'Instructor');
+      // Iterate over the filtered instructors to create an option object for each
+      // and add it to the 'instructorsList'
+      onlyInstructors.forEach((instructor: any) => {
+        instructorsList.push({ label: instructor.name, value: String(instructor.id) });
+      });
+  
+      setFilteredInstructors(instructorsList);
+    }
+  }, [users]);
 
   initialValues.institution_id = auth.user.institution_id;
 
@@ -131,7 +161,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   controlId="course-instructor"
                   name="instructor_id"
                   disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
-                  options={instructors}
+                  options={filteredInstructors}
                   inputGroupPrepend={
                     <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
                   }
