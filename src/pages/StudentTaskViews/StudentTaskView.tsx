@@ -7,6 +7,7 @@ import { ROLE } from '../../utils/interfaces';
 import { styles } from './StudentTaskViewStyle';
 import { deadlines, getNextDeadline } from './DeadlineUtil';
 
+
 const StudentTaskView: React.FC = () => {
   const [assignment, setAssignment] = useState<any>(null); // State for assignment data
   const { id } = useParams<{ id: string }>();
