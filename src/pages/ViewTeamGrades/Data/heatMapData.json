@@ -1,0 +1,371 @@
+[
+  [
+    {
+      "questionNumber": "1",
+      "questionText": "What is the main purpose of this feature?",
+      "reviews": [
+        { "score": 4, "comment": "Great work on this aspect!" },
+        { "score": 3, "comment": "Could use some improvement here." },
+        { "score": 4, "comment": "The presentation was well-organized and clear. However, some points could have been elaborated further to provide a deeper understanding of the topic." },
+        { "score": 5, "comment": "The speaker demonstrated a profound understanding of the subject matter, making the session engaging and informative." },
+        { "score": 4, "comment": "The visuals were compelling and helped in understanding complex concepts easily. However, there were a few slides with too much text, which made it hard to follow at times." },
+        { "score": 5, "comment": "The use of real-world examples made the concepts more relatable and easier to grasp. Additionally, the speaker was engaging and kept the audience hooked throughout." },
+        { "score": 4, "comment": "The interactive exercises were beneficial in reinforcing the learning. However, there were a few technical glitches that disrupted the flow." },
+        { "score": 5, "comment": "The hands-on activities were the highlight of the session, providing practical experience that complemented the theoretical learning." },
+        { "score": 4, "comment": "The guest speaker brought a fresh perspective to the topic, offering valuable insights that sparked further discussions among the participants." },
+        { "score": 5, "comment": "The case studies presented were enlightening, providing practical examples that showcased the application of theoretical concepts." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "2",
+      "questionText": "How user-friendly is this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The interface was intuitive and easy to navigate." },
+        { "score": 2, "comment": "There were some confusing elements that could be simplified." },
+        { "score": 5, "comment": "The feature was straightforward to use, with clear instructions." },
+        { "score": 2, "comment": "The user experience could be improved, especially for new users." },
+        { "score": 3, "comment": "Some aspects were user-friendly, but others required a learning curve." },
+        { "score": 2, "comment": "More tooltips or hints could enhance the user-friendliness." },
+        { "score": 3, "comment": "Overall, the feature was easy to grasp, but minor improvements could enhance the user experience." },
+        { "score": 4, "comment": "The feature was generally user-friendly, with a few areas for improvement." },
+        { "score": 3, "comment": "Certain functions were straightforward, while others could use simplification." },
+        { "score": 2, "comment": "The feature would benefit from clearer labels and instructions." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "3",
+      "questionText": "Does this feature meet the project requirements?",
+      "reviews": [
+        { "score": 1},
+        { "score": 1},
+        { "score": 1},
+        { "score": 0},
+        { "score": 1},
+        { "score": 0},
+        { "score": 1},
+        { "score": 1},
+        { "score": 1},
+        { "score": 0}
+      ],
+      "RowAvg": 0,
+      "maxScore": 1
+    },
+    {
+      "questionNumber": "4",
+      "questionText": "How would you rate the performance of this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The feature performs adequately under normal conditions." },
+        { "score": 2, "comment": "Performance could be improved, especially for larger datasets." },
+        { "score": 4, "comment": "The feature's performance is generally satisfactory." },
+        { "score": 1, "comment": "Performance issues were encountered during testing." },
+        { "score": 3, "comment": "Overall, the feature performs well, but some optimizations could enhance speed." },
+        { "score": 2, "comment": "The feature's performance is acceptable but could be faster." },
+        { "score": 3, "comment": "The feature handles most tasks efficiently, but a few functions could be optimized." },
+        { "score": 4, "comment": "Performance is stable and meets expectations for regular use." },
+        { "score": 3, "comment": "The feature's performance meets the needs for the intended tasks." },
+        { "score": 2, "comment": "There were occasional lags in performance during heavy usage." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "5",
+      "questionText": "What are your thoughts on the design of this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The design is sleek and modern, enhancing usability." },
+        { "score": 3, "comment": "Some design elements could be more cohesive." },
+        { "score": 5, "comment": "The feature's design is intuitive and visually appealing." },
+        { "score": 2, "comment": "The design could be more user-centric." },
+        { "score": 4, "comment": "Overall, the design facilitates ease of use." },
+        { "score": 3, "comment": "Certain design choices enhance functionality, while others could be refined." },
+        { "score": 4, "comment": "The design aligns well with the feature's purpose." },
+        { "score": 5, "comment": "The design elements contribute to a seamless user experience." },
+        { "score": 4, "comment": "Design considerations are apparent, benefiting user interaction." },
+        { "score": 2, "comment": "Some design aspects may confuse new users." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "6",
+      "questionText": "Were the documentation and help resources helpful?",
+      "reviews": [
+        { "score": 3, "comment": "The design is average, with room for improvement." },
+        { "score": 5, "comment": "Certain design elements enhance usability effectively." },
+        { "score": 5, "comment": "The design stands out with its intuitive layout." },
+        { "score": 3, "comment": "Some design aspects could be more cohesive." },
+        { "score": 5, "comment": "The feature's design is modern and visually appealing." },
+        { "score": 5, "comment": "Design considerations are apparent, benefiting user interaction." },
+        { "score": 3, "comment": "The design offers room for improvement in certain areas." },
+        { "score": 4, "comment": "The feature's design is clean and uncluttered." },
+        { "score": 5, "comment": "Certain design elements contribute significantly to usability." },
+        { "score": 3, "comment": "The design could be more user-centric." }
+      ],
+
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "7",
+      "questionText": "Did the feature perform well under stress/load?",
+      "reviews": [
+        { "score": 5, "comment": "The design is sleek and modern, enhancing usability." },
+        { "score": 5, "comment": "The feature's design is intuitive and visually appealing." },
+        { "score": 3, "comment": "Some design elements could be streamlined for clarity." },
+        { "score": 5, "comment": "Overall, the design facilitates ease of use." },
+        { "score": 5, "comment": "The design elements contribute to a seamless user experience." },
+        { "score": 3, "comment": "Certain design choices enhance functionality, while others could be refined." },
+        { "score": 5, "comment": "The design aligns well with the feature's purpose." },
+        { "score": 5, "comment": "The design delights users with its attention to detail." },
+        { "score": 3, "comment": "Some design aspects may confuse new users." },
+        { "score": 4, "comment": "The design balances aesthetics with functionality effectively." }
+      ],
+
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "8",
+      "questionText": "How satisfied are you with the support provided for this feature?",
+      "reviews": [
+        { "score": 3 },
+        { "score": 4 },
+        { "score": 5 },
+        { "score": 2 },
+        { "score": 4 },
+        { "score": 3 },
+        { "score": 4 },
+        { "score": 5 },
+        { "score": 4 },
+        { "score": 2 }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "9",
+      "questionText": "Would you recommend this feature to others?",
+      "reviews": [
+        { "score": 5, "comment": "The design is exceptional, exceeding expectations." },
+        { "score": 3, "comment": "Certain design aspects could be polished further." },
+        { "score": 5, "comment": "Overall, the design enhances user experience effectively." },
+        { "score": 5, "comment": "The feature's design is top-notch, setting a new standard." },
+        { "score": 3, "comment": "Some design elements could be more intuitive." },
+        { "score": 5, "comment": "The design offers a pleasant user journey." },
+        { "score": 5, "comment": "Design considerations are evident, making tasks straightforward." },
+        { "score": 3, "comment": "Certain design choices may require further refinement." },
+        { "score": 5, "comment": "The design adapts well to different screen sizes and devices." },
+        { "score": 5, "comment": "The feature's design is a joy to interact with." }
+      ],
+
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "10",
+      "questionText": "Overall, how would you rate this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The design is polished and professional." },
+        { "score": 5, "comment": "Certain design elements make the feature a joy to use." },
+        { "score": 3, "comment": "Some design aspects could benefit from refinement." },
+        { "score": 5, "comment": "The design is user-friendly, with intuitive navigation." },
+        { "score": 5, "comment": "Certain design elements enhance user interaction effectively." },
+        { "score": 3, "comment": "Some design aspects may require further attention." },
+        { "score": 5, "comment": "The design encourages exploration and discovery." },
+        { "score": 5, "comment": "The feature's design sets a new standard for user interfaces." },
+        { "score": 3, "comment": "Certain design elements are confusing and could be clarified." },
+        { "score": 5, "comment": "The design offers an inviting and engaging experience." }
+      ],
+
+      "RowAvg": 0,
+      "maxScore": 5
+    }
+  ],
+  [
+    {
+      "questionNumber": "1",
+      "questionText": "What is the main purpose of this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The design is polished and professional." },
+        { "score": 5, "comment": "Certain design elements make the feature a joy to use." },
+        { "score": 3, "comment": "Some design aspects could benefit from refinement." },
+        { "score": 4, "comment": "The design is user-friendly, with intuitive navigation." },
+        { "score": 5, "comment": "Certain design elements enhance user interaction effectively." },
+        { "score": 4, "comment": "Some design aspects may require further attention." },
+        { "score": 4, "comment": "The design encourages exploration and discovery." },
+        { "score": 5, "comment": "The feature's design sets a new standard for user interfaces." },
+        { "score": 4, "comment": "Certain design elements are confusing and could be clarified." },
+        { "score": 4, "comment": "The design offers an inviting and engaging experience." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "2",
+      "questionText": "How user-friendly is this feature?",
+      "reviews": [
+        { "score": 5, "comment": "The design is flawless, making tasks effortless." },
+        { "score": 2, "comment": "Some design aspects could be more user-oriented." },
+        { "score": 4, "comment": "The feature's design is inviting and approachable." },
+        { "score": 5, "comment": "Certain design elements provide a delightful user journey." },
+        { "score": 2, "comment": "Some design choices could enhance user engagement." },
+        { "score": 4, "comment": "The design adapts well to varying user needs." },
+        { "score": 5, "comment": "The feature's design excels in simplicity and effectiveness." },
+        { "score": 3, "comment": "Certain design elements could benefit from more visual hierarchy." },
+        { "score": 4, "comment": "The design offers a pleasing aesthetic while being functional." },
+        { "score": 5, "comment": "The feature's design is intuitive and user-centric." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "3",
+      "questionText": "Does this feature meet the project requirements?",
+      "reviews": [
+        { "score": 1},
+        { "score": 1},
+        { "score": 1},
+        { "score": 0},
+        { "score": 1},
+        { "score": 0},
+        { "score": 1},
+        { "score": 0},
+        { "score": 0},
+        { "score": 1 }
+      ],
+      "RowAvg": 0,
+      "maxScore": 1
+    },
+    {
+      "questionNumber": "4",
+      "questionText": "How would you rate the performance of this feature?",
+      "reviews": [
+        { "score": 5, "comment": "The design is exceptional, exceeding expectations." },
+        { "score": 5, "comment": "Certain design aspects could be polished further." },
+        { "score": 4, "comment": "Overall, the design enhances user experience effectively." },
+        { "score": 5, "comment": "The feature's design is top-notch, setting a new standard." },
+        { "score": 0, "comment": "Some design elements could be more intuitive." },
+        { "score": 4, "comment": "The design offers a pleasant user journey." },
+        { "score": 5, "comment": "Design considerations are evident, making tasks straightforward." },
+        { "score": 5, "comment": "Certain design choices may require further refinement." },
+        { "score": 5, "comment": "The design adapts well to different screen sizes and devices." },
+        { "score": 5, "comment": "The feature's design is a joy to interact with." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "5",
+      "questionText": "What are your thoughts on the design of this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The design is polished and professional." },
+        { "score": 5, "comment": "Certain design elements make the feature a joy to use." },
+        { "score": 3, "comment": "Some design aspects could benefit from refinement." },
+        { "score": 4, "comment": "The design is user-friendly, with intuitive navigation." },
+        { "score": 5, "comment": "Certain design elements enhance user interaction effectively." },
+        { "score": 2, "comment": "Some design aspects may require further attention." },
+        { "score": 4, "comment": "The design encourages exploration and discovery." },
+        { "score": 5, "comment": "The feature's design sets a new standard for user interfaces." },
+        { "score": 4, "comment": "Certain design elements are confusing and could be clarified." },
+        { "score": 4, "comment": "The design offers an inviting and engaging experience." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "6",
+      "questionText": "Were the documentation and help resources helpful?",
+      "reviews": [
+        { "score": 5, "comment": "The design is flawless, making tasks effortless." },
+        { "score": 3, "comment": "Some design aspects could be more user-oriented." },
+        { "score": 5, "comment": "The feature's design is inviting and approachable." },
+        { "score": 5, "comment": "Certain design elements provide a delightful user journey." },
+        { "score": 3, "comment": "Some design choices could enhance user engagement." },
+        { "score": 4, "comment": "The design adapts well to varying user needs." },
+        { "score": 5, "comment": "The feature's design excels in simplicity and effectiveness." },
+        { "score": 1, "comment": "Certain design elements could benefit from more visual hierarchy." },
+        { "score": 5, "comment": "The design offers a pleasing aesthetic while being functional." },
+        { "score": 5, "comment": "The feature's design is intuitive and user-centric." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "7",
+      "questionText": "Did the feature perform well under stress/load?",
+      "reviews": [
+        { "score": 4, "comment": "The design is sleek and modern, enhancing usability." },
+        { "score": 5, "comment": "The feature's design is intuitive and visually appealing." },
+        { "score": 3, "comment": "Some design elements could be streamlined for clarity." },
+        { "score": 4, "comment": "Overall, the design facilitates ease of use." },
+        { "score": 5, "comment": "The design elements contribute to a seamless user experience." },
+        { "score": 2, "comment": "Certain design choices enhance functionality, while others could be refined." },
+        { "score": 4, "comment": "The design aligns well with the feature's purpose." },
+        { "score": 5, "comment": "The design delights users with its attention to detail." },
+        { "score": 2, "comment": "Some design aspects may confuse new users." },
+        { "score": 4, "comment": "The design balances aesthetics with functionality effectively." }
+      ],
+
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "8",
+      "questionText": "How satisfied are you with the support provided for this feature?",
+      "reviews": [
+        { "score": 5, "comment": "The design is exceptional, exceeding expectations." },
+        { "score": 4, "comment": "Certain design aspects could be polished further." },
+        { "score": 4, "comment": "Overall, the design enhances user experience effectively." },
+        { "score": 5, "comment": "The feature's design is top-notch, setting a new standard." },
+        { "score": 2, "comment": "Some design elements could be more intuitive." },
+        { "score": 4, "comment": "The design offers a pleasant user journey." },
+        { "score": 5, "comment": "Design considerations are evident, making tasks straightforward." },
+        { "score": 3, "comment": "Certain design choices may require further refinement." },
+        { "score": 4, "comment": "The design adapts well to different screen sizes and devices." },
+        { "score": 5, "comment": "The feature's design is a joy to interact with." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "9",
+      "questionText": "Would you recommend this feature to others?",
+      "reviews": [
+        { "score": 5, "comment": "The design is flawless, making tasks effortless." },
+        { "score": 3, "comment": "Some design aspects could be more user-oriented." },
+        { "score": 4, "comment": "The feature's design is inviting and approachable." },
+        { "score": 5, "comment": "Certain design elements provide a delightful user journey." },
+        { "score": 2, "comment": "Some design choices could enhance user engagement." },
+        { "score": 4, "comment": "The design adapts well to varying user needs." },
+        { "score": 5, "comment": "The feature's design excels in simplicity and effectiveness." },
+        { "score": 2, "comment": "Certain design elements could benefit from more visual hierarchy." },
+        { "score": 4, "comment": "The design offers a pleasing aesthetic while being functional." },
+        { "score": 5, "comment": "The feature's design is intuitive and user-centric." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    },
+    {
+      "questionNumber": "10",
+      "questionText": "Overall, how would you rate this feature?",
+      "reviews": [
+        { "score": 4, "comment": "The design is sleek and modern, enhancing usability." },
+        { "score": 5, "comment": "The feature's design is intuitive and visually appealing." },
+        { "score": 3, "comment": "Some design elements could be streamlined for clarity." },
+        { "score": 4, "comment": "Overall, the design facilitates ease of use." },
+        { "score": 3, "comment": "The design elements contribute to a seamless user experience." },
+        { "score": 3, "comment": "Certain design choices enhance functionality, while others could be refined. Overall scope of improvement" },
+        { "score": 4, "comment": "The design aligns well with the feature's purpose." },
+        { "score": 5, "comment": "The design delights users with its attention to detail." },
+        { "score": 4, "comment": "Some design aspects may confuse new users." },
+        { "score": 4, "comment": "The design balances aesthetics with functionality effectively." }
+      ],
+      "RowAvg": 0,
+      "maxScore": 5
+    }
+  ]
+]

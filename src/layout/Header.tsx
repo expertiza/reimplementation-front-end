@@ -102,6 +102,9 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/student_view">
                   Student View
                 </Nav.Link>
+                <Nav.Link as={Link} to="/view-team-grades">
+                  ViewGrades
+                </Nav.Link>
               </Nav>
               <Nav.Item className="text-light ps-md-3 pe-md-3">
                 User: {auth.user.full_name}
