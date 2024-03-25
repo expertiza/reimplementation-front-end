@@ -30,6 +30,11 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
+import StudentTask from "./pages/StudentTasks/StudentTask";
+import LazyLoadedStudentTaskView from "pages/StudentTaskViews/LazyStudentTaskView";
+
+
+
 
 function App() {
   const router = createBrowserRouter([
@@ -74,6 +79,15 @@ function App() {
             },
           ],
         },
+        {
+          path: "/student_tasks", // Define the path for the student_task section
+          element: <StudentTask />, // Render the StudentTask component
+        },
+        {
+          path: "/student_task_view/:id",
+          element: <LazyLoadedStudentTaskView />
+        },
+        
         {
           path: "student_tasks/participants",
           element: <Participants type="student_tasks" id={1} />,
