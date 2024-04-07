@@ -13,12 +13,9 @@ import Table from "components/Table/Table";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
-
-
 const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
-  
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -33,12 +30,11 @@ const Assignments = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-
   const fetchData = useCallback(async () => {
     try {
       const [assignments, courses] = await Promise.all([
         fetchAssignments({ url: `/assignments` }),
-        fetchCourses({ url: '/courses' }),
+        fetchCourses({ url: "/courses" }),
       ]);
       // Handle the responses as needed
     } catch (err) {
@@ -46,7 +42,7 @@ const Assignments = () => {
       console.error("Error fetching data:", err);
     }
   }, [fetchAssignments, fetchCourses]);
-  
+
   useEffect(() => {
     if (!showDeleteConfirmation.visible) {
       fetchData();
@@ -56,13 +52,11 @@ const Assignments = () => {
   let mergedData: Array<any & { courseName?: string }> = [];
 
   if (assignmentResponse && coursesResponse) {
-     mergedData = assignmentResponse.data.map((assignment: any) => {
+    mergedData = assignmentResponse.data.map((assignment: any) => {
       const course = coursesResponse.data.find((c: any) => c.id === assignment.course_id);
-      return { ...assignment, courseName: course ? course.name : 'Unknown' };
+      return { ...assignment, courseName: course ? course.name : "Unknown" };
     });
   }
-
-
 
   // Error alert
   useEffect(() => {
@@ -71,7 +65,10 @@ const Assignments = () => {
     }
   }, [error, dispatch]);
 
-  const onDeleteAssignmentHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteAssignmentHandler = useCallback(
+    () => setShowDeleteConfirmation({ visible: false }),
+    []
+  );
 
   const onEditHandle = useCallback(
     (row: TRow<IAssignmentResponse>) => navigate(`edit/${row.original.id}`),
@@ -79,7 +76,8 @@ const Assignments = () => {
   );
 
   const onDeleteHandle = useCallback(
-    (row: TRow<IAssignmentResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
+    (row: TRow<IAssignmentResponse>) =>
+      setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
@@ -97,41 +95,41 @@ const Assignments = () => {
     <>
       <Outlet />
       <main>
-        <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
-            <Col className="text-center">
-              <h1>Manage Assignments</h1>
-            </Col>
-            <hr />
-          </Row>
-          <Row>
-            <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-info" onClick={() => navigate("new")}>
-                <BsFileText />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <DeleteAssignment assignmentData={showDeleteConfirmation.data!} onClose={onDeleteAssignmentHandler} />
-            )}
-          </Row>
-          <Row>
-            <Table
-              data={tableData}
-              columns={tableColumns}
-              columnVisibility={{
-                id: false,
-
-              }}
-            />
-          </Row>
-        </Container>
+        {location.pathname.indexOf("/edit/") === -1 && location.pathname !== "/assignments/new" && (
+          <Container fluid className="px-md-4">
+            <Row className="mt-md-2 mb-md-2">
+              <Col className="text-center">
+                <h1>Manage Assignments</h1>
+              </Col>
+              <hr />
+            </Row>
+            <Row>
+              <Col md={{ span: 1, offset: 11 }}>
+                <Button variant="outline-info" onClick={() => navigate("new")}>
+                  <BsFileText />
+                </Button>
+              </Col>
+              {showDeleteConfirmation.visible && (
+                <DeleteAssignment
+                  assignmentData={showDeleteConfirmation.data!}
+                  onClose={onDeleteAssignmentHandler}
+                />
+              )}
+            </Row>
+            <Row>
+              <Table
+                data={tableData}
+                columns={tableColumns}
+                columnVisibility={{
+                  id: false,
+                }}
+              />
+            </Row>
+          </Container>
+        )}
       </main>
     </>
   );
 };
 
-
 export default Assignments;
-
-
-
