@@ -30,6 +30,8 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
+import StudentTeams from "pages/Student Teams/student_teams";
+import StudentTeamView from "pages/Student Teams/student_teams";
 
 function App() {
   const router = createBrowserRouter([
@@ -55,6 +57,16 @@ function App() {
               path: "edit/:id",
               element: <AssignmentEditor mode="update" />,
               loader: loadAssignment,
+            },
+          ],
+        },
+        {
+          path: "student_teams",
+          element: <ProtectedRoute element={<StudentTeams />} />,
+          children: [
+            {
+              path: "view",
+              element: <StudentTeamView />,
             },
           ],
         },
