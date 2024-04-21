@@ -14,6 +14,7 @@ const ReviewTable: React.FC = () => {
   const [sortOrderRow, setSortOrderRow] = useState<'asc' | 'desc' | 'none'>('none'); // State for row sort order
   const [showWordCount10, setShowWordCount10] = useState(false); // State for showing reviews with more than 10 words
   const [showWordCount20, setShowWordCount20] = useState(false); // State for showing reviews with more than 20 words
+  const [showFullQuestion, setShowFullQuestion] = useState(false); // State to toggle between question number and full question text
 
   // Function to toggle the sort order for rows
   const toggleSortOrderRow = () => {
@@ -38,6 +39,15 @@ const ReviewTable: React.FC = () => {
     setShowWordCount20(false);
   };
 
+  const colorLegend = [
+    { color: 'Red', description: 'Poor', className: 'c1' },
+    { color: 'Orange', description: 'Fair', className: 'c2' },
+    { color: 'Yellow', description: 'Average', className: 'c3' },
+    { color: 'LightGreen', description: 'Good', className: 'c4' },
+    { color: 'DarkGreen', description: 'Excellent', className: 'c5' },
+  ];
+
+
   // JSX rendering of the ReviewTable component
   return (
     <div className="p-4">
@@ -58,7 +68,7 @@ const ReviewTable: React.FC = () => {
           checked={showWordCount10}
           onChange={(e) => setShowWordCount10(e.target.checked)}
         />
-        <label htmlFor="wordCount10"> &nbsp; More than 10 words &nbsp;</label>
+        <label htmlFor="wordCount10"> &nbsp; Reviews with more than 10 words &nbsp;&nbsp;</label>
         <input
           type="checkbox"
           id="wordCount20"
@@ -66,15 +76,18 @@ const ReviewTable: React.FC = () => {
           checked={showWordCount20}
           onChange={(e) => setShowWordCount20(e.target.checked)}
         />
-        <label htmlFor="wordCount20"> &nbsp;More than 20 words</label>
-        <span className="color-legend">
-          &nbsp; Color Legend &nbsp;
-        <span className="tooltip-text">
-          Colors are scaled from Poor to Excellent in the following order: Red, Orange, Yellow, Light Green, Dark Green
-        </span>
-        </span>
+        <label htmlFor="wordCount20">&nbsp;Reviews with more than 20 words</label>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <input
+          type="checkbox"
+          id="viewQuestions"
+          name="viewQuestions"
+          checked={showFullQuestion}
+          onChange={(e) => setShowFullQuestion(e.target.checked)}
+        />
+        <label htmlFor="showQuestions"> &nbsp;Show Review Questions</label>
       </form>
-
+      <div className="review-container">
       <div className="table-container">
         <table className="tbl_heat">
           <thead>
@@ -100,6 +113,7 @@ const ReviewTable: React.FC = () => {
               row={row}
               showWordCount10={showWordCount10}
               showWordCount20={showWordCount20}
+              showFullQuestion={showFullQuestion} // Pass this as a prop
             />
           ))}
           <tr className="no-bg">
@@ -115,6 +129,33 @@ const ReviewTable: React.FC = () => {
         <br></br>
         <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
       </div>
+      <div className="color-legend-container">
+      <span className="color-legend">
+        &nbsp; Color Legend &nbsp;
+        <span className="tooltip-text">
+          Colors are scaled from Poor to Excellent in the following order: Red, Orange, Yellow, Light Green, Dark Green
+        </span>
+      </span>
+      <div className="color-legend-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Color</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            {colorLegend.map((item) => (
+              <tr key={item.color}>
+                <td className={item.className}></td>
+                <td>{item.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </div>
       <p className="mt-4">
         <h3>Grade and comment for submission</h3>
         Grade: {dummyData.grade}<br></br>
