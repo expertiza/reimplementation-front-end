@@ -30,6 +30,7 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
+import Reviews from "pages/Reviews/reviews";
 
 function App() {
   const router = createBrowserRouter([
@@ -105,6 +106,10 @@ function App() {
               loader: loadParticipantDataRolesAndInstitutions,
             },
           ],
+        },
+        {
+          path: "reviews",
+          element: <Reviews/>,
         },
         // Fixed the missing comma and added an opening curly brace
         {
