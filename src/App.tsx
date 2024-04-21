@@ -1,5 +1,5 @@
 import React from "react";
-import {createBrowserRouter,Navigate,RouterProvider} from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Login from "./pages/Authentication/Login";
@@ -30,6 +30,7 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
+import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
 
 function App() {
   const router = createBrowserRouter([
@@ -41,7 +42,19 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
-        { path: "edit-questionnaire", element: <ProtectedRoute element={<Questionnaire />} /> },
+        // Add the ViewTeamGrades route
+        {
+          path: "view-team-grades",
+          element: <ProtectedRoute element={
+            <>
+            <ReviewTable />
+            </>
+          } />,
+        },
+        {
+          path: "edit-questionnaire",
+          element: <ProtectedRoute element={<Questionnaire />} />,
+        },
         {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
@@ -106,7 +119,6 @@ function App() {
             },
           ],
         },
-        // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
           element: <ProtectedRoute element={<Courses />} leastPrivilegeRole={ROLE.TA} />,
@@ -132,7 +144,7 @@ function App() {
                 },
               ]
             },
-          ], // Added the missing closing curly brace
+          ],
         },
         {
           path: "administrator",
@@ -183,13 +195,13 @@ function App() {
                   path: "new",
                   element: <Navigate to="/users/new" />,
                 },
+
                 {
                   path: "edit/:id",
                   element: <Navigate to="/users/edit/:id" />,
                 },
               ],
             },
-            // Add the "Questionnaire" route here
             {
               path: "questionnaire",
               element: <Questionnaire />,
@@ -197,12 +209,11 @@ function App() {
           ],
         },
         { path: "*", element: <NotFound /> },
-        // Add the "Questionnaire" route here if it's not under the administrator section
-        { path: "questionnaire", element: <Questionnaire /> },
+        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
       ],
     },
   ]);
-  
+
   return <RouterProvider router={router} />;
 }
 

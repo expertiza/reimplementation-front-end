@@ -1,0 +1,290 @@
+/* Set the maximum width of the table container */
+.table-container {
+  max-width: 70%;
+}
+
+/* Circle around max score number */
+.circle-container {
+  display: flex;
+  align-items: center;
+}
+
+.circle {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid orangered;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: orangered;
+  margin-left: -20px; /* Add margin to separate the circle from the text */
+}
+
+.tick{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: orangered;
+  margin-left: -15px; /* Add margin to separate the circle from the text */
+}
+
+/* Colors used for coloring score cells within the heatgrid for the grades view */
+
+/* Null space in the table */
+.c0 {
+  background-color: #d3d3d3;
+}
+
+/* Red, indicative of a poor score */
+.c1 {
+  background-color: #ff8080;
+}
+
+/* Orange */
+.c2 {
+  background-color: #FD992D;
+}
+
+/* Yellow, indicative of a median score */
+.c3 {
+  background-color: #FFEC8B;
+}
+
+/* Light green */
+.c4 {
+  background-color: #BCED91;
+}
+
+/* Green, indicative of a good score */
+.c5 {
+  background-color: #2DE636;
+}
+
+/* Default background color */
+.cf {
+  background-color: #FFFFFF;
+}
+
+/* Style for the grades in the summary report */
+.grade-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: black;
+  line-height: 30px;
+  text-align: center;
+}
+
+/* Underline scores which have a comment */
+.underlined {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+/* Styling for the heatgrid table */
+.tbl_heat {
+  border: 1px solid black;
+  width: 100%;
+  font-size: 10px;
+  text-align: center;
+  table-layout: auto;
+}
+
+.tbl_heat td {
+  cursor: pointer;
+  padding: 8px;
+  border: 1px black solid;
+  width: auto;
+  font-size: 11px;
+  table-layout: fixed;
+  position: relative;
+}
+
+/* Tooltip display for question text on hover */
+.tbl_heat td[data-question]:hover::after {
+  content: attr(data-question);
+  position: absolute;
+  background-color: rgba($color: #000000, $alpha: 1);
+  color: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+  bottom: 130%;
+  left: 0%;
+  white-space: nowrap;
+}
+
+/* Styling for table headers */
+.tbl_heat th {
+  border: 1px black solid;
+  padding: 10px;
+  font-size: 11px;
+  background-color: #f2f2f2;
+  width: auto;
+  table-layout: fixed;
+}
+
+/* Hides padding for specific rows */
+.hiddenRow {
+  padding: 0 !important;
+}
+
+/* Tooltip span styling */
+.spn_tooltip {
+  padding-left: 30px;
+  color: grey;
+  font-size: small;
+}
+
+/* Styling for question toggle span */
+.spn_qsttog {
+  padding-left: 30px;
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+  font-size: small;
+}
+
+/* Classes for E2100 Tag Reports for Students to style the new HeatGrid of review tags */
+
+/* Styling for action row */
+.action_row {
+  border: 1px black solid;
+  padding: 1px 2px 2px 1px;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Styling for tag heat grid */
+.tag_heat_grid {
+  padding: 0;
+  spacing: 0;
+  border: 1px solid black;
+  position: relative;
+  float: right;
+  top: 0px;
+  right: 0px;
+  z-index: 2;
+}
+
+/* Styling for tag heat grid headers */
+.tag_heat_grid th {
+  border: 1px solid black;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Styling for tag heat grid cells */
+.tag_heat_grid td {
+  border: 0.5px solid black;
+  font-size: 8px;
+}
+
+/* Styling for tag heat grid criterion */
+.tag_heat_grid_criterion {
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+/* Styles for the round selector */
+.round-selector {
+  display: flex;
+}
+
+.round-button {
+  padding: 7px 7px;
+  margin: 5px;
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+  background-color: #4a90e2;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #357bd8;
+    border-color: #357bd8;
+  }
+
+  &.current {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+  }
+
+  .round-selector > div {
+    display: flex;
+    align-items: center;
+    margin: auto;
+  }
+}
+
+
+.tooltip-text {
+  visibility: hidden;
+  width: 280px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 150%;
+  margin-left: -140px; /* Use half of the width (280px/2), to center the tooltip */
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.question-cell {
+  text-align: left;  // Align text to the left of the cell
+  padding-left: 10px; // Add padding on the left for better spacing
+  word-wrap: break-word; // Ensures long words do not overflow
+  overflow-wrap: break-word;
+  white-space: normal; // Allows text to wrap normally
+}
+
+
+.review-container {
+  display: flex;
+  justify-content: space-between; // Adjust as necessary to fit your design
+
+  .table-container {
+    flex: 1 0 70%; // Your existing max-width but as flex basis
+  }
+
+  .color-legend-container {
+    align-self: flex-start; // Align the legend container to the start of the flex container (top right)
+    width: auto; // Set the width as required by the content
+    text-align: center; // Center-align the text inside the legend container
+
+    .color-legend {
+      margin-bottom: 5px; // Space between the label and the table
+      font-size: 16px; // Optional: Adjust font size for visibility
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+
+      th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+
+      td {
+        color: #000; // Ensure text is readable, adjust as needed
+      }
+    }
+  }
+}
