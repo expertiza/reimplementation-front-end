@@ -45,7 +45,11 @@ function App() {
         // Add the ViewTeamGrades route
         {
           path: "view-team-grades",
-          element: <ProtectedRoute element={<ReviewTable />} />,
+          element: <ProtectedRoute element={
+            <>
+            <ReviewTable />
+            </>
+          } />,
         },
         {
           path: "edit-questionnaire",
