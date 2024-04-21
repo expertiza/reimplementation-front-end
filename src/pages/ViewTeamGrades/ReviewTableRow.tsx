@@ -7,21 +7,26 @@ interface ReviewTableRowProps {
   row: ReviewData; // Data for the row
   showWordCount10: boolean; // Flag to show reviews with 10+ words
   showWordCount20: boolean; // Flag to show reviews with 20+ words
+  showFullQuestion: boolean; // New prop to toggle between question number and full question text
+
 }
 
 // Functional component ReviewTableRow
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showWordCount10, showWordCount20 }) => {
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showWordCount10, showWordCount20, showFullQuestion }) => {
   return (
     <tr className={row.maxScore === 1 ? "no-bg" : ""}>
       {/* Question Number */}
-      <td className="py-2 px-4 text-center" data-question={row.questionText}>
+      <td className="py-2 px-4 text-center question-cell" data-question={row.questionText}>
         <div className="circle-container">
-          {row.maxScore !== 1 ? (
-            <span className="circle">{row.maxScore}</span>
-          ) : (
-            <span className="tick">✓</span>
+          {!showFullQuestion && (  // Only show circle or tick when not showing full questions
+            row.maxScore !== 1 ? (
+              <span className="circle">{row.maxScore}</span>
+            ) : (
+              <span className="tick">✓</span>
+            )
           )}
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{row.questionNumber}
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          {showFullQuestion ? row.questionText : row.questionNumber}
         </div>
       </td>
 

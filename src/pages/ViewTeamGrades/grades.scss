@@ -91,7 +91,7 @@
   width: 100%;
   font-size: 10px;
   text-align: center;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .tbl_heat td {
@@ -223,16 +223,6 @@
   }
 }
 
-.color-legend {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-
-  &:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-  }
-}
 
 .tooltip-text {
   visibility: hidden;
@@ -253,4 +243,48 @@
   /* Fade in tooltip */
   opacity: 0;
   transition: opacity 0.3s;
+}
+
+.question-cell {
+  text-align: left;  // Align text to the left of the cell
+  padding-left: 10px; // Add padding on the left for better spacing
+  word-wrap: break-word; // Ensures long words do not overflow
+  overflow-wrap: break-word;
+  white-space: normal; // Allows text to wrap normally
+}
+
+
+.review-container {
+  display: flex;
+  justify-content: space-between; // Adjust as necessary to fit your design
+
+  .table-container {
+    flex: 1 0 70%; // Your existing max-width but as flex basis
+  }
+
+  .color-legend-container {
+    align-self: flex-start; // Align the legend container to the start of the flex container (top right)
+    width: auto; // Set the width as required by the content
+    text-align: center; // Center-align the text inside the legend container
+
+    .color-legend {
+      margin-bottom: 5px; // Space between the label and the table
+      font-size: 16px; // Optional: Adjust font size for visibility
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+
+      th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+
+      td {
+        color: #000; // Ensure text is readable, adjust as needed
+      }
+    }
+  }
 }
