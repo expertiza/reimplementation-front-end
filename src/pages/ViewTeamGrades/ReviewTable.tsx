@@ -6,6 +6,7 @@ import dummyData from './Data/dummyData.json'; // Importing dummy data
 import { calculateAverages, getColorClass } from './utils'; // Importing utility functions
 import './grades.scss'; // Importing styles
 import { Link } from 'react-router-dom'; // Importing Link from react-router-dom
+import ShowSubmission from './ShowSubmission';
 
 // Functional component ReviewTable
 const ReviewTable: React.FC = () => {
@@ -46,6 +47,7 @@ const ReviewTable: React.FC = () => {
         Average peer review score:{" "}
         <span className={getColorClass(parseFloat(averagePeerReviewScore), 100)}>{averagePeerReviewScore}</span>
       </h5>
+      <ShowSubmission/>
       <h4 className="text-xl font-semibold mb-1">Review (Round: {currentRound + 1} of {dummyDataRounds.length}) </h4>
       <br></br>
       <form>
@@ -65,7 +67,14 @@ const ReviewTable: React.FC = () => {
           onChange={(e) => setShowWordCount20(e.target.checked)}
         />
         <label htmlFor="wordCount20"> &nbsp;More than 20 words</label>
+        <span className="color-legend">
+          &nbsp; Color Legend &nbsp;
+        <span className="tooltip-text">
+          Colors are scaled from Poor to Excellent in the following order: Red, Orange, Yellow, Light Green, Dark Green
+        </span>
+        </span>
       </form>
+
       <div className="table-container">
         <table className="tbl_heat">
           <thead>
