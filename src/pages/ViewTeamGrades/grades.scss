@@ -255,15 +255,23 @@
 
 
 .review-container {
+  position: relative;
   display: flex;
   justify-content: space-between; // Adjust as necessary to fit your design
+  flex-direction: column; // Align children horizontally
+  width: 100%; // Ensure the container takes full width
+  align-items: flex-start;
 
   .table-container {
+    order: 2;
     flex: 1 0 70%; // Your existing max-width but as flex basis
   }
 
   .color-legend-container {
-    align-self: flex-start; // Align the legend container to the start of the flex container (top right)
+    position: absolute;
+    order: 1;
+    flex: 0 1 auto;
+    align-self: flex-end; // Align the legend container to the start of the flex container (top right)
     width: auto; // Set the width as required by the content
     text-align: center; // Center-align the text inside the legend container
 
