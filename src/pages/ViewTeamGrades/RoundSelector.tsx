@@ -5,21 +5,19 @@ import teamData from './Data/dummyData.json';
 interface RoundSelectorProps {
   currentRound: number;
   handleRoundChange: (roundIndex: number) => void;
+  showAllRounds: () => void;  // Added for showing all rounds
 }
 
-// RoundSelector component to display buttons for selecting rounds
-const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange }) => {
+const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange, showAllRounds }) => {
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
 
-  // Fetch team members from the teamData.json file on component mount
   useEffect(() => {
     setTeamMembers(teamData.members);
-  }, []); // Empty dependency array means it runs only once on component mount
+  }, []);
 
   return (
     <div className="round-selector">
       <div className="flex items-center">
-        {/* Mapping over dummyDataRounds to render round buttons */}
         {dummyDataRounds.map((round, index) => (
           <button
             key={index}
@@ -29,14 +27,16 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRound
             Round {index + 1}
           </button>
         ))}
-        {/* Displaying team members */}
+        <button className="round-button mr-4" onClick={showAllRounds}>
+          Show All
+        </button>
         <span className="ml-4">
           Team members: {teamMembers.map((member, index) => (
-          <span key={index}>
+            <span key={index}>
               ({member})
-            {index !== teamMembers.length - 1 && ' '}
+              {index !== teamMembers.length - 1 && ' '}
             </span>
-        ))}
+          ))}
         </span>
       </div>
     </div>
