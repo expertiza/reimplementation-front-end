@@ -1,6 +1,5 @@
 import React from 'react';
 import ReviewTable from './ReviewTable'; // Importing the ReviewTable component
-import ShowSubmission from './ShowSubmission';
 
 // Interface defining the structure of ReviewData
 export interface ReviewData {
