@@ -144,13 +144,14 @@ const Reviews: React.FC = () => {
           <div>
             <span>hide links</span>
             <div>
-              <input type="radio" name="hyperlinks" value="https://github.ncsu.edu/npatil2/CSC517_Program2"
-                     defaultChecked />
-              <label>https://github.ncsu.edu/npatil2/CSC517_Program2</label>
+              <input type="radio" name="hyperlinks" value="https://github.ncsu.edu/npatil2/CSC517_Program2" checked />
+              <label><a href="https://github.ncsu.edu/npatil2/CSC517_Program2"
+                        target="_blank">https://github.ncsu.edu/npatil2/CSC517_Program2</a></label>
             </div>
             <div>
-              <input type="radio" name="hyperlinks" value="http://152.7.177.84:8080/" />
-              <label>http://152.7.177.84:8080/</label>
+              <input type="radio" name="hyperlinks" value="http://152.7.177.84:8080/"  />
+              <label><a href="http://152.7.177.84:8080/"
+                        target="_blank">http://152.7.177.84:8080/</a></label>
             </div>
           </div>
         </div>
@@ -158,7 +159,6 @@ const Reviews: React.FC = () => {
           <h3>Submit a file:</h3>
           <div>
             <input type="file" onChange={handleFileUpload} />
-            <span>{uploadedFile ? uploadedFile.name : "No file chosen"}</span>
             <button>Upload file</button>
           </div>
         </div>
