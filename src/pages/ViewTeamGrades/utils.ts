@@ -27,45 +27,52 @@ export const getWordCount20 = (row: ReviewData) => {
   ).length;
 };
 
-// Function to calculate averages for rows and columns
+
+// Function to calculate averages for rows and columns, handling multiple rounds
 export const calculateAverages = (
-  currentRoundData: ReviewData[],
+  roundsData: ReviewData[][],
   sortOrderRow: 'asc' | 'desc' | 'none'
-) => {
+): { averagePeerReviewScore: string; columnAverages: number[]; sortedData: ReviewData[] } => {
   let totalAvg = 0;
-  let questionCount = 0;
   let totalMaxScore = 0;
-  currentRoundData.forEach((row) => {
-    const sum = row.reviews.reduce((acc, val) => acc + val.score, 0);
-    row.RowAvg = sum / row.reviews.length;
-    totalAvg = row.RowAvg + totalAvg;
-    totalMaxScore = totalMaxScore + row.maxScore;
-    questionCount++;
-  });
+  let totalQuestions = 0;
 
-  const averagePeerReviewScore =
-    questionCount > 0
-      ? (((totalAvg / totalMaxScore) * 100) > 0 ? ((totalAvg / totalMaxScore) * 100).toFixed(2) : '0.00')
-      : '0.00';
-
-  const columnAverages: number[] = Array.from({ length: currentRoundData[0].reviews.length }, () => 0);
-
-  currentRoundData.forEach((row) => {
-    row.reviews.forEach((val, index) => {
-      columnAverages[index] += val.score;
+  roundsData.forEach((currentRoundData) => {
+    currentRoundData.forEach((row) => {
+      const sum = row.reviews.reduce((acc, val) => acc + val.score, 0);
+      row.RowAvg = sum / row.reviews.length;
+      totalAvg += row.RowAvg;
+      totalMaxScore += row.maxScore;
+      totalQuestions++;
     });
   });
 
-  columnAverages.forEach((sum, index) => {
-    columnAverages[index] = (sum / totalMaxScore) * 5;
-  });
+  const averagePeerReviewScore = totalQuestions > 0
+    ? (((totalAvg / totalMaxScore) * 100).toFixed(2))
+    : '0.00';
 
-  let sortedData = [...currentRoundData];
+  let columnAverages: number[] = [];
+
+  if (roundsData.length > 0 && roundsData[0].length > 0) {
+    columnAverages = Array.from({ length: roundsData[0][0].reviews.length }, () => 0);
+    roundsData.forEach(currentRoundData => {
+      currentRoundData.forEach(row => {
+        row.reviews.forEach((val, index) => {
+          columnAverages[index] += val.score;
+        });
+      });
+    });
+
+    columnAverages = columnAverages.map(sum => parseFloat((sum / totalQuestions).toFixed(2)));
+  }
+
+  // Sorting data if necessary
+  let sortedData = roundsData.flat();
 
   if (sortOrderRow === 'asc') {
-    sortedData = currentRoundData.slice().sort((a, b) => a.RowAvg - b.RowAvg);
+    sortedData.sort((a, b) => a.RowAvg - b.RowAvg);
   } else if (sortOrderRow === 'desc') {
-    sortedData = currentRoundData.slice().sort((a, b) => b.RowAvg - a.RowAvg);
+    sortedData.sort((a, b) => b.RowAvg - a.RowAvg);
   }
 
   return { averagePeerReviewScore, columnAverages, sortedData };
