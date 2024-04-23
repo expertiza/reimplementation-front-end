@@ -1,6 +1,32 @@
+.centered-container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    align-items: center;
+}
+
+.side-by-side-container {
+    display: flex;
+    justify-content: center;
+}
+  
+.action-container {
+    flex: 1;
+    justify-content: left;
+}
+
 .score-comment-wrapper {
     display: flex;
-    align-items: center; /* Align items vertically */
+    align-items: center;
+}
+
+.trash-link-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.trash-button {
+    margin-right: 10px;
 }
   
 .score {
@@ -19,6 +45,23 @@
 }
 
 .reviewTable {
-    width: 80%;
-    margin: 0 auto;
+    text-align: left;
+}
+
+.tableTitle {
+    text-align: center;
+}
+
+.deleteButton {
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.tableButton {
+    display: inline-block;
+    text-align: left;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
