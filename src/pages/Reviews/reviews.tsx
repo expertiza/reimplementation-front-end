@@ -134,34 +134,69 @@ const Reviews: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Row className="reviewTable">
-          <Col xs={12}>
-            <div className="tableButton">
-              <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
-                {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
-                {showSubmissions  ? <span style={{ paddingLeft: "5px" }}>Hide Links</span> :
-                  <span style={{ paddingLeft: "5px" }}>Show Links</span>}
-              </Button>
-            </div>
-            
-            <div className="tableButton">
-                <input
-                  type="file"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }} // Hide the default file input
-                  ref={fileInputRef}
-                />
-              <Button variant="info" title="Upload a File" onClick={handleFileUploadButtonClick}>
-                <BsFileEarmarkArrowUp />
-                <span style={{ paddingLeft: "5px" }}>Submit a File</span>
-              </Button>
-            </div>
-
-          </Col>
-      </Row>
+      
       <Row className="side-by-side-container">
         <Col xs={12} md={6} className="action-container">
+          <Row className="reviewTable">
+            <Col xs={12}>
+              <div className="tableButton">
+                <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
+                  {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
+                  {showSubmissions  ? <span style={{ paddingLeft: "5px" }}>Hide Submissions</span> :
+                    <span style={{ paddingLeft: "5px" }}>Show Submissions</span>}
+                </Button>
+              </div>
 
+            </Col>
+          </Row>
+          <Table striped bordered>
+            <tbody>
+              <tr>
+                <td>
+                  <h3>Link Submissions</h3>
+                </td>
+              </tr>
+              {showSubmissions && (
+                links.map((item, index) => (
+                  <tr key={index}>
+                    <td>
+                      <div className="trash-link-wrapper">
+                        <div className="trash-button">
+                          <Button size="sm" title="Remove Link" variant="danger" onClick={
+                            () => handleShowWarning(`Are you sure you want to remove the link '${item}'?`, () => removeLink(index))
+                          }>
+                            <BsTrashFill />
+                          </Button>
+                        </div>
+                        
+                        <a href={item}>{item}</a>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </Col>
+
+        <Col xs={12} md={6} className="action-container">
+          <Row className="reviewTable">
+            <Col xs={12}>
+              
+              <div className="tableButton">
+                  <input
+                    type="file"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }} // Hide the default file input
+                    ref={fileInputRef}
+                  />
+                <Button variant="info" title="Submit File" onClick={handleFileUploadButtonClick}>
+                  <BsFileEarmarkArrowUp />
+                  <span style={{ paddingLeft: "5px" }}>Submit File</span>
+                </Button>
+              </div>
+            </Col>
+          </Row>
           <Table striped bordered>
             <tbody>
               <tr>
@@ -191,40 +226,6 @@ const Reviews: React.FC = () => {
             </tbody>
           </Table>
         </Col>
-
-        <Col xs={12} md={6} className="action-container">
-          <Table striped bordered>
-            <tbody>
-              <tr>
-                <td>
-                  <h3>Link Submissions</h3>
-                </td>
-              </tr>
-              {showSubmissions && (
-                links.map((item, index) => (
-                  <tr key={index}>
-                    <td>
-                      <div className="trash-link-wrapper">
-                        <div className="trash-button">
-                          <Button size="sm" title="Remove Link" variant="danger" onClick={
-                            () => handleShowWarning(`Are you sure you want to remove the link '${item}'?`, () => removeLink(index))
-                          }>
-                            <BsTrashFill />
-                          </Button>
-                        </div>
-                        
-                        <a href={item}>{item}</a>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-
-
-
-        </Col>
       </Row>
 
       <Row className="reviewTable">
@@ -246,7 +247,7 @@ const Reviews: React.FC = () => {
           </div>
 
           <div className="tableButton">
-            <Button title="Share Review As Sample" variant="info" onClick={
+            <Button title="Share My Review" variant="info" onClick={
               () => handleShowWarning("Your review may now be available for other students to view. Are you sure?", () => handleShareReview)
             }>
               <BsShareFill /> <span style={{ paddingLeft: "5px" }}>Share My Review </span>
@@ -254,7 +255,7 @@ const Reviews: React.FC = () => {
           </div>
 
         </Col>
-        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong>Sunday February 25 2024, 08:27PM</span>
+        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM</span>
       </Row>
 
       <Row className="reviewTable">
@@ -269,15 +270,17 @@ const Reviews: React.FC = () => {
               {showReview && (
                 reviewItems.map((item) => (
                   <tr key={item.id}>
-                    <td>
-                      <h5>{item.question}</h5>
-                      <div className="score-comment-wrapper">
-                        <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
-                          {`${item.score}`}
-                        </span>
-                        <p className="comment">{item.comment}</p>
-                      </div>
-                    </td>
+                    <div style={{background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3"}}>
+                      <td>
+                        <h5>{item.question}</h5>
+                        <div className="score-comment-wrapper">
+                          <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
+                            {`${item.score}`}
+                          </span>
+                          <p className="comment">{item.comment}</p>
+                        </div>
+                      </td>
+                    </div>
                   </tr>
                 ))
               )}
