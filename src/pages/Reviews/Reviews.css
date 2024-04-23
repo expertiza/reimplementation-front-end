@@ -1,0 +1,67 @@
+.centered-container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    align-items: center;
+}
+
+.side-by-side-container {
+    display: flex;
+    justify-content: center;
+}
+  
+.action-container {
+    flex: 1;
+    justify-content: left;
+}
+
+.score-comment-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.trash-link-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.trash-button {
+    margin-right: 10px;
+}
+  
+.score {
+    width: 30px; /* Adjust width as needed */
+    height: 30px; /* Adjust height as needed */
+    border-radius: 50%; /* Makes the shape a circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px; /* Adjust margin between score and comment */
+}
+
+.comment {
+    flex: 1; /* Allows the comment to take up remaining space */
+    margin: 0; /* Remove default margin */
+}
+
+.reviewTable {
+    text-align: left;
+}
+
+.tableTitle {
+    text-align: center;
+}
+
+.deleteButton {
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.tableButton {
+    display: inline-block;
+    text-align: left;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
