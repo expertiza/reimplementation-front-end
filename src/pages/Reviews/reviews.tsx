@@ -139,6 +139,8 @@ const Reviews: React.FC = () => {
             <div className="tableButton">
               <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
                 {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
+                {showSubmissions  ? <span style={{ paddingLeft: "5px" }}>Hide Links</span> :
+                  <span style={{ paddingLeft: "5px" }}>Show Links</span>}
               </Button>
             </div>
             
@@ -149,13 +151,14 @@ const Reviews: React.FC = () => {
                   style={{ display: 'none' }} // Hide the default file input
                   ref={fileInputRef}
                 />
-                <Button variant="info" title="Upload a File" onClick={handleFileUploadButtonClick}>
-                  <BsFileEarmarkArrowUp />
-                </Button>
-              </div>
-            
+              <Button variant="info" title="Upload a File" onClick={handleFileUploadButtonClick}>
+                <BsFileEarmarkArrowUp />
+                <span style={{ paddingLeft: "5px" }}>Submit a File</span>
+              </Button>
+            </div>
+
           </Col>
-        </Row>
+      </Row>
       <Row className="side-by-side-container">
         <Col xs={12} md={6} className="action-container">
 
@@ -229,12 +232,16 @@ const Reviews: React.FC = () => {
           <div className="tableButton">
             <Button title="Toggle Visibility" onClick={() => setShowReview(!showReview)}>
               {showReview ? <BsEyeFill /> : <BsEyeSlashFill />}
+              {showReview ? <span style={{ paddingLeft: "5px" }}>Hide Review</span> :
+                <span style={{ paddingLeft: "5px" }}>Show Review</span>}
+
             </Button>
           </div>
-          
+
           <div className="tableButton">
             <Button title="Email Author" variant="warning" onClick={() => navigate("../email_the_author")}>
               <BsEnvelopeFill />
+              <span style={{ paddingLeft: "5px" }}>Email Author </span>
             </Button>
           </div>
 
@@ -242,10 +249,12 @@ const Reviews: React.FC = () => {
             <Button title="Share Review As Sample" variant="info" onClick={
               () => handleShowWarning("Your review may now be available for other students to view. Are you sure?", () => handleShareReview)
             }>
-              <BsShareFill />
+              <BsShareFill /> <span style={{ paddingLeft: "5px" }}>Share My Review </span>
             </Button>
           </div>
+
         </Col>
+        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong>Sunday February 25 2024, 08:27PM</span>
       </Row>
 
       <Row className="reviewTable">
