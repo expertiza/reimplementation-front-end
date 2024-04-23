@@ -1,0 +1,14 @@
+.score-wrapper {
+    display: inline-flex;
+}
+
+.score {
+    display: inline-block;
+    width: 30px; /* Adjust size as needed */
+    height: 30px; /* Adjust size as needed */
+    border-radius: 50%; /* To make it a circle */
+    color: black;
+    text-align: center;
+    line-height: 30px; /* Center the score vertically */
+    margin-right: 10px; /* Adjust spacing between score and comment */
+}
