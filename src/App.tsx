@@ -31,6 +31,7 @@ import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
 import Reviews from "pages/Reviews/reviews";
+import Email_the_author from "./pages/Email_the_author/email_the_author";
 
 function App() {
   const router = createBrowserRouter([
@@ -110,6 +111,10 @@ function App() {
         {
           path: "reviews",
           element: <Reviews/>,
+        },
+        {
+          path: "email_the_author",
+          element: <Email_the_author/>,
         },
         // Fixed the missing comma and added an opening curly brace
         {

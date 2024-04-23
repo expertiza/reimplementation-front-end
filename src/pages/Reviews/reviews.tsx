@@ -1,17 +1,7 @@
-import { Row as TRow } from "@tanstack/react-table";
 import { Table } from "react-bootstrap";
-import useAPI from "hooks/useAPI";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { BsFileText, BsPersonFillAdd } from "react-icons/bs";
-import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
-import { RootState } from "../../store/store";
-import { IParticipantResponse, ROLE } from "../../utils/interfaces";
-import DeleteAssignment from "../Assignments/AssignmentDelete";
-import Assignments from "../Assignments/Assignment";
 import "./Reviews.css";
+import { useNavigate } from "react-router-dom";
 
 interface ReviewItem {
   id: number;
@@ -25,6 +15,7 @@ const Reviews: React.FC = () => {
   const [selectedHyperlink, setSelectedHyperlink] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [shareReview, setShareReview] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const reviewItems: ReviewItem[] = [
     {
@@ -137,24 +128,33 @@ const Reviews: React.FC = () => {
       <h2>Review for Program 2</h2>
       <>
         <div>
-          <h3>Hyperlink Actions:</h3>
-          <button disabled={!selectedHyperlink} onClick={handleHyperlinkDelete}>
-            Delete selected hyperlink
-          </button>
           <div>
-            <span>hide links</span>
+            <h3>Hyperlink Actions:</h3>
+            <button disabled={!selectedHyperlink} onClick={handleHyperlinkDelete}>
+              Delete selected hyperlink
+            </button>
             <div>
-              <input type="radio" name="hyperlinks" value="https://github.ncsu.edu/npatil2/CSC517_Program2" checked />
-              <label><a href="https://github.ncsu.edu/npatil2/CSC517_Program2"
-                        target="_blank">https://github.ncsu.edu/npatil2/CSC517_Program2</a></label>
-            </div>
-            <div>
-              <input type="radio" name="hyperlinks" value="http://152.7.177.84:8080/"  />
-              <label><a href="http://152.7.177.84:8080/"
-                        target="_blank">http://152.7.177.84:8080/</a></label>
+              <span>hide links</span>
+              <div>
+                <input type="radio" name="hyperlinks" value="https://github.ncsu.edu/npatil2/CSC517_Program2" checked />
+                <label><a href="https://github.ncsu.edu/npatil2/CSC517_Program2"
+                          target="_blank">https://github.ncsu.edu/npatil2/CSC517_Program2</a></label>
+              </div>
+              <div>
+                <input type="radio" name="hyperlinks" value="http://152.7.177.84:8080/" />
+                <label><a href="http://152.7.177.84:8080/"
+                          target="_blank">http://152.7.177.84:8080/</a></label>
+              </div>
             </div>
           </div>
+
+          <div>
+            <h3>Email the Author:</h3>
+              <button onClick={() => navigate("../email_the_author")}>Email Author</button>
+          </div>
         </div>
+
+
         <div>
           <h3>Submit a file:</h3>
           <div>
@@ -191,8 +191,8 @@ const Reviews: React.FC = () => {
         <br />
         <br />
 
-        <span > <strong>Review</strong>
-        <a style = {{"padding": "10px",}} href="#" onClick={() => setShowReview(!showReview)}>
+        <span> <strong>Review</strong>
+        <a style={{ "padding": "10px", }} href="#" onClick={() => setShowReview(!showReview)}>
           {showReview ? "hide review" : "show review"}
         </a></span>
         {showReview && (
@@ -207,9 +207,10 @@ const Reviews: React.FC = () => {
                 <tr key={item.id}>
                   <td>
                     <h6>{item.question}</h6>
-                    <span className="score-wrapper" >
-                      <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>{`${item.score}`}</span>
-                      <p style={{"paddingLeft":"5px",}}>{item.comment}</p>
+                    <span className="score-wrapper">
+                      <span className="score"
+                            style={{ backgroundColor: getScoreColor(item.score) }}>{`${item.score}`}</span>
+                      <p style={{ "paddingLeft": "5px", }}>{item.comment}</p>
                     </span>
                   </td>
                 </tr>
