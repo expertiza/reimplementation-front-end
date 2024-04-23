@@ -1,14 +1,24 @@
-.score-wrapper {
-    display: inline-flex;
+.score-comment-wrapper {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+  
+.score {
+    width: 30px; /* Adjust width as needed */
+    height: 30px; /* Adjust height as needed */
+    border-radius: 50%; /* Makes the shape a circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px; /* Adjust margin between score and comment */
 }
 
-.score {
-    display: inline-block;
-    width: 30px; /* Adjust size as needed */
-    height: 30px; /* Adjust size as needed */
-    border-radius: 50%; /* To make it a circle */
-    color: black;
-    text-align: center;
-    line-height: 30px; /* Center the score vertically */
-    margin-right: 10px; /* Adjust spacing between score and comment */
+.comment {
+    flex: 1; /* Allows the comment to take up remaining space */
+    margin: 0; /* Remove default margin */
+}
+
+.reviewTable {
+    width: 80%;
+    margin: 0 auto;
 }
