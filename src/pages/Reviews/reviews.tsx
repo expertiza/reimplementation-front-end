@@ -2,7 +2,7 @@ import { Table } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./Reviews.css";
 import { useNavigate } from "react-router-dom";
-import { getReviewItems, ReviewItem } from "./reviewData"; // Import function and interface
+import { getReviewItems, getFeedbackItems, ReviewItem } from "./reviewData"; // Import function and interface
 
 import { Row, Col, Button, Modal } from "react-bootstrap";
 import { BsEnvelopeFill, BsEyeFill, BsEyeSlashFill, BsShareFill, BsTrashFill, BsCheck, BsX, BsFileEarmarkArrowUp} from "react-icons/bs";
@@ -11,11 +11,13 @@ type HandleMethod = () => void;
 
 const Reviews: React.FC = () => {
   const [showReview, setShowReview] = useState<boolean>(true);
+  const [showReviewSecond, setShowReviewSecond] = useState<boolean>(true);
   const [showSubmissions, setshowSubmissions] = useState<boolean>(true);
 
   const navigate = useNavigate();
   const [reviewSetId, setReviewSetId] = useState<string>("1"); // Default set ID
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
+  const [feedbackItems, setFeedbackItems] = useState<ReviewItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const [showWarning, setShowWarning] = useState(false);
@@ -64,7 +66,9 @@ const Reviews: React.FC = () => {
   useEffect(() => {
     console.log('Component mounted or reviewSetId changed');
     const items = getReviewItems(reviewSetId);
+    const feedback = getFeedbackItems(reviewSetId);
     setReviewItems(items);
+    setFeedbackItems(feedback);
   }, [reviewSetId]);  // Make sure reviewSetId is managed correctly
 
   if (!reviewItems.length) {
@@ -117,7 +121,7 @@ const Reviews: React.FC = () => {
   return (
     <div className="centered-container">
       <h1>Review for Program 2</h1>
-
+      <br/>
       <Modal show={showWarning} onHide={handleCloseWarning}>
         <Modal.Header closeButton>
           <Modal.Title>Warning!</Modal.Title>
@@ -134,67 +138,26 @@ const Reviews: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Row className="reviewTable">
-          <Col xs={12}>
-            <div className="tableButton">
-              <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
-                {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
-              </Button>
-            </div>
-            
-            <div className="tableButton">
-                <input
-                  type="file"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }} // Hide the default file input
-                  ref={fileInputRef}
-                />
-                <Button variant="info" title="Upload a File" onClick={handleFileUploadButtonClick}>
-                  <BsFileEarmarkArrowUp />
-                </Button>
-              </div>
-            
-          </Col>
-        </Row>
+      
       <Row className="side-by-side-container">
         <Col xs={12} md={6} className="action-container">
+          <Row className="reviewTable">
+            <Col xs={12}>
+              <div className="tableButton">
+                <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
+                  {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
+                  {showSubmissions  ? <span style={{ paddingLeft: "5px" }}>Hide Links</span> :
+                    <span style={{ paddingLeft: "5px" }}>Show Links</span>}
+                </Button>
+              </div>
 
+            </Col>
+          </Row>
           <Table striped bordered>
             <tbody>
               <tr>
                 <td>
-                  <h3>File Submissions</h3>
-                </td>
-              </tr>
-              {showSubmissions && (
-                selectedFiles.map((item, index) => (
-                  <tr key={index}>
-                    <td>
-                      <div className="trash-link-wrapper">
-                        <div className="trash-button">
-                          <Button size="sm" title="Remove File" variant="danger" onClick={
-                            () => handleShowWarning(`Are you sure you want to remove the file '${item.name}'?`, () => handleRemoveFile(index))
-                          }>
-                            <BsTrashFill />
-                          </Button>
-                        </div>
-                        
-                        {item.name}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </Col>
-
-        <Col xs={12} md={6} className="action-container">
-          <Table striped bordered>
-            <tbody>
-              <tr>
-                <td>
-                  <h3>Link Submissions</h3>
+                  <h4>Link Submissions</h4>
                 </td>
               </tr>
               {showSubmissions && (
@@ -218,9 +181,65 @@ const Reviews: React.FC = () => {
               )}
             </tbody>
           </Table>
+        </Col>
 
+        <Col xs={12} md={6} className="action-container">
+          <Row className="reviewTable">
+            <Col xs={12}>
+              
+              <div className="tableButton">
+                  <input
+                    type="file"
+                    onChange={handleFileSelect}
+                    style={{ display: 'none' }} // Hide the default file input
+                    ref={fileInputRef}
+                  />
+                <Button variant="info" title="Submit File" onClick={handleFileUploadButtonClick}>
+                  <BsFileEarmarkArrowUp />
+                  <span style={{ paddingLeft: "5px" }}>Submit File</span>
+                </Button>
+              </div>
+            </Col>
+          </Row>
+          <Table striped bordered>
+            <thead>
+              <tr>
+                <th colSpan={3} style={{backgroundColor:"##f2f2f2"}}><h4 >File Submissions</h4></th>
+              </tr>
+              <tr>
+                <th>File Name</th>
+                <th>File Size</th>
+                <th>File Type</th>
+              </tr>
+            </thead>
+            <tbody>
+            {
+              selectedFiles.map((item, index) => (
+                <tr key={index}>
+                  <td>
+                    <div className="trash-link-wrapper">
+                      <div className="trash-button">
+                        <Button size="sm" title="Remove File" variant="danger" onClick={
+                          () => handleShowWarning(`Are you sure you want to remove the file '${item.name}'?`, () => handleRemoveFile(index))
+                        }>
+                          <BsTrashFill />
+                        </Button>
+                      </div>
 
-
+                      {item.name}
+                    </div>
+                  </td>
+                  <td>
+                    {item.size}
+                  </td>
+                  <td>
+                    {item.type}
+                  </td>
+                </tr>
+              ))
+            }
+            </tbody>
+          </Table>
         </Col>
       </Row>
 
@@ -229,23 +248,29 @@ const Reviews: React.FC = () => {
           <div className="tableButton">
             <Button title="Toggle Visibility" onClick={() => setShowReview(!showReview)}>
               {showReview ? <BsEyeFill /> : <BsEyeSlashFill />}
-            </Button>
-          </div>
-          
-          <div className="tableButton">
-            <Button title="Email Author" variant="warning" onClick={() => navigate("../email_the_author")}>
-              <BsEnvelopeFill />
+              {showReview ? <span style={{ paddingLeft: "5px" }}>Hide Review</span> :
+                <span style={{ paddingLeft: "5px" }}>Show Review</span>}
+
             </Button>
           </div>
 
           <div className="tableButton">
-            <Button title="Share Review As Sample" variant="info" onClick={
-              () => handleShowWarning("Your review may now be available for other students to view. Are you sure?", () => handleShareReview)
-            }>
-              <BsShareFill />
+            <Button title="Email Author" variant="warning" onClick={() => navigate("../email_the_author")}>
+              <BsEnvelopeFill />
+              <span style={{ paddingLeft: "5px" }}>Email Author </span>
             </Button>
           </div>
+
+          <div className="tableButton">
+            <Button title="Share My Review" variant="info" onClick={
+              () => handleShowWarning("Your review may now be available for other students to view. Are you sure?", () => handleShareReview)
+            }>
+              <BsShareFill /> <span style={{ paddingLeft: "5px" }}>Share My Review </span>
+            </Button>
+          </div>
+
         </Col>
+        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM</span>
       </Row>
 
       <Row className="reviewTable">
@@ -260,18 +285,67 @@ const Reviews: React.FC = () => {
               {showReview && (
                 reviewItems.map((item) => (
                   <tr key={item.id}>
-                    <td>
-                      <h5>{item.question}</h5>
-                      <div className="score-comment-wrapper">
-                        <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
-                          {`${item.score}`}
-                        </span>
-                        <p className="comment">{item.comment}</p>
-                      </div>
-                    </td>
+                    <div style={{background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3"}}>
+                      <td>
+                        <h5><span>{item.id}. {item.question}</span></h5>
+                        <div className="score-comment-wrapper">
+                          <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
+                            {`${item.score}`}
+                          </span>
+                          <p className="comment" style={{padding:"10px"}}>{item.comment}</p>
+                        </div>
+                      </td>
+                    </div>
                   </tr>
                 ))
               )}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
+      <br/>
+      <br/>
+      <br/>
+
+      <Row className="reviewTable">
+
+        <div className="tableButton">
+          <Button title="Toggle Visibility" onClick={() => setShowReviewSecond(!showReviewSecond)}>
+            {showReviewSecond ? <BsEyeFill /> : <BsEyeSlashFill />}
+            {showReviewSecond ? <span style={{ paddingLeft: "5px" }}>Hide Review</span> :
+              <span style={{ paddingLeft: "5px" }}>Show Review</span>}
+
+          </Button>
+        </div>
+
+        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM</span>
+      </Row>
+      <Row className="reviewTable">
+        <Col xs={12}>
+          <Table striped bordered>
+            <tbody>
+            <tr>
+              <td>
+                <h3 className="tableTitle">FeedBack from the Author</h3>
+              </td>
+            </tr>
+            {showReviewSecond && (
+              feedbackItems.map((item) => (
+                <tr key={item.id}>
+                <div style={{background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3"}}>
+                    <td>
+                      <h5><span>{item.id}. {item.question}</span></h5>
+                      <div className="score-comment-wrapper">
+                          <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
+                            {`${item.score}`}
+                          </span>
+                        <p className="comment" style={{padding:"10px"}}>{item.comment}</p>
+                      </div>
+                    </td>
+                  </div>
+                </tr>
+              ))
+            )}
             </tbody>
           </Table>
         </Col>
