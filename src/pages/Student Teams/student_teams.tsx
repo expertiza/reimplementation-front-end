@@ -225,7 +225,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
   const handleLeaveTeam = () => {
     // You might want to add logic here for any cleanup or notifications before leaving a team
-    alert('You are leaving team: E2433 team');  // Display an alert to the user
+    alert(`You are leaving team: ${teamDetails.teamName}`);  // Display an alert to the user
     navigate('/');  // Navigate to the home page after the user acknowledges the alert
   };
 
