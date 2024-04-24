@@ -32,6 +32,8 @@ import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
 import StudentTeams from "pages/Student Teams/student_teams";
 import StudentTeamView from "pages/Student Teams/student_teams";
+import NewTeammateAdvertisement from 'pages/Student Teams/NewTeammateAdvertisement';
+import TeammateReview from 'pages/Student Teams/TeammateReview';
 
 function App() {
   const router = createBrowserRouter([
@@ -69,6 +71,14 @@ function App() {
               element: <StudentTeamView />,
             },
           ],
+        },
+        {
+          path: "advertise_for_partner/new",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
         },
         {
           path: "users",
