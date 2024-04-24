@@ -1,11 +1,9 @@
 import React, { useState, FormEvent } from 'react';
 import { Form, Button, FormControl } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 
 const TeammateReview = () => {
     const [lateCount, setLateCount] = useState(0);  // State to track the number of times a teammate was late
     const [comments, setComments] = useState('');  // State for storing user comments
-    const navigate = useNavigate();  // Hook for navigation
 
     // Inline CSS styles for component styling
     const styles = {
@@ -50,14 +48,13 @@ const TeammateReview = () => {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         // Redirect to the view page after submitting the review
-        navigate('/student_teams/view');
     };
 
     return (
         <div style={styles.container}>
             <h2 style={styles.header}>Teammate Review for Final Project</h2>
             <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
-                Provide honest feedback about your teammate's performance and reliability.
+                This is a placeholder page and is still in progress.
             </div>
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
