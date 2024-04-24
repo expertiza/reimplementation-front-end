@@ -170,10 +170,19 @@ export interface IAssignmentResponse {
 
 export interface StudentTeamsProps { }
 
+// Define the structure of a team member object
 export interface TeamMember {
   username: string;
   fullName: string;
   email: string;
+}
+
+// Define the structure of the team details object
+export interface TeamDetails {
+  id: string;
+  projectName: string;
+  teamName: string;
+  teamMembers: TeamMember[];
 }
 
 export interface Invitation {

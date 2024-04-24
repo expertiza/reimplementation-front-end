@@ -1,7 +1,8 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import { Button, Form, Table, FormControl, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { StudentTeamsProps, TeamMember, Invitation } from '../../utils/interfaces';   // Adjust the path as necessary
+import { StudentTeamsProps, TeamMember, Invitation, TeamDetails } from '../../utils/interfaces';   
+import { useSearchParams } from 'react-router-dom';
 
 const StudentTeamView: FC<StudentTeamsProps> = () => {
   // Styles object to maintain consistent styling across the component
@@ -110,17 +111,47 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
   // Hooks for navigation and state management
   const navigate = useNavigate();
-  const [teamName, setTeamName] = useState('E2433 team');
   const [editMode, setEditMode] = useState(false);
-  const [newTeamName, setNewTeamName] = useState(teamName);
-  const [members, setMembers] = useState<TeamMember[]>([
-    { username: 'smandav', fullName: 'Sreenitya Mandava', email: 'smandav@ncsu.edu' },
-    { username: 'ssheva', fullName: 'Sree Tulasi Sheva', email: 'ssheva@ncsu.edu' },
-    { username: 'yseela', fullName: 'Yogitha Seela', email: 'yseela@ncsu.edu' },
-  ]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [userLogin, setUserLogin] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [searchParams] = useSearchParams();
+  const studentId = searchParams.get('student_id');
+
+  const [teamDetails, setTeamDetails] = useState<TeamDetails>({
+    id: '',
+    projectName: '',
+    teamName: '',
+    teamMembers: [],
+  });
+
+  const [teamName, setTeamName] = useState(teamDetails.teamName);
+  const [projName, setProjName] = useState(teamDetails.projectName);
+  const [members, setMembers] = useState<TeamMember[]>(teamDetails.teamMembers);
+  const [newTeamName, setNewTeamName] = useState(teamName);
+
+  console.log(members)
+
+  useEffect(() => {
+    // This effect runs when the `teamDetails` state updates
+    setTeamName(teamDetails.teamName);
+    setMembers(teamDetails.teamMembers);
+    setProjName(teamDetails.projectName);
+  }, [teamDetails]);
+
+  useEffect(() => {
+    // Here we would normally fetch data from the backend using the studentId
+    // For now, let's import the mock data directly
+    import('./teamData.json')
+      .then((data) => {
+        const teamInfo = data.default.find(team => team.id === studentId);
+        if (teamInfo) {
+          setTeamDetails(teamInfo);
+        } else {
+          // Handle the case where no team matches the given ID
+        }
+      });
+  }, [studentId]);
 
   // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
@@ -169,12 +200,22 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
   // Navigation handlers for creating ads and reviewing responses
   const handleCreateAdClick = () => {
-    navigate('/advertise_for_partner/new');
+    if (studentId) {
+      navigate(`/advertise_for_partner/new?student_id=${studentId}`);
+    } else {
+      // Handle the case where studentId is not available
+      console.error('Student ID is not available for navigation.');
+    }
   };
 
   // Review page navigation
   const handleReview = () => {
-    navigate('/response/new');
+    if (studentId) {
+      navigate(`/response/new?student_id=${studentId}`);
+    } else {
+      // Handle the case where studentId is not available
+      console.error('Student ID is not available for navigation.');
+    }
   };
 
   // delete invitations when needed
@@ -194,7 +235,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       <div>
         {showAlert && <Alert variant="warning" style={styles.alert}>This user is already part of the team.</Alert>}
       </div>
-      <h2 style={styles.header}>Team Information for Final project (and design doc)</h2>
+      <h2 style={styles.header}>{projName}</h2>
       <div style={styles.teamNameSection}>
         <strong style={styles.teamLabel}>Team Name:</strong>
         {!editMode ? (
