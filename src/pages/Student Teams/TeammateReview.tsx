@@ -3,10 +3,11 @@ import { Form, Button, FormControl } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 const TeammateReview = () => {
-    const [lateCount, setLateCount] = useState(0);
-    const [comments, setComments] = useState('');
-    const navigate = useNavigate();
+    const [lateCount, setLateCount] = useState(0);  // State to track the number of times a teammate was late
+    const [comments, setComments] = useState('');  // State for storing user comments
+    const navigate = useNavigate();  // Hook for navigation
 
+    // Inline CSS styles for component styling
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -41,25 +42,28 @@ const TeammateReview = () => {
         },
         starRating: {
             cursor: 'pointer',
-            fontSize: '1.5rem', // Adjust this to match your design needs
+            fontSize: '1.5rem',  // Larger font size for better clickability and visibility
         },
     };
 
+    // Handles form submission
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        // Redirect to the view page after submitting the review
         navigate('/student_teams/view');
     };
 
     return (
         <div style={styles.container}>
-            <h2 style={styles.header}>New Teammate Review for Final Project (and design doc)</h2>
+            <h2 style={styles.header}>Teammate Review for Final Project</h2>
             <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
-                This is a placeholder page and is still in progress.
+                Provide honest feedback about your teammate's performance and reliability.
             </div>
             <Form onSubmit={handleSubmit}>
                 <Form.Group>
                     <Form.Label style={styles.formLabel}>How many times was this person late to meetings?</Form.Label>
                     <div>
+                        {/* Render stars for late count selection */}
                         {[...Array(5)].map((_, i) => (
                             <span key={i} style={styles.starRating} onClick={() => setLateCount(i + 1)}>
                                 {i < lateCount ? '★' : '☆'}

@@ -4,6 +4,7 @@ import { Form, Button, FormControl } from 'react-bootstrap';
 const NewTeammateAdvertisement: FC = () => {
     const [description, setDescription] = useState('');
 
+    // Styles object for CSS-in-JS
     const styles = {
         container: {
             fontFamily: 'Arial, sans-serif',
@@ -28,9 +29,9 @@ const NewTeammateAdvertisement: FC = () => {
             marginBottom: '20px', // Space between textarea and button
         },
         submitButton: {
-            backgroundColor: 'transparent', // if the button should be transparent
+            backgroundColor: 'transparent', 
             borderColor: '#000', // black border color
-            color: '#000', // text color, assuming it's black
+            color: '#000', // text color
             fontSize: '0.85rem', // match the font size of other elements
             padding: '2px 5px', // adjust the vertical and horizontal padding as needed
             borderRadius: '0px', // no border-radius for a square look
@@ -38,10 +39,11 @@ const NewTeammateAdvertisement: FC = () => {
         }
     };
 
+    // Handle the form submission
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle the submit action, for example, send the data to the server
-        console.log(description);
+        // Implement functionality to process the advertisement data (e.g., send to server)
+        console.log(description); // Logging for demonstration; replace with actual implementation
     };
 
     return (

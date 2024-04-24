@@ -2,14 +2,17 @@ import React, { FC, useState } from 'react';
 import { Button, Form, Table, FormControl, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
+// Define props structure (none used here)
 interface StudentTeamsProps { }
 
+// Structure of a team member
 interface TeamMember {
   username: string;
   fullName: string;
   email: string;
 }
 
+// Structure of an invitation to a team
 interface Invitation {
   username: string;
   fullName: string;
@@ -18,6 +21,7 @@ interface Invitation {
 }
 
 const StudentTeamView: FC<StudentTeamsProps> = () => {
+  // Styles object to maintain consistent styling across the component
   const styles = {
     container: {
       fontFamily: 'Arial, sans-serif',
@@ -41,7 +45,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       marginBottom: '20px',
     },
     inviteInputGroup: {
-      display: 'flex', // Use flexbox to align label and input inline
+      display: 'flex', // flexbox to align label and input inline
       alignItems: 'center', // Center align items vertically
       marginBottom: '20px', // Space below the input group
     },
@@ -56,19 +60,18 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       fontSize: '0.85rem',
     },
     inviteInput: {
-      // Assuming the input field should not stretch full width
-      width: '450px', // or you can set a specific width like '250px'
+      width: '450px',
       marginRight: '10px', // Add some space between the input and the button
       fontSize: '0.85rem',
       borderColor: 'black',
       borderRadius: '3px',
     },
     inviteButton: {
-      backgroundColor: 'transparent', // if the button should be transparent
-      borderColor: '#000', // light grey border color, use the color picker tool to get the exact color from the screenshot
+      backgroundColor: 'transparent', // button should be transparent
+      borderColor: '#000', // black border color
       borderStyle: 'solid',
-      borderRadius: '0px', // Bootstrap's default border-radius for buttons, adjust if necessary
-      color: '#000', // text color, assuming it's black
+      borderRadius: '0px', // changing Bootstrap's default border-radius for buttons
+      color: '#000', // text color
       fontSize: '0.85rem', // match the font size of other elements
       padding: '2px 5px', // adjust the vertical and horizontal padding as needed
     },
@@ -111,7 +114,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     },
     alert: {
       backgroundColor: 'rgb(251, 221, 221)', // Red background
-      color: 'darkred', // White text for better readability
+      color: 'darkred',
     },
     leaveButtonLink: {
       textDecoration: 'none',
@@ -122,6 +125,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     }
   };
 
+  // Hooks for navigation and state management
   const navigate = useNavigate();
   const [teamName, setTeamName] = useState('E2433 team');
   const [editMode, setEditMode] = useState(false);
@@ -130,17 +134,18 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     { username: 'smandav', fullName: 'Sreenitya Mandava', email: 'smandav@ncsu.edu' },
     { username: 'ssheva', fullName: 'Sree Tulasi Sheva', email: 'ssheva@ncsu.edu' },
     { username: 'yseela', fullName: 'Yogitha Seela', email: 'yseela@ncsu.edu' },
-    // Add more members as needed
   ]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [userLogin, setUserLogin] = useState('');
   const [showAlert, setShowAlert] = useState(false);
 
+   // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
     setEditMode(!editMode);
     setNewTeamName(teamName); // Reset new name to current team name when toggling the edit mode
   };
 
+  // Handle the submission of a new team name
   const handleNameChangeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTeamName(newTeamName); // Save the new name
@@ -148,12 +153,14 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     // Here, also send the new team name to the server or backend if necessary
   };
 
+  // Function to send email invitations
   const sendEmailInvitation = (invitation: Invitation) => {
     const emailSubject = `Invitation to join team ${teamName}`;
     const emailBody = `Hello ${invitation.fullName},\n\nYou are invited to join the team "${teamName}" for our project. Please let us know your decision at your earliest convenience.\n\nBest regards,\n${teamName}`;
     window.open(`mailto:${invitation.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`, '_blank');
   };
 
+  // Handle the process of inviting a new team member
   const handleInvite = () => {
     const isMember = members.some(member => member.username === userLogin);
     if (isMember) {
@@ -162,7 +169,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       return;
     }
 
-    // Ideally, you should check if the user exists and then send an invite
     const newInvitation: Invitation = {
       username: userLogin,
       fullName: 'Fetching...', // Placeholder until the real name is fetched
@@ -178,18 +184,22 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     setUserLogin('');
   };
 
+  // Navigation handlers for creating ads and reviewing responses
   const handleCreateAdClick = () => {
     navigate('/advertise_for_partner/new');
   };
 
+  // Review page navigation
   const handleReview = () => {
     navigate('/response/new');
   };
 
+  // delete invitations when needed
   const handleRetract = (username: string) => {
     setInvitations(invitations.filter(invite => invite.username !== username));
   };
 
+  // Render the component UI
   return (
     <div style={styles.container}>
       <div>
@@ -250,8 +260,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
       <Button variant="link" style={styles.leaveButtonLink}>Leave team</Button>
 
-      {/* ... The rest of your component */}
-
       {invitations.length > 0 && (
         <>
           <h3 style={styles.formLabel}>Sent invitations</h3>
@@ -275,7 +283,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                       variant="link"
                       size="sm"
                       style={styles.buttonLink}
-                      onClick={() => handleRetract(invite.username)} // Added click handler
+                      onClick={() => handleRetract(invite.username)}
                     >
                       Retract
                     </Button>
