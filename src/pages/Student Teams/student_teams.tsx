@@ -1,24 +1,7 @@
 import React, { FC, useState } from 'react';
 import { Button, Form, Table, FormControl, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
-// Define props structure (none used here)
-interface StudentTeamsProps { }
-
-// Structure of a team member
-interface TeamMember {
-  username: string;
-  fullName: string;
-  email: string;
-}
-
-// Structure of an invitation to a team
-interface Invitation {
-  username: string;
-  fullName: string;
-  email: string;
-  status: string;
-}
+import { StudentTeamsProps, TeamMember, Invitation } from '../../utils/interfaces';   // Adjust the path as necessary
 
 const StudentTeamView: FC<StudentTeamsProps> = () => {
   // Styles object to maintain consistent styling across the component
@@ -139,7 +122,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const [userLogin, setUserLogin] = useState('');
   const [showAlert, setShowAlert] = useState(false);
 
-   // Toggle between edit and view mode for team name
+  // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
     setEditMode(!editMode);
     setNewTeamName(teamName); // Reset new name to current team name when toggling the edit mode
@@ -197,6 +180,12 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   // delete invitations when needed
   const handleRetract = (username: string) => {
     setInvitations(invitations.filter(invite => invite.username !== username));
+  };
+
+  const handleLeaveTeam = () => {
+    // You might want to add logic here for any cleanup or notifications before leaving a team
+    alert('You are leaving team: E2433 team');  // Display an alert to the user
+    navigate('/');  // Navigate to the home page after the user acknowledges the alert
   };
 
   // Render the component UI
@@ -258,7 +247,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
         </tbody>
       </Table>
 
-      <Button variant="link" style={styles.leaveButtonLink}>Leave team</Button>
+      <Button variant="link" style={styles.leaveButtonLink} onClick={handleLeaveTeam}>Leave team</Button>
 
       {invitations.length > 0 && (
         <>

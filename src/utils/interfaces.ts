@@ -168,6 +168,21 @@ export interface IAssignmentResponse {
   
 }
 
+export interface StudentTeamsProps { }
+
+export interface TeamMember {
+  username: string;
+  fullName: string;
+  email: string;
+}
+
+export interface Invitation {
+  username: string;
+  fullName: string;
+  email: string;
+  status: string;
+}
+
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {

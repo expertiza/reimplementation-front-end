@@ -1,8 +1,10 @@
 import React, { useState, FC } from 'react';
 import { Form, Button, FormControl } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const NewTeammateAdvertisement: FC = () => {
     const [description, setDescription] = useState('');
+    const navigate = useNavigate();  // Hook for navigation
 
     // Styles object for CSS-in-JS
     const styles = {
@@ -44,6 +46,7 @@ const NewTeammateAdvertisement: FC = () => {
         e.preventDefault();
         // Implement functionality to process the advertisement data (e.g., send to server)
         console.log(description); // Logging for demonstration; replace with actual implementation
+        navigate('/student_teams/view');
     };
 
     return (
