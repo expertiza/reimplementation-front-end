@@ -2,7 +2,6 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns";
 import { BsFileText } from "react-icons/bs";
 import DeleteAssignment from "./AssignmentDelete";
@@ -14,11 +13,10 @@ import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
 
-
 const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
-  
+
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -46,7 +44,7 @@ const Assignments = () => {
       console.error("Error fetching data:", err);
     }
   }, [fetchAssignments, fetchCourses]);
-  
+
   useEffect(() => {
     if (!showDeleteConfirmation.visible) {
       fetchData();
@@ -56,7 +54,7 @@ const Assignments = () => {
   let mergedData: Array<any & { courseName?: string }> = [];
 
   if (assignmentResponse && coursesResponse) {
-     mergedData = assignmentResponse.data.map((assignment: any) => {
+    mergedData = assignmentResponse.data.map((assignment: any) => {
       const course = coursesResponse.data.find((c: any) => c.id === assignment.course_id);
       return { ...assignment, courseName: course ? course.name : 'Unknown' };
     });
@@ -106,8 +104,8 @@ const Assignments = () => {
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-info" onClick={() => navigate("new")}>
-                <BsFileText />
+              <Button variant="outline-info" onClick={() => navigate("new")} className="d-flex align-items-center">
+                <span className="me-1">Create</span><BsFileText />
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
@@ -130,8 +128,4 @@ const Assignments = () => {
   );
 };
 
-
 export default Assignments;
-
-
-

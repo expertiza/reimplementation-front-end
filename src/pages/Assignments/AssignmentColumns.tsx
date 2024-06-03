@@ -26,7 +26,7 @@ export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
+        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)} title="Edit">
           <BsPencilFill />
         </Button>
         <Button
@@ -34,6 +34,7 @@ export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn) => [
           size="sm"
           className="ms-sm-2"
           onClick={() => handleDelete(row)}
+          title="Delete"
         >
           <BsPersonXFill />
         </Button>
