@@ -41,6 +41,49 @@ $theme-colors: (
         "grey": $grey,
         "darkgrey": $darkgrey
 );
-
+// Custom styles for the action buttons in the Etc tab
+.assignment-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; // This will create space between the buttons and the ETC tab line
+        justify-content: flex-start;
+        padding-top: 10px; // Add more space above the buttons if needed
+      }
+      
+      .custom-tab-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: white;
+        text-decoration: none;
+        color: inherit;
+        font-size: 1rem;
+        cursor: pointer;
+        width: calc(100% / 3 - 10px); // Adjust the width depending on the number of buttons per row
+        height: 100px ;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      
+        .icon {
+          margin-bottom: 5px;
+          font-size: 1.5em;
+        }
+      
+        &:hover {
+          background-color: #f8f9fa;
+          border-color: #adb5bd;
+        }
+      }
+      
+      // Responsive adjustments
+      @media (max-width: 768px) {
+        .custom-tab-button {
+          width: calc(100% - 10px); // Full width on small screens
+          margin-bottom: 10px; // Space between stacked buttons
+        }
+      }
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';

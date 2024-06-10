@@ -1,22 +1,28 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
 import { RootState } from "../../store/store";
-import { IUserResponse, ROLE } from "../../utils/interfaces";
-import DeleteUser from "./UserDelete";
-import { userColumns as USER_COLUMNS } from "./userColumns";
+import { IParticipantResponse, ROLE } from "../../utils/interfaces";
+import DeleteParticipant from "./ParticipantDelete";
+import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
 
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Atharva Thorve on October, 2023
  */
-const Users = () => {
-  const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
+
+interface IModel {
+  type: "student_tasks" | "courses"|"assignments";
+  id: Number;
+}
+
+const Participants: React.FC<IModel> = ({ type, id }) => {
+  const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -27,12 +33,12 @@ const Users = () => {
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
-    data?: IUserResponse;
+    data?: IParticipantResponse;
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
-  }, [fetchUsers, location, showDeleteConfirmation.visible, auth.user.id]);
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id]);
 
   // Error alert
   useEffect(() => {
@@ -41,26 +47,26 @@ const Users = () => {
     }
   }, [error, dispatch]);
 
-  const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteParticipantHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<IUserResponse>) => navigate(`edit/${row.original.id}`),
-    [navigate]
+    (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
+    [navigate, type]
   );
 
   const onDeleteHandle = useCallback(
-    (row: TRow<IUserResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
+    (row: TRow<IParticipantResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
   const tableColumns = useMemo(
-    () => USER_COLUMNS(onEditHandle, onDeleteHandle),
+    () => PARPTICIPANT_COLUMNS(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 
   const tableData = useMemo(
-    () => (isLoading || !userResponse?.data ? [] : userResponse.data),
-    [userResponse?.data, isLoading]
+    () => (isLoading || !participantResponse?.data ? [] : participantResponse.data),
+    [participantResponse?.data, isLoading]
   );
 
   return (
@@ -70,7 +76,7 @@ const Users = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Users</h1>
+              <h1>Manage Participants</h1>
             </Col>
             <hr />
           </Row>
@@ -81,7 +87,7 @@ const Users = () => {
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
-              <DeleteUser userData={showDeleteConfirmation.data!} onClose={onDeleteUserHandler} />
+              <DeleteParticipant participantData={showDeleteConfirmation.data!} onClose={onDeleteParticipantHandler} />
             )}
           </Row>
           <Row>
@@ -100,4 +106,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default Participants;

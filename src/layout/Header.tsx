@@ -1,10 +1,10 @@
 import React, { Fragment } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { RootState } from "../store/store";
-import { hasAllPrivilegesOf } from "../utils/util";
 import { ROLE } from "../utils/interfaces";
+import { hasAllPrivilegesOf } from "../utils/util";
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -80,6 +80,9 @@ const Header: React.FC = () => {
                     </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/questionnaire">
                       Questionnaire
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/edit-questionnaire">
+                      Edit Questionnaire
                     </NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item as={Link} to="/impersonate">

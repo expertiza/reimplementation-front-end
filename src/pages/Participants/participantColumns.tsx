@@ -1,14 +1,15 @@
-import {createColumnHelper, Row} from "@tanstack/react-table";
-import {Button} from "react-bootstrap";
-import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
-import {IUserResponse as IUser} from "../../utils/interfaces";
+import { createColumnHelper, Row } from "@tanstack/react-table";
+import { Button } from "react-bootstrap";
+import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
+import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
+
 /**
- * @author Ankur Mundra on April, 2023
+ * @author Divit Kalathil on October, 2023
  */
 
-type Fn = (row: Row<IUser>) => void;
-const columnHelper = createColumnHelper<IUser>();
-export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
+type Fn = (row: Row<IParticipant>) => void;
+const columnHelper = createColumnHelper<IParticipant>();
+export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("id", {
     header: "Id",
     enableColumnFilter: false,
@@ -16,7 +17,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor("name", {
-    header: "Username",
+    header: "Participant Name",
     enableSorting: true,
   }),
 
