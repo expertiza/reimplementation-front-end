@@ -8,6 +8,7 @@ const ImpersonateUser: React.FC = () => {
   const { data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
+  const [impersonateActive, setImpersonateActive] = useState(false);
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -55,6 +56,7 @@ const ImpersonateUser: React.FC = () => {
 
   // Impersonate user
   const handleImpersonate = () => {
+    setImpersonateActive(true);
     impersonateUser({
       method: "post",
       url: "/impersonate",
@@ -127,7 +129,7 @@ const ImpersonateUser: React.FC = () => {
               value={searchQuery}
               onChange={handleSearchQueryInput}
             />
-            <Button variant="outline-secondary" id="button-addon2" onClick={handleImpersonate}>
+            <Button variant="outline-secondary" id="button-addon2" onClick={handleImpersonate} disabled={impersonateActive}>
               Impersonate
             </Button>
           </InputGroup>
