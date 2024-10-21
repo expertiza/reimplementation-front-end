@@ -21,7 +21,7 @@ const ImpersonateUser: React.FC = () => {
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setDebounceActive(true);
-  }
+  };
 
   // Debounce search query
   const debouncedSearch = useMemo(() => {
@@ -40,11 +40,14 @@ const ImpersonateUser: React.FC = () => {
   const displayUserList = () => {
     return (
       debounceActive &&
+      searchQuery.trim() &&
       fetchUsersResponse?.data && (
         <Dropdown.Menu>
-          {fetchUsersResponse.data.map((user: any) => (
-            <Dropdown.Item key={user.id}>{user.user_name}</Dropdown.Item>
-          ))}
+          {fetchUsersResponse.data
+            .filter((user: any) => user.user_name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .map((filteredUser: any) => (
+              <Dropdown.Item key={filteredUser.id}>{filteredUser.user_name}</Dropdown.Item>
+            ))}
         </Dropdown.Menu>
       )
     );
