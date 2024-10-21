@@ -1,15 +1,68 @@
-import React, { useState } from "react";
-import { IUserRequest } from "../../utils/interfaces";
-import { Col, Row, InputGroup, Form, Button } from "react-bootstrap";
+import React, { useState, useEffect, useMemo } from "react";
+import { Col, Row, InputGroup, Form, Button, Dropdown } from "react-bootstrap";
 import useAPI from "hooks/useAPI";
+import debounce from "lodash.debounce";
 
 const ImpersonateUser: React.FC = () => {
-  const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
-  //const [searchQuery, setSearchQuery] = useState<string>("");
-  //const [selectedUser, setSelectedUser] = useState<string>("");
-  const [impersonate, setImpersonate] = useState<boolean>(true);
+  const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
+  const { data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debounceActive, setDebounceActive] = useState(false);
+
+  // Fetch user list once on component mount
+  useEffect(() => {
+    fetchUsers({
+      method: "get",
+      url: "/get_users_list",
+    });
+  }, [fetchUsers]);
+
+  // Handle search query input change and trigger debounce
+  const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setDebounceActive(true);
+  }
+
+  // Debounce search query
+  const debouncedSearch = useMemo(() => {
+    return debounce(handleSearchQueryInput, 300);
+  }, []);
+
+  // Cleanup debounce function when component unmounts
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+      setDebounceActive(false);
+    };
+  }, [debouncedSearch]);
+
+  // Display user list after debounce (autocomplete functionality)
+  const displayUserList = () => {
+    return (
+      debounceActive &&
+      fetchUsersResponse?.data && (
+        <Dropdown.Menu>
+          {fetchUsersResponse.data.map((user: any) => (
+            <Dropdown.Item key={user.id}>{user.user_name}</Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      )
+    );
+  };
+
+  // Impersonate user
+  const handleImpersonate = () => {
+    impersonateUser({
+      method: "post",
+      url: "/impersonate",
+      data: {
+        impersonate_id: searchQuery,
+      },
+    });
+  };
 
   // Impersonation banner
+  // From Header.tsx -- use as reference
   /* const ImpersonationBanner = () => {
     return (
       <div
@@ -63,15 +116,19 @@ const ImpersonateUser: React.FC = () => {
       </Row>
       <div className="row justify-content-center">
         <div className="col-md-6">
-          <InputGroup className="impersonateUserEntry">
+          <InputGroup className="impersonateUserGroup">
             <Form.Control
+              id="impersonateUserEntry"
               placeholder="Enter the username of the user you wish to impersonate"
               aria-label="User Impersonation with Submit Button"
+              value={searchQuery}
+              onChange={handleSearchQueryInput}
             />
-            <Button variant="outline-secondary" id="button-addon2">
+            <Button variant="outline-secondary" id="button-addon2" onClick={handleImpersonate}>
               Impersonate
             </Button>
           </InputGroup>
+          {displayUserList()}
         </div>
       </div>
     </>
