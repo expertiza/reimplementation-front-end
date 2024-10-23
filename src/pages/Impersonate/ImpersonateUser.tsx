@@ -14,9 +14,12 @@ const ImpersonateUser: React.FC = () => {
   useEffect(() => {
     fetchUsers({
       method: "get",
-      url: "/get_users_list",
+      url: "/users",
     });
   }, [fetchUsers]);
+  
+  //log fetched users to console for test
+  console.log(fetchUsersResponse);
 
   // Handle search query input change and trigger debounce
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +48,7 @@ const ImpersonateUser: React.FC = () => {
       fetchUsersResponse?.data && (
         <Dropdown.Menu>
           {fetchUsersResponse.data
-            .filter((user: any) => user.user_name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .filter((user: any) => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
             .map((filteredUser: any) => (
               <Dropdown.Item key={filteredUser.id}>{filteredUser.user_name}</Dropdown.Item>
             ))}
