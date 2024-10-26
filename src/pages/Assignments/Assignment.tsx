@@ -12,6 +12,7 @@ import Table from "components/Table/Table";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
+import dummyData from "./dummyData/data.json";
 
 const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
@@ -32,18 +33,31 @@ const Assignments = () => {
   }>({ visible: false });
 
 
-  const fetchData = useCallback(async () => {
+  // const fetchData = useCallback(async () => {
+  //   try {
+  //     const [assignments, courses] = await Promise.all([
+  //       fetchAssignments({ url: `/assignments` }),
+  //       fetchCourses({ url: '/courses' }),
+  //     ]);
+  //     // Handle the responses as needed
+  //   } catch (err) {
+  //     // Handle any errors that occur during the fetch
+  //     console.error("Error fetching data:", err);
+  //   }
+  // }, [fetchAssignments, fetchCourses]);
+
+  // Fetch data from the dummy JSON file
+  const fetchData = useCallback(() => {
     try {
-      const [assignments, courses] = await Promise.all([
-        fetchAssignments({ url: `/assignments` }),
-        fetchCourses({ url: '/courses' }),
-      ]);
-      // Handle the responses as needed
+      // Extract assignments and courses directly from imported dummyData
+      const assignments = dummyData.assignments;
+      const courses = dummyData.courses;
+
+      // Process data if needed
     } catch (err) {
-      // Handle any errors that occur during the fetch
       console.error("Error fetching data:", err);
     }
-  }, [fetchAssignments, fetchCourses]);
+  }, []);
 
   useEffect(() => {
     if (!showDeleteConfirmation.visible) {
