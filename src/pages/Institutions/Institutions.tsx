@@ -8,6 +8,8 @@ import axiosClient from "../../utils/axios_client";
 import InstitutionDelete from "./InstitutionDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { IInstitution } from "../../utils/interfaces";
+import { useSelector } from "react-redux";
+import { RootState } from "store/store";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -17,6 +19,11 @@ const Institutions = () => {
   const navigate = useNavigate();
   const institutions: any = useLoaderData();
 
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
+  
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IInstitution;
@@ -55,28 +62,39 @@ const Institutions = () => {
             </Col>
             <hr />
           </Row>
-          <Row>
-            <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPlusSquareFill />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <InstitutionDelete
-                institutionData={showDeleteConfirmation.data!}
-                onClose={onDeleteInstitutionHandler}
+          {(['Super Administrator','Administrator'].includes(auth.user.role))
+          && (
+            <>
+              <Row>
+              <Col md={{ span: 1, offset: 8 }}>
+                <Button variant="outline-success" onClick={() => navigate("new")}>
+                  <BsPlusSquareFill />
+                </Button>
+              </Col>
+              {showDeleteConfirmation.visible && (
+                <InstitutionDelete
+                  institutionData={showDeleteConfirmation.data!}
+                  onClose={onDeleteInstitutionHandler}
+                />
+              )}
+            </Row>
+            <Row>
+              <Table
+                data={tableData}
+                columns={tableColumns}
+                showColumnFilter={false}
+                columnVisibility={{ id: false }}
+                tableSize={{ span: 6, offset: 3 }}
               />
-            )}
-          </Row>
-          <Row>
-            <Table
-              data={tableData}
-              columns={tableColumns}
-              showColumnFilter={false}
-              columnVisibility={{ id: false }}
-              tableSize={{ span: 6, offset: 3 }}
-            />
-          </Row>
+            </Row>
+            </>
+          ) }
+
+          {(!['Super Administrator','Administrator'].includes(auth.user.role)) 
+          && (
+            <h1>Institution changes not allowed</h1>
+          )}
+          
         </Container>
       </main>
     </>
