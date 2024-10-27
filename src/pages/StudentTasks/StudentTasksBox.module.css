@@ -1,12 +1,52 @@
 /* Main content area that grows to fill the space */
-.mainContent {
+/* .mainContent {
     flex-grow: 1;
     overflow: hidden;
-    /* In case the content is too wide */
-}
+    
+} */
 
 /* Styling for the page header */
-.header {
+/* .header {
     margin-bottom: 20px;
-    /* Space below the header */
+    
+} */
+/* StudentTasksBox.module.css */
+
+/* StudentTasksBox.module.css */
+
+/* StudentTasksBox.module.css */
+
+/* StudentTasksBox.module.css */
+
+/* StudentTasksBox.module.css */
+
+.container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start;
+    gap: 16px;
 }
+
+.infoBox {
+    width: 250px;
+    padding: 16px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tableContainer {
+    flex: 1; /* Ensures table takes up remaining width */
+}
+
+.teamedStudents {
+    margin-top: 16px; /* Space above the teamed students section */
+    padding: 8px;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+
+
