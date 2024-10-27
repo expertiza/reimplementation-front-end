@@ -22,13 +22,15 @@
 
 .container {
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
+    flex-direction: column;
+    /* Stack elements vertically */
     align-items: flex-start;
     gap: 16px;
 }
 
 .infoBox {
-    width: 250px;
+    position: sticky;
+    width: 200px;
     padding: 16px;
     background-color: #f9f9f9;
     border: 1px solid #ddd;
@@ -37,16 +39,15 @@
 }
 
 .tableContainer {
-    flex: 1; /* Ensures table takes up remaining width */
+    flex: 1;
+    /* Ensures table takes up remaining width */
 }
 
 .teamedStudents {
-    margin-top: 16px; /* Space above the teamed students section */
+    margin-top: 16px;
+    /* Space above the teamed students section */
     padding: 8px;
     background-color: #f1f1f1;
     border-radius: 8px;
     font-size: 1rem;
 }
-
-
-

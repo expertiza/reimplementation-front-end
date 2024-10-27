@@ -1,55 +1,76 @@
 /* Sidebar styling */
 .sidebar {
-    width: 250px;
-    margin-right: 20px;
+    width: 450px;
+    margin-right: 50px;
     padding-top: 20px;
 }
+
 /* Styles for the assignments table */
 .tasksTable {
     width: 100%;
-    border-collapse: collapse; /* Ensures no extra spacing between table borders */
+    border-collapse: collapse;
+    /* Ensures no extra spacing between table borders */
     margin-top: 1rem;
-    font-size: 14px; /* Adjust font size */
+    font-size: 14px;
+    /* Adjust font size */
 }
 
-.tasksTable th, .tasksTable td {
-    border: 1px solid #ccc; /* Adds a light gray border around cells */
-    padding: 10px 15px; /* Adds padding for better readability */
-    text-align: left; /* Align text to the left */
-    vertical-align: middle; /* Centers content vertically */
+.tasksTable th,
+.tasksTable td {
+    border: 1px solid #ccc;
+    /* Adds a light gray border around cells */
+    padding: 10px 15px;
+    /* Adds padding for better readability */
+    text-align: left;
+    /* Align text to the left */
+    vertical-align: middle;
+    /* Centers content vertically */
 }
 
 /* Only apply flex to headers containing dropdowns */
 .tasksTable th.dropdown-header {
     display: flex;
-    align-items: center; /* Centers text and dropdown vertically */
-    justify-content: space-between; /* Keeps text and dropdown aligned in row */
+    align-items: center;
+    /* Centers text and dropdown vertically */
+    justify-content: space-between;
+    /* Keeps text and dropdown aligned in row */
 }
 
 .tasksTable th.dropdown-header select {
-    margin-left: 5px; /* Adds space between header text and dropdown */
-    padding: 5px; /* Adds padding inside the dropdown */
-    font-size: 12px; /* Smaller font size for dropdowns */
-    vertical-align: middle; /* Aligns dropdown with text */
-    min-width: 100px; /* Ensures dropdowns have consistent width */
+    margin-left: 5px;
+    /* Adds space between header text and dropdown */
+    padding: 5px;
+    /* Adds padding inside the dropdown */
+    font-size: 12px;
+    /* Smaller font size for dropdowns */
+    vertical-align: middle;
+    /* Aligns dropdown with text */
+    min-width: 100px;
+    /* Ensures dropdowns have consistent width */
 }
 
-.tasksTable th img, .tasksTable td img {
-    margin-left: 5px; /* Adds space between text and info icon */
+.tasksTable th img,
+.tasksTable td img {
+    margin-left: 5px;
+    /* Adds space between text and info icon */
     vertical-align: middle;
 }
 
 .tasksTable .centerCheckbox {
-    text-align: center; /* Center-aligns checkboxes */
+    text-align: center;
+    /* Center-aligns checkboxes */
 }
 
 .tasksTable td a {
-    color: #007acc; /* Adds color to links */
-    text-decoration: none; /* Removes underline */
+    color: #007acc;
+    /* Adds color to links */
+    text-decoration: none;
+    /* Removes underline */
 }
 
 .tasksTable td a:hover {
-    text-decoration: underline; /* Adds underline on hover for better UX */
+    text-decoration: underline;
+    /* Adds underline on hover for better UX */
 }
 
 /* Sidebar styling */
@@ -85,7 +106,8 @@
 
 .pageLayout {
     display: flex;
-    width: 90%; /* Adjusts the width to center on page */
+    width: 90%;
+    /* Adjusts the width to center on page */
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -96,3 +118,13 @@
     padding: 10px 0;
 }
 
+
+.teamedStudents {
+    margin-top: 16px;
+    margin: auto;
+    /* Space above the teamed students section */
+    padding: 30px;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    font-size: 1rem;
+}

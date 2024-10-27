@@ -28,19 +28,29 @@ type StudentsTeamedWith = {
 const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, revisions, studentsTeamedWith }) => {
     // Calculate total number of students teamed up with by iterating over each semester
     let totalStudents = 0;
+    let allStudents: string[] = [];
     for (const semester in studentsTeamedWith) {
         // Add the number of students in each semester to the total count
         totalStudents += studentsTeamedWith[semester].length;
+        allStudents = allStudents.concat(studentsTeamedWith[semester]);
     }
 
     // Calculate the number of revisions that are still pending (i.e., due date is in the future)
     const pendingRevisions = revisions.filter(revision => getDaysLeft(revision.dueDate) > 0);
+
+    console.log("participantTasks", participantTasks)
+    console.log("pendingRevisions", pendingRevisions)
 
     return (
         <div className={styles.container}>
             <div className={styles.infoBox}>
                 <h2>Task Summary</h2>
                 <p>Due Tasks: {String(participantTasks)}</p>
+                <ul>
+                    {/* {participantTasks.map((student, index) => (
+                        <li key={index}>{student}</li>
+                    ))} */}
+                </ul>
                 <p>Revisions: {pendingRevisions.map(revision => revision.name).join(", ")}</p> {/* Display only pending revisions */}
             </div>
             <div className={styles.tableContainer}>
@@ -66,6 +76,11 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
             {/* This div should be below the tableContainer */}
             <div className={styles.teamedStudents}>
                 <p>Total Students Teamed With: {totalStudents}</p>
+                <ul>
+                    {allStudents.map((student, index) => (
+                        <li key={index}>{student}</li>
+                    ))}
+                </ul>
             </div>
         </div>
     );

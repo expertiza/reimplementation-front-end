@@ -26,12 +26,16 @@ const StudentTasksHome: React.FC = () => {
     const navigate = useNavigate();
     const auth = useSelector((state: RootState) => state.authentication)
 
+    type StudentsTeamedWith = {
+        [semester: string]: string[];
+    };
+
     // states to hold tasks
     const taskRevisions = testData.revisions;
     const participantTasks = testData.participantTasks;
     const [tasks, setTasks] = useState<Task[]>([]);
     const dueTasks = testData.dueTasks;
-    const studentsTeamedWith = testData.studentsTeamedWith;
+    const studentsTeamedWith: StudentsTeamedWith = testData.studentsTeamedWith;
     const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
 
     const [assignmentFilter, setAssignmentFilter] = useState('');
@@ -40,6 +44,14 @@ const StudentTasksHome: React.FC = () => {
 
     function togglePublishingRights(id: number): void {
         throw new Error('Function not implemented.');
+    }
+
+    let totalStudents = 0;
+    let allStudents: string[] = [];
+    for (const semester in studentsTeamedWith) {
+        // Add the number of students in each semester to the total count
+        totalStudents += studentsTeamedWith[semester].length;
+        allStudents = allStudents.concat(studentsTeamedWith[semester]);
     }
 
     useEffect(() => {
@@ -61,7 +73,7 @@ const StudentTasksHome: React.FC = () => {
     }, [participantTasks]);
 
     useEffect(() => {
-        const filtered = tasks.filter((task) => 
+        const filtered = tasks.filter((task) =>
             (assignmentFilter ? task.assignment === assignmentFilter : true) &&
             (courseFilter ? task.course === courseFilter : true) &&
             (topicFilter ? task.topic === topicFilter : true)
@@ -73,38 +85,38 @@ const StudentTasksHome: React.FC = () => {
         <div className="assignments-page">
             <h1 className="assignments-title">Assignments</h1>
             <div className={styles.pageLayout}>
-                <aside className={styles.sidebar}>
+                <div className={styles.sidebar}>
                     <StudentTasksBox
                         participantTasks={dueTasks}
                         revisions={taskRevisions}
                         studentsTeamedWith={studentsTeamedWith}
                     />
-                </aside>
+                </div>
                 <div className={styles.mainContent}>
                     <table className={styles.tasksTable}>
                         <thead>
                             <tr>
                                 <th className="dropdown-header">Assignment</th>
                                 <select onChange={(e) => setAssignmentFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
-                                            <option key={assignment} value={assignment}>{assignment}</option>
-                                        ))}
-                                    </select>
+                                    <option value="">All</option>
+                                    {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
+                                        <option key={assignment} value={assignment}>{assignment}</option>
+                                    ))}
+                                </select>
                                 <th className="dropdown-header">Course</th>
                                 <select onChange={(e) => setCourseFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.course))).map(course => (
-                                            <option key={course} value={course}>{course}</option>
-                                        ))}
-                                    </select>
+                                    <option value="">All</option>
+                                    {Array.from(new Set(tasks.map(task => task.course))).map(course => (
+                                        <option key={course} value={course}>{course}</option>
+                                    ))}
+                                </select>
                                 <th className="dropdown-header">Topic</th>
                                 <select onChange={(e) => setTopicFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
-                                            <option key={topic} value={topic}>{topic}</option>
-                                        ))}
-                                    </select>
+                                    <option value="">All</option>
+                                    {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
+                                        <option key={topic} value={topic}>{topic}</option>
+                                    ))}
+                                </select>
                                 <th>Current Stage</th>
                                 <th>Review Grade</th>
                                 {<th>Badges</th>}
@@ -114,6 +126,7 @@ const StudentTasksHome: React.FC = () => {
                                 </th>
                                 <th>
                                     Publishing Rights
+
                                     <img src="assets/icons/info.png" alt="Info" title="Grant publishing rights to make my work available to others over the Web" />
                                 </th>
                             </tr>
@@ -144,6 +157,16 @@ const StudentTasksHome: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+
+            </div>
+
+            <div className={styles.teamedStudents}>
+                <p>Total Students Teamed With: {totalStudents}</p>
+                <ul>
+                    {allStudents.map((student, index) => (
+                        <li key={index}>{student}</li>
+                    ))}
+                </ul>
             </div>
 
             {/* Footer section */}
