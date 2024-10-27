@@ -1,0 +1,129 @@
+.table-responsive {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+/* Table layout - using flexible layout */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+/* Styles for all table cells */
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+/* Header styling */
+.table th {
+  font-weight: 600;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Adjust column widths - including checkbox column */
+.table th:first-child,
+.table td:first-child {  /* Checkbox column */
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+/* Topic ID column */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+/* Topic name column - give it most space */
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: auto;
+  min-width: 300px;
+}
+
+/* Other columns (slots, waitlist, etc.) */
+.table th:nth-child(n+4),
+.table td:nth-child(n+4) {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+/* Topic name cell specific styling */
+.topic-name-cell {
+  width: 100%;
+  padding-right: 1rem;
+}
+
+/* Student topics section */
+.student-topics {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+}
+
+.student-topics h4 {
+  margin-bottom: 1rem;
+  color: #495057;
+}
+
+.student-topics .table {
+  margin-bottom: 0;
+}
+
+/* Hide pagination in student topics */
+.student-topics .pagination {
+  display: none;
+}
+
+/* Status indicators */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Team members styling */
+.team-members {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+/* Table hover effect */
+.table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+/* Ensure content wraps properly */
+.table td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Responsive table */
+@media screen and (max-width: 1200px) {
+  .table td {
+    min-width: auto;
+  }
+  
+  .topic-name-cell {
+    min-width: auto;
+  }
+  
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    min-width: 200px;
+  }
+}
