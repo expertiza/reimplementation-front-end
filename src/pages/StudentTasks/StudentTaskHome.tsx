@@ -32,6 +32,11 @@ const StudentTasksHome: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const dueTasks = testData.dueTasks;
     const studentsTeamedWith = testData.studentsTeamedWith;
+    const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+
+    const [assignmentFilter, setAssignmentFilter] = useState('');
+    const [courseFilter, setCourseFilter] = useState('');
+    const [topicFilter, setTopicFilter] = useState('');
 
     function togglePublishingRights(id: number): void {
         throw new Error('Function not implemented.');
@@ -52,7 +57,17 @@ const StudentTasksHome: React.FC = () => {
         }));
 
         setTasks(mappedTasks);
+        setFilteredTasks(mappedTasks);
     }, [participantTasks]);
+
+    useEffect(() => {
+        const filtered = tasks.filter((task) => 
+            (assignmentFilter ? task.assignment === assignmentFilter : true) &&
+            (courseFilter ? task.course === courseFilter : true) &&
+            (topicFilter ? task.topic === topicFilter : true)
+        );
+        setFilteredTasks(filtered);
+    }, [assignmentFilter, courseFilter, topicFilter, tasks]);
 
     return (
         <div className="assignments-page">
@@ -69,9 +84,27 @@ const StudentTasksHome: React.FC = () => {
                     <table className={styles.tasksTable}>
                         <thead>
                             <tr>
-                                <th>Assignment</th>
-                                <th>Course</th>
-                                <th>Topic</th>
+                                <th className="dropdown-header">Assignment</th>
+                                <select onChange={(e) => setAssignmentFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
+                                            <option key={assignment} value={assignment}>{assignment}</option>
+                                        ))}
+                                    </select>
+                                <th className="dropdown-header">Course</th>
+                                <select onChange={(e) => setCourseFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.course))).map(course => (
+                                            <option key={course} value={course}>{course}</option>
+                                        ))}
+                                    </select>
+                                <th className="dropdown-header">Topic</th>
+                                <select onChange={(e) => setTopicFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
+                                            <option key={topic} value={topic}>{topic}</option>
+                                        ))}
+                                    </select>
                                 <th>Current Stage</th>
                                 <th>Review Grade</th>
                                 {<th>Badges</th>}
@@ -86,7 +119,7 @@ const StudentTasksHome: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {tasks.map((task) => (
+                            {filteredTasks.map((task) => (
                                 <tr key={task.id}>
                                     <td><Link to={`/student_task_detail/${task.id}`}>{task.assignment}</Link></td>
                                     <td>{task.course}</td>
