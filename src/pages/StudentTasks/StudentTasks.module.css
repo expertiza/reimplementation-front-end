@@ -22,7 +22,7 @@
 /* Only apply flex to headers containing dropdowns */
 .tasksTable th.dropdown-header {
     display: flex;
-    align-items: center; /* Centers text and dropdown vertically */
+    align-items: flex-start; /* Centers text and dropdown vertically */
     justify-content: space-between; /* Keeps text and dropdown aligned in row */
 }
 
