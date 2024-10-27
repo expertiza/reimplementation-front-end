@@ -6,6 +6,8 @@ import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import NotificationEditor from "./pages/Notifications/NotificationEditor"
+import Notifications from "./pages/Notifications/Notifications"
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
@@ -263,6 +265,22 @@ function App() {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
                   loader: loadInstitution,
+                },
+              ],
+            },
+            {
+              path: "notifications",
+              element: <Notifications />,
+              //loader: loadNotifications,
+              children: [
+                {
+                  path: "new",
+                  element: <NotificationEditor mode="create" />,
+                },
+                {
+                  path: "edit/:id",
+                  element: <NotificationEditor mode="update" />,
+                  //loader: loadNotification,
                 },
               ],
             },

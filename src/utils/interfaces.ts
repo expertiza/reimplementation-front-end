@@ -17,6 +17,15 @@ export interface IInstitution {
   name: string;
 }
 
+export interface INotification {
+  id: string;
+  course: string;
+  subject: string;
+  description: string;
+  expirationDate: string;
+  isActive: boolean;
+}
+
 export interface IInstructor {
   id?: number;
   name: string;

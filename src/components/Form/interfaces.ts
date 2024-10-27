@@ -16,6 +16,7 @@ export interface IFormProps {
   tooltipPlacement?: "top" | "right" | "bottom" | "left";
   inputGroupPrepend?: ReactNode;
   inputGroupAppend?: ReactNode;
+  rows?: number; // rows would be passed as part of props now
 }
 
 export interface IFormOption {
