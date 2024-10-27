@@ -1,0 +1,12 @@
+/* Main content area that grows to fill the space */
+.mainContent {
+    flex-grow: 1;
+    overflow: hidden;
+    /* In case the content is too wide */
+}
+
+/* Styling for the page header */
+.header {
+    margin-bottom: 20px;
+    /* Space below the header */
+}
