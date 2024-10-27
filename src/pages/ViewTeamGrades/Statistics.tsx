@@ -1,33 +1,34 @@
 // Statistics.tsx
-import React,{useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { calculateAverages } from './utils';
 import './grades.scss';
-import CircularProgress  from './CircularProgress';
+import CircularProgress from './CircularProgress';
 import ShowReviews from './ShowReviews'; //importing show reviews component
 import dummyDataRounds from './Data/heatMapData.json'; // Importing dummy data for rounds
 import dummyauthorfeedback from './Data/authorFeedback.json'; // Importing dummy data for author feedback
 import BarGraph from './BarGraph';
-import teammateData from './Data/teammateData.json'; 
-import AverageMarks from './teamMarks'; 
+import teammateData from './Data/teammateData.json';
+import AverageMarks from './teamMarks';
+import Filters from './Filters';
 
 //props for statistics component
 interface StatisticsProps {
-  average:string;
+  average: string;
 }
 
 //statistics component
-const Statistics: React.FC<StatisticsProps> = ({average}) => {
+const Statistics: React.FC<StatisticsProps> = ({ average }) => {
   const [sortedData, setSortedData] = useState<any[]>([]);
   useEffect(() => {
     const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(dummyDataRounds[0], "asc");
     const rowAvgArray = sortedData.map(item => item.RowAvg);
     console.log(rowAvgArray);
     setSortedData(sortedData.map(item => item.RowAvg));
-  }, []); 
+  }, []);
 
   const [statisticsVisible, setstatisticsVisible] = useState<boolean>(false);
   const toggleStatisticsVisibility = () => {
-      setstatisticsVisible(!statisticsVisible);
+    setstatisticsVisible(!statisticsVisible);
   };
   const [showReviews, setShowReviews] = useState(false);
   const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
@@ -37,15 +38,15 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
     setShowReviews(!showReviews);
   };
 
-    // Function to toggle the visibility of ShowAuthorFeedback component
-    const toggleAuthorFeedback = () => {
-      setShowAuthorFeedback(!ShowAuthorFeedback);
-    };
+  // Function to toggle the visibility of ShowAuthorFeedback component
+  const toggleAuthorFeedback = () => {
+    setShowAuthorFeedback(!ShowAuthorFeedback);
+  };
 
   const headerCellStyle: React.CSSProperties = {
     padding: '10px',
     textAlign: 'center',
-    
+
   };
 
   //calculation for total reviews recieved
@@ -74,124 +75,127 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
   };
 
   return (
-    
+
     <div>
-      
-    <table style={{ width: '90%', borderCollapse: 'collapse' }}>
-      <thead>
-      <a href="#" onClick={(e) => { e.preventDefault(); toggleStatisticsVisibility();}}>
-        {statisticsVisible ? 'hide stats' : 'show stats'}
-      </a>
-      {statisticsVisible && (
-     <tr>
-     <th style={headerCellStyle}>Stats</th>
-     <th style={headerCellStyle} colSpan={2}><BarGraph sortedData={sortedData} /></th>
-     <th style={headerCellStyle} colSpan={2}></th>
-     {teammateData.length !== 0 && (
-           <th style={headerCellStyle} colSpan={2}></th>
+
+      <table style={{ width: '90%', borderCollapse: 'collapse' }}>
+        <thead>
+          <a href="#" onClick={(e) => { e.preventDefault(); toggleStatisticsVisibility(); }}>
+            {statisticsVisible ? 'hide stats' : 'show stats'}
+          </a>
+          {statisticsVisible && (
+            <tr>
+              <th style={headerCellStyle}>Stats</th>
+              <th style={headerCellStyle} colSpan={2}><BarGraph sortedData={sortedData} /></th>
+              <th style={headerCellStyle} colSpan={2}></th>
+              {teammateData.length !== 0 && (
+                <th style={headerCellStyle} colSpan={2}></th>
+              )}
+
+              <th style={headerCellStyle}><CircularProgress size={70} progress={75} strokeWidth={10} /></th>
+            </tr>
           )}
-     
-     <th style={headerCellStyle}><CircularProgress size={70} progress={75} strokeWidth={10} /></th>
-   </tr>
-      )}
-        <tr>
-          <th style={headerCellStyle}></th>
-          <th style={headerCellStyle} colSpan={2}>Submitted Work</th>
-          {dummyauthorfeedback[0].length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Author Feedback</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Teammate Review</th>
-          )}
-          
-        </tr>
-        <tr>
-          <th style={subHeaderCellStyle}>Contributor</th>
-          <th style={subHeaderCellStyle}>Average</th>
-          <th style={subHeaderCellStyle}>Range</th>
-          {dummyauthorfeedback[0].length !== 0 && (
+          <tr>
+            <th style={headerCellStyle}></th>
+            <th style={headerCellStyle} colSpan={2}>Submitted Work</th>
+            {dummyauthorfeedback[0].length !== 0 && (
+              <th style={headerCellStyle} colSpan={2}>Author Feedback</th>
+            )}
+            {teammateData.length !== 0 && (
+              <th style={headerCellStyle} colSpan={2}>Teammate Review</th>
+            )}
+
+          </tr>
+          <tr>
+            <th style={subHeaderCellStyle}>Contributor</th>
             <th style={subHeaderCellStyle}>Average</th>
-          )}
-          {dummyauthorfeedback[0].length !== 0 && (
             <th style={subHeaderCellStyle}>Range</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Average</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Range</th>
-          )}
-          <th style={subHeaderCellStyle}>Final Score</th>
-        </tr>
-        <tr>
+            {dummyauthorfeedback[0].length !== 0 && (
+              <th style={subHeaderCellStyle}>Average</th>
+            )}
+            {dummyauthorfeedback[0].length !== 0 && (
+              <th style={subHeaderCellStyle}>Range</th>
+            )}
+            {teammateData.length !== 0 && (
+              <th style={subHeaderCellStyle}>Average</th>
+            )}
+            {teammateData.length !== 0 && (
+              <th style={subHeaderCellStyle}>Range</th>
+            )}
+            <th style={subHeaderCellStyle}>Final Score</th>
+          </tr>
+          <tr>
             <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
                 <a href="#">ssshah26 </a><span>(Siddharth Shah)</span>
                 <br />
               </div>
             </td>
             <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
                 <div>{average}</div>
                 <a href="#" onClick={(e) => { e.preventDefault(); toggleShowReviews(); }}>
-                    {showReviews ? 'Hide Reviews' : 'Show Reviews'}
+                  {showReviews ? 'Hide Reviews' : 'Show Reviews'}
                 </a><span>({totalReviewsForQuestion1})</span>
               </div>
             </td>
             <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
                 <div>99.99% - 100%</div>
               </div>
             </td>
             <td style={subHeaderCellStyle}>
-              
+
               {dummyauthorfeedback[0].length !== 0 && (
-                <div style={{textAlign: 'center' }}>
-                <div>96.67</div>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggleAuthorFeedback(); }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div>96.67</div>
+                  <a href="#" onClick={(e) => { e.preventDefault(); toggleAuthorFeedback(); }}>
                     {ShowAuthorFeedback ? 'Hide Author Feedback' : 'Show Author Feedback'}
-                </a><span>({totalfeedbackForQuestion1})</span>
-              </div>
+                  </a><span>({totalfeedbackForQuestion1})</span>
+                </div>
               )}
               <div>
-      </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-              {dummyauthorfeedback[0].length !== 0 && (
-                <div>87% - 100%</div>
-              )}   
               </div>
             </td>
             <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-                    {teammateData.length !== 0 && (
-                      <div><AverageMarks data={teammateData} /></div>
-                    )}
+              <div style={{ textAlign: 'center' }}>
+                {dummyauthorfeedback[0].length !== 0 && (
+                  <div>87% - 100%</div>
+                )}
               </div>
             </td>
             <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                {teammateData.length !== 0 && (
+                  <div><AverageMarks data={teammateData} /></div>
+                )}
+              </div>
+            </td>
+            <td style={subHeaderCellStyle}>
+              <div style={{ textAlign: 'center' }}>
+                {teammateData.length !== 0 && (
+                  <div>90% - 100%</div>
+                )}
+              </div>
+            </td>
+            <td style={subHeaderCellStyle}>
               {teammateData.length !== 0 && (
-                      <div>90% - 100%</div>
-                    )}
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-            {teammateData.length !== 0 && (
-                      <div style={{textAlign: 'center' }}>
-                      <div>75%</div>
-                      <div>(in Finished)</div>
+                <div style={{ textAlign: 'center' }}>
+                  <div>75%</div>
+                  <div>(in Finished)</div>
                 </div>
-                    )}
-            
+              )}
+
             </td>
           </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-    <div>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <div>
+        <Filters />
+      </div>
+      <div>
         {showReviews && (
           <div>
             <h2>Reviews</h2>
@@ -205,9 +209,9 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
           </div>
         )}
       </div>
-   </div> 
+    </div>
   );
-  
+
 };
 
 export default Statistics;
