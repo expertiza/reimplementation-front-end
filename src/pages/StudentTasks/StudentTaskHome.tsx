@@ -41,6 +41,7 @@ const StudentTasksHome: React.FC = () => {
     const [assignmentFilter, setAssignmentFilter] = useState('');
     const [courseFilter, setCourseFilter] = useState('');
     const [topicFilter, setTopicFilter] = useState('');
+    const [currentstageFilter, setCurrentStageFilter] = useState('');
 
     function togglePublishingRights(id: number): void {
         throw new Error('Function not implemented.');
@@ -76,10 +77,11 @@ const StudentTasksHome: React.FC = () => {
         const filtered = tasks.filter((task) =>
             (assignmentFilter ? task.assignment === assignmentFilter : true) &&
             (courseFilter ? task.course === courseFilter : true) &&
-            (topicFilter ? task.topic === topicFilter : true)
+            (topicFilter ? task.topic === topicFilter : true) &&
+            (currentstageFilter ? task.topic == currentstageFilter : true)
         );
         setFilteredTasks(filtered);
-    }, [assignmentFilter, courseFilter, topicFilter, tasks]);
+    }, [assignmentFilter, courseFilter, topicFilter, currentstageFilter, tasks]);
 
     return (
         <div className="assignments-page">
@@ -96,30 +98,40 @@ const StudentTasksHome: React.FC = () => {
                     <table className={styles.tasksTable}>
                         <thead>
                             <tr>
-                                <th className="dropdown-header">Assignment</th>
-                                <select onChange={(e) => setAssignmentFilter(e.target.value)}>
-                                    <option value="">All</option>
-                                    {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
-                                        <option key={assignment} value={assignment}>{assignment}</option>
-                                    ))}
-                                </select>
-                                <th className="dropdown-header">Course</th>
-                                <select onChange={(e) => setCourseFilter(e.target.value)}>
-                                    <option value="">All</option>
-                                    {Array.from(new Set(tasks.map(task => task.course))).map(course => (
-                                        <option key={course} value={course}>{course}</option>
-                                    ))}
-                                </select>
-                                <th className="dropdown-header">Topic</th>
-                                <select onChange={(e) => setTopicFilter(e.target.value)}>
-                                    <option value="">All</option>
-                                    {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
-                                        <option key={topic} value={topic}>{topic}</option>
-                                    ))}
-                                </select>
-                                <th>Current Stage</th>
+                                <th className="dropdown-header">Assignment
+                                    <select onChange={(e) => setAssignmentFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
+                                            <option key={assignment} value={assignment}>{assignment}</option>
+                                        ))}
+                                    </select>
+                                </th>
+                                <th className="dropdown-header">Course
+                                    <select onChange={(e) => setCourseFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.course))).map(course => (
+                                            <option key={course} value={course}>{course}</option>
+                                        ))}
+                                    </select>
+                                </th>
+                                <th className="dropdown-header">Topic
+                                    <select onChange={(e) => setTopicFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
+                                            <option key={topic} value={topic}>{topic}</option>
+                                        ))}
+                                    </select>
+                                </th>
+                                <th className="dropdown-header">Current Stage
+                                    <select onChange={(e) => setCurrentStageFilter(e.target.value)}>
+                                        <option value="">All</option>
+                                        {Array.from(new Set(tasks.map(task => task.currentStage))).map(currentStage => (
+                                            <option key={currentStage} value={currentStage}>{currentStage}</option>
+                                        ))}
+                                    </select>
+                                </th>
                                 <th>Review Grade</th>
-                                {<th>Badges</th>}
+                                <th>Badges</th>
                                 <th>
                                     Stage Deadline
                                     <img src="assets/icons/info.png" alt="Info" title="You can change 'Preferred Time Zone' in 'Profile' in the banner." />
