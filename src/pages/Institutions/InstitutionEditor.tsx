@@ -45,7 +45,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Institution ${mode}d successfully!`,
         })
       );
-      navigate("/administrator/institutions");
+      navigate("/institutions");
     }
   }, [dispatch, mode, navigate, institutionResponse]);
 
@@ -71,7 +71,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate("/administrator/institutions");
+  const handleClose = () => navigate("/institutions");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
