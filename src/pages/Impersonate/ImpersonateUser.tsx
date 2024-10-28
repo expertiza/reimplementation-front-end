@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Col, Row, InputGroup, Form, Button, Dropdown } from "react-bootstrap";
 import useAPI from "hooks/useAPI";
 import debounce from "lodash.debounce";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import { alertActions } from "store/slices/alertSlice";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
@@ -12,11 +13,12 @@ const ImpersonateUser: React.FC = () => {
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
   const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
-  const { data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
+  const { error, data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [impersonateActive, setImpersonateActive] = useState(false);
   const [originalToken, setOriginalToken] = useState("");
+  const dispatch = useDispatch();
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -51,8 +53,10 @@ const ImpersonateUser: React.FC = () => {
     if (!searchQuery.trim() || !fetchUsersResponse?.data) {
       return null;
     }
-  
-    const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
+
+    const userArray = Array.isArray(fetchUsersResponse.data)
+      ? fetchUsersResponse.data
+      : [fetchUsersResponse.data];
     // console.log("User array:", userArray);
 
     const filteredUserArray = userArray.filter((user: any) =>
@@ -72,7 +76,7 @@ const ImpersonateUser: React.FC = () => {
         </Dropdown.Menu>
       )
     );
-  };  
+  };
 
   // Impersonate user
   const handleImpersonate = () => {
@@ -84,10 +88,18 @@ const ImpersonateUser: React.FC = () => {
         impersonate_id: searchQuery,
       },
     });
-    if (fetchUsersResponse?.data) {
+    if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
+      // console.log("POST HTML Status:", impersonateUserResponse?.status);
       setImpersonateActive(true);
     }
-  }; 
+  };
+
+  // Impersonate user alert
+  useEffect(() => {
+    if (error) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
+    }
+  }, [error, dispatch]);
 
   // Cancel impersonation
   const handleCancelImpersonate = () => {
@@ -96,48 +108,53 @@ const ImpersonateUser: React.FC = () => {
       setImpersonateActive(false);
     }
   };
-  
+
   // Banner at the top of the screen indicating which user is being impersonated
   const ImpersonationBanner = () => {
-    return impersonateUserResponse?.data && (
-      <div
-        style={{
-          backgroundColor: "#fff",
-          color: "#333",
-          padding: "10px 4px",
-          borderRadius: 4,
-          marginRight: 8,
-        }}
-      >
+    return (
+      impersonateUserResponse?.data && (
         <div
           style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
+            backgroundColor: "#fff",
+            color: "#333",
+            padding: "10px 4px",
+            borderRadius: 4,
+            marginRight: 8,
           }}
         >
-          <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
-          <div>Impersonating a {impersonateUserResponse?.data.role} named {impersonateUserResponse?.data.name}</div>
-          <button
+          <div
             style={{
-              background: "none",
-              border: "none",
-              padding: 1,
-              marginLeft: 6,
-              backgroundColor: "red",
-              borderRadius: 50,
-              color: "white",
-              width: 18,
-              fontSize: 10,
-              fontWeight: 800,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            onClick={handleCancelImpersonate}
           >
-            Cancel Impersonation
-          </button>
+            <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
+            <div>
+              Impersonating a {impersonateUserResponse?.data.role} named{" "}
+              {impersonateUserResponse?.data.name}
+            </div>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                padding: 1,
+                marginLeft: 6,
+                backgroundColor: "red",
+                borderRadius: 50,
+                color: "white",
+                width: 18,
+                fontSize: 10,
+                fontWeight: 800,
+              }}
+              onClick={handleCancelImpersonate}
+            >
+              Cancel Impersonation
+            </button>
+          </div>
         </div>
-      </div>
+      )
     );
   };
 
