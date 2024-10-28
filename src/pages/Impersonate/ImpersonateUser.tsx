@@ -45,20 +45,24 @@ const ImpersonateUser: React.FC = () => {
 
   // Display user list after debounce (autocomplete functionality)
   const displayUserList = () => {
+    if (!searchQuery.trim() || !fetchUsersResponse?.data) return null;
+  
+    const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
+    const filteredUserArray = userArray.filter((user: any) =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  
     return (
       debounceActive &&
-      searchQuery.trim() &&
-      fetchUsersResponse?.data && (
+      filteredUserArray.length > 0 && (
         <Dropdown.Menu>
-          {fetchUsersResponse.data
-            .filter((user: any) => user.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((filteredUser: any) => (
-              <Dropdown.Item key={filteredUser.id}>{filteredUser.user_name}</Dropdown.Item>
-            ))}
+          {filteredUserArray.map((filteredUser: any) => (
+            <Dropdown.Item key={filteredUser.id}>{filteredUser.user_name}</Dropdown.Item>
+          ))}
         </Dropdown.Menu>
       )
     );
-  };
+  };  
 
   // Impersonate user
   const handleImpersonate = () => {
