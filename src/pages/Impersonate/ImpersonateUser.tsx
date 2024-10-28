@@ -23,9 +23,6 @@ const ImpersonateUser: React.FC = () => {
       url: `/impersonate/${auth.user.name}`,
     });
   }, [fetchUsers, auth.user.name]);
-  
-  //log fetched users to console for test
-  console.log(fetchUsersResponse);
 
   // Handle search query input change and trigger debounce
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,10 +72,8 @@ const ImpersonateUser: React.FC = () => {
     });
   };
 
-  // Impersonation banner
-  // From Header.tsx -- use as reference
-  /* const ImpersonationBanner = () => {
-    return (
+  const ImpersonationBanner = () => {
+    impersonateUserResponse?.data && (
       <div
         style={{
           backgroundColor: "#fff",
@@ -96,8 +91,8 @@ const ImpersonateUser: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <img src={detective} width={25} style={{ marginRight: 4 }} />
-          <div>Anonymized View</div>
+          <img src={"../../assets/masquerade-mask.png"} width={25} style={{ marginRight: 4 }} />
+          <div>Impersonating a {impersonateUserResponse?.data.role} named {impersonateUserResponse?.data.name}</div>
           <button
             style={{
               background: "none",
@@ -111,17 +106,17 @@ const ImpersonateUser: React.FC = () => {
               fontSize: 10,
               fontWeight: 800,
             }}
-            onClick={() => setVisible(!visible)}
           >
             x
           </button>
         </div>
       </div>
     );
-  }; */
+  };
 
   return (
     <>
+      {impersonateActive && ImpersonationBanner}
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
           <h1>Impersonate User</h1>
@@ -138,7 +133,12 @@ const ImpersonateUser: React.FC = () => {
               value={searchQuery}
               onChange={handleSearchQueryInput}
             />
-            <Button variant="outline-secondary" id="button-addon2" onClick={handleImpersonate} disabled={impersonateActive}>
+            <Button
+              variant="outline-secondary"
+              id="button-addon2"
+              onClick={handleImpersonate}
+              disabled={impersonateActive}
+            >
               Impersonate
             </Button>
           </InputGroup>
