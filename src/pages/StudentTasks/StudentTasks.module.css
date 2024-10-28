@@ -74,10 +74,16 @@
 }
 
 /* Sidebar styling */
-.sidebar {
+.leftSidebar {
     width: 250px;
     padding: 15px;
     border-right: 1px solid #ccc;
+}
+
+.rightSidebar {
+    width: 250px;
+    padding: 15px;
+    border-left: 1px solid #ccc;
 }
 
 /* Main content styling */
@@ -102,6 +108,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.table-legend {
+    display: flex;
 }
 
 .pageLayout {

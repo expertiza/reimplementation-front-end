@@ -85,9 +85,10 @@ const StudentTasksHome: React.FC = () => {
 
     return (
         <div className="assignments-page">
-            <h1 className="assignments-title">Assignments</h1>
+            {/* <h1 className="assignments-title">Assignments</h1> */}
             <div className={styles.pageLayout}>
-                <div className={styles.sidebar}>
+                <div className={styles.leftSidebar}>
+                    <h1 className="assignments-title">Assignments</h1>
                     <StudentTasksBox
                         participantTasks={dueTasks}
                         revisions={taskRevisions}
@@ -169,10 +170,11 @@ const StudentTasksHome: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
-                <div className='table-legend'>
+                <div className={styles.rightSidebar}>
                     <h3> Legend: </h3>
-                    Stage Deadline: You can change 'Preferred Time Zone' in 'Profile' in the banner.
-                    Publishing Rights: Grant publishing rights to make my work available to others over the Web"
+                    <b>Stage Deadline:</b> You can change 'Preferred Time Zone' in 'Profile' in the banner.
+                    <br></br>
+                    <b>Publishing Rights:</b> Grant publishing rights to make my work available to others over the Web"
                     Review Grade
                 </div>
             </div>
