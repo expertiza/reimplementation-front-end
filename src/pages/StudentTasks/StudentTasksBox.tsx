@@ -52,28 +52,44 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
     // Calculate the number of revisions that are still pending (i.e., due date is in the future)
     const pendingRevisions = revisions.filter(revision => getDaysLeft(revision.dueDate) > 0);
 
-    const dueTasks = participantTasks.filter(task => getDaysLeft(task.stageDeadline) <= 0);
+    const dueTasks = participantTasks.filter(task => getDaysLeft(task.stageDeadline) > 0);
 
-    console.log("participantTasks2", participantTasks)
-    // console.log("revisions", revisions)
+    // Group tasks by course
+    const tasksByCourse: { [key: string]: typeof participantTasks } = {};
+
+    dueTasks.forEach(task => {
+        const courseName = task.course;
+
+        if (!tasksByCourse[courseName]) {
+            tasksByCourse[courseName] = [];
+        }
+
+        tasksByCourse[courseName].push(task);
+    });
+
 
     return (
         <div className={styles.container}>
             <h2>Task Summary</h2>
             <div className={styles.infoBox}>
-                <p>Due:</p>
-                <ul>
-                    {dueTasks.map(task => (
-                        <li key={task.id}>
-                            {task.assignment} ({task.course}) - Due: {task.stageDeadline}
-                        </li>
-                    ))}
-                </ul>
+                <h5>Due:</h5>
+                {Object.entries(tasksByCourse).map(([course, tasks]) => (
+                    <div key={course}>
+                        <p>{course}</p>
+                        <ul>
+                            {tasks.map(task => (
+                                <li key={task.id}>
+                                    {task.assignment} - Due: {task.stageDeadline}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </div>
 
 
             <div className={styles.infoBox}>
-                <p>Revisions:</p>
+                <h5>Revisions:</h5>
                 <ul>
                     {revisions.map((revision, index) => (
                         <li key={index}>{revision.name}</li>
@@ -83,7 +99,7 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
 
             <div className={styles.infoBox}>
                 <div className={styles.teamedStudents}>
-                    <p>Total Students Teamed With: {totalStudents}</p>
+                    <h5>Total Students Teamed With: {totalStudents}</h5>
                     <ul>
                         {allStudents.map((student, index) => (
                             <li key={index}>{student}</li>

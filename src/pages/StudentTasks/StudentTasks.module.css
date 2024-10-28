@@ -120,13 +120,21 @@
     display: flex;
 }
 
+/* .pageLayout {
+    display: flex;
+    width: 100%;
+    max-width: 98%;
+    margin: 10 auto;
+} */
+
 .pageLayout {
     display: flex;
-    width: 90%;
-    /* Adjusts the width to center on page */
-    max-width: 1200px;
-    margin: 0 auto;
+    flex-wrap: wrap;
+    /* Allows items to wrap to the next line */
+    justify-content: space-between;
+    /* Distributes space between items */
 }
+
 
 .footer {
     text-align: center;

@@ -29,6 +29,12 @@
     /* Deep red text for headers */
 }
 
+.infoBox h5 {
+    margin: 8px 0;
+    color: #c31f1f;
+    /* Deep red text for headers */
+}
+
 .infoBox ul {
     padding-left: 20px;
 }
