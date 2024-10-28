@@ -33,6 +33,8 @@ const StudentTasksHome: React.FC = () => {
     // states to hold tasks
     const taskRevisions = testData.revisions;
     const participantTasks = testData.participantTasks;
+    console.log("participantTasks", participantTasks)
+
     const [tasks, setTasks] = useState<Task[]>([]);
     const dueTasks = testData.dueTasks;
     const studentsTeamedWith: StudentsTeamedWith = testData.studentsTeamedWith;
@@ -73,6 +75,8 @@ const StudentTasksHome: React.FC = () => {
         setFilteredTasks(mappedTasks);
     }, [participantTasks]);
 
+    console.log("after use effect:", participantTasks)
+
     useEffect(() => {
         const filtered = tasks.filter((task) =>
             (assignmentFilter ? task.assignment === assignmentFilter : true) &&
@@ -90,7 +94,7 @@ const StudentTasksHome: React.FC = () => {
                 <div className={styles.leftSidebar}>
                     <h1 className="assignments-title">Assignments</h1>
                     <StudentTasksBox
-                        participantTasks={dueTasks}
+                        participantTasks={tasks}
                         revisions={taskRevisions}
                         studentsTeamedWith={studentsTeamedWith}
                     />
@@ -171,22 +175,23 @@ const StudentTasksHome: React.FC = () => {
                     </table>
                 </div>
                 <div className={styles.rightSidebar}>
-                    <h3> Legend: </h3>
+                    <br></br><br></br>
+                    <h3> Legend </h3>
                     <b>Stage Deadline:</b> You can change 'Preferred Time Zone' in 'Profile' in the banner.
-                    <br></br>
+                    <br></br><br></br>
                     <b>Publishing Rights:</b> Grant publishing rights to make my work available to others over the Web"
                     Review Grade
                 </div>
             </div>
 
-            <div className={styles.teamedStudents}>
+            {/* <div className={styles.teamedStudents}>
                 <p>Total Students Teamed With: {totalStudents}</p>
                 <ul>
                     {allStudents.map((student, index) => (
                         <li key={index}>{student}</li>
                     ))}
                 </ul>
-            </div>
+            </div> */}
 
             {/* Footer section */}
             <div className={styles.footer}>

@@ -1,44 +1,46 @@
-/* Main content area that grows to fill the space */
-/* .mainContent {
-    flex-grow: 1;
-    overflow: hidden;
-    
-} */
-
-/* Styling for the page header */
-/* .header {
-    margin-bottom: 20px;
-    
-} */
-/* StudentTasksBox.module.css */
-
-/* StudentTasksBox.module.css */
-
-/* StudentTasksBox.module.css */
-
-/* StudentTasksBox.module.css */
-
-/* StudentTasksBox.module.css */
-
 .container {
     display: flex;
     flex-direction: column;
-    /* Stack elements vertically */
     align-items: flex-start;
     gap: 16px;
+    background-color: #fff8f0;
+    /* Light beige background */
+    padding: 16px;
+    border-radius: 12px;
 }
 
 .infoBox {
     position: sticky;
-    width: 200px;
+    width: 100%;
     padding: 16px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: #fff;
+    border: 1px solid rgba(200, 50, 50, 0.2);
+    word-wrap: break-word;
+    /* Soft red */
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    color: #5a5a5a;
 }
 
-.tableContainer {
-    flex: 1;
-    /* Ensures table takes up remaining width */
+.infoBox p {
+    margin: 8px 0;
+    font-weight: bold;
+    color: #9d1b1b;
+    /* Deep red text for headers */
+}
+
+.infoBox ul {
+    padding-left: 20px;
+}
+
+.teamedStudents {
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: #9d1b1b;
+    /* Deep red for headings */
+    margin-bottom: 8px;
 }

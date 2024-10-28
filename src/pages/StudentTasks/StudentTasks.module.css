@@ -77,13 +77,19 @@
 .leftSidebar {
     width: 250px;
     padding: 15px;
-    border-right: 1px solid #ccc;
+    background-color: antiquewhite;
+    border-right: 2px solid rgba(157, 27, 27, 0.267);
+    border-left: 2px solid rgba(157, 27, 27, 0.267);
 }
 
 .rightSidebar {
+    position: relative;
+    text-align: start;
     width: 250px;
     padding: 15px;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid #e0b4b4;
+    border-right: 1px solid #e0b4b4;
+    background-color: rgba(250, 235, 215, 0.412);
 }
 
 /* Main content styling */

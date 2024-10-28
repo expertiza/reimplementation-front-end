@@ -6,10 +6,24 @@ type Revision = {
     dueDate: string;
 };
 
-type DueTask = {}; // Adjust this type as needed
+type ReviewGrade = {
+    comment: string;
+};
+
+type Task = {
+    id: number;
+    assignment: string;
+    course: string;
+    topic: string;
+    currentStage: string;
+    reviewGrade: string | { comment: string };
+    badges: string | boolean;
+    stageDeadline: string;
+    publishingRights: boolean;
+};
 
 interface StudentTasksBoxProps {
-    participantTasks: DueTask;
+    participantTasks: Task[];
     revisions: Revision[];
     studentsTeamedWith: StudentsTeamedWith;
 }
@@ -38,57 +52,48 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
     // Calculate the number of revisions that are still pending (i.e., due date is in the future)
     const pendingRevisions = revisions.filter(revision => getDaysLeft(revision.dueDate) > 0);
 
-    console.log("participantTasks", participantTasks)
-    console.log("revisions", revisions)
+    const dueTasks = participantTasks.filter(task => getDaysLeft(task.stageDeadline) <= 0);
+
+    console.log("participantTasks2", participantTasks)
+    // console.log("revisions", revisions)
 
     return (
         <div className={styles.container}>
+            <h2>Task Summary</h2>
             <div className={styles.infoBox}>
-                <h2>Task Summary</h2>
-                <p>Due Tasks: {String(participantTasks)}</p>
+                <p>Due:</p>
                 <ul>
-                    {/* {participantTasks.map((student, index) => (
-                        <li key={index}>{student}</li>
-                    ))} */}
-                    <p>Revisions:</p>
-                    <ul>
-                        {revisions.map((revision, index) => (
-                            <li key={index}>{revision.name}</li>
-                        ))}
-                    </ul>
-                </ul>
-            </div>
-            <div className={styles.tableContainer}>
-                {/* Render your table here */}
-                {/* Example: <Table data={tableData} columns={tableColumns} /> */}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>Due Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* Assuming participantTasks is an array, replace this with actual data */}
-                        {/* Example placeholder */}
-                        <tr>
-                            <td>Task 1</td>
-                            <td>2024-10-31</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            {/* This div should be below the tableContainer */}
-            <div className={styles.teamedStudents}>
-                <p>Total Students Teamed With: {totalStudents}</p>
-                <ul>
-                    {allStudents.map((student, index) => (
-                        <li key={index}>{student}</li>
+                    {dueTasks.map(task => (
+                        <li key={task.id}>
+                            {task.assignment} ({task.course}) - Due: {task.stageDeadline}
+                        </li>
                     ))}
                 </ul>
             </div>
-        </div >
+
+
+            <div className={styles.infoBox}>
+                <p>Revisions:</p>
+                <ul>
+                    {revisions.map((revision, index) => (
+                        <li key={index}>{revision.name}</li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className={styles.infoBox}>
+                <div className={styles.teamedStudents}>
+                    <p>Total Students Teamed With: {totalStudents}</p>
+                    <ul>
+                        {allStudents.map((student, index) => (
+                            <li key={index}>{student}</li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </div>
     );
+
 };
 
 export default StudentTasksBox;
