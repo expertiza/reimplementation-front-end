@@ -134,12 +134,12 @@ const StudentTasksHome: React.FC = () => {
                                 <th>Badges</th>
                                 <th>
                                     Stage Deadline
-                                    <img src="assets/icons/info.png" alt="Info" title="You can change 'Preferred Time Zone' in 'Profile' in the banner." />
+                                    {/* <img src="assets/icons/info.png" alt="Info" title="You can change 'Preferred Time Zone' in 'Profile' in the banner." /> */}
                                 </th>
                                 <th>
                                     Publishing Rights
 
-                                    <img src="assets/icons/info.png" alt="Info" title="Grant publishing rights to make my work available to others over the Web" />
+                                    {/* <img src="assets/detective.png" alt="Info" title="Grant publishing rights to make my work available to others over the Web" /> */}
                                 </th>
                             </tr>
                         </thead>
@@ -152,7 +152,7 @@ const StudentTasksHome: React.FC = () => {
                                     <td>{task.currentStage}</td>
                                     <td>
                                         {task.reviewGrade === "N/A" ? "NA" :
-                                            <img src="assets/icons/info.png" alt="Review Grade" title={(task.reviewGrade as any).comment || ''} />
+                                            (task.reviewGrade as any).comment || ''
                                         }
                                     </td>
                                     {<td>{task.badges}</td>}
@@ -169,7 +169,12 @@ const StudentTasksHome: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
-
+                <div className='table-legend'>
+                    <h3> Legend: </h3>
+                    Stage Deadline: You can change 'Preferred Time Zone' in 'Profile' in the banner.
+                    Publishing Rights: Grant publishing rights to make my work available to others over the Web"
+                    Review Grade
+                </div>
             </div>
 
             <div className={styles.teamedStudents}>

@@ -42,12 +42,3 @@
     flex: 1;
     /* Ensures table takes up remaining width */
 }
-
-.teamedStudents {
-    margin-top: 16px;
-    /* Space above the teamed students section */
-    padding: 8px;
-    background-color: #f1f1f1;
-    border-radius: 8px;
-    font-size: 1rem;
-}
