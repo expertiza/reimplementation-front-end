@@ -115,7 +115,10 @@ const Notifications = () => {
                         </Col>
                         <hr />
                     </Row>
-                    <Row>
+                    {(['Super Administrator', 'Administrator', 'Instructor', 'Teaching Assistant'].includes(auth.user.role))
+                    && (
+                        <>
+                        <Row>
                         <Col md={{ span: 1, offset: 8 }}>
                             <Button variant="outline-success" onClick={() => navigate("new")}>
                                 <BsPlusSquareFill />
@@ -137,6 +140,12 @@ const Notifications = () => {
                             tableSize={{ span: 8, offset: 3 }}
                         />
                     </Row>
+                    </>
+                    ) }
+                    {(!['Super Administrator', 'Administrator', 'Instructor', 'Teaching Assistant'].includes(auth.user.role)) 
+                    && (
+                        <h1>Notification changes not allowed</h1>
+                    )}
                 </Container>
             </main>
         </>
