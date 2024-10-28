@@ -12,7 +12,7 @@ Follow these steps to start the project in Docker and add a test user (`user4`).
    sudo docker compose up -d
 2. **Add the Student role**
     ```bash
-   sudo docker compose exec app rails runner "User.create!(name: 'user4', email: 'user4@example.com', password: 'password123', full_name: 'user4', institution_id: 1, role_id: 5)"
+   sudo docker compose exec app rails runner "User.create(name: 'user4', email: 'user4@example.com', password: 'password123', full_name: 'user4', institution_id: 1, role_id: 5)"
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
