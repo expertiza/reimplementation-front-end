@@ -1,3 +1,18 @@
+# Reimplementation Backend (Docker):
+Prerequisites: Docker needs to be installed on the machine that the application is running on.
+
+Follow these steps to start the project in Docker and add a test user (`user4`).
+
+## Steps to Test the Project with Docker
+
+1. **Start the Docker Containers**
+
+   Use the following command to start the containers in detached mode:
+   ```bash
+   sudo docker compose up -d
+2. **Add the Student role**
+    ```bash
+   sudo docker compose exec app rails runner "User.create(name: 'user4', email: 'user4@example.com', password: 'password123', full_name: 'user4', institution_id: 1, role_id: 5)"
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -10,6 +25,10 @@ In the project directory, you can run:
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+**View E2464**
+
+In current project('E2464'), you need to open [http://localhost:3001/project-topics](http://localhost:3001/project-topics) to veiw.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
