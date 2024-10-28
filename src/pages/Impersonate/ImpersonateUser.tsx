@@ -15,6 +15,7 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [impersonateActive, setImpersonateActive] = useState(false);
+  const [originalToken, setOriginalToken] = useState("");
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -45,7 +46,9 @@ const ImpersonateUser: React.FC = () => {
 
   // Display user list after debounce (autocomplete functionality)
   const displayUserList = () => {
-    if (!searchQuery.trim() || !fetchUsersResponse?.data) return null;
+    if (!searchQuery.trim() || !fetchUsersResponse?.data) {
+      return null;
+    }
   
     const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
     const filteredUserArray = userArray.filter((user: any) =>
@@ -66,7 +69,7 @@ const ImpersonateUser: React.FC = () => {
 
   // Impersonate user
   const handleImpersonate = () => {
-    setImpersonateActive(true);
+    setOriginalToken(auth.authToken);
     impersonateUser({
       method: "post",
       url: "/impersonate",
@@ -74,6 +77,17 @@ const ImpersonateUser: React.FC = () => {
         impersonate_id: searchQuery,
       },
     });
+    if (fetchUsersResponse?.data) {
+      setImpersonateActive(true);
+    }
+  }; 
+
+  // Cancel impersonation
+  const handleCancelImpersonate = () => {
+    if (originalToken) {
+      auth.authToken = originalToken;
+      setImpersonateActive(false);
+    }
   };
   
   const ImpersonationBanner = () => {
@@ -110,6 +124,7 @@ const ImpersonateUser: React.FC = () => {
               fontSize: 10,
               fontWeight: 800,
             }}
+            onClick={handleCancelImpersonate}
           >
             x
           </button>
