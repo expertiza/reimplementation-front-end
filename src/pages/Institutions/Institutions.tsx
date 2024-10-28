@@ -7,9 +7,10 @@ import { institutionColumns as INSTITUTION_COLUMNS } from "./institutionColumns"
 import axiosClient from "../../utils/axios_client";
 import InstitutionDelete from "./InstitutionDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
-import { IInstitution } from "../../utils/interfaces";
+import { IInstitution, ROLE } from "../../utils/interfaces";
 import { useSelector } from "react-redux";
 import { RootState } from "store/store";
+import { hasAllPrivilegesOf } from "utils/util";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -62,8 +63,7 @@ const Institutions = () => {
             </Col>
             <hr />
           </Row>
-          {(['Super Administrator','Administrator'].includes(auth.user.role))
-          && (
+          {hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
             <>
               <Row>
               <Col md={{ span: 1, offset: 8 }}>
@@ -90,7 +90,7 @@ const Institutions = () => {
             </>
           ) }
 
-          {(!['Super Administrator','Administrator'].includes(auth.user.role)) 
+          {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) 
           && (
             <h1>Institution changes not allowed</h1>
           )}
