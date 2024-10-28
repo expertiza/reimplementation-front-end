@@ -8,7 +8,7 @@ import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import Select from "../../components/Select";
 import styles from "./ProjectTopics.module.css";
-import testData from "./testData.json";
+import {mockdata} from "./testData.js";
 
 enum ROLE {
   SUPER_ADMIN = "Super Administrator",
@@ -77,7 +77,7 @@ const ProjectTopics: React.FC = () => {
   const isAdminOrInstructor = isAdmin || isInstructor;
 
   // Mock assignments data
-  const mockAssignments: Assignment[] = testData;
+  const mockAssignments: Assignment[] = mockdata;
 
   // Transform assignments for form select
   const assignmentOptions = [
