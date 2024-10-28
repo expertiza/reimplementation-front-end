@@ -76,7 +76,7 @@ const NotificationEditor: React.FC<{ mode: "create" | "update" }> = ({ mode }) =
                     variant: "danger",
                     message: "Notification not found!",
                 }));
-                navigate("/administrator/notifications"); // Navigate back if the notification doesn't exist
+                navigate("/notifications"); // Navigate back if the notification doesn't exist
             }
         }
     }, [id, mode, dispatch, navigate]);
@@ -90,11 +90,11 @@ const NotificationEditor: React.FC<{ mode: "create" | "update" }> = ({ mode }) =
             variant: "success",
             message: message,
         }));
-        navigate("/administrator/notifications");
+        navigate("/notifications");
         submitProps.setSubmitting(false);
     };
 
-    const handleClose = () => navigate("/administrator/notifications");
+    const handleClose = () => navigate("/notifications");
 
     return (
         <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
