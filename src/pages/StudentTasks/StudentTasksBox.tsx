@@ -39,7 +39,7 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
     const pendingRevisions = revisions.filter(revision => getDaysLeft(revision.dueDate) > 0);
 
     console.log("participantTasks", participantTasks)
-    console.log("pendingRevisions", pendingRevisions)
+    console.log("revisions", revisions)
 
     return (
         <div className={styles.container}>
@@ -50,8 +50,13 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
                     {/* {participantTasks.map((student, index) => (
                         <li key={index}>{student}</li>
                     ))} */}
+                    <p>Revisions:</p>
+                    <ul>
+                        {revisions.map((revision, index) => (
+                            <li key={index}>{revision.name}</li>
+                        ))}
+                    </ul>
                 </ul>
-                <p>Revisions: {pendingRevisions.map(revision => revision.name).join(", ")}</p> {/* Display only pending revisions */}
             </div>
             <div className={styles.tableContainer}>
                 {/* Render your table here */}
@@ -82,7 +87,7 @@ const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ participantTasks, rev
                     ))}
                 </ul>
             </div>
-        </div>
+        </div >
     );
 };
 
