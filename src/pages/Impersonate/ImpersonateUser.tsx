@@ -50,13 +50,13 @@ const ImpersonateUser: React.FC = () => {
       return null;
     }
   
-  const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
-  // console.log("User array:", userArray);
+    const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
+    // console.log("User array:", userArray);
 
-  const filteredUserArray = userArray.filter((user: any) =>
-    user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  // console.log("Filtered user array:", filteredUserArray);
+    const filteredUserArray = userArray.filter((user: any) =>
+      user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    // console.log("Filtered user array:", filteredUserArray);
   
     return (
       debounceActive &&
@@ -93,6 +93,7 @@ const ImpersonateUser: React.FC = () => {
     }
   };
   
+  // Banner at the top of the screen indicating which user is being impersonated
   const ImpersonationBanner = () => {
     return impersonateUserResponse?.data && (
       <div
