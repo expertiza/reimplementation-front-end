@@ -20,10 +20,12 @@ interface Review {
 
 interface ShowReviewsProps {
   data: Review[][];
+  roundSelected: number;
 }
 
 //function for ShowReviews
-const ShowReviews: React.FC<ShowReviewsProps> = ({ data }) => {
+const ShowReviews: React.FC<ShowReviewsProps> = ({ data, roundSelected }) => {
+  console.log("round selected: ", roundSelected);
   const rounds = data.length;
 
   const auth = useSelector(
@@ -36,6 +38,16 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({ data }) => {
   const renderReviews = () => {
     const reviewElements: JSX.Element[] = [];
     for(let r = 0; r < rounds; r++){
+      if(roundSelected === 1) {
+        if(r == 1) {
+          continue;
+        }
+      }
+      if(roundSelected === 2) {
+        if(r == 0) {
+          continue;
+        }
+      }
       const num_of_questions = data[r].length;
       
       // Assuming 'reviews' array exists inside the first 'question' of the first 'round'.

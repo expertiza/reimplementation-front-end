@@ -1,19 +1,38 @@
 import React, { useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 
-const Filters: React.FC = () => {
+type FiltersProps = {
+    toggleShowReviews: () => void;
+    toggleAuthorFeedback: () => void;
+    selectRound: (v: number)=> void;
+};
+
+const Filters: React.FC<FiltersProps> = ({ toggleShowReviews, toggleAuthorFeedback, selectRound }) => {
     const [showSecondDropdown, setShowSecondDropdown] = useState(false);
     const [firstDropdownSelection, setFirstDropdownSelection] = useState("View"); // Default text for the first dropdown button
-    const [secondDropdownSelection, setSecondDropdownSelection] = useState("Select Round"); // Default text for the second dropdown button
+    const [secondDropdownSelection, setSecondDropdownSelection] = useState("All rounds"); // Default text for the second dropdown button
 
     // Handle the selection from the first dropdown
     const handleFirstDropdownSelect = (eventKey: string | null) => {
         if (eventKey) {
-            setFirstDropdownSelection(eventKey); // Update the first button text with the selected option
+            setFirstDropdownSelection(prev => {
+                if(prev === "Author Feedback") {
+                    toggleAuthorFeedback();
+                } else if(prev === "Reviews") {
+                    toggleShowReviews();
+                }
+                return eventKey;
+            }); // Update the first button text with the selected option
         }
 
         // Show or hide the second dropdown based on the selection
         if (eventKey === "Author Feedback" || eventKey === "Reviews") {
+            if(eventKey === "Author Feedback") {
+                toggleAuthorFeedback();
+            }
+            if(eventKey === "Reviews") {
+                toggleShowReviews();
+            }
             setShowSecondDropdown(true);
         } else {
             setShowSecondDropdown(false);
@@ -24,7 +43,16 @@ const Filters: React.FC = () => {
     // Handle the selection from the second dropdown
     const handleSecondDropdownSelect = (eventKey: string | null) => {
         if (eventKey) {
-            setSecondDropdownSelection(eventKey); // Update the second button text with the selected option
+            setSecondDropdownSelection(prev => {
+                if(eventKey === "All Rounds") {
+                    selectRound(-1);
+                } else if(eventKey === "Round 1") {
+                    selectRound(1);
+                } else if(eventKey === "Round 2") {
+                    selectRound(2);
+                }
+                return eventKey;
+            }); // Update the second button text with the selected option
         }
     };
 
@@ -64,6 +92,7 @@ const Filters: React.FC = () => {
                             {secondDropdownSelection}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
+                            <Dropdown.Item eventKey="All Rounds" href="#/all-rounds">All rounds</Dropdown.Item>
                             <Dropdown.Item eventKey="Round 1" href="#/round-1">Round 1</Dropdown.Item>
                             <Dropdown.Item eventKey="Round 2" href="#/round-2">Round 2</Dropdown.Item>
                         </Dropdown.Menu>

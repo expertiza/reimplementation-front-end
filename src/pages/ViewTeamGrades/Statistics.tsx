@@ -33,14 +33,21 @@ const Statistics: React.FC<StatisticsProps> = ({ average }) => {
   const [showReviews, setShowReviews] = useState(false);
   const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
 
+
+  const [roundSelected, setRoundSelected] = useState(-1);
+
+  const selectRound = (r: number) => {
+    setRoundSelected(prev => r);
+  }
+
   // Function to toggle the visibility of ShowReviews component
   const toggleShowReviews = () => {
-    setShowReviews(!showReviews);
+    setShowReviews(prev => !prev);
   };
 
   // Function to toggle the visibility of ShowAuthorFeedback component
   const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback(!ShowAuthorFeedback);
+    setShowAuthorFeedback(prev => !prev);
   };
 
   const headerCellStyle: React.CSSProperties = {
@@ -193,19 +200,19 @@ const Statistics: React.FC<StatisticsProps> = ({ average }) => {
         </tbody>
       </table>
       <div>
-        <Filters />
+        <Filters toggleShowReviews={toggleShowReviews} toggleAuthorFeedback={toggleAuthorFeedback} selectRound={selectRound}  />
       </div>
       <div>
         {showReviews && (
           <div>
             <h2>Reviews</h2>
-            <ShowReviews data={dummyDataRounds} />
+            <ShowReviews data={dummyDataRounds} roundSelected={roundSelected} />
           </div>
         )}
         {ShowAuthorFeedback && (
           <div>
             <h2>Author Feedback</h2>
-            <ShowReviews data={dummyauthorfeedback} />
+            <ShowReviews data={dummyauthorfeedback} roundSelected={roundSelected} />
           </div>
         )}
       </div>
