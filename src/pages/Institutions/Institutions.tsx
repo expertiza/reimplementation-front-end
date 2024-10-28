@@ -63,7 +63,7 @@ const Institutions = () => {
             </Col>
             <hr />
           </Row>
-          {hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
+          {hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) &&(
             <>
               <Row>
               <Col md={{ span: 1, offset: 8 }}>
@@ -90,7 +90,7 @@ const Institutions = () => {
             </>
           ) }
 
-          {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) 
+          {!hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) 
           && (
             <h1>Institution changes not allowed</h1>
           )}

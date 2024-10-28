@@ -8,9 +8,10 @@ import { notificationColumns as NOTIFICATION_COLUMNS } from "./NotificationColum
 import axiosClient from "../../utils/axios_client";
 import NotificationDelete from "./NotificationDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
-import { INotification } from "../../utils/interfaces";
+import { INotification, ROLE } from "../../utils/interfaces";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store/store";
+import { hasAllPrivilegesOf } from "utils/util";
 import { alertActions } from "store/slices/alertSlice";
 import React from "react";
 
@@ -134,8 +135,7 @@ const Notifications = () => {
                         </Col>
                         <hr />
                     </Row>
-                    {(['Super Administrator', 'Administrator', 'Instructor', 'Teaching Assistant'].includes(auth.user.role))
-                    && (
+                    {hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
                         <>
                         <Row>
                         <Col md={{ span: 1, offset: 8 }}>
@@ -156,13 +156,12 @@ const Notifications = () => {
                             columns={tableColumns}
                             showColumnFilter={false}
                             columnVisibility={{ id: false }}
-                            tableSize={{ span: 8, offset: 3 }}
+                            tableSize={{ span: 12, offset: 3 }}
                         />
                     </Row>
                     </>
                     ) }
-                    {(!['Super Administrator', 'Administrator', 'Instructor', 'Teaching Assistant'].includes(auth.user.role)) 
-                    && (
+                   {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
                         <h1>Notification changes not allowed</h1>
                     )}
                 </Container>
