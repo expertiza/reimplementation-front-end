@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Row, Col, Form, Modal, Button } from 'react-bootstrap';
+import React, { useState, useEffect, useMemo } from "react";
+import { Container, Row, Col, Form, Modal, Button } from "react-bootstrap";
 import Table from "../../components/Table/Table";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import useAPI from "../../hooks/useAPI";
@@ -7,14 +7,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import Select from "../../components/Select";
-import './ProjectTopics.css';
+import styles from "./ProjectTopics.module.css";
+import testData from "./testData.json";
 
 enum ROLE {
   SUPER_ADMIN = "Super Administrator",
   ADMIN = "Administrator",
   INSTRUCTOR = "Instructor",
   TA = "Teaching Assistant",
-  STUDENT = "Student"
+  STUDENT = "Student",
 }
 
 interface TopicSettings {
@@ -65,251 +66,135 @@ const ProjectTopics: React.FC = () => {
   const [userTopics, setUserTopics] = useState<Topic[]>([]);
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  
+
   const auth = useSelector((state: RootState) => state.authentication);
   const userRole = auth.user?.role || "";
   const username = auth.user?.name || "";
-  
+
   const isAdmin = userRole === ROLE.ADMIN || userRole === ROLE.SUPER_ADMIN;
   const isStudent = userRole === ROLE.STUDENT;
   const isInstructor = userRole === ROLE.INSTRUCTOR;
   const isAdminOrInstructor = isAdmin || isInstructor;
 
   // Mock assignments data
-  const mockAssignments: Assignment[] = [
-    {
-      id: 1,
-      name: "OSS project & documentation",
-      settings: {
-        allow_suggestions: false,
-        enable_bidding: false,
-        can_review_same_topic: true,
-        can_choose_topic_to_review: true,
-        allow_bookmarks: false,
-        allow_bidding_for_reviewers: false
-      },
-      topics: [
-        {
-          id: 1,
-          topic_identifier: "E2400",
-          topic_name: "Allow reviewers to bid on what to review",
-          description: "Enable bidding functionality for reviewers",
-          max_choosers: 1,
-          category: "Enhancement",
-          private_to: null,
-          micropayment: 0,
-          available_slots: 0,
-          waitlist_count: 0,
-          link: "",
-          assignment_id: 1,
-          assigned_teams: [{
-            id: 1,
-            topic_id: 1,
-            team_id: 1,
-            is_waitlisted: false,
-            preference_priority_number: 1,
-            team_members: ["admin admin","tester1","admin2"],
-            status: true
-          }]
-        },
-        {
-          id: 2,
-          topic_identifier: "E2401",
-          topic_name: "Implementing and testing import & export controllers",
-          description: "Import/Export functionality",
-          max_choosers: 1,
-          category: "Development",
-          private_to: null,
-          micropayment: 0,
-          available_slots: 0,
-          waitlist_count: 0,
-          link: "",
-          assignment_id: 1,
-          assigned_teams: [{
-            id: 2,
-            topic_id: 2,
-            team_id: 2,
-            is_waitlisted: false,
-            preference_priority_number: 1,
-            team_members: ["user4","user3","user2"],
-            status: true
-          }]
-        },
-        {
-          id: 3,
-          topic_identifier: "E2402",
-          topic_name: "User management and users table",
-          description: "User management functionality",
-          max_choosers: 1,
-          category: "Development",
-          private_to: null,
-          micropayment: 0,
-          available_slots: 1,
-          waitlist_count: 0,
-          link: "",
-          assignment_id: 1,
-          assigned_teams: [{
-            id: 5,
-            topic_id: 5,
-            team_id: 5,
-            is_waitlisted: false,
-            preference_priority_number: 1,
-            team_members: ["student3","student33","student333"],
-            status: true
-          }]
-        },
-        {
-          id: 4,
-          topic_identifier: "E2403",
-          topic_name: "Mentor-meeting management",
-          description: "Mentor meeting functionality",
-          max_choosers: 1,
-          category: "Development",
-          private_to: null,
-          micropayment: 0,
-          available_slots: 0,
-          waitlist_count: 1,
-          link: "",
-          assignment_id: 1,
-          assigned_teams: [{
-            id: 3,
-            topic_id: 4,
-            team_id: 3,
-            is_waitlisted: false,
-            preference_priority_number: 1,
-            team_members: ["student1","student11","student111"],
-            status: true
-          }]
-        },
-        {
-          id: 5,
-          topic_identifier: "E2404",
-          topic_name: "Refactor student_teams functionality",
-          description: "Team management improvements",
-          max_choosers: 2,
-          category: "Enhancement",
-          private_to: null,
-          micropayment: 0,
-          available_slots: 1,
-          waitlist_count: 0,
-          link: "",
-          assignment_id: 1,
-          assigned_teams: [{
-            id: 4,
-            topic_id: 5,
-            team_id: 4,
-            is_waitlisted: false,
-            preference_priority_number: 1,
-            team_members: ["student2","student22","student222"],
-            status: true
-          }]
-        }
-      ]
-    }
-  ];
+  const mockAssignments: Assignment[] = testData;
 
   // Transform assignments for form select
   const assignmentOptions = [
     { label: "Select an Assignment", value: "0" },
-    ...mockAssignments.map(assignment => ({
+    ...mockAssignments.map((assignment) => ({
       label: assignment.name,
-      value: assignment.id.toString()
-    }))
+      value: assignment.id.toString(),
+    })),
   ];
 
   useEffect(() => {
     if (selectedAssignment && isStudent) {
-      const userAssignedTopics = selectedAssignment.topics.filter(topic => 
-        topic.assigned_teams.some(team => 
-          team.team_members.includes(username)
-        )
+      const userAssignedTopics = selectedAssignment.topics.filter((topic) =>
+        topic.assigned_teams.some((team) => team.team_members.includes(username))
       );
       setUserTopics(userAssignedTopics);
     }
   }, [selectedAssignment, username, isStudent]);
 
+  let tableHeaders: string[] = [];
+  if (isStudent) {
+    tableHeaders = ["Topic ID", "Topic names(s)", "Available slots"];
+  }
+  if (isAdminOrInstructor) {
+    tableHeaders = [
+      "Topic ID",
+      "Topic names(s)",
+      "Available slots",
+      "Num. of slots",
+      "Num. on waitlist",
+    ];
+  }
+
   const columnHelper = createColumnHelper<Topic>();
 
-  
   const columns = useMemo<ColumnDef<Topic, any>[]>(() => {
     if (isStudent) {
       return [
-        columnHelper.accessor('topic_identifier', {
-          header: 'Topic ID',
-          cell: info => info.getValue()
+        columnHelper.accessor("topic_identifier", {
+          header: "Topic ID",
+          cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor('topic_name', {
-          header: 'Topic name(s)',
-          cell: info => info.getValue()
+        columnHelper.accessor("topic_name", {
+          header: "Topic name(s)",
+          cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor('available_slots', {
-          header: 'Available slots',
-          cell: info => info.getValue()
-        })
+        columnHelper.accessor("available_slots", {
+          header: "Available slots",
+          cell: (info) => info.getValue(),
+        }),
       ];
     }
-  
+
     if (isAdminOrInstructor) {
       return [
-        columnHelper.accessor('topic_identifier', {
-          header: 'Topic ID',
-          cell: info => info.getValue()
+        columnHelper.accessor("topic_identifier", {
+          header: "Topic ID",
+          cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor('topic_name', {
-          header: 'Topic name(s)',
-          cell: info => (
+        columnHelper.accessor("topic_name", {
+          header: "Topic name(s)",
+          cell: (info) => (
             <div className="topic-name-cell">
               <div className="fw-bold">
                 {info.getValue()}
-                {info.row.original.assigned_teams.length > 0 && 
-                  <span className="text-success ms-2">✓</span>}
+                {info.row.original.assigned_teams.length > 0 && (
+                  <span className="text-success ms-2">✓</span>
+                )}
               </div>
               {info.row.original.assigned_teams.map((team: AssignedTeam, idx: number) => (
                 <div key={idx} className="team-members">
-                  {team.team_members.join(', ')}
-                  <span className={`ms-1 ${team.status ? 'text-success' : 'text-danger'}`}>
-                    {team.status ? '✓' : '✗'}
+                  {team.team_members.join(", ")}
+                  <span className={`ms-1 ${team.status ? "text-success" : "text-danger"}`}>
+                    {team.status ? "✓" : "✗"}
                   </span>
                 </div>
               ))}
             </div>
-          )
+          ),
         }),
-        columnHelper.accessor('max_choosers', {
-          header: 'Num. of slots',
-          cell: info => info.getValue()
+        columnHelper.accessor("max_choosers", {
+          header: "Num. of slots",
+          cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor('available_slots', {
-          header: 'Available slots',
-          cell: info => info.getValue()
+        columnHelper.accessor("available_slots", {
+          header: "Available slots",
+          cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor('waitlist_count', {
-          header: 'Num. on waitlist',
-          cell: info => info.getValue()
-        })
+        columnHelper.accessor("waitlist_count", {
+          header: "Num. on waitlist",
+          cell: (info) => info.getValue(),
+        }),
       ];
     }
-  
+
     return [];
   }, [isAdminOrInstructor, isStudent]);
 
   const handleAssignmentChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const assignmentId = e.target.value;
-    
+
     if (assignmentId === "0") {
       setSelectedAssignment(null);
       setTopics([]);
       return;
     }
 
-    const assignment = mockAssignments.find(a => a.id.toString() === assignmentId);
+    const assignment = mockAssignments.find((a) => a.id.toString() === assignmentId);
     if (assignment) {
       setSelectedAssignment(assignment);
       setTopics(assignment.topics);
-      dispatch(alertActions.showAlert({
-        variant: "success",
-        message: `Loaded topics for ${assignment.name}`
-      }));
+      dispatch(
+        alertActions.showAlert({
+          variant: "success",
+          message: `Loaded topics for ${assignment.name}`,
+        })
+      );
     }
   };
 
@@ -336,7 +221,7 @@ const ProjectTopics: React.FC = () => {
   // Admin settings section
   const AdminSettings: React.FC = () => {
     if (!isAdminOrInstructor) return null;
-    
+
     return (
       <div className="mb-4">
         <h4>Topics for OSS project & documentation assignment</h4>
@@ -346,11 +231,7 @@ const ProjectTopics: React.FC = () => {
             id="allow-suggestions"
             label="Allow topic suggestions from students?"
           />
-          <Form.Check
-            type="checkbox"
-            id="enable-bidding"
-            label="Enable bidding for topics?"
-          />
+          <Form.Check type="checkbox" id="enable-bidding" label="Enable bidding for topics?" />
           <Form.Check
             type="checkbox"
             id="can-review-same-topic"
@@ -375,11 +256,11 @@ const ProjectTopics: React.FC = () => {
       </div>
     );
   };
-
+  console.log(columns, topics);
   // Student's personal topics section
   const StudentTopics: React.FC = () => {
     if (!isStudent || userTopics.length === 0) return null;
-  
+
     return (
       <div className="student-topics">
         <h4>Your topic(s)</h4>
@@ -394,16 +275,18 @@ const ProjectTopics: React.FC = () => {
       </div>
     );
   };
+
+  //main return starts here
   return (
     <Container fluid className="px-md-4">
       <RoleCheckModal />
-      
+
       <Row className="mt-md-2 mb-md-2">
         <Col>
           <h1>
-            {isAdminOrInstructor 
-              ? 'Editing Assignment: OSS project & documentation'
-              : 'Signup sheet for OSS project & documentation assignment'}
+            {isAdminOrInstructor
+              ? "Editing Assignment: OSS project & documentation"
+              : "Signup sheet for OSS project & documentation assignment"}
           </h1>
         </Col>
         <hr />
@@ -420,7 +303,7 @@ const ProjectTopics: React.FC = () => {
             options={assignmentOptions}
             input={{
               onChange: handleAssignmentChange,
-              value: selectedAssignment?.id?.toString() || "0"
+              value: selectedAssignment?.id?.toString() || "0",
             }}
             label="Select Assignment"
           />
@@ -428,19 +311,47 @@ const ProjectTopics: React.FC = () => {
       </Row>
 
       {selectedAssignment && (
-        <Row>
-          <Col>
-            <div className="table-responsive">
-              <Table
-                data={topics}
-                columns={columns}
-                showGlobalFilter={isAdminOrInstructor}
-                showColumnFilter={false}
-                onSelectionChange={() => {}}
-              />
-            </div>
-          </Col>
-        </Row>
+        <table className={styles.table}>
+          <thead>
+            {tableHeaders.map((column) => (
+              <th className={styles.th}>{column}</th>
+            ))}
+          </thead>
+          <tbody>
+            {topics.map((topic) => (
+              <tr className={styles.tr}>
+                <td className={styles.td}>{topic.topic_identifier}</td>
+                <td className={styles.td}>
+                  {topic.topic_name}
+                  {isAdminOrInstructor && (
+                    <div className="topic-name-cell">
+                      <div className="fw-bold">
+                        {topic.assigned_teams.length > 0 && (
+                          <span className="text-success ms-2">✓</span>
+                        )}
+                      </div>
+                      {topic.assigned_teams.map((team: AssignedTeam, idx: number) => (
+                        <div key={idx} className="team-members">
+                          {team.team_members.join(", ")}
+                          <span className={`ms-1 ${team.status ? "text-success" : "text-danger"}`}>
+                            {team.status ? "✓" : "✗"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </td>
+                <td className={styles.td}>{topic.available_slots}</td>
+                {isAdminOrInstructor && (
+                  <>
+                    <td className={styles.td}>{topic.max_choosers}</td>
+                    <td className={styles.td}>{topic.waitlist_count}</td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </Container>
   );

@@ -1,0 +1,24 @@
+.th {
+  background-color: #f8f8f8;
+  color: #333;
+  text-align: left;
+  padding: 20px;
+  font-size: 20px;
+}
+
+.tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.td {
+  padding: 20px;
+  font-size: 15px;
+}
+
+.topics_header {
+  background-color: red;
+}
+
+.table {
+  width: 100%
+}

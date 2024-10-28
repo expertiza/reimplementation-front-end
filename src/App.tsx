@@ -53,7 +53,7 @@ function App() {
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
         // Add the ViewTeamGrades route
         {
-          path: "project-topics",
+          path: "project_topics",
           element: <ProtectedRoute element={<ProjectTopics />}  />,
         },
         {
