@@ -71,9 +71,9 @@ const ImpersonateUser: React.FC = () => {
       },
     });
   };
-
+  
   const ImpersonationBanner = () => {
-    impersonateUserResponse?.data && (
+    return impersonateUserResponse?.data && (
       <div
         style={{
           backgroundColor: "#fff",
@@ -116,7 +116,7 @@ const ImpersonateUser: React.FC = () => {
 
   return (
     <>
-      {impersonateActive && ImpersonationBanner}
+      {impersonateActive && <ImpersonationBanner />}
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
           <h1>Impersonate User</h1>
