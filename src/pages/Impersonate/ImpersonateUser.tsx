@@ -50,10 +50,13 @@ const ImpersonateUser: React.FC = () => {
       return null;
     }
   
-    const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
-    const filteredUserArray = userArray.filter((user: any) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const userArray = Array.isArray(fetchUsersResponse.data) ? fetchUsersResponse.data : [fetchUsersResponse.data];
+  // console.log("User array:", userArray);
+
+  const filteredUserArray = userArray.filter((user: any) =>
+    user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  // console.log("Filtered user array:", filteredUserArray);
   
     return (
       debounceActive &&
