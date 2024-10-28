@@ -229,6 +229,22 @@ function App() {
           ],
         },
         {
+          path: "notifications",
+          element: <Notifications />,
+          //loader: loadNotifications,
+          children: [
+            {
+              path: "new",
+              element: <NotificationEditor mode="create" />,
+            },
+            {
+              path: "edit/:id",
+              element: <NotificationEditor mode="update" />,
+              //loader: loadNotification,
+            },
+          ],
+        },
+        {
           path: "administrator",
           element: (
             <ProtectedRoute element={<AdministratorLayout />} leastPrivilegeRole={ROLE.ADMIN} />
@@ -265,22 +281,6 @@ function App() {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
                   loader: loadInstitution,
-                },
-              ],
-            },
-            {
-              path: "notifications",
-              element: <Notifications />,
-              //loader: loadNotifications,
-              children: [
-                {
-                  path: "new",
-                  element: <NotificationEditor mode="create" />,
-                },
-                {
-                  path: "edit/:id",
-                  element: <NotificationEditor mode="update" />,
-                  //loader: loadNotification,
                 },
               ],
             },

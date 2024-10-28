@@ -6,38 +6,57 @@ import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { INotification } from "../../utils/interfaces";
 
+// Mock notifications to handle deletion for now
+let mockNotifications: INotification[] = [
+    {
+        id: "1",
+        course: "CS101",
+        subject: "New Homework",
+        description: "Homework 1 due next week",
+        expirationDate: "2024-10-31",
+        isActive: true,
+    },
+    {
+        id: "2",
+        course: "CS102",
+        subject: "Class Canceled",
+        description: "No class tomorrow",
+        expirationDate: "2024-11-01",
+        isActive: false,
+    },
+    {
+        id: "3",
+        course: "CS103",
+        subject: "Exam scheduled",
+        description: "Please prepare for the exam",
+        expirationDate: "2024-11-05",
+        isActive: true,
+    },
+];
+
 interface IDeleteNotification {
     notificationData: INotification;
     onClose: () => void;
 }
 
 const DeleteNotification: React.FC<IDeleteNotification> = ({ notificationData, onClose }) => {
-    const { data: response, error: userError, sendRequest: deleteNotification } = useAPI();
     const [show, setShow] = useState<boolean>(true);
     const dispatch = useDispatch();
 
-    const deleteHandler = () =>
-        deleteNotification({
-            url: `/notifications/${notificationData.id}`,
-            method: HttpMethod.DELETE,
-        });
-
-    useEffect(() => {
-        if (userError) {
-            dispatch(alertActions.showAlert({ variant: "danger", message: userError }));
-        }
-    }, [userError, dispatch]);
-
-    useEffect(() => {
-        if (response?.status && response?.status >= 200 && response?.status < 300) {
-            setShow(false);
-            dispatch(alertActions.showAlert({
+    const deleteHandler = () => {
+        // Handle deletion locally by filtering out the notification
+        mockNotifications = mockNotifications.filter(
+            (notif) => notif.id !== notificationData.id
+        );
+        setShow(false);
+        dispatch(
+            alertActions.showAlert({
                 variant: "success",
                 message: `Notification ${notificationData.subject} deleted successfully!`,
-            }));
-            onClose();
-        }
-    }, [response?.status, dispatch, onClose, notificationData.subject]);
+            })
+        );
+        onClose();
+    };
 
     const closeHandler = () => {
         setShow(false);
@@ -50,11 +69,17 @@ const DeleteNotification: React.FC<IDeleteNotification> = ({ notificationData, o
                 <Modal.Title>Delete Notification</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>Are you sure you want to delete notification <b>{notificationData.subject}</b>?</p>
+                <p>
+                    Are you sure you want to delete the notification <b>{notificationData.subject}</b>?
+                </p>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="outline-secondary" onClick={closeHandler}>Cancel</Button>
-                <Button variant="outline-danger" onClick={deleteHandler}>Delete</Button>
+                <Button variant="outline-secondary" onClick={closeHandler}>
+                    Cancel
+                </Button>
+                <Button variant="outline-danger" onClick={deleteHandler}>
+                    Delete
+                </Button>
             </Modal.Footer>
         </Modal>
     );

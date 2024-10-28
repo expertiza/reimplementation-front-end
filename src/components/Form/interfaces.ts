@@ -1,4 +1,4 @@
-import { ElementType, ReactNode } from "react";
+import React, { ElementType, ReactNode } from "react";
 
 /**
  * @author Ankur Mundra on May, 2023

@@ -103,9 +103,6 @@ const Header: React.FC = () => {
                     <NavDropdown.Item as={Link} to="administrator/institutions">
                       Institutions
                     </NavDropdown.Item>
-                      <NavDropdown.Item as={Link} to="administrator/notifications">
-                          Notifications
-                      </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="administrator/instructors">
                       Instructors
                     </NavDropdown.Item>
@@ -128,6 +125,9 @@ const Header: React.FC = () => {
                     <NavDropdown.Item as={Link} to="/courses">
                       Courses
                     </NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/notifications">
+                          Notifications
+                      </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/assignments">
                       Assignments
                     </NavDropdown.Item>
