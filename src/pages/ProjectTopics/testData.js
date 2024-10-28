@@ -1,4 +1,4 @@
-[
+export const mockdata = [
   {
     "id": 1,
     "name": "OSS project & documentation",
