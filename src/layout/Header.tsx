@@ -100,9 +100,6 @@ const Header: React.FC = () => {
                       Roles
                     </NavDropdown.Item>
                     <NavDropdown.Divider />
-                    <NavDropdown.Item as={Link} to="administrator/institutions">
-                      Institutions
-                    </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="administrator/instructors">
                       Instructors
                     </NavDropdown.Item>
@@ -127,6 +124,9 @@ const Header: React.FC = () => {
                     </NavDropdown.Item>
                       <NavDropdown.Item as={Link} to="/notifications">
                           Notifications
+                      </NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/institutions">
+                          Institutions
                       </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/assignments">
                       Assignments
@@ -158,6 +158,10 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/view-team-grades">
                   Grades View
                 </Nav.Link>
+                {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
+                <Nav.Link as={Link} to="/view-notifications">
+                  My Notifications
+                </Nav.Link>)}
                 <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>
                   Anonymized View
                 </Nav.Link>
