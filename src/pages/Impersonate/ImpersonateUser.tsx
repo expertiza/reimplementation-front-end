@@ -29,6 +29,7 @@ const ImpersonateUser: React.FC = () => {
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setDebounceActive(true);
+    // console.log("Debounce triggered:", e.target.value);
   };
 
   // Debounce search query
@@ -57,7 +58,9 @@ const ImpersonateUser: React.FC = () => {
       user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     // console.log("Filtered user array:", filteredUserArray);
-  
+
+    // console.log("Debounce Active:", debounceActive);
+    // console.log("filteredUserArray:", filteredUserArray.length);
     return (
       debounceActive &&
       filteredUserArray.length > 0 && (
