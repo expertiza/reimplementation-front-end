@@ -8,6 +8,7 @@ import InstitutionEditor, { loadInstitution } from "./pages/Institutions/Institu
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import NotificationEditor from "./pages/Notifications/NotificationEditor"
 import Notifications from "./pages/Notifications/Notifications"
+import ViewNotifications from "./pages/Notifications/ViewNotifications";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
@@ -143,6 +144,10 @@ function App() {
         {
           path: "profile",
           element: <ProtectedRoute element={<EditProfile />} />,
+        },
+        {
+          path: "view-notifications",
+          element: <ProtectedRoute element={<ViewNotifications />} />,
         },
         {
           path: "assignments/edit/:assignmentId/participants",
@@ -284,6 +289,7 @@ function App() {
                 },
               ],
             },
+            
             {
               path: ":user_type",
               element: <ManageUserTypes />,
