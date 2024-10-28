@@ -134,7 +134,7 @@ const ImpersonateUser: React.FC = () => {
             }}
             onClick={handleCancelImpersonate}
           >
-            x
+            Cancel Impersonation
           </button>
         </div>
       </div>
