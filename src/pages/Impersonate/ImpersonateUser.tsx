@@ -4,6 +4,7 @@ import useAPI from "hooks/useAPI";
 import debounce from "lodash.debounce";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
   const auth = useSelector(
@@ -116,7 +117,7 @@ const ImpersonateUser: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <img src={"../../assets/masquerade-mask.png"} width={25} style={{ marginRight: 4 }} />
+          <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
           <div>Impersonating a {impersonateUserResponse?.data.role} named {impersonateUserResponse?.data.name}</div>
           <button
             style={{
