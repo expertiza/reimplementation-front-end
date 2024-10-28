@@ -2,8 +2,14 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Col, Row, InputGroup, Form, Button, Dropdown } from "react-bootstrap";
 import useAPI from "hooks/useAPI";
 import debounce from "lodash.debounce";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 const ImpersonateUser: React.FC = () => {
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
   const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
   const { data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,9 +20,9 @@ const ImpersonateUser: React.FC = () => {
   useEffect(() => {
     fetchUsers({
       method: "get",
-      url: "/users",
+      url: `/impersonate/${auth.user.name}`,
     });
-  }, [fetchUsers]);
+  }, [fetchUsers, auth.user.name]);
   
   //log fetched users to console for test
   console.log(fetchUsersResponse);
