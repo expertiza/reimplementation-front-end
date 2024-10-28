@@ -32,12 +32,22 @@ const mockNotifications: INotification[] = [
         expirationDate: "2024-11-01",
         isActive: false,
     },
+    {
+        id: "3",
+        course: "CS103",
+        subject: "Exam scheduled",
+        description: "Please prepare for the exam",
+        expirationDate: "2024-11-05",
+        isActive: true,
+    },
     // Add more mock notifications as needed
 ];
 
+const mockAssignedCourses = ["CS101", "CS102", "CS103"]; // Courses assigned to the TA
+
 const Notifications = () => {
     const navigate = useNavigate();
-    //const location = useLocation();
+    const location = useLocation();
     const dispatch = useDispatch();
 
     // Fetch the current authenticated user
@@ -52,6 +62,11 @@ const Notifications = () => {
         visible: boolean;
         data?: INotification;
     }>({ visible: false });
+
+    // Filter notifications based on assigned courses
+    const filteredNotifications = mockNotifications.filter((notification) =>
+        mockAssignedCourses.includes(notification.course)
+    );
 
     /*
     useEffect(() => {
@@ -69,7 +84,7 @@ const Notifications = () => {
      */
 
     // Use mock data instead of fetching from an API
-    const notificationsResponse = { data: mockNotifications };
+    // const notificationsResponse = { data: mockNotifications };
 
     const onDeleteNotificationHandler = useCallback(
         () => setShowDeleteConfirmation({ visible: false }),
@@ -99,10 +114,14 @@ const Notifications = () => {
      */
 
     // Use mock data instead of fetching data
+    /*
     const tableData = useMemo(
         () => (notificationsResponse ? notificationsResponse.data : []),
         [notificationsResponse]
     );
+     */
+
+    const tableData = useMemo(() => filteredNotifications, [filteredNotifications]);
 
     return (
         <>
