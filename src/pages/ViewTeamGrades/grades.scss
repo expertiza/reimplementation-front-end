@@ -1,6 +1,13 @@
 /* Set the maximum width of the table container */
 .table-container {
   max-width: 90%;
+  margin: 0 auto;
+  overflow-x: auto; // Enable horizontal scroll on small screens
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fff;
 }
 
 /* Circle around max score number */
@@ -96,13 +103,13 @@
 }
 
 .tbl_heat td {
+  position: relative;
   cursor: pointer;
-  padding: 8px;
+  padding: 0.5rem;
   border: 1px black solid;
   width: auto;
   font-size: 11px;
   table-layout: fixed;
-  position: relative;
 }
 
 /* Tooltip display for question text on hover */
@@ -111,8 +118,8 @@
   position: absolute;
   background-color: rgba($color: #000000, $alpha: 1);
   color: #ffffff;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
   bottom: 130%;
   left: 0%;
   white-space: nowrap;
@@ -128,7 +135,14 @@
   table-layout: fixed;
 }
 
-/* Hides padding for specific rows */
+.tbl_heat tr {
+  padding: 0.75rem;
+}
+
+.tbl_heat tbody tr:hover {
+  background-color: #f0f4ff; // Light background color on hover
+}
+
 .hiddenRow {
   padding: 0 !important;
 }
@@ -190,9 +204,11 @@
   font-weight: bold !important;
 }
 
-/* Styles for the round selector */
 .round-selector {
-  display: flex;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .round-button {
@@ -230,16 +246,11 @@
   width: 80%; /* Ensure the container takes up the full width */
 }
 
-
-.round-heading {
-  font-weight: bold;
-  margin-top: 20px;
-  font-size: 30px;
-}
-
+.round-heading,
 .review-heading {
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: 1rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 .review-block {
@@ -264,32 +275,84 @@
   font-weight: bold;
 }
 
-.comment {
-  flex-grow: 1; /* Ensures comment fills the rest of the container */
-  padding-top: 3px; 
-}
-
-/* Style for even-numbered review blocks */
 .review-block:nth-child(even) {
-  background-color: #d9edf7; 
-  
+  background-color: #d9edf7;
 }
 
-/* Style for odd-numbered review blocks */
 .review-block:nth-child(odd) {
-  background-color: #fcf8e3; 
-
+  background-color: #fcf8e3;
 }
 
 .score-container {
   display: flex;
-  align-items: center; 
+  align-items: center;
+  justify-content: space-between;
   margin-top: 5px;
-  padding-top: 10px; 
-
+  padding-top: 10px;
 }
 
+.comment {
+  flex-grow: 1; /* Ensures comment fills the rest of the container */
+  padding-top: 3px;
+}
 
 .review-container {
-  margin-bottom: 200px; 
+  margin-bottom: 200px;
+}
+
+/* @media (max-width: 768px) {
+  .round-heading,
+  .review-heading {
+    font-size: 1.25rem;
+  }
+  .round-button,
+  .grade-circle {
+    font-size: 0.85rem;
+    padding: 0.3rem;
+  }
+} */
+
+/* Responsive Styling for Different Screen Sizes */
+@media (max-width: 768px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+  .table-container {
+    @apply px-2;
+  }
+}
+
+@media (max-width: 640px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.625rem;
+    padding: 0.4rem;
+  }
+  .table-container {
+    @apply px-1;
+  }
+}
+
+@media (max-width: 480px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.5rem;
+    padding: 0.3rem;
+  }
+  .tbl_heat {
+    font-size: 0.75rem;
+    min-width: 100%; /* Ensure table takes up full width */
+  }
+  .table-container {
+    @apply px-0;
+  }
+}
+
+@media (max-width: 320px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.45rem;
+    padding: 0.25rem;
+  }
+  .table-container {
+    @apply px-0 py-2;
+  }
 }
