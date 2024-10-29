@@ -119,7 +119,7 @@ const ImpersonateUser: React.FC = () => {
     });
     if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
       // console.log("POST HTML Status:", impersonateUserResponse?.status);
-      setImpersonationData(impersonateUserResponse.data);
+      setImpersonationData({name:searchQuery});
       setImpersonateActive(true);
     }
   };

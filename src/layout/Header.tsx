@@ -23,8 +23,13 @@ const Header: React.FC = () => {
   const [visible, setVisible] = useState(true);
   
   const context = useImpersonate();
-  const { impersonationData } = context ? context.impersonationData : null;
 
+  const { impersonationData } = useImpersonate();
+
+  const impersonationContent = impersonationData ? (<div>Impersonating {impersonationData.name}</div>
+  ) : (
+    <div>No Impersonation</div>
+  );
   const CustomBtn = () => {
     return (
       <div
@@ -71,8 +76,7 @@ const Header: React.FC = () => {
   const CustomBtn2 = () => {
     return (
     <>
-      {impersonationData ? (
-        impersonationData && (
+        
           <div
             style={{
               backgroundColor: "#fff",
@@ -91,7 +95,9 @@ const Header: React.FC = () => {
               }}
             >
               <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
-              <div>Impersonating {impersonationData.name}</div>
+                
+              {impersonationContent}
+               
               <button
                 style={{
                   background: "none",
@@ -111,8 +117,7 @@ const Header: React.FC = () => {
               </button>
             </div>
           </div>
-        )
-      ) : null};
+        
       </>
     );
   };
@@ -213,6 +218,7 @@ const Header: React.FC = () => {
                   Anonymized View
                 </Nav.Link>
               </Nav>
+              <CustomBtn2 />
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
                   User: {auth.user.full_name}
