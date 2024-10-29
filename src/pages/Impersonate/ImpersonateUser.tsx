@@ -120,9 +120,9 @@ const ImpersonateUser: React.FC = () => {
     // Store only the initial User's JWT token and information
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
-
-      setImpersonationData({name:searchQuery, impersonate:true});
     }
+    setImpersonationData({name:searchQuery, impersonate:true});
+    localStorage.setItem("impersonationStatus",searchQuery);
     impersonateUser({
       method: "post",
       url: `/impersonate`,

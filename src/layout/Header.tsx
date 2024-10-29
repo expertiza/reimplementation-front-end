@@ -31,7 +31,9 @@ const Header: React.FC = () => {
   ) : (
     <div>No Impersonation</div>
   );
-  const impersonating = impersonationData ? impersonationData.impersonate : false;
+
+  //const impersonating = impersonationData ? impersonationData.impersonate : false;
+  const impersonating = localStorage.getItem("impersonationStatus")
   const CustomBtn = () => {
     return (
       <div
@@ -97,7 +99,7 @@ const Header: React.FC = () => {
           >
             <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
               
-            {impersonationContent}
+            {impersonating}
              
             <button
               style={{
