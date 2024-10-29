@@ -1,20 +1,21 @@
+// notificationColumns.tsx
 import { createColumnHelper, Row, ColumnDef } from "@tanstack/react-table";
 import { MdOutlineDeleteForever as Remove } from "react-icons/md";
 import { BsPencilFill as Edit } from "react-icons/bs";
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { INotification } from "../../utils/interfaces";
 import React from "react";
 
 type Fn = (row: Row<INotification>) => void;
+type ToggleFn = (row: Row<INotification>, isActive: boolean) => void;
 const columnHelper = createColumnHelper<INotification>();
 
-// Define columns with the ability to conditionally include the Actions column
 export const notificationColumns = (
     handleEdit?: Fn,
     handleDelete?: Fn,
-    showActions: boolean = true
-): ColumnDef<INotification, any>[] => {  // Explicitly typing the return as ColumnDef array
-
+    showActions: boolean = true,
+    handleToggle?: ToggleFn  // Added handleToggle parameter
+): ColumnDef<INotification, any>[] => {
     const columns: ColumnDef<INotification, any>[] = [
         columnHelper.accessor("id", {
             header: "Id",
@@ -41,15 +42,21 @@ export const notificationColumns = (
             header: "Expiration Date",
             enableSorting: true,
         }),
-    
-        columnHelper.accessor("isActive", {
-            header: "Active Flag",
-            enableSorting: true,
-            cell: ({ row }) => (row.original.isActive ? "True" : "False"),
+
+        columnHelper.display({
+            id: "isActive",
+            header: "Active",
+            cell: ({ row }) => handleToggle ? (
+                <Form.Check
+                    type="switch"
+                    id={`isActive-switch-${row.original.id}`}
+                    checked={row.original.isActive}
+                    onChange={() => handleToggle(row, !row.original.isActive)}
+                />
+            ) : row.original.isActive ? "True" : "False",
         })
     ];
 
-    // Conditionally add Actions column if `showActions` is true
     if (showActions && handleEdit && handleDelete) {
         columns.push(
             columnHelper.display({

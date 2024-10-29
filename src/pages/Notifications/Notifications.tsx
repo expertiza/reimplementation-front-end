@@ -1,91 +1,37 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+// Notifications.tsx
+import { useCallback, useMemo, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { Row as TRow } from "@tanstack/react-table";
-import useAPI from "hooks/useAPI";
 import Table from "components/Table/Table";
 import { notificationColumns as NOTIFICATION_COLUMNS } from "./NotificationColumns";
-import axiosClient from "../../utils/axios_client";
+import { mockNotifications } from "./mock_data";
 import NotificationDelete from "./NotificationDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { INotification, ROLE } from "../../utils/interfaces";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { hasAllPrivilegesOf } from "utils/util";
-import { alertActions } from "store/slices/alertSlice";
 import React from "react";
+import { Row as TRow } from "@tanstack/react-table";
 
-// Mock Data to be used instead of actual API calls
-const mockNotifications: INotification[] = [
-    {
-        id: "1",
-        course: "CS101",
-        subject: "New Homework",
-        description: "Homework 1 due next week",
-        expirationDate: "2024-10-31",
-        isActive: true,
-    },
-    {
-        id: "2",
-        course: "CS102",
-        subject: "Class Canceled",
-        description: "No class tomorrow",
-        expirationDate: "2024-11-01",
-        isActive: false,
-    },
-    {
-        id: "3",
-        course: "CS103",
-        subject: "Exam scheduled",
-        description: "Please prepare for the exam",
-        expirationDate: "2024-11-05",
-        isActive: true,
-    },
-    // Add more mock notifications as needed
-];
-
-const mockAssignedCourses = ["CS101", "CS102", "CS103"]; // Courses assigned to the TA
+const mockAssignedCourses = ["CS101", "CS102", "CS103"]; 
 
 const Notifications = () => {
     const navigate = useNavigate();
-    const location = useLocation();
-    const dispatch = useDispatch();
+    const auth = useSelector((state: RootState) => state.authentication);
 
-    // Fetch the current authenticated user
-    const auth = useSelector(
-        (state: RootState) => state.authentication,
-        (prev, next) => prev.isAuthenticated === next.isAuthenticated
-    );
-
-    // const { error, isLoading, data: notificationsResponse, sendRequest: fetchNotifications } = useAPI();
-
+    const [notifications, setNotifications] = useState<INotification[]>(mockNotifications);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
         visible: boolean;
         data?: INotification;
     }>({ visible: false });
 
-    // Filter notifications based on assigned courses
-    const filteredNotifications = mockNotifications.filter((notification) =>
-        mockAssignedCourses.includes(notification.course)
+    const filteredNotifications = useMemo(
+        () => notifications.filter((notification) =>
+            mockAssignedCourses.includes(notification.course)
+        ),
+        [notifications]
     );
-
-    /*
-    useEffect(() => {
-        if (!showDeleteConfirmation.visible) fetchNotifications({ url: `/notifications/${auth.user.id}` });
-    }, [fetchNotifications, location, showDeleteConfirmation.visible, auth.user.id]);
-    */
-
-    // Error alert
-    /*
-    useEffect(() => {
-        if (error) {
-            dispatch(alertActions.showAlert({ variant: "danger", message: error }));
-        }
-    }, [error, dispatch]);
-     */
-
-    // Use mock data instead of fetching from an API
-    // const notificationsResponse = { data: mockNotifications };
 
     const onDeleteNotificationHandler = useCallback(
         () => setShowDeleteConfirmation({ visible: false }),
@@ -102,27 +48,21 @@ const Notifications = () => {
         []
     );
 
+    // Toggle the isActive status of a notification
+    const handleToggle = (row: TRow<INotification>, newIsActive: boolean) => {
+        setNotifications((prevNotifications) =>
+            prevNotifications.map((notification) =>
+                notification.id === row.original.id
+                    ? { ...notification, isActive: newIsActive }
+                    : notification
+            )
+        );
+    };
+
     const tableColumns = useMemo(
-        () => NOTIFICATION_COLUMNS(onEditHandle, onDeleteHandle),
+        () => NOTIFICATION_COLUMNS(onEditHandle, onDeleteHandle, true, handleToggle),
         [onDeleteHandle, onEditHandle]
     );
-
-    /*
-    const tableData = useMemo(
-        () => (isLoading || !notificationsResponse?.data ? [] : notificationsResponse.data),
-        [notificationsResponse?.data, isLoading]
-    );
-     */
-
-    // Use mock data instead of fetching data
-    /*
-    const tableData = useMemo(
-        () => (notificationsResponse ? notificationsResponse.data : []),
-        [notificationsResponse]
-    );
-     */
-
-    const tableData = useMemo(() => filteredNotifications, [filteredNotifications]);
 
     return (
         <>
@@ -135,33 +75,33 @@ const Notifications = () => {
                         </Col>
                         <hr />
                     </Row>
-                    {hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
+                    {hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
                         <>
-                        <Row>
-                        <Col md={{ span: 1, offset: 8 }}>
-                            <Button variant="outline-success" onClick={() => navigate("new")}>
-                                <BsPlusSquareFill />
-                            </Button>
-                        </Col>
-                        {showDeleteConfirmation.visible && (
-                            <NotificationDelete
-                                notificationData={showDeleteConfirmation.data!}
-                                onClose={onDeleteNotificationHandler}
-                            />
-                        )}
-                    </Row>
-                    <Row>
-                        <Table
-                            data={tableData}
-                            columns={tableColumns}
-                            showColumnFilter={false}
-                            columnVisibility={{ id: false }}
-                            tableSize={{ span: 12, offset: 3 }}
-                        />
-                    </Row>
-                    </>
-                    ) }
-                   {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) &&(
+                            <Row>
+                                <Col md={{ span: 1, offset: 8 }}>
+                                    <Button variant="outline-success" onClick={() => navigate("new")}>
+                                        <BsPlusSquareFill />
+                                    </Button>
+                                </Col>
+                                {showDeleteConfirmation.visible && (
+                                    <NotificationDelete
+                                        notificationData={showDeleteConfirmation.data!}
+                                        onClose={onDeleteNotificationHandler}
+                                    />
+                                )}
+                            </Row>
+                            <Row>
+                                <Table
+                                    data={filteredNotifications}
+                                    columns={tableColumns}
+                                    showColumnFilter={false}
+                                    columnVisibility={{ id: false }}
+                                    tableSize={{ span: 12, offset: 3 }}
+                                />
+                            </Row>
+                        </>
+                    )}
+                    {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
                         <h1>Notification changes not allowed</h1>
                     )}
                 </Container>
@@ -169,12 +109,5 @@ const Notifications = () => {
         </>
     );
 };
-
-/*
-export async function loadNotifications() {
-    const notificationsResponse = await axiosClient.get("/notifications");
-    return await notificationsResponse.data;
-}
- */
 
 export default Notifications;
