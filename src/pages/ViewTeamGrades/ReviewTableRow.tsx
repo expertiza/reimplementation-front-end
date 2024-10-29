@@ -8,28 +8,30 @@ interface ReviewTableRowProps {
 
 const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, isQuestionListVisible }) => {
   return (
-    <tr className={row.maxScore === 1 ? "no-bg" : ""}>
+    <tr className={row.maxScore === 1 ? "no-bg" : ""} >
       {/* Question Number */}
       <td className="py-2 px-4 text-center" data-question={row.questionText}>
-        <div className="circle-container">
-          {row.maxScore !== 1 ? (
-            <span className="circle">{row.maxScore}</span>
-          ) : (
-            <span className="tick">✓</span>
-          )}
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{row.questionNumber}
-        </div>
+        {row.questionNumber}
       </td>
       {/* Toggle Question */}
       {isQuestionListVisible && (
-        <td className="text-center" >{row.questionText}</td>
+        <td width="300px" className="text-left" >
+          <div className="circle-container">
+            {row.maxScore !== 1 ? (
+              <span className="star">☆</span>
+            ) : (
+              <span className="tick">✓</span>
+            )}
+          &nbsp;{row.questionText}
+        </div>
+        </td>
       )}
 
       {/* Review Cells */}
       {row.reviews.map((review, idx) => (
         <td
           key={idx}
-          className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
+          className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`} align="center" data-toggle="tooltip"
           data-question={review.comment}
         >
           <span style={{ textDecoration: review.comment ? "underline" : "none" }}>{review.score}</span>

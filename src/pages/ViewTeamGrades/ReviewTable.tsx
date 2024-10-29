@@ -122,7 +122,12 @@ const ReviewTable: React.FC = () => {
         <table className="tbl_heat">
           <thead>
             <tr className="bg-gray-200">
-              <th scope="col" className="p-2 text-center" style={{ width: '70px' }}>Question No.</th>
+              <th scope="col" className="p-2 text-center" style={{ width: '70px' }} onClick={toggleRowSortOrder}>
+                Question No.
+                {rowSortOrder === "none" && <span>▲▼</span>}
+                {rowSortOrder === "asc" && <span> ▲</span>}
+                {rowSortOrder === "desc" && <span> ▼</span>}
+              </th>
               {isQuestionListVisible && (
                 <th scope="col" className="py-2 px-4 text-center" style={{ width: '150px' }}>Question</th>
               )}

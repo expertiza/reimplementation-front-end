@@ -1,120 +1,75 @@
-/* Set the maximum width of the table container */
-.table-container {
-  max-width: 90%;
-  margin: 0 auto;
-  overflow-x: auto; // Enable horizontal scroll on small screens
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  background-color: #fff;
-}
-
 /* Circle around max score number */
 .circle-container {
-  display: flex;
-  align-items: center;
+  display: inline-flex;
 }
 
-.circle {
+.star, .tick {
+  margin-right: 5px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 1px solid orangered;
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   font-weight: bold;
   color: orangered;
-  margin-left: -20px; /* Add margin to separate the circle from the text */
 }
 
-.tick{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  color: orangered;
-  margin-left: -15px; /* Add margin to separate the circle from the text */
-}
+/* These are the colors used for coloring
+ * score cells within the heatgrid for the
+ * grades view.
+ */
+  .c0 {background-color: #d3d3d3;} /* This is a null space in the table.*/
+  .c1 {background-color: #ff8080;}/* This is a red, indicative of a poor score. */  
+  .c2 {background-color: #FD992D;}/* This is an orange. */
+  .c3 {background-color: #FFEC8B;}/* This is a yellow, indicative of a median score. */
+  .c4 {background-color: #BCED91;}/* This is a light green. */
+  .c5 {background-color: #2DE636;}/* This is a green, indicative of a good score. */
+  .cf {background-color: #FFFFFF;}/* Default background color */
+  
+  /* To color the grades in the summary report  */
+  .grade-circle {
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    font-size:15px;
+    color:black;
+    line-height:30px;
+    text-align:center;
+  }
+  
+  /* To underline scores which have a comment. */
+  .underlined {
+      text-decoration: underline;
+      font-weight:bold;
+  }
+  
+  .tbl_heat {
+    border: 1px solid black;
+    text-align: center;
+    min-width: 600px; // Minimum width before scrolling kicks in
+    table-layout: fixed;
+    height: auto;
+    margin-left: 1%;
+  }
 
-/* Colors used for coloring score cells within the heatgrid for the grades view */
+  .tbl_heat td {
+    position: relative;
+    cursor: pointer;
+    padding: 0.5rem;
+    border: 1px black solid;
+    table-layout: fixed;
+    white-space: normal;  /* Allows text to wrap within the cell */
+    word-wrap: break-word;  /* Ensures long words do not overflow */
+    height: auto;  /* Allows the height to adjust based on content */
+  }
+  .tbl_heat td:nth-child(2) {
+    text-align: left;
+    padding-left: 1rem; /* Add padding to the left for spacing */
+  }
 
-/* Null space in the table */
-.c0 {
-  background-color: #d3d3d3;
-}
-
-/* Red, indicative of a poor score */
-.c1 {
-  background-color: #ff8080;
-}
-
-/* Orange */
-.c2 {
-  background-color: #FD992D;
-}
-
-/* Yellow, indicative of a median score */
-.c3 {
-  background-color: #FFEC8B;
-}
-
-/* Light green */
-.c4 {
-  background-color: #BCED91;
-}
-
-/* Green, indicative of a good score */
-.c5 {
-  background-color: #2DE636;
-}
-
-/* Default background color */
-.cf {
-  background-color: #FFFFFF;
-}
-
-/* Style for the grades in the summary report */
-.grade-circle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 15px;
-  color: black;
-  line-height: 30px;
-  text-align: center;
-}
-
-/* Underline scores which have a comment */
-.underlined {
-  text-decoration: underline;
-  font-weight: bold;
-}
-
-/* Styling for the heatgrid table */
-.tbl_heat {
-  border: 1px solid black;
-  width: 100%;
-  font-size: 10px;
-  text-align: center;
-  table-layout: fixed;
-  min-width: 600px; // Minimum width before scrolling kicks in
-}
-
-.tbl_heat td {
-  position: relative;
-  cursor: pointer;
-  padding: 0.5rem;
-  border: 1px black solid;
-  width: auto;
-  font-size: 11px;
-  table-layout: fixed;
-}
-
-/* Tooltip display for question text on hover */
-.tbl_heat td[data-question]:hover::after {
-  content: attr(data-question);
+  .tbl_heat td[data-question]:hover::after {
+    content: attr(data-question);
   position: absolute;
   background-color: rgba($color: #000000, $alpha: 1);
   color: #ffffff;
@@ -123,236 +78,66 @@
   bottom: 130%;
   left: 0%;
   white-space: nowrap;
-}
-
-/* Styling for table headers */
-.tbl_heat th {
-  border: 1px black solid;
-  padding: 10px;
-  font-size: 11px;
-  background-color: #f2f2f2;
-  width: auto;
-  table-layout: fixed;
-}
-
-.tbl_heat tr {
-  padding: 0.75rem;
-}
-
-.tbl_heat tbody tr:hover {
-  background-color: #f0f4ff; // Light background color on hover
-}
-
-.hiddenRow {
-  padding: 0 !important;
-}
-
-/* Tooltip span styling */
-.spn_tooltip {
-  padding-left: 30px;
-  color: grey;
-  font-size: small;
-}
-
-/* Styling for question toggle span */
-.spn_qsttog {
-  padding-left: 30px;
-  cursor: pointer;
-  text-decoration: underline;
-  color: blue;
-  font-size: small;
-}
-
-/* Classes for E2100 Tag Reports for Students to style the new HeatGrid of review tags */
-
-/* Styling for action row */
-.action_row {
-  border: 1px black solid;
-  padding: 1px 2px 2px 1px;
-  font-size: 11px;
-  text-align: center;
-}
-
-/* Styling for tag heat grid */
-.tag_heat_grid {
-  padding: 0;
-  spacing: 0;
-  border: 1px solid black;
-  position: relative;
-  float: right;
-  top: 0px;
-  right: 0px;
-  z-index: 2;
-}
-
-/* Styling for tag heat grid headers */
-.tag_heat_grid th {
-  border: 1px solid black;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-/* Styling for tag heat grid cells */
-.tag_heat_grid td {
-  border: 0.5px solid black;
-  font-size: 8px;
-}
-
-/* Styling for tag heat grid criterion */
-.tag_heat_grid_criterion {
-  font-size: 11px !important;
-  font-weight: bold !important;
-}
-
-.round-selector {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.round-button {
-  padding: 7px 7px;
-  margin: 5px;
-  border: 2px solid #4a90e2;
-  border-radius: 10px;
-  background-color: #4a90e2;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: #357bd8;
-    border-color: #357bd8;
   }
-
-  &.current {
-    background-color: #2ecc71;
-    border-color: #2ecc71;
+  
+  .tbl_heat th {
+    border: 1px black solid;
+    padding: 5px 5px 5px 5px; 
+    width: auto;
   }
-
-  .round-selector > div {
-    display: flex;
-    align-items: center;
-    margin: auto;
+  .tbl_heat tbody tr:hover {
+    background-color: #f0f4ff; // Light background color on hover
   }
-}
-
-.container {
-  display: flex;
-  justify-content: space-between; /* Adjust as needed */
-  width: 80%; /* Ensure the container takes up the full width */
-}
-
-.round-heading,
-.review-heading {
-  font-weight: bold;
-  margin-top: 1rem;
-  font-size: clamp(1.5rem, 2vw, 2rem);
-}
-
-.review-block {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 0;
-}
-
-.question {
-  font-weight: bold;
-}
-
-.score {
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: black;
-  margin-right: 10px;
-  font-weight: bold;
-}
-
-.review-block:nth-child(even) {
-  background-color: #d9edf7;
-}
-
-.review-block:nth-child(odd) {
-  background-color: #fcf8e3;
-}
-
-.score-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 5px;
-  padding-top: 10px;
-}
-
-.comment {
-  flex-grow: 1; /* Ensures comment fills the rest of the container */
-  padding-top: 3px;
-}
-
-.review-container {
-  margin-bottom: 200px;
-}
-
-/* @media (max-width: 768px) {
-  .round-heading,
-  .review-heading {
-    font-size: 1.25rem;
+  .hiddenRow {padding:0 !important;}
+  
+  .spn_tooltip {
+    padding-left:30px;color:grey;font-size:small;
   }
-  .round-button,
-  .grade-circle {
-    font-size: 0.85rem;
-    padding: 0.3rem;
+  
+  .spn_qsttog {
+    padding-left:30px;cursor: pointer;text-decoration:underline;color:blue;font-size:small;
   }
-} */
-
-/* Responsive Styling for Different Screen Sizes */
-@media (max-width: 768px) {
-  .tbl_heat th, .tbl_heat td {
-    font-size: 0.75rem;
-    padding: 0.5rem;
+  
+  .hide-scrollbar {
+    overflow-y: hidden;
+    padding-top: 10px;
   }
-  .table-container {
-    @apply px-2;
+  
+  .hide-scrollbar th{
+    overflow-y: hidden;
   }
-}
-
-@media (max-width: 640px) {
-  .tbl_heat th, .tbl_heat td {
-    font-size: 0.625rem;
-    padding: 0.4rem;
+  
+  .action_row {
+    border: 1px black solid;
+    padding: 1px 2px 2px 1px;
+    font-size: 11px;
+    text-align: center;
   }
-  .table-container {
-    @apply px-1;
+  
+  .tag_heat_grid {
+    padding:0;
+    spacing: 0;
+    border: 1px solid black;
+    position: relative;
+    float: right;
+    top:0px;
+    right:0px;
+    z-index:2;
   }
-}
-
-@media (max-width: 480px) {
-  .tbl_heat th, .tbl_heat td {
-    font-size: 0.5rem;
-    padding: 0.3rem;
+  .tag_heat_grid th {
+    border: 1px solid black;
+    font-size:12px;
+    cursor: pointer;
+    text-align: center;
   }
-  .tbl_heat {
-    font-size: 0.75rem;
-    min-width: 100%; /* Ensure table takes up full width */
+  
+  .tag_heat_grid td {
+    border: 0.5px solid black;;
+    font-size: 8px;
+    text-align: center;
   }
-  .table-container {
-    @apply px-0;
+  
+  .tag_heat_grid_criterion {
+    font-size: 11px !important;
+    font-weight: bold !important;
   }
-}
-
-@media (max-width: 320px) {
-  .tbl_heat th, .tbl_heat td {
-    font-size: 0.45rem;
-    padding: 0.25rem;
-  }
-  .table-container {
-    @apply px-0 py-2;
-  }
-}
