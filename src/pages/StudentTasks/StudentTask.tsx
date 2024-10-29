@@ -1,5 +1,6 @@
 import React from 'react';
 import './StudentTask.css';
+import dummyData from './DummyData.json';
 
 interface StudentTaskProps {
     assignmentName: string;
@@ -10,15 +11,10 @@ interface TimelineItem {
     label: string;
 }
   
-const items: TimelineItem[] = [
-    { date: 'Fri, 27 Sep 2024 23:59', label: 'Submission deadline' },
-    { date: 'Mon, 30 Sep 2024 23:59', label: 'Review deadline' },
-    { date: 'Thu, 03 Oct 2024 23:59', label: 'Submission deadline' },
-    { date: 'Sat, 05 Oct 2024 14:34', label: 'Round 1 peer review' },
-    { date: 'Tue, 30 Nov 2024 23:59', label: 'Review deadline' }
-];
 
-const StudentTask: React.FC<StudentTaskProps> = ({ assignmentName }) => {
+const StudentTask: React.FC = () => {
+    const assignmentName = dummyData.assignmentName;
+    const items: TimelineItem[] = dummyData.timeline;
     const currentDate = new Date();
 
     const getStatusClass = (date: string) => {

@@ -93,7 +93,7 @@ function App() {
         },
         {
           path: "/student_tasks",
-          element: <StudentTask assignmentName="OSS project & documentation" />
+          element: <StudentTask />
         },
         {
           path: "assignments",

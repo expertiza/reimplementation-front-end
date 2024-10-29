@@ -1,9 +1,10 @@
 {
-  "timelineItems": [
+  "assignmentName": "OSS project & documentation",
+  "timeline": [
     { "date": "Fri, 27 Sep 2024 23:59", "label": "Submission deadline" },
     { "date": "Mon, 30 Sep 2024 23:59", "label": "Review deadline" },
     { "date": "Thu, 03 Oct 2024 23:59", "label": "Submission deadline" },
-    { "date": "Sat, 05 Oct 2024 14:34", "label": "Round 2 peer review" },
-    { "date": "Tue, 30 Nov 2024 23:59", "label": "Review deadline" }
+    { "date": "Sat, 15 Nov 2024 14:34", "label": "Round 1 peer review" },
+    { "date": "Tue, 10 Dec 2024 23:59", "label": "Review deadline" }
   ]
-}
+ }
