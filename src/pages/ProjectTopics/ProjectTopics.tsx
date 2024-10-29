@@ -113,9 +113,7 @@ const ProjectTopics: React.FC = () => {
   }
 
   const handleAssignmentChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(
-      alertActions.hideAlert()
-    );
+    dispatch(alertActions.hideAlert());
     const assignmentId = e.target.value;
 
     if (assignmentId === "0") {
@@ -156,16 +154,16 @@ const ProjectTopics: React.FC = () => {
       </Modal.Footer>
     </Modal>
   );
-  const handleSelectYourTopics = () =>{
-    setShowYourTopics(!showYourTopics)
-  }
+  const handleSelectYourTopics = () => {
+    setShowYourTopics(!showYourTopics);
+  };
   // Admin settings section
   const AdminSettings: React.FC = () => {
     if (!isAdminOrInstructor) return null;
 
     return (
-      <div className="mb-4">
-        <h4>Topics for OSS project & documentation assignment</h4>
+      <div className="mb-4 m-4">
+        <h4 style={{fontSize: '35px'}}>Topics for OSS project & documentation assignment</h4>
         <Form>
           <Form.Check
             type="checkbox"
@@ -198,9 +196,9 @@ const ProjectTopics: React.FC = () => {
     );
   };
   // Student's personal topics section
-  let filteredTopics = topics
-  if (showYourTopics){
-    filteredTopics = userTopics
+  let filteredTopics = topics;
+  if (showYourTopics) {
+    filteredTopics = userTopics;
   }
   //main return starts here
   return (
@@ -209,6 +207,7 @@ const ProjectTopics: React.FC = () => {
       <h1 className={styles.pageTitle}>{isAdminOrInstructor ? "Topics (Admin View)" : "Topics"}</h1>
 
       {isAdminOrInstructor && <AdminSettings />}
+
       <div className={styles.selectAssignment}>
         <label className={styles.selectAssignmentLabel}>Select Assignment</label>
         <select className={styles.selectAssigmentOption} onChange={handleAssignmentChange}>
@@ -220,10 +219,16 @@ const ProjectTopics: React.FC = () => {
 
       {selectedAssignment && (
         <>
-          <div className={styles.showYourTopics}>
-            <input type="checkbox" className={styles.showYourTopicsCheckbox} onChange={handleSelectYourTopics}></input>
-            <label className={styles.showYourTopicsLabel}>Show Your Topics</label>
-          </div>
+          {isStudent && (
+            <div className={styles.showYourTopics}>
+              <input
+                type="checkbox"
+                className={styles.showYourTopicsCheckbox}
+                onChange={handleSelectYourTopics}
+              ></input>
+              <label className={styles.showYourTopicsLabel}>Show Your Topics</label>
+            </div>
+          )}
           <table className={styles.table}>
             <thead>
               {tableHeaders.map((column) => (
