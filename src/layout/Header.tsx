@@ -8,6 +8,7 @@ import { hasAllPrivilegesOf } from "../utils/util";
 import detective from "../assets/detective.png";
 import { useImpersonate } from "../context/ImpersonateContext";
 import masqueradeMask from "../assets/masquerade-mask.png";
+import handleCancelImpersonate from "../pages/Impersonate/ImpersonateUser"
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -30,6 +31,7 @@ const Header: React.FC = () => {
   ) : (
     <div>No Impersonation</div>
   );
+  const impersonating = impersonationData ? impersonationData.impersonate : false;
   const CustomBtn = () => {
     return (
       <div
@@ -73,7 +75,7 @@ const Header: React.FC = () => {
     );
   };
 
-  const CustomBtn2 = () => {
+  const ImpersonateBanner = () => {
     return (
       
         <div
@@ -110,7 +112,7 @@ const Header: React.FC = () => {
                 fontSize: 10,
                 fontWeight: 800,
               }}
-              onClick={() => setVisible(!visible)}
+              onClick={() => handleCancelImpersonate}
             >
               x
             </button>
@@ -216,7 +218,7 @@ const Header: React.FC = () => {
                   Anonymized View
                 </Nav.Link>
               </Nav>
-              <CustomBtn2 />
+                { impersonating && <ImpersonateBanner />}
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
                   User: {auth.user.full_name}

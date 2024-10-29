@@ -4,6 +4,7 @@ const ImpersonateContext = createContext(null);
 
 interface ImpersonationData {
   name: string;
+  impersonate: boolean;
 }
 export const ImpersonationContext = createContext<{
   impersonationData: ImpersonationData | null;

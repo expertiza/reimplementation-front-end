@@ -137,7 +137,7 @@ const ImpersonateUser: React.FC = () => {
       localStorage.setItem("originalUserToken", auth.authToken);
       localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
 
-      setImpersonationData({name:auth.user.name});
+      setImpersonationData({name:searchQuery, impersonate:true});
       // console.log("originalUserToken:", auth.authToken);
       // console.log("originalUserPayload:", originalUserPayload);
     }
