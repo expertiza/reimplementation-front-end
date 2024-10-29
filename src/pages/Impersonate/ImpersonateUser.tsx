@@ -137,10 +137,10 @@ const ImpersonateUser: React.FC = () => {
       localStorage.setItem("originalUserToken", auth.authToken);
       localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
 
+      setImpersonationData({name:auth.user.name});
       // console.log("originalUserToken:", auth.authToken);
       // console.log("originalUserPayload:", originalUserPayload);
     }
-
     impersonateUser({
       method: "post",
       url: `/impersonate`,
@@ -148,11 +148,6 @@ const ImpersonateUser: React.FC = () => {
         impersonate_id: fetchSelectedUser?.data.userList[0]?.id,
       },
     });
-    if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
-      // console.log("POST HTML Status:", impersonateUserResponse?.status);
-      setImpersonationData({name:searchQuery});
-      setImpersonateActive(true);
-    }
   };
 
   // Impersonate user alert
