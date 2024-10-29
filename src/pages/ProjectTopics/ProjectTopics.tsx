@@ -8,7 +8,7 @@ import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import Select from "../../components/Select";
 import styles from "./ProjectTopics.module.css";
-import {mockdata} from "./testData.js";
+import { mockdata } from "./testData.js";
 
 enum ROLE {
   SUPER_ADMIN = "Super Administrator",
@@ -66,6 +66,7 @@ const ProjectTopics: React.FC = () => {
   const [userTopics, setUserTopics] = useState<Topic[]>([]);
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [showYourTopics, setShowYourTopics] = useState(false);
 
   const auth = useSelector((state: RootState) => state.authentication);
   const userRole = auth.user?.role || "";
@@ -111,72 +112,10 @@ const ProjectTopics: React.FC = () => {
     ];
   }
 
-  const columnHelper = createColumnHelper<Topic>();
-
-  const columns = useMemo<ColumnDef<Topic, any>[]>(() => {
-    if (isStudent) {
-      return [
-        columnHelper.accessor("topic_identifier", {
-          header: "Topic ID",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("topic_name", {
-          header: "Topic name(s)",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("available_slots", {
-          header: "Available slots",
-          cell: (info) => info.getValue(),
-        }),
-      ];
-    }
-
-    if (isAdminOrInstructor) {
-      return [
-        columnHelper.accessor("topic_identifier", {
-          header: "Topic ID",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("topic_name", {
-          header: "Topic name(s)",
-          cell: (info) => (
-            <div className="topic-name-cell">
-              <div className="fw-bold">
-                {info.getValue()}
-                {info.row.original.assigned_teams.length > 0 && (
-                  <span className="text-success ms-2">✓</span>
-                )}
-              </div>
-              {info.row.original.assigned_teams.map((team: AssignedTeam, idx: number) => (
-                <div key={idx} className="team-members">
-                  {team.team_members.join(", ")}
-                  <span className={`ms-1 ${team.status ? "text-success" : "text-danger"}`}>
-                    {team.status ? "✓" : "✗"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ),
-        }),
-        columnHelper.accessor("max_choosers", {
-          header: "Num. of slots",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("available_slots", {
-          header: "Available slots",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("waitlist_count", {
-          header: "Num. on waitlist",
-          cell: (info) => info.getValue(),
-        }),
-      ];
-    }
-
-    return [];
-  }, [isAdminOrInstructor, isStudent]);
-
   const handleAssignmentChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch(
+      alertActions.hideAlert()
+    );
     const assignmentId = e.target.value;
 
     if (assignmentId === "0") {
@@ -217,7 +156,9 @@ const ProjectTopics: React.FC = () => {
       </Modal.Footer>
     </Modal>
   );
-
+  const handleSelectYourTopics = () =>{
+    setShowYourTopics(!showYourTopics)
+  }
   // Admin settings section
   const AdminSettings: React.FC = () => {
     if (!isAdminOrInstructor) return null;
@@ -256,104 +197,79 @@ const ProjectTopics: React.FC = () => {
       </div>
     );
   };
-  console.log(columns, topics);
   // Student's personal topics section
-  const StudentTopics: React.FC = () => {
-    if (!isStudent || userTopics.length === 0) return null;
-
-    return (
-      <div className="student-topics">
-        <h4>Your topic(s)</h4>
-        <Table
-          data={userTopics}
-          columns={columns}
-          showGlobalFilter={false}
-          showColumnFilter={false}
-          showPagination={false}
-          onSelectionChange={() => {}}
-        />
-      </div>
-    );
-  };
-
+  let filteredTopics = topics
+  if (showYourTopics){
+    filteredTopics = userTopics
+  }
   //main return starts here
   return (
-    <Container fluid className="px-md-4">
+    <div>
       <RoleCheckModal />
-
-      <Row className="mt-md-2 mb-md-2">
-        <Col>
-          <h1>
-            {isAdminOrInstructor
-              ? "Editing Assignment: OSS project & documentation"
-              : "Signup sheet for OSS project & documentation assignment"}
-          </h1>
-        </Col>
-        <hr />
-      </Row>
+      <h1 className={styles.pageTitle}>{isAdminOrInstructor ? "Topics (Admin View)" : "Topics"}</h1>
 
       {isAdminOrInstructor && <AdminSettings />}
-
-      {isStudent && <StudentTopics />}
-
-      <Row className="mb-3">
-        <Col md={12}>
-          <Select
-            id="assignment-select"
-            options={assignmentOptions}
-            input={{
-              onChange: handleAssignmentChange,
-              value: selectedAssignment?.id?.toString() || "0",
-            }}
-            label="Select Assignment"
-          />
-        </Col>
-      </Row>
+      <div className={styles.selectAssignment}>
+        <label className={styles.selectAssignmentLabel}>Select Assignment</label>
+        <select className={styles.selectAssigmentOption} onChange={handleAssignmentChange}>
+          {assignmentOptions.map((assignment) => (
+            <option value={assignment.value}>{assignment.label}</option>
+          ))}
+        </select>
+      </div>
 
       {selectedAssignment && (
-        <table className={styles.table}>
-          <thead>
-            {tableHeaders.map((column) => (
-              <th className={styles.th}>{column}</th>
-            ))}
-          </thead>
-          <tbody>
-            {topics.map((topic) => (
-              <tr className={styles.tr}>
-                <td className={styles.td}>{topic.topic_identifier}</td>
-                <td className={styles.td}>
-                  {topic.topic_name}
-                  {isAdminOrInstructor && (
-                    <div className="topic-name-cell">
-                      <div className="fw-bold">
-                        {topic.assigned_teams.length > 0 && (
-                          <span className="text-success ms-2">✓</span>
-                        )}
-                      </div>
-                      {topic.assigned_teams.map((team: AssignedTeam, idx: number) => (
-                        <div key={idx} className="team-members">
-                          {team.team_members.join(", ")}
-                          <span className={`ms-1 ${team.status ? "text-success" : "text-danger"}`}>
-                            {team.status ? "✓" : "✗"}
-                          </span>
+        <>
+          <div className={styles.showYourTopics}>
+            <input type="checkbox" className={styles.showYourTopicsCheckbox} onChange={handleSelectYourTopics}></input>
+            <label className={styles.showYourTopicsLabel}>Show Your Topics</label>
+          </div>
+          <table className={styles.table}>
+            <thead>
+              {tableHeaders.map((column) => (
+                <th className={styles.th}>{column}</th>
+              ))}
+            </thead>
+            <tbody>
+              {filteredTopics.map((topic) => (
+                <tr className={styles.tr}>
+                  <td className={styles.td}>{topic.topic_identifier}</td>
+                  <td className={styles.td}>
+                    {topic.topic_name}
+                    {isAdminOrInstructor && (
+                      <div className="topic-name-cell">
+                        <div className="fw-bold">
+                          {topic.assigned_teams.length > 0 && (
+                            <span className="text-success ms-2">✓</span>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                        {topic.assigned_teams.map((team: AssignedTeam, idx: number) => (
+                          <div key={idx} className="team-members">
+                            {team.team_members.join(", ")}
+                            <span
+                              className={`ms-1 ${team.status ? "text-success" : "text-danger"}`}
+                            >
+                              {team.status ? "✓" : "✗"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td className={styles.td}>{topic.available_slots}</td>
+                  {isAdminOrInstructor && (
+                    <>
+                      <td className={styles.td}>{topic.max_choosers}</td>
+                      <td className={styles.td}>{topic.waitlist_count}</td>
+                    </>
                   )}
-                </td>
-                <td className={styles.td}>{topic.available_slots}</td>
-                {isAdminOrInstructor && (
-                  <>
-                    <td className={styles.td}>{topic.max_choosers}</td>
-                    <td className={styles.td}>{topic.waitlist_count}</td>
-                  </>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
-    </Container>
+    </div>
   );
 };
 
