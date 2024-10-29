@@ -22,7 +22,6 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [selectedValidUser, setSelectedValidUser] = useState(false);
-  const [impersonateActive, setImpersonateActive] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -127,7 +126,12 @@ const ImpersonateUser: React.FC = () => {
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
     }
-
+    const impersonateMessage =
+      "Impersonating a " +
+      fetchSelectedUser?.data.userList[0].role.name +
+      " with name " +
+      fetchSelectedUser?.data.userList[0].name;
+    localStorage.setItem("impersonateBannerMessage", impersonateMessage);
     impersonateUser({
       method: "post",
       url: `/impersonate`,
@@ -153,77 +157,14 @@ const ImpersonateUser: React.FC = () => {
           user: setAuthToken(impersonateUserResponse.data.token),
         })
       );
+
       navigate(location.state?.from ? location.state.from : "/");
       navigate(0);
-      setImpersonateActive(true);
     }
   }, [impersonateUserResponse]);
 
-  // Cancel impersonation
-  const handleCancelImpersonate = () => {
-    dispatch(
-      authenticationActions.setAuthentication({
-        authToken: localStorage.getItem("originalUserToken"),
-        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
-      })
-    );
-    localStorage.removeItem("originalUserToken");
-
-    setImpersonateActive(false);
-  };
-
-  // Banner at the top of the screen indicating which user is being impersonated
-  const ImpersonationBanner = () => {
-    return (
-      impersonateUserResponse?.data && (
-        <div
-          style={{
-            backgroundColor: "#fff",
-            color: "#333",
-            padding: "10px 4px",
-            borderRadius: 4,
-            marginRight: 8,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
-            <div>
-              Impersonating a {impersonateUserResponse?.data.role} named{" "}
-              {impersonateUserResponse?.data.name}
-            </div>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                padding: 1,
-                marginLeft: 6,
-                backgroundColor: "red",
-                borderRadius: 50,
-                color: "white",
-                width: 18,
-                fontSize: 10,
-                fontWeight: 800,
-              }}
-              onClick={handleCancelImpersonate}
-            >
-              Cancel Impersonation
-            </button>
-          </div>
-        </div>
-      )
-    );
-  };
-
   return (
     <>
-      {impersonateActive && <ImpersonationBanner />}
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
           <h1>Impersonate User</h1>
@@ -240,7 +181,7 @@ const ImpersonateUser: React.FC = () => {
               value={searchQuery}
               onChange={handleSearchQueryInput}
             />
-            
+
             <Button
               variant="outline-secondary"
               id="button-addon2"
