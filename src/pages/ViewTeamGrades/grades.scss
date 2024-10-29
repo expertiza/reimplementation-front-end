@@ -70,14 +70,20 @@
 
   .tbl_heat td[data-question]:hover::after {
     content: attr(data-question);
-  position: absolute;
-  background-color: rgba($color: #000000, $alpha: 1);
-  color: #ffffff;
-  padding: 0.25rem;
-  border-radius: 0.25rem;
-  bottom: 130%;
-  left: 0%;
-  white-space: nowrap;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9); /* Dark background for readability */
+    color: #ffffff;
+    padding: 0.5rem; /* Increased padding for better spacing */
+    border-radius: 0.25rem;
+    top: calc(100% + 10px);
+    left: 0%;
+    z-index: 1000;
+    text-align:left;
+    transform: translateX(0%), translateY(-50%);
+    white-space: normal;
+    min-width: 200px; /* Ensures tooltip has a wider starting width */
+    max-width: 600px; /* Controls maximum width expansion */
+    word-wrap: break-word; /* Ensures long words wrap within the tooltip */
   }
   
   .tbl_heat th {
