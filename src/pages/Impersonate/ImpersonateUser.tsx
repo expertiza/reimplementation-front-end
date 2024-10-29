@@ -22,7 +22,6 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [selectedValidUser, setSelectedValidUser] = useState(false);
-  // const [originalToken, setOriginalToken] = useState("");
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -127,8 +126,12 @@ const ImpersonateUser: React.FC = () => {
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
     }
-    const impersonateMessage = "Impersonating a " + fetchSelectedUser?.data.userList[0].role.name + " with name " + fetchSelectedUser?.data.userList[0].name;
-    localStorage.setItem("impersonatedUser", impersonateMessage);
+    const impersonateMessage =
+      "Impersonating a " +
+      fetchSelectedUser?.data.userList[0].role.name +
+      " with name " +
+      fetchSelectedUser?.data.userList[0].name;
+    localStorage.setItem("impersonateBannerMessage", impersonateMessage);
     impersonateUser({
       method: "post",
       url: `/impersonate`,
@@ -154,6 +157,7 @@ const ImpersonateUser: React.FC = () => {
           user: setAuthToken(impersonateUserResponse.data.token),
         })
       );
+
       navigate(location.state?.from ? location.state.from : "/");
       navigate(0);
     }
@@ -177,7 +181,7 @@ const ImpersonateUser: React.FC = () => {
               value={searchQuery}
               onChange={handleSearchQueryInput}
             />
-            
+
             <Button
               variant="outline-secondary"
               id="button-addon2"
