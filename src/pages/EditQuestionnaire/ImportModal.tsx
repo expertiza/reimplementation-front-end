@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 
-const ImportModal = ({ onClose, onImport }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+interface ImportModalProps {
+  onClose: () => void;
+  onImport: (data: any) => void; // Change 'any' to a more specific type if known
+}
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImport }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
     setSelectedFile(file);
   };
 
@@ -13,7 +18,7 @@ const ImportModal = ({ onClose, onImport }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const importedData = JSON.parse(event.target.result);
+          const importedData = JSON.parse(event.target?.result as string);
           onImport(importedData);
           onClose();
         } catch (error) {
