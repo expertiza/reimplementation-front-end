@@ -4,11 +4,12 @@
     align-items: center;
     text-align: center;
     min-height: 100vh;
+    width: 1200px;
     padding-top: 20px; /* Add padding to the top */
   }
   .questionnaire-table {
     border-collapse: collapse;
-    width: 70%; /* Adjust the width as needed */
+    width: 100%; /* Adjust the width as needed */
     margin-top: 20px; /* Add some spacing from the button and label */
   }
   
@@ -29,11 +30,64 @@
   .questionnaire-table tr:hover {
     background-color: #ddd;
   }
+
   .centered-table {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    height: 100%;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    width: 100%; /* Ensures the container takes the full width */
+    min-height: 60vh; /* Adjust this value depending on the content's height */
   }
   
+  .table {
+    width: 100%;
+    margin: 0 auto; /* Centers the table */
+    margin-bottom: 20px; /* Adds space between the table and the pagination */
+  }
+  
+  /* Questionnaire.css */
+
+  .button {
+    background-color: #b22222; /* Brick Red */
+    color: white; /* Text color */
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px; /* Optional: for rounded corners */
+    transition: background-color 0.3s;
+    margin-right: 10px; /* Space between buttons */
+    margin-bottom: 10px; /* Space below buttons */
+  }
+  
+  
+  .button:hover {
+    background-color: #a52a2a; /* Darker shade on hover */
+  }
+  
+  .button:disabled {
+    background-color: #ccc; /* Light gray for disabled */
+    cursor: not-allowed;
+  }
+  
+
+.table-button {
+  background-color: black;
+}
+
+.table-button:hover {
+  background-color: darkgray; /* Change color on hover */
+}
+
+.pagination-button {
+  background-color: transparent;
+  color: black; /* Black text for simplicity */
+  border: none;
+  cursor: pointer;
+  margin: 0 5px;
+  padding: 5px 10px;
+  transition: background-color 0.2s;
+}
+
+.pagination-button:hover {
+  background-color: lightgray; /* Light gray background on hover */
+}
