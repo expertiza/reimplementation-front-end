@@ -98,46 +98,153 @@
     padding-left:30px;cursor: pointer;text-decoration:underline;color:blue;font-size:small;
   }
   
-  .hide-scrollbar {
-    overflow-y: hidden;
-    padding-top: 10px;
-  }
-  
-  .hide-scrollbar th{
-    overflow-y: hidden;
-  }
-  
   .action_row {
     border: 1px black solid;
     padding: 1px 2px 2px 1px;
     font-size: 11px;
     text-align: center;
   }
+
+  /* Styling for action row */
+.action_row {
+  border: 1px black solid;
+  padding: 1px 2px 2px 1px;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Styling for tag heat grid */
+.tag_heat_grid {
+  padding: 0;
+  spacing: 0;
+  border: 1px solid black;
+  position: relative;
+  float: right;
+  top: 0px;
+  right: 0px;
+  z-index: 2;
+}
+
+/* Styling for tag heat grid headers */
+.tag_heat_grid th {
+  border: 1px solid black;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Styling for tag heat grid cells */
+.tag_heat_grid td {
+  border: 0.5px solid black;
+  font-size: 8px;
+}
+
+/* Styling for tag heat grid criterion */
+.tag_heat_grid_criterion {
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between; /* Adjust as needed */
+  width: 80%; /* Ensure the container takes up the full width */
+}
+
+.round-heading,
+.review-heading {
+  font-weight: bold;
+  margin-top: 1rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+.review-block {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 0;
+}
+
+.question {
+  font-weight: bold;
+}
+
+.score {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.review-block:nth-child(even) {
+  background-color: #d9edf7;
+}
+
+.review-block:nth-child(odd) {
+  background-color: #fcf8e3;
+}
+
+  .score-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 5px;
+    padding-top: 10px;
+  }
   
-  .tag_heat_grid {
-    padding:0;
-    spacing: 0;
-    border: 1px solid black;
-    position: relative;
-    float: right;
-    top:0px;
-    right:0px;
-    z-index:2;
-  }
-  .tag_heat_grid th {
-    border: 1px solid black;
-    font-size:12px;
-    cursor: pointer;
-    text-align: center;
+  .comment {
+    flex-grow: 1; /* Ensures comment fills the rest of the container */
+    padding-top: 3px;
   }
   
-  .tag_heat_grid td {
-    border: 0.5px solid black;;
-    font-size: 8px;
-    text-align: center;
+  .review-container {
+    margin-bottom: 200px;
   }
-  
-  .tag_heat_grid_criterion {
-    font-size: 11px !important;
-    font-weight: bold !important;
+
+  /* Responsive Styling for Different Screen Sizes */
+@media (max-width: 768px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
   }
+  .table-container {
+    @apply px-2;
+  }
+}
+
+@media (max-width: 640px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.625rem;
+    padding: 0.4rem;
+  }
+  .table-container {
+    @apply px-1;
+  }
+}
+
+@media (max-width: 480px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.5rem;
+    padding: 0.3rem;
+  }
+  .tbl_heat {
+    font-size: 0.75rem;
+    min-width: 100%; /* Ensure table takes up full width */
+  }
+  .table-container {
+    @apply px-0;
+  }
+}
+
+@media (max-width: 320px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.45rem;
+    padding: 0.25rem;
+  }
+  .table-container {
+    @apply px-0 py-2;
+  }
+}
