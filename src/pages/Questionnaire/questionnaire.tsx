@@ -1,167 +1,143 @@
-import React, { useState } from 'react';
-import './Questionnaire.css';
-import {Button} from "react-bootstrap";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Col, Container, Row } from "react-bootstrap";
+import { IQuestionnaire } from "../../utils/interfaces";
 import dummyData from './dummyData.json';
-import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
-import {BiCopy}from "react-icons/bi";
-import { BsPlusSquareFill } from "react-icons/bs";
+import './Questionnaire.css';
 
+const Questionnaires = () => {
+  const navigate = useNavigate();
+  const [data, setData] = useState<IQuestionnaire[]>(dummyData);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedItems, setExpandedItems] = useState<number[]>([]);
+  const [itemsPerPage, setItemsPerPage] = useState(10); 
+  const [currentPage, setCurrentPage] = useState(1);
 
-function Questionnaire() {
-  const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'default' | null>(null);
+  const filteredData = data.filter(item => 
+    item.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (item.children && item.children.some(child => child.name && child.name.toLowerCase().includes(searchTerm.toLowerCase())))
+  );
 
-  const questionnaireItems = dummyData; // Use dummy data for items
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const handleAddButtonClick = () => {
-    console.log('Add button clicked');
-    // Add your logic for adding questionnaire items here
-  };
-  type QuestionnaireItem = {
-    name: string;
-    creationDate: string;
-    updatedDate: string;
-    };
-  
-
-  const handleItemClick = (index: number) => {
-    if (expandedItem === index) {
-      setExpandedItem(null);
-    } else {
-      setExpandedItem(index);
-    }
+  const toggleExpand = (id: number) => {
+    setExpandedItems(prev => 
+      prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]
+    );
   };
 
-  const handleDelete = (item: QuestionnaireItem) => {
-    console.log(`Delete button clicked for item:`, item);
-    // Add your logic for deleting the item here
+  const expandAll = () => {
+    const allIds = currentData.map(item => item.id);
+    setExpandedItems(allIds);
   };
 
-  const handleEdit = (item: QuestionnaireItem) => {
-    console.log(`Edit button clicked for item:`, item);
-    // Add your logic for editing the item here
+  const collapseAll = () => {
+    setExpandedItems([]);
   };
 
-  const handleShow = (item: QuestionnaireItem) => {
-    console.log(`Show button clicked for item:`, item);
-    // Add your logic for showing the item here
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); 
   };
-
-  const handleSortByName = () => {
-    if (sortOrder === 'asc') {
-      setSortOrder('desc');
-    } else {
-      setSortOrder('asc');
-    }
-  };
-
-  const sortedQuestionnaireItems = [...questionnaireItems];
-
-  if (sortOrder === 'asc') {
-    sortedQuestionnaireItems.sort();
-  } else if (sortOrder === 'desc') {
-    sortedQuestionnaireItems.sort().reverse();
-  }
 
   return (
-    <div className="questionnaire-container">
-      <h1>Questionnaire List</h1>
-      <button onClick={handleAddButtonClick}>Add</button>
+    <>
+      <Outlet />
+      <main>
+        <Container fluid className="px-md-4 questionnaire-container">
+          <Row className="mt-md-2 mb-md-4">
+            <Col className="text-center">
+              <h1>Manage Questionnaires</h1>
+            </Col>
+            <hr />
+          </Row>
 
-      <br />
+          {/* Search Bar */}
+          <Row>
+            <Col>
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ marginBottom: '20px', padding: '10px' }}
+              />
+              <button onClick={expandAll} className="button">Expand All</button>
+              <button onClick={collapseAll} className="button">Collapse All</button>
+            </Col>
+          </Row>
 
-      <label>
-        <input
-          type="checkbox"
-          checked={showOnlyMyItems}
-          onChange={() => setShowOnlyMyItems(!showOnlyMyItems)}
-        />
-        Display my items only
-      </label>
+          {/* Parent List */}
+          <Row>
+            <Col>
+              {currentData.map(item => (
+                <div key={item.id} style={{ border: '1px solid #ccc', margin: '5px 0', padding: '10px' }}>
+                  <span>{item.type}</span>
+                  <button 
+                    onClick={() => navigate(`/edit-questionnaire/${item.id}`)} 
+                    className="button button-plus" 
+                    style={{ marginLeft: '10px' }}
+                  >
+                    +
+                  </button>
+                  <button onClick={() => toggleExpand(item.id)} className="button" style={{ marginLeft: '10px' }}>
+                    {expandedItems.includes(item.id) ? "Collapse" : "Expand"}
+                  </button>
+                  {expandedItems.includes(item.id) && item.children && (
+                    <div style={{ paddingLeft: '20px', marginTop: '10px' }}>
+                      {item.children.map(child => (
+                        <div key={child.id} style={{ border: '1px solid #ccc', margin: '5px 0', padding: '10px' }}>
+                          <strong>{child.name}</strong>
+                          <button 
+                            onClick={() => navigate(`/edit/${child.id}`)} 
+                            className="button button-plus" 
+                            style={{ marginLeft: '10px' }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </Col>
+          </Row>
 
-      <table className="questionnaire-table">
-        <thead>
-          <tr>
-            <th onClick={handleSortByName}>
-              Name {sortOrder === 'asc' && '↑'} {sortOrder === 'desc' && '↓'} {sortOrder === null && '↑↓'}
-            </th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedQuestionnaireItems.map((item, index) => (
-            <React.Fragment key={index}>
-              <tr>
-                <td onClick={() => handleItemClick(index)}>{item.name}</td>
-                <td>
-                
-                <Button variant="outline-success" onClick={() => handleAddButtonClick}>
-                <BsPlusSquareFill />
-              </Button>
-                  
-                </td>
-              </tr>
-              {expandedItem === index && (
-  <tr className="expanded-row">
-    <td colSpan={4}>
-      <table className='expanded-row centered-table'>
-        <tbody>
-          <tr>
-            <th><strong>Name:</strong></th>
-            
-           
-          
-            <th><strong>Creation Date:</strong></th>
-           
-          
-            <th><strong>Updated Date:</strong></th>
-            
-          
-            <th><strong>Actions:</strong></th>
-            
-            
-          </tr>
-          <tr> <td>{item.name}</td>
-            <td>{item.creationDate}</td>
-            <td>{item.updatedDate}</td>
-            <td>
-            
-            <Button
-          variant="outline-danger"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleDelete(item)}
-        >
-          <BsPersonXFill />
-        </Button>
-              <span className="icon-space"></span>
-              <Button variant="outline-warning" size="sm" onClick={() => handleEdit(item)}>
-          <BsPencilFill />
-        </Button>
-        
-              <span className="icon-space"></span>
-              
-              <Button variant="outline-warning" size="sm" onClick={() => handleShow(item)}>
-          <BiCopy />
-        </Button>
-              
-            </td>
-
-          </tr>
-        </tbody>
-      </table>
-    </td>
-  </tr>
-)}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          {/* Simple Pagination Logic */}
+          <Row>
+            <Col className="text-center" style={{ marginTop: '20px' }}>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="button"
+              >
+                Previous
+              </button>
+              <span style={{ margin: '0 10px' }}>Page {currentPage} of {totalPages}</span>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="button"
+              >
+                Next
+              </button>
+              <select 
+                value={itemsPerPage} 
+                onChange={handleItemsPerPageChange} 
+                style={{ marginLeft: '10px', padding: '5px' }}
+              >
+                <option value={10}>1-10</option>
+                <option value={15}>10-25</option>
+                <option value={25}>25-50</option>
+              </select>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    </>
   );
-}
+};
 
-export default Questionnaire;
+export default Questionnaires;
