@@ -100,7 +100,7 @@ const ProjectTopics: React.FC = () => {
 
   let tableHeaders: string[] = [];
   if (isStudent) {
-    tableHeaders = ["Topic ID", "Topic names(s)", "Available slots"];
+    tableHeaders = ["Topic ID", "Topic names(s)", "Available slots","Num. on waitlist"];
   }
   if (isAdminOrInstructor) {
     tableHeaders = [
@@ -262,10 +262,10 @@ const ProjectTopics: React.FC = () => {
                     )}
                   </td>
                   <td className={styles.td}>{topic.available_slots}</td>
+                  <td className={styles.td}>{topic.waitlist_count}</td>
                   {isAdminOrInstructor && (
                     <>
                       <td className={styles.td}>{topic.max_choosers}</td>
-                      <td className={styles.td}>{topic.waitlist_count}</td>
                     </>
                   )}
                 </tr>
