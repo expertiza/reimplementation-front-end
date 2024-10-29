@@ -5,6 +5,9 @@ import debounce from "lodash.debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
+import { ILoggedInUser } from "../../utils/interfaces";
+import { authenticationActions } from "../../store/slices/authenticationSlice";
+import { useLocation, useNavigate } from "react-router-dom";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 import { useImpersonate } from "../../context/ImpersonateContext";
 
@@ -23,6 +26,8 @@ const ImpersonateUser: React.FC = () => {
   const { impersonationData, setImpersonationData } = useImpersonate();
   // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -102,19 +107,45 @@ const ImpersonateUser: React.FC = () => {
       setSelectedValidUser(true);
       selectedUser({
         method: "get",
-        url: `/impersonate/${validUser.name}`,
+        url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
     }
-  }, [selectedUser, searchQuery, userResponse?.data]);
+    else {
+      setSelectedValidUser(false);
+    }
+  }, [selectedUser, searchQuery, userResponse]);
 
   // Impersonate user
   const handleImpersonate = () => {
-    // setOriginalToken(auth.authToken);
+    // Store only the initial User's JWT token and information
+    if (
+      !localStorage.getItem("originalUserToken") &&
+      !localStorage.getItem("originalUserPayload")
+    ) {
+      const originalUserPayload: {
+        user: ILoggedInUser;
+      } = {
+        user: {
+          id: auth.user.id,
+          name: auth.user.name,
+          full_name: auth.user.full_name,
+          role: auth.user.role,
+          institution_id: auth.user.institution_id,
+        },
+      };
+
+      localStorage.setItem("originalUserToken", auth.authToken);
+      localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
+
+      // console.log("originalUserToken:", auth.authToken);
+      // console.log("originalUserPayload:", originalUserPayload);
+    }
+
     impersonateUser({
       method: "post",
-      url: "/impersonate",
+      url: `/impersonate`,
       data: {
-        impersonate_id: searchQuery,
+        impersonate_id: fetchSelectedUser?.data.userList[0]?.id,
       },
     });
     if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
@@ -131,13 +162,52 @@ const ImpersonateUser: React.FC = () => {
     }
   }, [error, dispatch]);
 
+  // Impersonate user authentication
+  useEffect(() => {
+    if (impersonateUserResponse?.data && fetchSelectedUser?.data) {
+      const selectedUser = fetchSelectedUser.data.userList[0]; 
+      const fetchSelectedUserPayload: {
+        isAuthenticated: boolean;
+        authToken: string;
+        user: ILoggedInUser;
+      } = {
+        isAuthenticated: true,
+        authToken: impersonateUserResponse.data.token,
+        user: {
+          id: selectedUser.id,
+          name: selectedUser.name,
+          full_name: selectedUser.full_name,
+          role: selectedUser.role.name,
+          institution_id: selectedUser.institution.id,
+        },
+      };
+      // console.log("Impersonating User Response:", impersonateUserResponse.data);
+      // console.log("Impersonating User Token:", impersonateUserResponse.data.token);
+      // console.log("Impersonating User Payload:", fetchSelectedUserPayload);
+
+      dispatch(
+        authenticationActions.setAuthentication({
+          authToken: impersonateUserResponse.data.token,
+          user: fetchSelectedUserPayload
+        })
+      );
+      navigate(location.state?.from ? location.state.from : "/");
+      setImpersonateActive(true);
+    }
+  }, [impersonateUserResponse]);
+
   // Cancel impersonation
   const handleCancelImpersonate = () => {
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: JSON.parse(localStorage.getItem("originalUserPayload") || "{}"),
+      })
+    );
+    localStorage.removeItem("originalUserToken");
+    localStorage.removeItem("originalUserPayload");
+
     setImpersonateActive(false);
-    /* if (originalToken) {
-      auth.authToken = originalToken;
-      setImpersonateActive(false);
-    } */
   };
 
   // Banner at the top of the screen indicating which user is being impersonated
