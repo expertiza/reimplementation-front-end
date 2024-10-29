@@ -1,0 +1,134 @@
+.student-task-container {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  /* text-align: center; */
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.instruction {
+    color: green;
+    background-color: #a8e6a1;
+    padding: 5px 20px 5px;
+    border: 2px solid #0a0;
+    margin-bottom: 20px;
+}
+
+.actions {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.actions li {
+  margin-bottom: 8px;
+}
+
+.actions a {
+  color: #0000ee;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.actions a:hover {
+  text-decoration: underline;
+}
+
+.timeline {
+  /* display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  margin-top: 20px;
+  position: relative;
+  border-top: 2px solid #8b0000; */
+  list-style-type: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-item {
+  text-align: center;
+  position: relative;
+  max-width: 20%;
+}
+
+.timeline-circle {
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+  margin: 0 auto 10px;
+}
+
+.timeline-date {
+  color: #333;
+  display: block;
+  font-size: 12px;
+}
+
+.timeline-label {
+  color: #8b0000;
+  font-size: 12px;
+}
+
+/* Styles for different states */
+.past-deadline .timeline-circle {
+    background-color: #A90201;
+    border: none;
+    transition: all 200ms ease-in;
+    position: relative;
+    justify-content: center;
+    border-radius: 25px;
+}
+
+.past-deadline .timeline-date,
+.past-deadline .timeline-label {
+  color: #A90201;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  transition: all 200ms ease-in;
+}
+
+.approaching-deadline .timeline-circle {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    position: relative;
+    transition: all 200ms ease-in;
+}
+
+.approaching-deadline .timeline-date,
+.approaching-deadline .timeline-label {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    transition: all 200ms ease-in;
+}
+
+.footer {
+  margin-top: 30px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.footer a {
+  color: #8b0000;
+  margin: 0 8px;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
