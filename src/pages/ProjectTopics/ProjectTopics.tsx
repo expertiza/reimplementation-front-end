@@ -158,8 +158,6 @@ const ProjectTopics: React.FC = () => {
     setShowYourTopics(!showYourTopics);
   };
 
-  const handleUserTopics = () => {};
-
   // Admin settings section
   const AdminSettings: React.FC = () => {
     if (!isAdminOrInstructor) return null;
