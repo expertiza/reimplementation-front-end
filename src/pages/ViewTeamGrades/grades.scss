@@ -1,8 +1,13 @@
-/* Circle around max score number */
+/* Circle around max score number for highlighting */
 .circle-container {
   display: inline-flex;
 }
 
+/* Column width classes for table cells */
+.column-width-small { width: 70px; }
+.column-width-large { width: 150px; }
+
+/* Styles for icons used in the table, such as stars or ticks */
 .star, .tick {
   margin-right: 5px;
   width: 15px;
@@ -15,114 +20,118 @@
   color: orangered;
 }
 
-/* These are the colors used for coloring
- * score cells within the heatgrid for the
- * grades view.
- */
-  .c0 {background-color: #d3d3d3;} /* This is a null space in the table.*/
-  .c1 {background-color: #ff8080;}/* This is a red, indicative of a poor score. */  
-  .c2 {background-color: #FD992D;}/* This is an orange. */
-  .c3 {background-color: #FFEC8B;}/* This is a yellow, indicative of a median score. */
-  .c4 {background-color: #BCED91;}/* This is a light green. */
-  .c5 {background-color: #2DE636;}/* This is a green, indicative of a good score. */
-  .cf {background-color: #FFFFFF;}/* Default background color */
-  
-  /* To color the grades in the summary report  */
-  .grade-circle {
-    width:30px;
-    height:30px;
-    border-radius:50%;
-    font-size:15px;
-    color:black;
-    line-height:30px;
-    text-align:center;
-  }
-  
-  /* To underline scores which have a comment. */
-  .underlined {
-      text-decoration: underline;
-      font-weight:bold;
-  }
-  
-  .tbl_heat {
-    border: 1px solid black;
-    text-align: center;
-    min-width: 600px; // Minimum width before scrolling kicks in
-    table-layout: fixed;
-    height: auto;
-    margin-left: 1%;
-  }
+/* Colors for score cells in the heatgrid view */
+.c0 {background-color: #d3d3d3;} /* Null space in the table */
+.c1 {background-color: #ff8080;} /* Red - poor score */
+.c2 {background-color: #FD992D;} /* Orange */
+.c3 {background-color: #FFEC8B;} /* Yellow - median score */
+.c4 {background-color: #BCED91;} /* Light green */
+.c5 {background-color: #2DE636;} /* Green - good score */
+.cf {background-color: #FFFFFF;} /* Default background color */
 
-  .tbl_heat td {
-    position: relative;
-    cursor: pointer;
-    padding: 0.5rem;
-    border: 1px black solid;
-    table-layout: fixed;
-    white-space: normal;  /* Allows text to wrap within the cell */
-    word-wrap: break-word;  /* Ensures long words do not overflow */
-    height: auto;  /* Allows the height to adjust based on content */
-  }
-  .tbl_heat td:nth-child(2) {
-    text-align: left;
-    padding-left: 1rem; /* Add padding to the left for spacing */
-  }
+/* Styling for summary report grade circle */
+.grade-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: black;
+  line-height: 30px;
+  text-align: center;
+}
 
-  .tbl_heat td[data-question]:hover::after {
-    content: attr(data-question);
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.9); /* Dark background for readability */
-    color: #ffffff;
-    padding: 0.5rem; /* Increased padding for better spacing */
-    border-radius: 0.25rem;
-    top: calc(100% + 10px);
-    left: 0%;
-    z-index: 1000;
-    text-align:left;
-    transform: translateX(0%), translateY(-50%);
-    white-space: normal;
-    min-width: 200px; /* Ensures tooltip has a wider starting width */
-    max-width: 600px; /* Controls maximum width expansion */
-    word-wrap: break-word; /* Ensures long words wrap within the tooltip */
-  }
-  
-  .tbl_heat th {
-    border: 1px black solid;
-    padding: 5px 5px 5px 5px; 
-    width: auto;
-  }
-  .tbl_heat tbody tr:hover {
-    background-color: #f0f4ff; // Light background color on hover
-  }
-  .hiddenRow {padding:0 !important;}
-  
-  .spn_tooltip {
-    padding-left:30px;color:grey;font-size:small;
-  }
-  
-  .spn_qsttog {
-    padding-left:30px;cursor: pointer;text-decoration:underline;color:blue;font-size:small;
-  }
-  
-  .action_row {
-    border: 1px black solid;
-    padding: 1px 2px 2px 1px;
-    font-size: 11px;
-    text-align: center;
-  }
+/* Underlined text for scores with comments */
+.underlined {
+  text-decoration: underline;
+  font-weight: bold;
+}
 
-  /* Styling for action row */
+/* Table styling for heatgrid */
+.tbl_heat {
+  border: 1px solid black;
+  text-align: center;
+  min-width: 600px; /* Minimum width before scrolling */
+  table-layout: fixed;
+  height: auto;
+  margin-left: 1%;
+}
+
+/* Styling for individual table cells in the heatgrid */
+.tbl_heat td {
+  position: relative;
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 1px solid black;
+  white-space: normal;  /* Allows text to wrap within the cell */
+  word-wrap: break-word; /* Ensures long words do not overflow */
+  height: auto;  /* Auto height adjustment based on content */
+}
+
+/* Left padding for the second column to align text */
+.tbl_heat td:nth-child(2) {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+/* Tooltip styling for cells with additional data */
+.tbl_heat td[data-question]:hover::after {
+  content: attr(data-question);
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.9); /* Dark background for readability */
+  color: #ffffff;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  top: calc(100% + 10px);
+  left: 0%;
+  z-index: 1000;
+  text-align: left;
+  min-width: 200px; /* Tooltip min width */
+  max-width: 600px; /* Tooltip max width */
+  word-wrap: break-word; /* Ensures long words wrap within tooltip */
+}
+
+/* Header styling for the heatgrid table */
+.tbl_heat th {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+/* Hover effect for table rows */
+.tbl_heat tbody tr:hover {
+  background-color: #f0f4ff; /* Light background color on hover */
+}
+
+.hiddenRow {
+  padding: 0 !important;
+}
+
+/* Tooltip styling */
+.spn_tooltip {
+  padding-left: 30px;
+  color: grey;
+  font-size: small;
+}
+
+/* Toggle question list link styling */
+.spn_qsttog {
+  padding-left: 30px;
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+  font-size: small;
+}
+
+/* Action row styling for small table cells */
 .action_row {
-  border: 1px black solid;
-  padding: 1px 2px 2px 1px;
+  border: 1px solid black;
+  padding: 1px 2px;
   font-size: 11px;
   text-align: center;
 }
 
-/* Styling for tag heat grid */
+/* Heat grid for tagging */
 .tag_heat_grid {
   padding: 0;
-  spacing: 0;
   border: 1px solid black;
   position: relative;
   float: right;
@@ -131,48 +140,53 @@
   z-index: 2;
 }
 
-/* Styling for tag heat grid headers */
+/* Header styling for tag heat grid */
 .tag_heat_grid th {
   border: 1px solid black;
   font-size: 12px;
   cursor: pointer;
 }
 
-/* Styling for tag heat grid cells */
+/* Cell styling for tag heat grid */
 .tag_heat_grid td {
   border: 0.5px solid black;
   font-size: 8px;
 }
 
-/* Styling for tag heat grid criterion */
+/* Criterion styling for tag heat grid */
 .tag_heat_grid_criterion {
   font-size: 11px !important;
   font-weight: bold !important;
 }
 
+/* Container for layout alignment */
 .container {
   display: flex;
-  justify-content: space-between; /* Adjust as needed */
-  width: 80%; /* Ensure the container takes up the full width */
+  justify-content: space-between;
+  width: 80%;
 }
 
+/* Styling for main headings */
 .round-heading,
 .review-heading {
   font-weight: bold;
   margin-top: 1rem;
-  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
 }
 
+/* Block styling for reviews */
 .review-block {
   border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 0;
 }
 
+/* Styling for question text */
 .question {
   font-weight: bold;
 }
 
+/* Circle styling for individual scores */
 .score {
   border-radius: 50%;
   width: 24px;
@@ -185,39 +199,43 @@
   font-weight: bold;
 }
 
+/* Alternating background colors for review blocks */
 .review-block:nth-child(even) {
   background-color: #d9edf7;
 }
-
 .review-block:nth-child(odd) {
   background-color: #fcf8e3;
 }
 
-  .score-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 5px;
-    padding-top: 10px;
-  }
-  
-  .comment {
-    flex-grow: 1; /* Ensures comment fills the rest of the container */
-    padding-top: 3px;
-  }
-  
-  .review-container {
-    margin-bottom: 200px;
-  }
+/* Container for score with comment alignment */
+.score-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+  padding-top: 10px;
+}
 
-  /* Responsive Styling for Different Screen Sizes */
+/* Styling for comment text */
+.comment {
+  flex-grow: 1;
+  padding-top: 3px;
+}
+
+/* Container for the entire review section */
+.review-container {
+  margin-bottom: 200px;
+}
+
+/* Responsive styling for smaller screens */
 @media (max-width: 768px) {
   .tbl_heat th, .tbl_heat td {
     font-size: 0.75rem;
     padding: 0.5rem;
   }
   .table-container {
-    @apply px-2;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
 
@@ -227,7 +245,8 @@
     padding: 0.4rem;
   }
   .table-container {
-    @apply px-1;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
   }
 }
 
@@ -238,10 +257,10 @@
   }
   .tbl_heat {
     font-size: 0.75rem;
-    min-width: 100%; /* Ensure table takes up full width */
+    min-width: 100%; /* Full width on small screens */
   }
   .table-container {
-    @apply px-0;
+    padding: 0;
   }
 }
 
@@ -251,6 +270,6 @@
     padding: 0.25rem;
   }
   .table-container {
-    @apply px-0 py-2;
+    padding: 0 0.25rem;
   }
 }
