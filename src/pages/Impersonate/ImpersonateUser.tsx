@@ -129,8 +129,9 @@ const ImpersonateUser: React.FC = () => {
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
     }
-    setImpersonationData({name:searchQuery, impersonate:true});
-    localStorage.setItem("impersonationStatus",searchQuery);
+    console.log(fetchSelectedUser?.data.userList[0].role.name);
+    const impersonateMessage = "Impersonating a " + fetchSelectedUser?.data.userList[0].role.name + " with name " + fetchSelectedUser?.data.userList[0].name;
+    localStorage.setItem("impersonatedUser", impersonateMessage);
     impersonateUser({
       method: "post",
       url: `/impersonate`,

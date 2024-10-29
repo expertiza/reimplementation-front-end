@@ -31,6 +31,8 @@ const Header: React.FC = () => {
 
   const { impersonationData } = useImpersonate();
 
+  const impersonateUserPayload = localStorage.getItem("impersonatedUser");
+
   const impersonationContent = impersonationData ? (<div>Impersonating {impersonationData.name}</div>
   ) : (
     <div>No Impersonation</div>
@@ -46,12 +48,11 @@ const Header: React.FC = () => {
       })
     );
     localStorage.removeItem("originalUserToken");
-    localStorage.removeItem("impersonationStatus");
+    localStorage.removeItem("impersonatedUser");
     navigate(location.state?.from ? location.state.from : "/");
     navigate(0);
   };
   //const impersonating = impersonationData ? impersonationData.impersonate : false;
-  const impersonating = localStorage.getItem("impersonationStatus")
   const CustomBtn = () => {
     return (
       <div
@@ -117,7 +118,7 @@ const Header: React.FC = () => {
           >
             <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
               
-            Impersonating {impersonating}
+            {impersonateUserPayload}
              
             <button
               style={{
@@ -238,7 +239,7 @@ const Header: React.FC = () => {
                   Anonymized View
                 </Nav.Link>
               </Nav>
-                { impersonating && <ImpersonateBanner />}
+                { impersonateUserPayload && <ImpersonateBanner />}
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
                   User: {auth.user.full_name}
