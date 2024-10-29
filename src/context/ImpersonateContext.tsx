@@ -23,7 +23,7 @@ export const ImpersonationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ImpersonationContext.Provider value={{ impersonationData, setImpersonationData }}>
-      //{children}  {/* Renders child components within this provider */}
+      {children}  {/* Renders child components within this provider */}
     </ImpersonationContext.Provider>
   );
 };

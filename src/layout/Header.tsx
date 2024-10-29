@@ -75,50 +75,48 @@ const Header: React.FC = () => {
 
   const CustomBtn2 = () => {
     return (
-    <>
-        
+      
+        <div
+          style={{
+            backgroundColor: "#fff",
+            color: "#333",
+            padding: "10px 4px",
+            borderRadius: 4,
+            marginRight: 8,
+          }}
+        >
           <div
             style={{
-              backgroundColor: "#fff",
-              color: "#333",
-              padding: "10px 4px",
-              borderRadius: 4,
-              marginRight: 8,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <div
+            <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
+              
+            {impersonationContent}
+             
+            <button
               style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
+                background: "none",
+                border: "none",
+                padding: 1,
+                marginLeft: 6,
+                backgroundColor: "red",
+                borderRadius: 50,
+                color: "white",
+                width: 18,
+                fontSize: 10,
+                fontWeight: 800,
               }}
+              onClick={() => setVisible(!visible)}
             >
-              <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
-                
-              {impersonationContent}
-               
-              <button
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 1,
-                  marginLeft: 6,
-                  backgroundColor: "red",
-                  borderRadius: 50,
-                  color: "white",
-                  width: 18,
-                  fontSize: 10,
-                  fontWeight: 800,
-                }}
-                onClick={() => setVisible(!visible)}
-              >
-                x
-              </button>
-            </div>
+              x
+            </button>
           </div>
+        </div>
         
-      </>
     );
   };
 
