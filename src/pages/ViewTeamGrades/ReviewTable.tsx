@@ -9,52 +9,68 @@ import { Link } from 'react-router-dom';
 import Statistics from './Statistics';
 import { Collapse } from 'react-bootstrap';
 
+// Constant for sort order cycle sequence
+const SORT_ORDER_SEQUENCE: Array<'asc' | 'desc' | 'none'> = ['asc', 'desc', 'none'];
+
+const SubmissionDetails: React.FC<{ isVisible: boolean }> = ({ isVisible }) => (
+  <Collapse in={isVisible}>
+    <div className="flex flex-col mb-4">
+      <br />
+      <a href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents" target="_blank" rel="noopener noreferrer">
+        GitHub Repository
+      </a>
+      <br />
+      <a href="http://152.7.177.44:8080/" target="_blank" rel="noopener noreferrer">
+        Project Link
+      </a>
+      <br />
+      <a href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents/raw/main/README.md" download="README.md" target="_blank" rel="noopener noreferrer">
+        Download README.md
+      </a>
+    </div>
+  </Collapse>
+);
+
+const HeaderCells: React.FC<{ reviewCount: number }> = ({ reviewCount }) => (
+  <>
+    {Array.from({ length: reviewCount }).map((_, i) => (
+      <th key={i} scope="col" className="p-2 text-center column-width-small">
+        Review {i + 1}
+      </th>
+    ))}
+  </>
+);
+
 const ReviewTable: React.FC = () => {
-  // State to manage selected round, row sort order, question visibility, and submission details visibility
   const [selectedRound, setSelectedRound] = useState<number>(0);
   const [rowSortOrder, setRowSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
   const [isQuestionListVisible, setIsQuestionListVisible] = useState(false);
   const [submissionDetailsVisible, setSubmissionDetailsVisible] = useState(false);
 
-  // Cycles through sort order states: asc -> desc -> none
-  const toggleRowSortOrder = () => {
-    const sortOrderSequence = ['asc', 'desc', 'none'];
-    const nextIndex = (sortOrderSequence.indexOf(rowSortOrder) + 1) % sortOrderSequence.length;
-    setRowSortOrder(sortOrderSequence[nextIndex] as 'asc' | 'desc' | 'none');
-  };
-
-  // Select data for the currently selected round
+  // Calculate review count and selected round data
+  const reviewCount = dummyDataRounds[selectedRound][0].reviews.length;
   const selectedRoundData = useMemo(() => dummyDataRounds[selectedRound], [selectedRound]);
 
-  // Calculate averages and sorted data based on selected round and sort order
   const { averagePeerReviewScore, columnAverages, sortedData } = useMemo(
     () => calculateAverages(selectedRoundData, rowSortOrder),
     [selectedRoundData, rowSortOrder]
   );
 
-  // Update selected round based on round change
-  const handleRoundChange = (roundIndex: number) => {
-    setSelectedRound(roundIndex);
+  // Toggle functions
+  const toggleRowSortOrder = () => {
+    const nextIndex = (SORT_ORDER_SEQUENCE.indexOf(rowSortOrder) + 1) % SORT_ORDER_SEQUENCE.length;
+    setRowSortOrder(SORT_ORDER_SEQUENCE[nextIndex]);
   };
 
-  // Toggles the visibility of the question list
-  const toggleQuestionVisibility = () => {
-    setIsQuestionListVisible(!isQuestionListVisible);
+  const toggleVisibility = (setVisibility: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setVisibility(prev => !prev);
   };
 
-  // Toggles visibility of submission details section
-  const toggleSubmissionDetailsVisibility = () => {
-    setSubmissionDetailsVisible(!submissionDetailsVisible);
+  // Helper function for rendering sort order icon
+  const renderSortIcon = () => {
+    if (rowSortOrder === 'none') return <span>▲▼</span>;
+    return rowSortOrder === 'asc' ? <span> ▲</span> : <span> ▼</span>;
   };
-
-  // Renders header cells dynamically based on review data
-  const renderHeaderCells = () => (
-    selectedRoundData[0].reviews.map((_, i) => (
-      <th key={i} scope="col" className="p-2 text-center column-width-small">
-        Review {i + 1}
-      </th>
-    ))
-  );
 
   return (
     <div className="p-4 w-full max-w-6xl mx-auto">
@@ -70,54 +86,13 @@ const ReviewTable: React.FC = () => {
           type="button"
           onClick={e => {
             e.preventDefault();
-            toggleSubmissionDetailsVisibility();
+            toggleVisibility(setSubmissionDetailsVisible);
           }}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#007bff',
-            cursor: 'pointer',
-            padding: '0',
-            textDecoration: 'underline'
-          }}
+          className="link-button"
         >
           {submissionDetailsVisible ? 'Hide Submission Details' : 'Show Submission Details'}
         </button>
-        <Collapse in={submissionDetailsVisible}>
-          <div className="flex flex-col mb-4">
-            <br />
-            {/* Submission details including links to project resources */}
-            {submissionDetailsVisible && (
-              <>
-                <a
-                  href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents
-                </a>
-                <br />
-                <a
-                  href="http://152.7.177.44:8080/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  http://152.7.177.44:8080/
-                </a>
-                <br />
-                {/* Downloadable link for README.md */}
-                <a
-                  href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents/raw/main/README.md"
-                  download="README.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  README.md
-                </a>
-              </>
-            )}
-          </div>
-        </Collapse>
+        <SubmissionDetails isVisible={submissionDetailsVisible} />
       </div>
 
       {/* Review Section with round and question toggle options */}
@@ -131,7 +106,7 @@ const ReviewTable: React.FC = () => {
           id="toggleQuestion"
           name="toggleQuestion"
           checked={isQuestionListVisible}
-          onChange={toggleQuestionVisibility}
+          onChange={() => toggleVisibility(setIsQuestionListVisible)}
         />
         <label htmlFor="toggleQuestion"> &nbsp;Toggle Question List</label>
       </form>
@@ -141,31 +116,19 @@ const ReviewTable: React.FC = () => {
         <table className="tbl_heat">
           <thead>
             <tr className="bg-gray-200">
-              {/* Header for question number */}
-              <th scope="col" className="p-2 text-center column-width-small">
-                Question No.
-              </th>
-
-              {/* Conditional header for question text, visible if toggle is active */}
+              <th scope="col" className="p-2 text-center column-width-small">Question No.</th>
               {isQuestionListVisible && (
                 <th scope="col" className="py-2 px-4 text-center column-width-large">Question</th>
               )}
-
-              {/* Header cells for each review dynamically rendered */}
-              {renderHeaderCells()}
-
-              {/* Header for average score with sort order icon toggle */}
+              <HeaderCells reviewCount={reviewCount} />
               <th scope="col" className="py-2 px-4 column-width-small" onClick={toggleRowSortOrder}>
                 Avg
-                {rowSortOrder === "none" && <span>▲▼</span>}
-                {rowSortOrder === "asc" && <span> ▲</span>}
-                {rowSortOrder === "desc" && <span> ▼</span>}
+                {renderSortIcon()}
               </th>
             </tr>
           </thead>
           
           <tbody>
-            {/* Render rows of review data */}
             {sortedData.map((row, index) => (
               <ReviewTableRow
                 key={index}
@@ -173,13 +136,9 @@ const ReviewTable: React.FC = () => {
                 isQuestionListVisible={isQuestionListVisible}
               />
             ))}
-
-            {/* Row for column averages aligned with "Avg" header */}
             <tr className="no-bg">
               <td className="py-2 px-4 column-width-small">Avg</td>
-              {/* Empty cell for question column if visible */}
               {isQuestionListVisible && <td></td>}
-              {/* Display averages for each review column */}
               {columnAverages.map((avg, index) => (
                 <td key={index} className="py-2 px-4 text-center">
                   {avg.toFixed(2)}
@@ -188,11 +147,10 @@ const ReviewTable: React.FC = () => {
             </tr>
           </tbody>
         </table>
-        <br></br>
-        <RoundSelector currentRound={selectedRound} handleRoundChange={handleRoundChange} />
+        <br />
+        <RoundSelector currentRound={selectedRound} handleRoundChange={setSelectedRound} />
       </div>
 
-      {/* Statistics component showing summary statistics */}
       <Statistics average={averagePeerReviewScore} />
 
       {/* Grade and Comment Section for the submission */}
@@ -205,7 +163,6 @@ const ReviewTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Link to navigate back */}
       <Link to="/">Back</Link>
     </div>
   );

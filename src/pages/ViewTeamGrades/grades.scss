@@ -52,7 +52,6 @@
   text-align: center;
   min-width: 600px; /* Minimum width before scrolling */
   table-layout: fixed;
-  height: auto;
   margin-left: 1%;
 }
 
@@ -62,9 +61,9 @@
   cursor: pointer;
   padding: 0.5rem;
   border: 1px solid black;
+  table-layout: fixed;
   white-space: normal;  /* Allows text to wrap within the cell */
   word-wrap: break-word; /* Ensures long words do not overflow */
-  height: auto;  /* Auto height adjustment based on content */
 }
 
 /* Left padding for the second column to align text */
