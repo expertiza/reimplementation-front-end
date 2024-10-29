@@ -146,6 +146,7 @@ const ImpersonateUser: React.FC = () => {
         })
       );
       navigate(location.state?.from ? location.state.from : "/");
+      navigate(0);
       setImpersonateActive(true);
     }
   }, [impersonateUserResponse]);
