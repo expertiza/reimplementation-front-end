@@ -108,6 +108,9 @@ const ImpersonateUser: React.FC = () => {
         url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
     }
+    else {
+      setSelectedValidUser(false);
+    }
   }, [selectedUser, searchQuery, userResponse]);
 
   // Impersonate user
@@ -128,10 +131,12 @@ const ImpersonateUser: React.FC = () => {
           institution_id: auth.user.institution_id,
         },
       };
-      console.log("originalUserPayload:", originalUserPayload);
 
       localStorage.setItem("originalUserToken", auth.authToken);
       localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
+
+      // console.log("originalUserToken:", auth.authToken);
+      // console.log("originalUserPayload:", originalUserPayload);
     }
 
     impersonateUser({
@@ -152,25 +157,31 @@ const ImpersonateUser: React.FC = () => {
 
   // Impersonate user authentication
   useEffect(() => {
-    const fetchSelectedUserPayload: {
-      user: ILoggedInUser;
-    } = {
-      user: {
-        id: fetchSelectedUser?.data.id,
-        name: fetchSelectedUser?.data.name,
-        full_name: fetchSelectedUser?.data.full_name,
-        role: fetchSelectedUser?.data.role_name,
-        institution_id: fetchSelectedUser?.data.institution_id,
-      },
-    };
-
-    if (impersonateUserResponse?.data) {
-      console.log("Impersonating User:", impersonateUserResponse?.data);
+    if (impersonateUserResponse?.data && fetchSelectedUser?.data) {
+      const selectedUser = fetchSelectedUser.data.userList[0]; 
+      const fetchSelectedUserPayload: {
+        isAuthenticated: boolean;
+        authToken: string;
+        user: ILoggedInUser;
+      } = {
+        isAuthenticated: true,
+        authToken: impersonateUserResponse.data.token,
+        user: {
+          id: selectedUser.id,
+          name: selectedUser.name,
+          full_name: selectedUser.full_name,
+          role: selectedUser.role.name,
+          institution_id: selectedUser.institution.id,
+        },
+      };
+      // console.log("Impersonating User Response:", impersonateUserResponse.data);
+      // console.log("Impersonating User Token:", impersonateUserResponse.data.token);
+      // console.log("Impersonating User Payload:", fetchSelectedUserPayload);
 
       dispatch(
         authenticationActions.setAuthentication({
           authToken: impersonateUserResponse.data.token,
-          user: fetchSelectedUserPayload,
+          user: fetchSelectedUserPayload
         })
       );
       navigate(location.state?.from ? location.state.from : "/");
