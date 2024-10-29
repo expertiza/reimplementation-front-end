@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link,useLocation, useNavigate } from "react-router-dom";
 import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
@@ -9,6 +9,8 @@ import detective from "../assets/detective.png";
 import { useImpersonate } from "../context/ImpersonateContext";
 import masqueradeMask from "../assets/masquerade-mask.png";
 import handleCancelImpersonate from "../pages/Impersonate/ImpersonateUser"
+import { authenticationActions } from "../store/slices/authenticationSlice";
+import { setAuthToken } from "../utils/auth";
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -22,7 +24,9 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const [visible, setVisible] = useState(true);
+  const location = useLocation();
   
+  const dispatch = useDispatch();
   const context = useImpersonate();
 
   const { impersonationData } = useImpersonate();
@@ -32,6 +36,20 @@ const Header: React.FC = () => {
     <div>No Impersonation</div>
   );
 
+  // Cancel impersonation
+  const handleCancelImpersonate = () => {
+    console.log("cancel impersonate");
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
+      })
+    );
+    localStorage.removeItem("originalUserToken");
+    localStorage.removeItem("impersonationStatus");
+    navigate(location.state?.from ? location.state.from : "/");
+    navigate(0);
+  };
   //const impersonating = impersonationData ? impersonationData.impersonate : false;
   const impersonating = localStorage.getItem("impersonationStatus")
   const CustomBtn = () => {
@@ -99,7 +117,7 @@ const Header: React.FC = () => {
           >
             <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
               
-            {impersonating}
+            Impersonating {impersonating}
              
             <button
               style={{
@@ -114,7 +132,7 @@ const Header: React.FC = () => {
                 fontSize: 10,
                 fontWeight: 800,
               }}
-              onClick={() => handleCancelImpersonate}
+              onClick={handleCancelImpersonate}
             >
               x
             </button>

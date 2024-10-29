@@ -5,12 +5,12 @@ import debounce from "lodash.debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
-import { ILoggedInUser } from "../../utils/interfaces";
 import { authenticationActions } from "../../store/slices/authenticationSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../utils/auth";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 import { useImpersonate } from "../../context/ImpersonateContext";
+import "./ImpersonateUser.css";
 
 const ImpersonateUser: React.FC = () => {
   const { data: userResponse, sendRequest: fetchUsers } = useAPI();
@@ -23,9 +23,9 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [selectedValidUser, setSelectedValidUser] = useState(false);
-  const [impersonateActive, setImpersonateActive] = useState(false);
   const { impersonationData, setImpersonationData } = useImpersonate();
   // const [originalToken, setOriginalToken] = useState("");
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,8 +40,16 @@ const ImpersonateUser: React.FC = () => {
 
   // Handle search query input change and trigger debounce
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+
     setSearchQuery(e.target.value);
     setDebounceActive(true);
+
+    const timeout = setTimeout(() => {
+      setDebounceActive(false);
+    }, 300);
+
+    setTypingTimeout(timeout);
   };
 
   // Debounce search query
@@ -52,10 +60,10 @@ const ImpersonateUser: React.FC = () => {
   // Cleanup debounce function when component unmounts
   useEffect(() => {
     return () => {
+      if (typingTimeout) clearTimeout(typingTimeout);
       debouncedSearch.cancel();
-      setDebounceActive(false);
     };
-  }, [debouncedSearch]);
+  }, [debouncedSearch, typingTimeout]);
 
   // Display user list after debounce (autocomplete functionality)
   const displayUserList = () => {
@@ -69,7 +77,7 @@ const ImpersonateUser: React.FC = () => {
       user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (debounceActive && filteredUserArray.length > 0) {
+    if (filteredUserArray.length > 0) {
       return (
         <Dropdown show>
           <Dropdown.Menu>
@@ -149,75 +157,12 @@ const ImpersonateUser: React.FC = () => {
         })
       );
       navigate(location.state?.from ? location.state.from : "/");
-      setImpersonateActive(true);
+      navigate(0);
     }
   }, [impersonateUserResponse]);
 
-  // Cancel impersonation
-  const handleCancelImpersonate = () => {
-    dispatch(
-      authenticationActions.setAuthentication({
-        authToken: localStorage.getItem("originalUserToken"),
-        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
-      })
-    );
-    localStorage.removeItem("originalUserToken");
-
-    setImpersonateActive(false);
-  };
-
-  // Banner at the top of the screen indicating which user is being impersonated
-  const ImpersonationBanner = () => {
-    return (
-      impersonateUserResponse?.data && (
-        <div
-          style={{
-            backgroundColor: "#fff",
-            color: "#333",
-            padding: "10px 4px",
-            borderRadius: 4,
-            marginRight: 8,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
-            <div>
-              Impersonating a {impersonateUserResponse?.data.role} named{" "}
-              {impersonateUserResponse?.data.name}
-            </div>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                padding: 1,
-                marginLeft: 6,
-                backgroundColor: "red",
-                borderRadius: 50,
-                color: "white",
-                width: 18,
-                fontSize: 10,
-                fontWeight: 800,
-              }}
-              onClick={handleCancelImpersonate}
-            >
-              Cancel Impersonation
-            </button>
-          </div>
-        </div>
-      )
-    );
-  };
-
   return (
     <>
-      {impersonateActive && <ImpersonationBanner />}
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
           <h1>Impersonate User</h1>
@@ -234,6 +179,7 @@ const ImpersonateUser: React.FC = () => {
               value={searchQuery}
               onChange={handleSearchQueryInput}
             />
+            
             <Button
               variant="outline-secondary"
               id="button-addon2"
@@ -242,6 +188,7 @@ const ImpersonateUser: React.FC = () => {
             >
               Impersonate
             </Button>
+            {debounceActive && <div className="loader"></div>}
           </InputGroup>
           {displayUserList()}
         </div>
