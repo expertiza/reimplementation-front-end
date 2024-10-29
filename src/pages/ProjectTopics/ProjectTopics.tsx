@@ -163,7 +163,7 @@ const ProjectTopics: React.FC = () => {
 
     return (
       <div className="mb-4 m-4">
-        <h4 style={{fontSize: '35px'}}>Topics for OSS project & documentation assignment</h4>
+        <h4 style={{fontSize: '35px'}}>Topics Feature Edit</h4>
         <Form>
           <Form.Check
             type="checkbox"
