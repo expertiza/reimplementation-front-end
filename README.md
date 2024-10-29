@@ -28,7 +28,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 **View E2464**
 
-In current project('E2464'), you need to open [http://localhost:3001/project-topics](http://localhost:3001/project-topics) to veiw.
+In current project('E2464'), you need to open [http://localhost:3000/project_topics](http://localhost:3000/project_topics) to veiw.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
