@@ -81,17 +81,6 @@ const ProjectTopics: React.FC = () => {
   const mockAssignments: Assignment[] = mockdata;
 
   // Transform assignments for form select
-  const topicSettings = [
-    ...mockAssignments.map((assignment) => ({
-      allow_suggestions: assignment.settings.allow_suggestions,
-      enable_bidding: assignment.settings.enable_bidding,
-      can_review_same_topic: assignment.settings.can_review_same_topic,
-      can_choose_topic_to_review: assignment.settings.can_choose_topic_to_review,
-      allow_bookmarks: assignment.settings.allow_bookmarks,
-      allow_bidding_for_reviewers: assignment.settings.allow_bidding_for_reviewers,
-    })),
-  ];
-
   const assignmentOptions = [
     { label: "Select an Assignment", value: "0" },
     ...mockAssignments.map((assignment) => ({
@@ -168,6 +157,7 @@ const ProjectTopics: React.FC = () => {
   const handleSelectYourTopics = () => {
     setShowYourTopics(!showYourTopics);
   };
+
   // Student's personal topics section
   let filteredTopics = topics;
   if (showYourTopics) {
