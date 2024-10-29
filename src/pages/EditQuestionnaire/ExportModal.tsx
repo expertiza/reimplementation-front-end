@@ -1,6 +1,11 @@
 import React from "react";
 
-const ExportModal = ({ onClose, onExport }) => {
+interface ExportModalProps {
+  onClose: () => void;
+  onExport: () => void;
+}
+
+const ExportModal: React.FC<ExportModalProps> = ({ onClose, onExport }) => {
   return (
     <div className="modal" style={{ display: "block" }}>
       <div className="modal-dialog">
