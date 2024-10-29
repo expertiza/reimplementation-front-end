@@ -81,6 +81,17 @@ const ProjectTopics: React.FC = () => {
   const mockAssignments: Assignment[] = mockdata;
 
   // Transform assignments for form select
+  const topicSettings = [
+    ...mockAssignments.map((assignment) => ({
+      allow_suggestions: assignment.settings.allow_suggestions,
+      enable_bidding: assignment.settings.enable_bidding,
+      can_review_same_topic: assignment.settings.can_review_same_topic,
+      can_choose_topic_to_review: assignment.settings.can_choose_topic_to_review,
+      allow_bookmarks: assignment.settings.allow_bookmarks,
+      allow_bidding_for_reviewers: assignment.settings.allow_bidding_for_reviewers,
+    })),
+  ];
+
   const assignmentOptions = [
     { label: "Select an Assignment", value: "0" },
     ...mockAssignments.map((assignment) => ({
@@ -157,45 +168,6 @@ const ProjectTopics: React.FC = () => {
   const handleSelectYourTopics = () => {
     setShowYourTopics(!showYourTopics);
   };
-
-  // Admin settings section
-  const AdminSettings: React.FC = () => {
-    if (!isAdminOrInstructor) return null;
-
-    return (
-      <div className="mb-4 m-4">
-        <h4 style={{ fontSize: "35px" }}>Topics Feature Edit</h4>
-        <Form>
-          <Form.Check
-            type="checkbox"
-            id="allow-suggestions"
-            label="Allow topic suggestions from students?"
-          />
-          <Form.Check type="checkbox" id="enable-bidding" label="Enable bidding for topics?" />
-          <Form.Check
-            type="checkbox"
-            id="can-review-same-topic"
-            label="Enable authors to review others working on same topic?"
-          />
-          <Form.Check
-            type="checkbox"
-            id="can-choose-topic-to-review"
-            label="Allow reviewer to choose which topic to review?"
-          />
-          <Form.Check
-            type="checkbox"
-            id="allow-bookmarks"
-            label="Allow participants to create bookmarks?"
-          />
-          <Form.Check
-            type="checkbox"
-            id="allow-bidding-for-reviewers"
-            label="Allow bidding for reviewers?"
-          />
-        </Form>
-      </div>
-    );
-  };
   // Student's personal topics section
   let filteredTopics = topics;
   if (showYourTopics) {
@@ -206,9 +178,6 @@ const ProjectTopics: React.FC = () => {
     <div>
       <RoleCheckModal />
       <h1 className={styles.pageTitle}>{isAdminOrInstructor ? "Topics (Admin View)" : "Topics"}</h1>
-
-      {isAdminOrInstructor && <AdminSettings />}
-
       <div className={styles.selectAssignment}>
         <label className={styles.selectAssignmentLabel}>Select Assignment</label>
         <select className={styles.selectAssigmentOption} onChange={handleAssignmentChange}>
@@ -217,9 +186,52 @@ const ProjectTopics: React.FC = () => {
           ))}
         </select>
       </div>
-
       {selectedAssignment && (
         <>
+          {isAdminOrInstructor && (
+            <div className="mb-4 m-4">
+              <h4 style={{ fontSize: "35px" }}>Assignment Topic Features</h4>
+              <Form>
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.allow_suggestions).toString()}
+                  label="Allow topic suggestions from students?"
+                  checked={selectedAssignment.settings.allow_suggestions}
+                />
+
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.allow_bidding_for_reviewers).toString()}
+                  label="Enable bidding for topics?"
+                  checked={selectedAssignment.settings.allow_bidding_for_reviewers}
+                />
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.can_review_same_topic).toString()}
+                  label="Enable authors to review others working on same topic?"
+                  checked={selectedAssignment.settings.can_review_same_topic}
+                />
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.can_choose_topic_to_review).toString()}
+                  label="Allow reviewer to choose which topic to review?"
+                  checked={selectedAssignment.settings.can_choose_topic_to_review}
+                />
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.allow_bookmarks).toString()}
+                  label="Allow participants to create bookmarks?"
+                  checked={selectedAssignment.settings.allow_bookmarks}
+                />
+                <Form.Check
+                  type="checkbox"
+                  id={Object.keys(selectedAssignment.settings.allow_bidding_for_reviewers).toString()}
+                  label="Allow bidding for reviewers?"
+                  checked={selectedAssignment.settings.allow_bidding_for_reviewers}
+                />
+              </Form>
+            </div>
+          )}
           {isStudent && (
             <div className={styles.showYourTopics}>
               <input
