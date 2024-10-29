@@ -12,10 +12,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "store/store";
 import { hasAllPrivilegesOf } from "utils/util";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
-
 const Institutions = () => {
   const navigate = useNavigate();
   const institutions: any = useLoaderData();
@@ -63,10 +59,11 @@ const Institutions = () => {
             </Col>
             <hr />
           </Row>
+          {/*Added authetication for manage institution to be accessed by roles higher than instructor */}
           {hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) &&(
             <>
               <Row>
-              <Col md={{ span: 1, offset: 8 }}>
+              <Col md={{ span: 10, offset: 8 }}>
                 <Button variant="outline-success" onClick={() => navigate("new")}>
                   <BsPlusSquareFill />
                 </Button>
@@ -78,14 +75,16 @@ const Institutions = () => {
                 />
               )}
             </Row>
-            <Row>
+            <Row className="justify-content-center">
+              <Col md ={5}>
               <Table
                 data={tableData}
                 columns={tableColumns}
                 showColumnFilter={false}
                 columnVisibility={{ id: false }}
-                tableSize={{ span: 6, offset: 3 }}
+                
               />
+              </Col>
             </Row>
             </>
           ) }

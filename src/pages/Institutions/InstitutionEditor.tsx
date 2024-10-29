@@ -11,9 +11,6 @@ import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
 import { IEditor, IInstitution } from "../../utils/interfaces";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
 
 const initialValues: IInstitution = {
   name: "",

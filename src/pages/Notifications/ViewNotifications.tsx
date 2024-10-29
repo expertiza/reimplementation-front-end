@@ -6,6 +6,10 @@ import { notificationColumns as NOTIFICATION_COLUMNS } from "./NotificationColum
 import { mockNotifications } from "./mock_data";
 import { INotification } from "../../utils/interfaces";
 
+/**
+ * @authors Vaibhavi Shetty, Soubarnica Suresh on October, 2024
+ */
+
 const enrolledCourses = ["CS101", "CS103"];
 
 const ViewNotifications = () => {
@@ -25,7 +29,8 @@ const ViewNotifications = () => {
         </Col>
         <hr />
       </Row>
-      <Row>
+      <Row className="justify-content-center">
+        <Col md ={7}>
         <Table
           data={filteredNotifications}
           columns={NOTIFICATION_COLUMNS(undefined, undefined, false)} // Hide actions column
@@ -33,6 +38,7 @@ const ViewNotifications = () => {
           columnVisibility={{ id: false, isActive: false }} // Hide isActive column
           tableSize={{ span: 10, offset: 2 }}
         />
+        </Col>
       </Row>
     </Container>
   );

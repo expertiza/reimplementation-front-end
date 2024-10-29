@@ -5,6 +5,10 @@ import { alertActions } from "store/slices/alertSlice";
 import { INotification } from "../../utils/interfaces";
 import { mockNotifications } from "./mock_data"; // Import the centralized mock data
 
+/**
+ * @authors Vaibhavi Shetty, Soubarnica Suresh on October, 2024
+ */
+
 interface IDeleteNotification {
     notificationData: INotification;
     onClose: () => void;

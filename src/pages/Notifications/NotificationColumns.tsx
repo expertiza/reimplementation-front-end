@@ -6,6 +6,10 @@ import { Button, Form } from "react-bootstrap";
 import { INotification } from "../../utils/interfaces";
 import React from "react";
 
+/**
+ * @authors Vaibhavi Shetty, Soubarnica Suresh on October, 2024
+ */
+
 type Fn = (row: Row<INotification>) => void;
 type ToggleFn = (row: Row<INotification>, isActive: boolean) => void;
 const columnHelper = createColumnHelper<INotification>();
@@ -21,21 +25,25 @@ export const notificationColumns = (
             header: "Id",
             enableSorting: false,
             enableColumnFilter: false,
+            minSize: 100,
         }),
     
         columnHelper.accessor("course", {
             header: "Course",
             enableSorting: true,
+            minSize: 300,
         }),
     
         columnHelper.accessor("subject", {
             header: "Subject",
             enableSorting: true,
+            minSize: 300,
         }),
     
         columnHelper.accessor("description", {
             header: "Description",
             enableSorting: true,
+            minSize: 1000,
         }),
     
         columnHelper.accessor("expirationDate", {

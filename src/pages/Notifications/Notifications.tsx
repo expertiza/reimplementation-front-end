@@ -13,6 +13,9 @@ import { RootState } from "../../store/store";
 import { hasAllPrivilegesOf } from "utils/util";
 import React from "react";
 import { Row as TRow } from "@tanstack/react-table";
+/**
+ * @authors Vaibhavi Shetty, Soubarnica Suresh on October, 2024
+ */
 
 const mockAssignedCourses = ["CS101", "CS102", "CS103"]; 
 
@@ -90,14 +93,16 @@ const Notifications = () => {
                                     />
                                 )}
                             </Row>
-                            <Row>
+                            <Row className="justify-content-center">
+                                <Col md ={7}>
                                 <Table
                                     data={filteredNotifications}
                                     columns={tableColumns}
                                     showColumnFilter={false}
                                     columnVisibility={{ id: false }}
-                                    tableSize={{ span: 12, offset: 3 }}
+                                    
                                 />
+                                </Col>
                             </Row>
                         </>
                     )}

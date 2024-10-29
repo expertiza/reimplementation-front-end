@@ -9,6 +9,10 @@ import * as Yup from "yup";
 import { INotification } from "../../utils/interfaces";
 import { mockNotifications, mockAssignedCourses } from "./mock_data"; // Import centralized mock data
 
+/**
+ * @authors Vaibhavi Shetty, Soubarnica Suresh on October, 2024
+ */
+
 const initialValues: INotification = {
     id: "",
     course: "",
