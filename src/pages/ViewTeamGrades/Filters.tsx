@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { useEffect } from 'react';
 
 type FiltersProps = {
     toggleShowReviews: () => void;
@@ -8,9 +9,18 @@ type FiltersProps = {
 };
 
 const Filters: React.FC<FiltersProps> = ({ toggleShowReviews, toggleAuthorFeedback, selectRound }) => {
-    const [showSecondDropdown, setShowSecondDropdown] = useState(false);
-    const [firstDropdownSelection, setFirstDropdownSelection] = useState("View"); // Default text for the first dropdown button
+    const [showSecondDropdown, setShowSecondDropdown] = useState(true);
+    const [firstDropdownSelection, setFirstDropdownSelection] = useState("Reviews"); // Default text for the first dropdown button
     const [secondDropdownSelection, setSecondDropdownSelection] = useState("All rounds"); // Default text for the second dropdown button
+
+    useEffect(() => {
+        if (firstDropdownSelection === "Reviews") {
+            toggleShowReviews();
+        } else if (firstDropdownSelection === "Author Feedback") {
+            toggleAuthorFeedback();
+        }
+        selectRound(-1); // Set "All Rounds" as default round
+    }, []);
 
     // Handle the selection from the first dropdown
     const handleFirstDropdownSelect = (eventKey: string | null) => {
@@ -71,7 +81,6 @@ const Filters: React.FC<FiltersProps> = ({ toggleShowReviews, toggleAuthorFeedba
                         {firstDropdownSelection}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <Dropdown.Item eventKey="None" href="#/action-1">None</Dropdown.Item>
                         <Dropdown.Item eventKey="Author Feedback" href="#/action-2">Author Feedback</Dropdown.Item>
                         <Dropdown.Item eventKey="Reviews" href="#/action-3">Reviews</Dropdown.Item>
                     </Dropdown.Menu>

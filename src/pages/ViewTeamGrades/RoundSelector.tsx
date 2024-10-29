@@ -14,6 +14,13 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRound
     <div className="round-selector">
       <div className="flex items-center">
         {/* Mapping over dummyDataRounds to render round buttons */}
+        <button
+            className={`round-button mr-4 ${currentRound === -1 ? "current" : ""}`}
+            onClick={() => handleRoundChange(-1)}
+          >
+            All Rounds
+          </button>
+          
         {dummyDataRounds.map((round, index) => (
           <button
             key={index}

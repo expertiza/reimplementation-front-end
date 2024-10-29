@@ -56,7 +56,7 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({ data, roundSelected }) => {
       for (let i = 0; i < num_of_reviews; i++) {
         if (auth.user.role !== "Student") {
           reviewElements.push(
-              <div className="review-heading">Review {i+1}: {data[r][0].reviews[i].name}</div>
+              <div className="review-heading">Review {i+1}</div>
           );
         } else {
             reviewElements.push(

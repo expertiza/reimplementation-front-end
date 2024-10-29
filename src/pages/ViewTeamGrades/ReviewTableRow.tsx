@@ -24,10 +24,8 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{row.questionNumber}
         </div>
       </td>
-          {/* Toggle Question */}
-      {showToggleQuestion && (
-        <td className="text-center" >{row.questionText}</td>
-      )}
+      {/* Toggle Question */}
+      {showToggleQuestion && <td className="text-center">{row.questionText}</td>}
 
       {/* Review Cells */}
       {row.reviews.map((review, idx) => (
@@ -36,7 +34,11 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
           className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
           data-question={review.comment}
         >
-          <span style={{ textDecoration: review.comment ? "underline" : "none" }}>{review.score}</span>
+          <span
+            style={{ textDecoration: review.comment ? "underline" : "none", fontWeight: "bold" }}
+          >
+            {review.score}
+          </span>
         </td>
       ))}
 
