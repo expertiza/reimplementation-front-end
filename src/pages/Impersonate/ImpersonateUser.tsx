@@ -8,31 +8,31 @@ import { alertActions } from "store/slices/alertSlice";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
+  const { data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
+  // const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
   const { error, data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [impersonateActive, setImpersonateActive] = useState(false);
-  const [originalToken, setOriginalToken] = useState("");
+  // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
 
   // Fetch user list once on component mount
   useEffect(() => {
     fetchUsers({
       method: "get",
-      url: `/impersonate/${auth.user.name}`,
+      url: `/users/${auth.user.id}/managed`,
     });
-  }, [fetchUsers, auth.user.name]);
+  }, [fetchUsers, auth.user.id]);
 
   // Handle search query input change and trigger debounce
   const handleSearchQueryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setDebounceActive(true);
-    // console.log("Debounce triggered:", e.target.value);
   };
 
   // Debounce search query
@@ -50,37 +50,52 @@ const ImpersonateUser: React.FC = () => {
 
   // Display user list after debounce (autocomplete functionality)
   const displayUserList = () => {
-    if (!searchQuery.trim() || !fetchUsersResponse?.data) {
+    if (!searchQuery.trim() || !userResponse?.data) {
       return null;
     }
 
-    const userArray = Array.isArray(fetchUsersResponse.data)
-      ? fetchUsersResponse.data
-      : [fetchUsersResponse.data];
-    // console.log("User array:", userArray);
+    const userArray = Array.isArray(userResponse.data)
+      ? userResponse.data
+      : [userResponse.data];
 
     const filteredUserArray = userArray.filter((user: any) =>
-      user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    // console.log("Filtered user array:", filteredUserArray);
 
-    // console.log("Debounce Active:", debounceActive);
-    // console.log("filteredUserArray:", filteredUserArray.length);
-    return (
-      debounceActive &&
-      filteredUserArray.length > 0 && (
-        <Dropdown.Menu>
-          {filteredUserArray.map((filteredUser: any) => (
-            <Dropdown.Item key={filteredUser.id}>{filteredUser.user_name}</Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      )
-    );
+    if (debounceActive && filteredUserArray.length > 0) {
+      console.log("Displaying Dropdown");
+      return (
+        <Dropdown show>
+          <Dropdown.Menu>
+            {filteredUserArray.map((filteredUser: any) => (
+              <Dropdown.Item key={filteredUser.id}>{filteredUser.full_name}</Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
+      );
+    }
+    else {
+      return (
+        <Dropdown show>
+          <Dropdown.Menu>
+            <Dropdown.Item> No Users Found </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      );
+    }
   };
+
+  // Fetch user list once on component mount
+  /* useEffect(() => {
+    fetchUsers({
+      method: "get",
+      url: `/impersonate/${auth.user.name}`,
+    });
+  }, [fetchUsers, auth.user.name]); */
 
   // Impersonate user
   const handleImpersonate = () => {
-    setOriginalToken(auth.authToken);
+    // setOriginalToken(auth.authToken);
     impersonateUser({
       method: "post",
       url: "/impersonate",
@@ -103,10 +118,11 @@ const ImpersonateUser: React.FC = () => {
 
   // Cancel impersonation
   const handleCancelImpersonate = () => {
-    if (originalToken) {
+    setImpersonateActive(false);
+    /* if (originalToken) {
       auth.authToken = originalToken;
       setImpersonateActive(false);
-    }
+    } */
   };
 
   // Banner at the top of the screen indicating which user is being impersonated
