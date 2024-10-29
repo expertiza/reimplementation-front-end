@@ -395,5 +395,4 @@ const Questionnaire = () => {
     </div>
   );
 };
-
 export default Questionnaire;
