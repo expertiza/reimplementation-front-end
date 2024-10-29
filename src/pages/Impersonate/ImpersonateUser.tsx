@@ -5,6 +5,9 @@ import debounce from "lodash.debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
+import { ILoggedInUser } from "../../utils/interfaces";
+import { authenticationActions } from "../../store/slices/authenticationSlice";
+import { useLocation, useNavigate } from "react-router-dom";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
@@ -21,6 +24,8 @@ const ImpersonateUser: React.FC = () => {
   const [impersonateActive, setImpersonateActive] = useState(false);
   // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -100,25 +105,40 @@ const ImpersonateUser: React.FC = () => {
       setSelectedValidUser(true);
       selectedUser({
         method: "get",
-        url: `/impersonate/${validUser.name}`,
+        url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
     }
   }, [selectedUser, searchQuery, userResponse?.data]);
 
   // Impersonate user
   const handleImpersonate = () => {
-    // setOriginalToken(auth.authToken);
+    console.log("Selected User:", fetchSelectedUser?.data)
+    const fetchSelectedUserPayload: {
+      user: ILoggedInUser;
+    } = {
+      user: {
+        id: fetchSelectedUser?.data.id,
+        name: fetchSelectedUser?.data.name,
+        full_name: fetchSelectedUser?.data.full_name,
+        role: fetchSelectedUser?.data.role_name,
+        institution_id: fetchSelectedUser?.data.institution_id
+      },
+    };
+
     impersonateUser({
       method: "post",
-      url: "/impersonate",
-      data: {
-        impersonate_id: searchQuery,
-      },
+      url: "/impersonate/fetchSelectedUser?.data.id"
     });
-    if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
-      // console.log("POST HTML Status:", impersonateUserResponse?.status);
-      setImpersonateActive(true);
-    }
+    console.log("Impersonating User:", impersonateUserResponse?.data)
+    
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: impersonateUserResponse?.data.token,
+        user: fetchSelectedUserPayload
+      })
+    );
+    navigate(location.state?.from ? location.state.from : "/");
+    setImpersonateActive(true);
   };
 
   // Impersonate user alert
