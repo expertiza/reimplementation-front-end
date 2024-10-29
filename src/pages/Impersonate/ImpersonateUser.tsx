@@ -8,6 +8,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { ILoggedInUser } from "../../utils/interfaces";
 import { authenticationActions } from "../../store/slices/authenticationSlice";
 import { useLocation, useNavigate } from "react-router-dom";
+import { setAuthToken } from "../../utils/auth";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
@@ -107,8 +108,7 @@ const ImpersonateUser: React.FC = () => {
         method: "get",
         url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
-    }
-    else {
+    } else {
       setSelectedValidUser(false);
     }
   }, [selectedUser, searchQuery, userResponse]);
@@ -116,27 +116,8 @@ const ImpersonateUser: React.FC = () => {
   // Impersonate user
   const handleImpersonate = () => {
     // Store only the initial User's JWT token and information
-    if (
-      !localStorage.getItem("originalUserToken") &&
-      !localStorage.getItem("originalUserPayload")
-    ) {
-      const originalUserPayload: {
-        user: ILoggedInUser;
-      } = {
-        user: {
-          id: auth.user.id,
-          name: auth.user.name,
-          full_name: auth.user.full_name,
-          role: auth.user.role,
-          institution_id: auth.user.institution_id,
-        },
-      };
-
+    if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
-      localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
-
-      // console.log("originalUserToken:", auth.authToken);
-      // console.log("originalUserPayload:", originalUserPayload);
     }
 
     impersonateUser({
@@ -158,30 +139,10 @@ const ImpersonateUser: React.FC = () => {
   // Impersonate user authentication
   useEffect(() => {
     if (impersonateUserResponse?.data && fetchSelectedUser?.data) {
-      const selectedUser = fetchSelectedUser.data.userList[0]; 
-      const fetchSelectedUserPayload: {
-        isAuthenticated: boolean;
-        authToken: string;
-        user: ILoggedInUser;
-      } = {
-        isAuthenticated: true,
-        authToken: impersonateUserResponse.data.token,
-        user: {
-          id: selectedUser.id,
-          name: selectedUser.name,
-          full_name: selectedUser.full_name,
-          role: selectedUser.role.name,
-          institution_id: selectedUser.institution.id,
-        },
-      };
-      // console.log("Impersonating User Response:", impersonateUserResponse.data);
-      // console.log("Impersonating User Token:", impersonateUserResponse.data.token);
-      // console.log("Impersonating User Payload:", fetchSelectedUserPayload);
-
       dispatch(
         authenticationActions.setAuthentication({
           authToken: impersonateUserResponse.data.token,
-          user: fetchSelectedUserPayload
+          user: setAuthToken(impersonateUserResponse.data.token),
         })
       );
       navigate(location.state?.from ? location.state.from : "/");
@@ -194,11 +155,10 @@ const ImpersonateUser: React.FC = () => {
     dispatch(
       authenticationActions.setAuthentication({
         authToken: localStorage.getItem("originalUserToken"),
-        user: JSON.parse(localStorage.getItem("originalUserPayload") || "{}"),
+        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
       })
     );
     localStorage.removeItem("originalUserToken");
-    localStorage.removeItem("originalUserPayload");
 
     setImpersonateActive(false);
   };
