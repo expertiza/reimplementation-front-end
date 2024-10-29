@@ -108,37 +108,39 @@ const ImpersonateUser: React.FC = () => {
         url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
     }
-  }, [selectedUser, searchQuery, userResponse?.data]);
+  }, [selectedUser, searchQuery, userResponse]);
 
   // Impersonate user
   const handleImpersonate = () => {
-    console.log("Selected User:", fetchSelectedUser?.data)
-    const fetchSelectedUserPayload: {
-      user: ILoggedInUser;
-    } = {
-      user: {
-        id: fetchSelectedUser?.data.id,
-        name: fetchSelectedUser?.data.name,
-        full_name: fetchSelectedUser?.data.full_name,
-        role: fetchSelectedUser?.data.role_name,
-        institution_id: fetchSelectedUser?.data.institution_id
-      },
-    };
+    // Store only the initial User's JWT token and information
+    if (
+      !localStorage.getItem("originalUserToken") &&
+      !localStorage.getItem("originalUserPayload")
+    ) {
+      const originalUserPayload: {
+        user: ILoggedInUser;
+      } = {
+        user: {
+          id: auth.user.id,
+          name: auth.user.name,
+          full_name: auth.user.full_name,
+          role: auth.user.role,
+          institution_id: auth.user.institution_id,
+        },
+      };
+      console.log("originalUserPayload:", originalUserPayload);
+
+      localStorage.setItem("originalUserToken", auth.authToken);
+      localStorage.setItem("originalUserPayload", JSON.stringify(originalUserPayload));
+    }
 
     impersonateUser({
       method: "post",
-      url: "/impersonate/fetchSelectedUser?.data.id"
+      url: `/impersonate`,
+      data: {
+        impersonate_id: fetchSelectedUser?.data.userList[0]?.id,
+      },
     });
-    console.log("Impersonating User:", impersonateUserResponse?.data)
-    
-    dispatch(
-      authenticationActions.setAuthentication({
-        authToken: impersonateUserResponse?.data.token,
-        user: fetchSelectedUserPayload
-      })
-    );
-    navigate(location.state?.from ? location.state.from : "/");
-    setImpersonateActive(true);
   };
 
   // Impersonate user alert
@@ -148,13 +150,46 @@ const ImpersonateUser: React.FC = () => {
     }
   }, [error, dispatch]);
 
+  // Impersonate user authentication
+  useEffect(() => {
+    const fetchSelectedUserPayload: {
+      user: ILoggedInUser;
+    } = {
+      user: {
+        id: fetchSelectedUser?.data.id,
+        name: fetchSelectedUser?.data.name,
+        full_name: fetchSelectedUser?.data.full_name,
+        role: fetchSelectedUser?.data.role_name,
+        institution_id: fetchSelectedUser?.data.institution_id,
+      },
+    };
+
+    if (impersonateUserResponse?.data) {
+      console.log("Impersonating User:", impersonateUserResponse?.data);
+
+      dispatch(
+        authenticationActions.setAuthentication({
+          authToken: impersonateUserResponse.data.token,
+          user: fetchSelectedUserPayload,
+        })
+      );
+      navigate(location.state?.from ? location.state.from : "/");
+      setImpersonateActive(true);
+    }
+  }, [impersonateUserResponse]);
+
   // Cancel impersonation
   const handleCancelImpersonate = () => {
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: JSON.parse(localStorage.getItem("originalUserPayload") || "{}"),
+      })
+    );
+    localStorage.removeItem("originalUserToken");
+    localStorage.removeItem("originalUserPayload");
+
     setImpersonateActive(false);
-    /* if (originalToken) {
-      auth.authToken = originalToken;
-      setImpersonateActive(false);
-    } */
   };
 
   // Banner at the top of the screen indicating which user is being impersonated
