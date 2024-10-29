@@ -5,6 +5,10 @@ import debounce from "lodash.debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
+import { ILoggedInUser } from "../../utils/interfaces";
+import { authenticationActions } from "../../store/slices/authenticationSlice";
+import { useLocation, useNavigate } from "react-router-dom";
+import { setAuthToken } from "../../utils/auth";
 import masqueradeMask from "../../assets/masquerade-mask.png";
 
 const ImpersonateUser: React.FC = () => {
@@ -22,6 +26,8 @@ const ImpersonateUser: React.FC = () => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch user list once on component mount
   useEffect(() => {
@@ -109,25 +115,27 @@ const ImpersonateUser: React.FC = () => {
       setSelectedValidUser(true);
       selectedUser({
         method: "get",
-        url: `/impersonate/${validUser.name}`,
+        url: `/impersonate/${encodeURIComponent(validUser.full_name)}`,
       });
+    } else {
+      setSelectedValidUser(false);
     }
-  }, [selectedUser, searchQuery, userResponse?.data]);
+  }, [selectedUser, searchQuery, userResponse]);
 
   // Impersonate user
   const handleImpersonate = () => {
-    // setOriginalToken(auth.authToken);
+    // Store only the initial User's JWT token and information
+    if (!localStorage.getItem("originalUserToken")) {
+      localStorage.setItem("originalUserToken", auth.authToken);
+    }
+
     impersonateUser({
       method: "post",
-      url: "/impersonate",
+      url: `/impersonate`,
       data: {
-        impersonate_id: searchQuery,
+        impersonate_id: fetchSelectedUser?.data.userList[0]?.id,
       },
     });
-    if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
-      // console.log("POST HTML Status:", impersonateUserResponse?.status);
-      setImpersonateActive(true);
-    }
   };
 
   // Impersonate user alert
@@ -137,13 +145,31 @@ const ImpersonateUser: React.FC = () => {
     }
   }, [error, dispatch]);
 
+  // Impersonate user authentication
+  useEffect(() => {
+    if (impersonateUserResponse?.data && fetchSelectedUser?.data) {
+      dispatch(
+        authenticationActions.setAuthentication({
+          authToken: impersonateUserResponse.data.token,
+          user: setAuthToken(impersonateUserResponse.data.token),
+        })
+      );
+      navigate(location.state?.from ? location.state.from : "/");
+      setImpersonateActive(true);
+    }
+  }, [impersonateUserResponse]);
+
   // Cancel impersonation
   const handleCancelImpersonate = () => {
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
+      })
+    );
+    localStorage.removeItem("originalUserToken");
+
     setImpersonateActive(false);
-    /* if (originalToken) {
-      auth.authToken = originalToken;
-      setImpersonateActive(false);
-    } */
   };
 
   // Banner at the top of the screen indicating which user is being impersonated
