@@ -231,7 +231,7 @@ const ImpersonateUser: React.FC = () => {
       <style>
         {`
           .loader {
-            width: 50px;
+            width: 32px;
             aspect-ratio: 1;
             display: grid;
             border-radius: 50%;
