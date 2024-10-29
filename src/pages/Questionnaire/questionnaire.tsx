@@ -10,7 +10,7 @@ const Questionnaires = () => {
   const [data, setData] = useState<IQuestionnaire[]>(dummyData);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
-  const [itemsPerPage, setItemsPerPage] = useState(10); 
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredData = data.filter(item => 
@@ -38,7 +38,7 @@ const Questionnaires = () => {
 
   const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   return (
@@ -74,13 +74,6 @@ const Questionnaires = () => {
               {currentData.map(item => (
                 <div key={item.id} style={{ border: '1px solid #ccc', margin: '5px 0', padding: '10px' }}>
                   <span>{item.type}</span>
-                  <button 
-                    onClick={() => navigate(`/edit-questionnaire/${item.id}`)} 
-                    className="button button-plus" 
-                    style={{ marginLeft: '10px' }}
-                  >
-                    +
-                  </button>
                   <button onClick={() => toggleExpand(item.id)} className="button" style={{ marginLeft: '10px' }}>
                     {expandedItems.includes(item.id) ? "Collapse" : "Expand"}
                   </button>
@@ -89,6 +82,7 @@ const Questionnaires = () => {
                       {item.children.map(child => (
                         <div key={child.id} style={{ border: '1px solid #ccc', margin: '5px 0', padding: '10px' }}>
                           <strong>{child.name}</strong>
+                          {/* Only the button for editing child items */}
                           <button 
                             onClick={() => navigate(`/edit/${child.id}`)} 
                             className="button button-plus" 
