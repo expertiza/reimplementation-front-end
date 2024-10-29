@@ -26,6 +26,11 @@ In the project directory, you can run:
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+**Admin Credentials**
+Username: admin
+Password: password123
+Use these credentials to gain admin view.
+
 **View E2464**
 
 In current project('E2464'), you need to open [http://localhost:3000/project_topics](http://localhost:3000/project_topics) to veiw.
