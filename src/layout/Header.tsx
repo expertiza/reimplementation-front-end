@@ -6,7 +6,6 @@ import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
 import detective from "../assets/detective.png";
-import { useImpersonate } from "../context/ImpersonateContext";
 import masqueradeMask from "../assets/masquerade-mask.png";
 import handleCancelImpersonate from "../pages/Impersonate/ImpersonateUser"
 import { authenticationActions } from "../store/slices/authenticationSlice";
@@ -27,16 +26,10 @@ const Header: React.FC = () => {
   const location = useLocation();
   
   const dispatch = useDispatch();
-  const context = useImpersonate();
 
-  const { impersonationData } = useImpersonate();
 
   const impersonateUserPayload = localStorage.getItem("impersonatedUser");
 
-  const impersonationContent = impersonationData ? (<div>Impersonating {impersonationData.name}</div>
-  ) : (
-    <div>No Impersonation</div>
-  );
 
   // Cancel impersonation
   const handleCancelImpersonate = () => {

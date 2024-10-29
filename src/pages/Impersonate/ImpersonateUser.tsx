@@ -9,7 +9,6 @@ import { authenticationActions } from "../../store/slices/authenticationSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../utils/auth";
 import masqueradeMask from "../../assets/masquerade-mask.png";
-import { useImpersonate } from "../../context/ImpersonateContext";
 import "./ImpersonateUser.css";
 
 const ImpersonateUser: React.FC = () => {
@@ -23,7 +22,6 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [selectedValidUser, setSelectedValidUser] = useState(false);
-  const { impersonationData, setImpersonationData } = useImpersonate();
   // const [originalToken, setOriginalToken] = useState("");
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
@@ -129,7 +127,6 @@ const ImpersonateUser: React.FC = () => {
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
     }
-    console.log(fetchSelectedUser?.data.userList[0].role.name);
     const impersonateMessage = "Impersonating a " + fetchSelectedUser?.data.userList[0].role.name + " with name " + fetchSelectedUser?.data.userList[0].name;
     localStorage.setItem("impersonatedUser", impersonateMessage);
     impersonateUser({
