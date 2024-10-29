@@ -1,40 +1,43 @@
 .student-task-container {
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    width: 100%;
+    margin: auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
   /* text-align: center; */
 }
 
 h1 {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 .instruction {
     color: green;
-    background-color: #a8e6a1;
+    background-color: #8f8;
     padding: 5px 20px 5px;
     border: 2px solid #0a0;
     margin-bottom: 20px;
 }
 
 .actions {
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
+    list-style-type: none;
+    padding: 0;
+    padding-left: 30px;
+    margin-bottom: 20px;
 }
 
 .actions li {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
+    list-style-type: disc;
 }
 
 .actions a {
-  color: #0000ee;
-  text-decoration: none;
-  font-weight: bold;
+    color: #986633;
+    text-decoration: none;
 }
 
 .actions a:hover {
@@ -42,42 +45,36 @@ h1 {
 }
 
 .timeline {
-  /* display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 0;
-  margin-top: 20px;
-  position: relative;
-  border-top: 2px solid #8b0000; */
-  list-style-type: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .timeline-item {
-  text-align: center;
-  position: relative;
-  max-width: 20%;
+    text-align: center;
+    position: relative;
+    max-width: 20%;
+    padding: 10px
 }
 
 .timeline-circle {
-  width: 20px;
-  height: 20px;
-  background-color: white;
-  border: 1px solid #ddd;
-  margin: 0 auto 10px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    margin: 0 auto 10px;
 }
 
 .timeline-date {
-  color: #333;
-  display: block;
-  font-size: 12px;
-}
+    color: #333;
+    display: block;
+    font-size: 14px;
+    }
 
 .timeline-label {
-  color: #8b0000;
-  font-size: 12px;
+    color: black;
+    font-size: 14px;
 }
 
 /* Styles for different states */
@@ -92,11 +89,10 @@ h1 {
 
 .past-deadline .timeline-date,
 .past-deadline .timeline-label {
-  color: #A90201;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  transition: all 200ms ease-in;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    transition: all 200ms ease-in;
 }
 
 .approaching-deadline .timeline-circle {
@@ -104,7 +100,7 @@ h1 {
     justify-content: center;
     background-color: white;
     border-radius: 25px;
-    border: 1px solid #ddd;
+    border: 1px solid #b3aeae;
     position: relative;
     transition: all 200ms ease-in;
 }
@@ -118,17 +114,18 @@ h1 {
 }
 
 .footer {
-  margin-top: 30px;
-  font-size: 14px;
-  text-align: center;
-}
+    margin-top: auto;
+    margin-top: 30px;
+    font-size: 14px;
+    text-align: center;
+    }
 
 .footer a {
-  color: #8b0000;
-  margin: 0 8px;
-  text-decoration: none;
+    color: #8b0000;
+    margin: 0 8px;
+    text-decoration: none;
 }
 
 .footer a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
