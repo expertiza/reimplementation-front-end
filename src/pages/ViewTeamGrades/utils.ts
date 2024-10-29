@@ -1,9 +1,9 @@
-import { QuestionFeedback } from './Review';
+import { ReviewData } from './App';
 
 // Function to get color class based on score and maxScore
 export const getColorClass = (score: number, maxScore: number) => {
   let scoreColor = score;
-
+ 
   scoreColor = ((maxScore - scoreColor) / maxScore) * 100;
   if (scoreColor >= 80) return 'c1';
   else if (scoreColor >= 60 && scoreColor < 80) return 'c2';
@@ -15,7 +15,7 @@ export const getColorClass = (score: number, maxScore: number) => {
 
 // Function to calculate averages for rows and columns
 export const calculateAverages = (
-  currentRoundData: QuestionFeedback[],
+  currentRoundData: ReviewData[],
   sortOrderRow: 'asc' | 'desc' | 'none'
 ) => {
   let totalAvg = 0;
