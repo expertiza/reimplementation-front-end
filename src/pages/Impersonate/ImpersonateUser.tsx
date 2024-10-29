@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 import masqueradeMask from "../../assets/masquerade-mask.png";
+import { useImpersonate } from "../../context/ImpersonateContext";
 
 const ImpersonateUser: React.FC = () => {
   const { data: userResponse, sendRequest: fetchUsers } = useAPI();
@@ -18,6 +19,7 @@ const ImpersonateUser: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
   const [impersonateActive, setImpersonateActive] = useState(false);
+  const { impersonationData, setImpersonationData } = useImpersonate();
   // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
 
@@ -105,6 +107,7 @@ const ImpersonateUser: React.FC = () => {
     });
     if (impersonateUserResponse?.data && impersonateUserResponse?.status == 200) {
       // console.log("POST HTML Status:", impersonateUserResponse?.status);
+      setImpersonationData(impersonateUserResponse.data);
       setImpersonateActive(true);
     }
   };

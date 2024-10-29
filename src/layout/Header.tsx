@@ -6,6 +6,8 @@ import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
 import detective from "../assets/detective.png";
+import { useImpersonate } from "../context/ImpersonateContext";
+import masqueradeMask from "../assets/masquerade-mask.png";
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -19,6 +21,9 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const [visible, setVisible] = useState(true);
+  
+  const context = useImpersonate();
+  const { impersonationData } = context ? context.impersonationData : null;
 
   const CustomBtn = () => {
     return (
@@ -60,6 +65,55 @@ const Header: React.FC = () => {
           </button>
         </div>
       </div>
+    );
+  };
+
+  const CustomBtn2 = () => {
+    return (
+    <>
+      {impersonationData ? (
+        impersonationData && (
+          <div
+            style={{
+              backgroundColor: "#fff",
+              color: "#333",
+              padding: "10px 4px",
+              borderRadius: 4,
+              marginRight: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
+              <div>Impersonating {impersonationData.name}</div>
+              <button
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 1,
+                  marginLeft: 6,
+                  backgroundColor: "red",
+                  borderRadius: 50,
+                  color: "white",
+                  width: 18,
+                  fontSize: 10,
+                  fontWeight: 800,
+                }}
+                onClick={() => setVisible(!visible)}
+              >
+                x
+              </button>
+            </div>
+          </div>
+        )
+      ) : null};
+      </>
     );
   };
 

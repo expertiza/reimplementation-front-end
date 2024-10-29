@@ -41,6 +41,9 @@ import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 import ImpersonateUser from "pages/Impersonate/ImpersonateUser";
+import { ImpersonationProvider } from "context/ImpersonateContext";
+
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -299,7 +302,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ImpersonationProvider>
+      <RouterProvider router={router} />;
+    </ImpersonationProvider>
+    );
 }
 
 export default App;
