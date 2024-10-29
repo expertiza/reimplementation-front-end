@@ -100,79 +100,81 @@ const StudentTasksHome: React.FC = () => {
                     />
                 </div>
                 <div className={styles.mainContent}>
-                    <table className={styles.tasksTable}>
-                        <thead>
-                            <tr>
-                                <th className="dropdown-header">Assignment
-                                    <select onChange={(e) => setAssignmentFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
-                                            <option key={assignment} value={assignment}>{assignment}</option>
-                                        ))}
-                                    </select>
-                                </th>
-                                <th className="dropdown-header">Course
-                                    <select onChange={(e) => setCourseFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.course))).map(course => (
-                                            <option key={course} value={course}>{course}</option>
-                                        ))}
-                                    </select>
-                                </th>
-                                <th className="dropdown-header">Topic
-                                    <select onChange={(e) => setTopicFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
-                                            <option key={topic} value={topic}>{topic}</option>
-                                        ))}
-                                    </select>
-                                </th>
-                                <th className="dropdown-header">Current Stage
-                                    <select onChange={(e) => setCurrentStageFilter(e.target.value)}>
-                                        <option value="">All</option>
-                                        {Array.from(new Set(tasks.map(task => task.currentStage))).map(currentStage => (
-                                            <option key={currentStage} value={currentStage}>{currentStage}</option>
-                                        ))}
-                                    </select>
-                                </th>
-                                <th>Review Grade</th>
-                                <th>Badges</th>
-                                <th>
-                                    Stage Deadline
-                                    {/* <img src="assets/icons/info.png" alt="Info" title="You can change 'Preferred Time Zone' in 'Profile' in the banner." /> */}
-                                </th>
-                                <th>
-                                    Publishing Rights
+                <table className={styles.tasksTable}>
+    <thead>
+        <tr>
+            <th>
+                Assignment
+                <select onChange={(e) => setAssignmentFilter(e.target.value)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(tasks.map(task => task.assignment))).map(assignment => (
+                        <option key={assignment} value={assignment}>{assignment}</option>
+                    ))}
+                </select>
+            </th>
+            <th>
+                Course
+                <select onChange={(e) => setCourseFilter(e.target.value)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(tasks.map(task => task.course))).map(course => (
+                        <option key={course} value={course}>{course}</option>
+                    ))}
+                </select>
+            </th>
+            <th>
+                Topic
+                <select onChange={(e) => setTopicFilter(e.target.value)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(tasks.map(task => task.topic))).map(topic => (
+                        <option key={topic} value={topic}>{topic}</option>
+                    ))}
+                </select>
+            </th>
+            <th>
+                Current Stage
+                <select onChange={(e) => setCurrentStageFilter(e.target.value)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(tasks.map(task => task.currentStage))).map(currentStage => (
+                        <option key={currentStage} value={currentStage}>{currentStage}</option>
+                    ))}
+                </select>
+            </th>
+            <th>Review Grade</th>
+            <th>Badges</th>
+            <th>
+                Stage Deadline
+            </th>
+            <th>
+                Publishing Rights
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {filteredTasks.map((task) => (
+            <tr key={task.id}>
+                <td><Link to={`/student_task_detail/${task.id}`}>{task.assignment}</Link></td>
+                <td>{task.course}</td>
+                <td>{task.topic}</td>
+                <td>{task.currentStage}</td>
+                <td>
+                    {task.reviewGrade === "N/A" ? "NA" :
+                        (task.reviewGrade as any).comment || ''
+                    }
+                </td>
+                {<td>{task.badges}</td>}
+                <td>{task.stageDeadline}</td>
+                <td className={styles.centerCheckbox}>
+                    <input
+                        type="checkbox"
+                        checked={task.publishingRights}
+                        onChange={() => togglePublishingRights(task.id)}
+                    />
+                </td>
+            </tr>
+        ))}
+    </tbody>
+</table>
 
-                                    {/* <img src="assets/detective.png" alt="Info" title="Grant publishing rights to make my work available to others over the Web" /> */}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredTasks.map((task) => (
-                                <tr key={task.id}>
-                                    <td><Link to={`/student_task_detail/${task.id}`}>{task.assignment}</Link></td>
-                                    <td>{task.course}</td>
-                                    <td>{task.topic}</td>
-                                    <td>{task.currentStage}</td>
-                                    <td>
-                                        {task.reviewGrade === "N/A" ? "NA" :
-                                            (task.reviewGrade as any).comment || ''
-                                        }
-                                    </td>
-                                    {<td>{task.badges}</td>}
-                                    <td>{task.stageDeadline}</td>
-                                    <td className={styles.centerCheckbox}>
-                                        <input
-                                            type="checkbox"
-                                            checked={task.publishingRights}
-                                            onChange={() => togglePublishingRights(task.id)}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
                 </div>
                 <div className={styles.rightSidebar}>
                     <br></br><br></br>
