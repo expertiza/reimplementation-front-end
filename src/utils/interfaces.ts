@@ -12,6 +12,15 @@ export interface IRole {
   parent_id: number;
 }
 
+export interface IQuestionnaire {
+  id: number;
+  type: string;
+  name?: string; 
+  creationDate?: string; 
+  updatedDate?: string; 
+  children?: IQuestionnaire[]; 
+}
+
 export interface IInstitution {
   id?: number;
   name: string;
