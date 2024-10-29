@@ -1,11 +1,12 @@
 import React, { Fragment, useState, useEffect } from "react";
-import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Button, Container, Nav, Navbar, NavDropdown, Badge } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
 import detective from "../assets/detective.png";
+import { mockNotifications } from "../pages/Notifications/mock_data"; // Import the mock notifications
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -19,53 +20,56 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const [visible, setVisible] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const CustomBtn = () => {
-    return (
+  // Calculate unread notifications on component load
+  useEffect(() => {
+    const countUnread = mockNotifications.filter(
+      (notification) => notification.isUnread && notification.isActive
+    ).length;
+    setUnreadCount(countUnread);
+  }, []);
+
+  const CustomBtn = () => (
+    <div
+      style={{
+        backgroundColor: "#fff",
+        color: "#333",
+        padding: "10px 4px",
+        borderRadius: 4,
+        marginRight: 8,
+      }}
+    >
       <div
         style={{
-          backgroundColor: "#fff",
-          color: "#333",
-          padding: "10px 4px",
-          borderRadius: 4,
-          marginRight: 8,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <div
+        <img src={detective} width={25} style={{ marginRight: 4 }} alt="Detective icon" />
+        <div>Anonymized View</div>
+        <button
           style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
+            background: "none",
+            border: "none",
+            padding: 1,
+            marginLeft: 6,
+            backgroundColor: "red",
+            borderRadius: 50,
+            color: "white",
+            width: 18,
+            fontSize: 10,
+            fontWeight: 800,
           }}
+          onClick={() => setVisible(!visible)}
         >
-          <img src={detective} width={25} style={{ marginRight: 4 }} />
-          <div>Anonymized View</div>
-          <button
-            style={{
-              background: "none",
-              border: "none",
-              padding: 1,
-              marginLeft: 6,
-              backgroundColor: "red",
-              borderRadius: 50,
-              color: "white",
-              width: 18,
-              fontSize: 10,
-              fontWeight: 800,
-            }}
-            onClick={() => setVisible(!visible)}
-          >
-            x
-          </button>
-        </div>
+          x
+        </button>
       </div>
-    );
-  };
-
-  // useEffect(() => {
-  //   console.log(visible, 'Changed');
-  // }, [visible]);
+    </div>
+  );
 
   return (
     <Fragment>
@@ -116,55 +120,34 @@ const Header: React.FC = () => {
                 )}
                 {hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
                   <NavDropdown title="Manage" id="basic-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/users">
-                      Users
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/courses">
-                      Courses
-                    </NavDropdown.Item>
-                      <NavDropdown.Item as={Link} to="/notifications">
-                          Notifications
-                      </NavDropdown.Item>
-                      <NavDropdown.Item as={Link} to="/institutions">
-                          Institutions
-                      </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/assignments">
-                      Assignments
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/questionnaire">
-                      Questionnaire
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/edit-questionnaire">
-                      Edit Questionnaire
-                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/users">Users</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/courses">Courses</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/notifications">Notifications</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/institutions">Institutions</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/assignments">Assignments</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/questionnaire">Questionnaire</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/edit-questionnaire">Edit Questionnaire</NavDropdown.Item>
                     <NavDropdown.Divider />
-                    <NavDropdown.Item as={Link} to="/impersonate">
-                      Impersonate User
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="#">
-                      Anonymized View
-                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/impersonate">Impersonate User</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="#">Anonymized View</NavDropdown.Item>
                   </NavDropdown>
                 )}
-                <Nav.Link as={Link} to="/student_tasks">
-                  Assignments
-                </Nav.Link>
-                <Nav.Link as={Link} to="/profile">
-                  Profile
-                </Nav.Link>
-                <Nav.Link as={Link} to="/student_view">
-                  Student View
-                </Nav.Link>
-                <Nav.Link as={Link} to="/view-team-grades">
-                  Grades View
-                </Nav.Link>
+                <Nav.Link as={Link} to="/student_tasks">Assignments</Nav.Link>
+                <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+                <Nav.Link as={Link} to="/student_view">Student View</Nav.Link>
+                <Nav.Link as={Link} to="/view-team-grades">Grades View</Nav.Link>
+
                 {!hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
-                <Nav.Link as={Link} to="/view-notifications">
-                  My Notifications
-                </Nav.Link>)}
-                <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>
-                  Anonymized View
-                </Nav.Link>
+                  <Nav.Link as={Link} to="/view-notifications">
+                    My Notifications{" "}
+                    {unreadCount > 0 && (
+                      <Badge bg="danger" pill className="align-text-top">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </Nav.Link>
+                )}
+                <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>Anonymized View</Nav.Link>
               </Nav>
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
@@ -184,9 +167,7 @@ const Header: React.FC = () => {
                   </div>
                 </Nav.Item>
               )}
-              <Button variant="outline-light" onClick={() => navigate("/logout")}>
-                Logout
-              </Button>
+              <Button variant="outline-light" onClick={() => navigate("/logout")}>Logout</Button>
             </Navbar.Collapse>
           </Container>
         )}

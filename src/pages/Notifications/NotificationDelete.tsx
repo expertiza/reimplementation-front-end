@@ -2,37 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
-import { HttpMethod } from "utils/httpMethods";
-import useAPI from "../../hooks/useAPI";
 import { INotification } from "../../utils/interfaces";
-
-// Mock notifications to handle deletion for now
-let mockNotifications: INotification[] = [
-    {
-        id: "1",
-        course: "CS101",
-        subject: "New Homework",
-        description: "Homework 1 due next week",
-        expirationDate: "2024-10-31",
-        isActive: true,
-    },
-    {
-        id: "2",
-        course: "CS102",
-        subject: "Class Canceled",
-        description: "No class tomorrow",
-        expirationDate: "2024-11-01",
-        isActive: false,
-    },
-    {
-        id: "3",
-        course: "CS103",
-        subject: "Exam scheduled",
-        description: "Please prepare for the exam",
-        expirationDate: "2024-11-05",
-        isActive: true,
-    },
-];
+import { mockNotifications } from "./mock_data"; // Import the centralized mock data
 
 interface IDeleteNotification {
     notificationData: INotification;
@@ -44,10 +15,15 @@ const DeleteNotification: React.FC<IDeleteNotification> = ({ notificationData, o
     const dispatch = useDispatch();
 
     const deleteHandler = () => {
-        // Handle deletion locally by filtering out the notification
-        mockNotifications = mockNotifications.filter(
+        // Simulate deletion by filtering out the selected notification
+        const updatedNotifications = mockNotifications.filter(
             (notif) => notif.id !== notificationData.id
         );
+
+        // Update the mockNotifications in the data file (replaceable by API call in production)
+        mockNotifications.splice(0, mockNotifications.length, ...updatedNotifications);
+
+        // Show success message
         setShow(false);
         dispatch(
             alertActions.showAlert({

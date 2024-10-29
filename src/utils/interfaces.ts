@@ -24,6 +24,7 @@ export interface INotification {
   description: string;
   expirationDate: string;
   isActive: boolean;
+  isUnread: boolean;
 }
 
 export interface IInstructor {

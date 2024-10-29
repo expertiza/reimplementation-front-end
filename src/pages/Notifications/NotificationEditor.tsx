@@ -1,47 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Form, Formik, FormikHelpers } from "formik";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, FormGroup, FormLabel, FormControl } from "react-bootstrap";
 import FormInput from "components/Form/FormInput";
 import { alertActions } from "store/slices/alertSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { useLoaderData, useNavigate, useParams } from "react-router-dom";
-import { HttpMethod } from "utils/httpMethods";
-import useAPI from "hooks/useAPI";
+import { useDispatch } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import * as Yup from "yup";
-import axiosClient from "../../utils/axios_client";
 import { INotification } from "../../utils/interfaces";
-import { RootState } from "../../store/store";
-import { FormGroup, FormLabel, FormControl } from "react-bootstrap";
-
-// Mock notification data for edit
-const mockNotifications: INotification[] = [
-    {
-        id: "1",
-        course: "CS101",
-        subject: "New Homework",
-        description: "Homework 1 due next week",
-        expirationDate: "2024-10-31",
-        isActive: true,
-    },
-    {
-        id: "2",
-        course: "CS102",
-        subject: "Class Canceled",
-        description: "No class tomorrow",
-        expirationDate: "2024-11-01",
-        isActive: false,
-    },
-    {
-        id: "3",
-        course: "CS103",
-        subject: "Exam scheduled",
-        description: "Please prepare for the exam",
-        expirationDate: "2024-11-05",
-        isActive: true,
-    },
-];
-
-const mockAssignedCourses = ["CS101", "CS102", "CS103"];
+import { mockNotifications, mockAssignedCourses } from "./mock_data"; // Import centralized mock data
 
 const initialValues: INotification = {
     id: "",
@@ -50,6 +16,7 @@ const initialValues: INotification = {
     description: "",
     expirationDate: "",
     isActive: false,
+    isUnread: true,
 };
 
 const validationSchema = Yup.object({
@@ -58,16 +25,14 @@ const validationSchema = Yup.object({
 });
 
 const NotificationEditor: React.FC<{ mode: "create" | "update" }> = ({ mode }) => {
-
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>(); // Get the ID from the URL parameters
+    const { id } = useParams<{ id: string }>(); // Get the ID from URL parameters
     const [notification, setNotification] = useState<INotification>(initialValues);
-
 
     useEffect(() => {
         if (mode === "update" && id) {
-            // Simulate loading data for the edit mode from mock notifications
+            // Load data from centralized mockNotifications
             const notificationToEdit = mockNotifications.find((notif) => notif.id === id);
             if (notificationToEdit) {
                 setNotification(notificationToEdit);
@@ -76,16 +41,26 @@ const NotificationEditor: React.FC<{ mode: "create" | "update" }> = ({ mode }) =
                     variant: "danger",
                     message: "Notification not found!",
                 }));
-                navigate("/notifications"); // Navigate back if the notification doesn't exist
+                navigate("/notifications"); // Navigate back if notification doesn't exist
             }
         }
     }, [id, mode, dispatch, navigate]);
 
-
     const onSubmit = (values: INotification, submitProps: FormikHelpers<INotification>) => {
-
-        // Simulate submission logic here (no backend call)
+        // Handle submission logic (no backend call for mock data)
         const message = mode === "update" ? "Notification updated successfully!" : "Notification created successfully!";
+        
+        // Update mock data directly for edit mode
+        if (mode === "update" && id) {
+            const index = mockNotifications.findIndex((notif) => notif.id === id);
+            if (index !== -1) {
+                mockNotifications[index] = values;
+            }
+        } else {
+            // For "create" mode, add a new notification
+            mockNotifications.push({ ...values, id: (mockNotifications.length + 1).toString() });
+        }
+
         dispatch(alertActions.showAlert({
             variant: "success",
             message: message,
@@ -143,9 +118,5 @@ const NotificationEditor: React.FC<{ mode: "create" | "update" }> = ({ mode }) =
         </Modal>
     );
 };
-
-
-
-
 
 export default NotificationEditor;
