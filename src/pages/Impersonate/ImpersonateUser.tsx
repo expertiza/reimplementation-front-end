@@ -13,10 +13,11 @@ const ImpersonateUser: React.FC = () => {
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  // const { data: fetchUsersResponse, sendRequest: fetchUsers } = useAPI();
+  const { data: fetchSelectedUser, sendRequest: selectedUser } = useAPI();
   const { error, data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
   const [searchQuery, setSearchQuery] = useState("");
   const [debounceActive, setDebounceActive] = useState(false);
+  const [selectedValidUser, setSelectedValidUser] = useState(false);
   const [impersonateActive, setImpersonateActive] = useState(false);
   // const [originalToken, setOriginalToken] = useState("");
   const dispatch = useDispatch();
@@ -54,27 +55,28 @@ const ImpersonateUser: React.FC = () => {
       return null;
     }
 
-    const userArray = Array.isArray(userResponse.data)
-      ? userResponse.data
-      : [userResponse.data];
+    const userArray = Array.isArray(userResponse.data) ? userResponse.data : [userResponse.data];
 
     const filteredUserArray = userArray.filter((user: any) =>
-      user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (debounceActive && filteredUserArray.length > 0) {
-      console.log("Displaying Dropdown");
       return (
         <Dropdown show>
           <Dropdown.Menu>
             {filteredUserArray.map((filteredUser: any) => (
-              <Dropdown.Item key={filteredUser.id}>{filteredUser.full_name}</Dropdown.Item>
+              <Dropdown.Item
+                key={filteredUser.id}
+                onClick={() => setSearchQuery(filteredUser.name)}
+              >
+                {filteredUser.name}
+              </Dropdown.Item>
             ))}
           </Dropdown.Menu>
         </Dropdown>
       );
-    }
-    else {
+    } else {
       return (
         <Dropdown show>
           <Dropdown.Menu>
@@ -85,13 +87,23 @@ const ImpersonateUser: React.FC = () => {
     }
   };
 
-  // Fetch user list once on component mount
-  /* useEffect(() => {
-    fetchUsers({
-      method: "get",
-      url: `/impersonate/${auth.user.name}`,
-    });
-  }, [fetchUsers, auth.user.name]); */
+  // Fetch selected user based on the Search Query
+  useEffect(() => {
+    const userArray = Array.isArray(userResponse?.data) ? userResponse?.data : [userResponse?.data];
+
+    const validUser = userArray?.find(
+      (user: any) => searchQuery.toLowerCase() === (user?.name?.toLowerCase() || "")
+    );
+
+    // Don't initiate a GET if the searchQuery is empty
+    if (searchQuery.trim() && validUser) {
+      setSelectedValidUser(true);
+      selectedUser({
+        method: "get",
+        url: `/impersonate/${validUser.name}`,
+      });
+    }
+  }, [selectedUser, searchQuery, userResponse?.data]);
 
   // Impersonate user
   const handleImpersonate = () => {
@@ -197,7 +209,7 @@ const ImpersonateUser: React.FC = () => {
               variant="outline-secondary"
               id="button-addon2"
               onClick={handleImpersonate}
-              disabled={impersonateActive}
+              disabled={!selectedValidUser}
             >
               Impersonate
             </Button>
