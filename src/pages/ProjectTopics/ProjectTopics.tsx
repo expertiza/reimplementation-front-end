@@ -100,7 +100,7 @@ const ProjectTopics: React.FC = () => {
 
   let tableHeaders: string[] = [];
   if (isStudent) {
-    tableHeaders = ["Topic ID", "Topic names(s)", "Available slots"];
+    tableHeaders = ["Topic ID", "Topic names(s)", "Available slots", "Num. on waitlist"];
   }
   if (isAdminOrInstructor) {
     tableHeaders = [
@@ -157,13 +157,14 @@ const ProjectTopics: React.FC = () => {
   const handleSelectYourTopics = () => {
     setShowYourTopics(!showYourTopics);
   };
+
   // Admin settings section
   const AdminSettings: React.FC = () => {
     if (!isAdminOrInstructor) return null;
 
     return (
       <div className="mb-4 m-4">
-        <h4 style={{fontSize: '35px'}}>Topics for OSS project & documentation assignment</h4>
+        <h4 style={{ fontSize: "35px" }}>Topics Feature Edit</h4>
         <Form>
           <Form.Check
             type="checkbox"
@@ -226,7 +227,7 @@ const ProjectTopics: React.FC = () => {
                 className={styles.showYourTopicsCheckbox}
                 onChange={handleSelectYourTopics}
               ></input>
-              <label className={styles.showYourTopicsLabel}>Show Your Topics</label>
+              <label className={styles.showYourTopicsLabel}>Show Your Topic</label>
             </div>
           )}
           <table className={styles.table}>
@@ -238,7 +239,10 @@ const ProjectTopics: React.FC = () => {
             <tbody>
               {filteredTopics.map((topic) => (
                 <tr className={styles.tr}>
-                  <td className={styles.td}>{topic.topic_identifier}</td>
+                  <td className={styles.td}>
+                    {topic.topic_identifier}
+                    {userTopics.includes(topic) && <span className={styles.star}>&#x2605;</span>}
+                  </td>
                   <td className={styles.td}>
                     {topic.topic_name}
                     {isAdminOrInstructor && (
@@ -262,10 +266,10 @@ const ProjectTopics: React.FC = () => {
                     )}
                   </td>
                   <td className={styles.td}>{topic.available_slots}</td>
+                  <td className={styles.td}>{topic.waitlist_count}</td>
                   {isAdminOrInstructor && (
                     <>
                       <td className={styles.td}>{topic.max_choosers}</td>
-                      <td className={styles.td}>{topic.waitlist_count}</td>
                     </>
                   )}
                 </tr>
