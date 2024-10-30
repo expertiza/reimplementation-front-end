@@ -1,166 +1,171 @@
-import React, { useState } from 'react';
-import ReviewTableRow from './ReviewTableRow'; // Importing the ReviewTableRow component
-import RoundSelector from './RoundSelector'; // Importing the RoundSelector component
-import dummyDataRounds from './Data/heatMapData.json'; // Importing dummy data for rounds
-import dummyData from './Data/dummyData.json'; // Importing dummy data
-import { calculateAverages, getColorClass } from './utils'; // Importing utility functions
-import './grades.scss'; // Importing styles
-import { Link } from 'react-router-dom'; // Importing Link from react-router-dom
-import Statistics from './Statistics'; //import statistics component
-import { Button, Collapse } from 'react-bootstrap'; //imporitng collaspe button
+import { useMemo, useState } from 'react';
+import ReviewTableRow from './ReviewTableRow';
+import RoundSelector from './RoundSelector';
+import dummyDataRounds from './Data/heatMapData.json';
+import dummyData from './Data/dummyData.json';
+import { calculateAverages } from './utils';
+import './grades.scss';
+import { Link } from 'react-router-dom';
+import Statistics from './Statistics';
+import { Collapse } from 'react-bootstrap';
 
+// Constant for sort order cycle sequence
+const SORT_ORDER_SEQUENCE: Array<'asc' | 'desc' | 'none'> = ['asc', 'desc', 'none'];
 
-// Functional component ReviewTable
+const SubmissionDetails: React.FC<{ isVisible: boolean }> = ({ isVisible }) => (
+  <Collapse in={isVisible}>
+    <div className="flex flex-col mb-4">
+      <br />
+      <a href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents" target="_blank" rel="noopener noreferrer">
+        GitHub Repository
+      </a>
+      <br />
+      <a href="http://152.7.177.44:8080/" target="_blank" rel="noopener noreferrer">
+        Project Link
+      </a>
+      <br />
+      <a href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents/raw/main/README.md" download="README.md" target="_blank" rel="noopener noreferrer">
+        Download README.md
+      </a>
+    </div>
+  </Collapse>
+);
+
+const HeaderCells: React.FC<{ reviewCount: number }> = ({ reviewCount }) => (
+  <>
+    {Array.from({ length: reviewCount }).map((_, i) => (
+      <th key={i} scope="col" className="p-2 text-center column-width-small">
+        Review {i + 1}
+      </th>
+    ))}
+  </>
+);
+
 const ReviewTable: React.FC = () => {
-  const [currentRound, setCurrentRound] = useState<number>(0); // State for current round
-  const [sortOrderRow, setSortOrderRow] = useState<'asc' | 'desc' | 'none'>('none'); // State for row sort order
-  const [showToggleQuestion, setShowToggleQuestion] = useState(false); // State for showing question column
-  const [open, setOpen] = useState(false); 
+  const [selectedRound, setSelectedRound] = useState<number>(0);
+  const [rowSortOrder, setRowSortOrder] = useState<'asc' | 'desc' | 'none'>('none');
+  const [isQuestionListVisible, setIsQuestionListVisible] = useState(false);
+  const [submissionDetailsVisible, setSubmissionDetailsVisible] = useState(false);
 
-  // Function to toggle the sort order for rows
-  const toggleSortOrderRow = () => {
-    setSortOrderRow((prevSortOrder) => {
-      if (prevSortOrder === 'asc') return 'desc';
-      if (prevSortOrder === 'desc') return 'none';
-      return 'asc';
-    });
-  };
+  // Calculate review count and selected round data
+  const reviewCount = dummyDataRounds[selectedRound][0].reviews.length;
+  const selectedRoundData = useMemo(() => dummyDataRounds[selectedRound], [selectedRound]);
 
-  // Calculating averages and sorting data based on the current round and sort order
-  const currentRoundData = dummyDataRounds[currentRound];
-  const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
-    currentRoundData,
-    sortOrderRow
+  const { averagePeerReviewScore, columnAverages, sortedData } = useMemo(
+    () => calculateAverages(selectedRoundData, rowSortOrder),
+    [selectedRoundData, rowSortOrder]
   );
 
-  // Function to handle round change
-  const handleRoundChange = (roundIndex: number) => {
-    setCurrentRound(roundIndex);
-  };
-  //Function to handle Show Question
-  const toggleShowQuestion = () => {
-    setShowToggleQuestion(!showToggleQuestion);
+  // Toggle functions
+  const toggleRowSortOrder = () => {
+    const nextIndex = (SORT_ORDER_SEQUENCE.indexOf(rowSortOrder) + 1) % SORT_ORDER_SEQUENCE.length;
+    setRowSortOrder(SORT_ORDER_SEQUENCE[nextIndex]);
   };
 
-  // JSX rendering of the ReviewTable component
+  const toggleVisibility = (setVisibility: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setVisibility(prev => !prev);
+  };
+
+  // Helper function for rendering sort order icon
+  const renderSortIcon = () => {
+    if (rowSortOrder === 'none') return <span>▲▼</span>;
+    return rowSortOrder === 'asc' ? <span> ▲</span> : <span> ▼</span>;
+  };
+
   return (
-    <div className="p-4">
+    <div className="p-4 w-full max-w-6xl mx-auto">
+      {/* Report title and team info */}
       <h2 className="text-2xl font-bold mb-2">Summary Report: Program 2</h2>
-      <h5 className="text-xl font-semibold mb-1">Team: {dummyData.team}</h5>
-      <h5 className="mb-4">
-        Average peer review score:{" "}
-        <span>{averagePeerReviewScore}</span>
-      </h5>
+      <h3 className="text-xl font-semibold mb-1">Team: {dummyData.team}</h3>
+      <h5 className="mb-4">Average peer review score: <span>{averagePeerReviewScore}</span></h5>
+
       <div>Tagging: 97/97</div>
-      <div>
-      <a href="#" onClick={(e) => { e.preventDefault(); setOpen(!open); }}>
-          {open ? 'Hide Submission' : 'Show Submission'}
-      </a>
-      {/* Collapsible content */}
-      <Collapse in={open}>
-        <div id="example-collapse-text">
-          <br></br>
-          {/* Render links only when open is true */}
-          {open && (
-            <>
-            <a
-              href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents
-            </a>
-            <br />
-            <a
-              href="http://152.7.177.44:8080/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              http://152.7.177.44:8080/
-            </a>
-            <br />
-            {/* Add a downloadable link to your dummy file */}
-            <a
-              href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents/raw/main/README.md"
-              download="README.md"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              README.md
-            </a>
-          </>
-          )}
-        </div>
-      </Collapse>
+      <div className="mt-4 space-y-6">
+        {/* Toggle for showing/hiding submission details */}
+        <button
+          type="button"
+          onClick={e => {
+            e.preventDefault();
+            toggleVisibility(setSubmissionDetailsVisible);
+          }}
+          className="link-button"
+        >
+          {submissionDetailsVisible ? 'Hide Submission Details' : 'Show Submission Details'}
+        </button>
+        <SubmissionDetails isVisible={submissionDetailsVisible} />
       </div>
 
-      <h4 className="text-xl font-semibold mb-1">Review (Round: {currentRound + 1} of {dummyDataRounds.length}) </h4>
-      <br></br>
-      {/* toggle Question Functionality */}
-      <form>
+      {/* Review Section with round and question toggle options */}
+      <h3 className="text-lg font-medium mb-2">
+        Review (Round: {selectedRound + 1} of {dummyDataRounds.length})
+      </h3>
+      <br />
+      <form className="flex items-center gap-2 mb-4">
         <input
           type="checkbox"
           id="toggleQuestion"
           name="toggleQuestion"
-          checked={showToggleQuestion}
-          onChange={toggleShowQuestion}
+          checked={isQuestionListVisible}
+          onChange={() => toggleVisibility(setIsQuestionListVisible)}
         />
         <label htmlFor="toggleQuestion"> &nbsp;Toggle Question List</label>
       </form>
-      <div className="table-container">
+
+      {/* Table displaying reviews, averages, and sorting functionality */}
+      <div className="overflow-x-auto">
         <table className="tbl_heat">
           <thead>
-          <tr className="bg-gray-200">
-            <th className="py-2 px-4 text-center" style={{ width: '70px' }}>Question No.</th>
-            {showToggleQuestion && (
-                <th className="py-2 px-4 text-center" style={{ width: '150px' }}>Question</th>
+            <tr className="bg-gray-200">
+              <th scope="col" className="p-2 text-center column-width-small">Question No.</th>
+              {isQuestionListVisible && (
+                <th scope="col" className="py-2 px-4 text-center column-width-large">Question</th>
               )}
-            {Array.from({ length: currentRoundData[0].reviews.length }, (_, i) => (
-              <th key={i} className="py-2 px-4 text-center" style={{ width: '70px' }}>{`Review ${i + 1}`}</th>
-            ))}
-            <th className="py-2 px-4" style={{ width: '70px' }} onClick={toggleSortOrderRow}>
-              Avg
-              {sortOrderRow === "none" && <span>▲▼</span>}
-              {sortOrderRow === "asc" && <span> ▲</span>}
-              {sortOrderRow === "desc" && <span> ▼</span>}
-            </th>
-          </tr>
+              <HeaderCells reviewCount={reviewCount} />
+              <th scope="col" className="py-2 px-4 column-width-small" onClick={toggleRowSortOrder}>
+                Avg
+                {renderSortIcon()}
+              </th>
+            </tr>
           </thead>
+          
           <tbody>
-          {sortedData.map((row, index) => (
-            <ReviewTableRow
-              key={index}
-              row={row}
-              showToggleQuestion={showToggleQuestion}
-            />
-          ))}
-          <tr className="no-bg">
-            <td className="py-2 px-4" style={{ width: '70px' }}>Avg</td> {/* "Avg" header always in the first column */}
-            {showToggleQuestion && <td></td>} {/* Add an empty cell if toggle question is shown */}
-            {columnAverages.map((avg, index) => (
-              <td key={index} className="py-2 px-4 text-center">
-                {avg.toFixed(2)}
-              </td>
+            {sortedData.map((row, index) => (
+              <ReviewTableRow
+                key={index}
+                row={row}
+                isQuestionListVisible={isQuestionListVisible}
+              />
             ))}
-          </tr>
+            <tr className="no-bg">
+              <td className="py-2 px-4 column-width-small">Avg</td>
+              {isQuestionListVisible && <td></td>}
+              {columnAverages.map((avg, index) => (
+                <td key={index} className="py-2 px-4 text-center">
+                  {avg.toFixed(2)}
+                </td>
+              ))}
+            </tr>
           </tbody>
         </table>
-        <br></br>
-        <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
+        <br />
+        <RoundSelector currentRound={selectedRound} handleRoundChange={setSelectedRound} />
       </div>
-      {/* view stats functionality */}
-      <Statistics average={averagePeerReviewScore}/>
 
-      <p className="mt-4">
-        <h3>Grade and comment for submission</h3>
-        Grade: {dummyData.grade}<br></br>
-        Comment: {dummyData.comment}<br></br>
-        Late Penalty: {dummyData.late_penalty}<br></br>
-      </p>
+      <Statistics average={averagePeerReviewScore} />
+
+      {/* Grade and Comment Section for the submission */}
+      <div className="my-2">
+        <h3 className="text-lg font-medium">Grade and comment for submission</h3>
+        <div className="space-y-1">
+          <p>Grade: {dummyData.grade}</p>
+          <p>Comment: {dummyData.comment}</p>
+          <p>Late Penalty: {dummyData.late_penalty}</p>
+        </div>
+      </div>
 
       <Link to="/">Back</Link>
     </div>
   );
 };
 
-export default ReviewTable; // Exporting the ReviewTable component as default
+export default ReviewTable;

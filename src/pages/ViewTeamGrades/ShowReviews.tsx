@@ -1,15 +1,16 @@
 import React from 'react';
 import { getColorClass } from './utils';
 import { RootState } from "../../store/store";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
-//props for the ShowReviews
+// Props for individual review comment
 interface ReviewComment {
   score: number;
   comment?: string;
   name: string;
 }
 
+// Props for each review question with a set of review comments
 interface Review {
   questionNumber: string;
   questionText: string;
@@ -18,59 +19,79 @@ interface Review {
   maxScore: number;
 }
 
+// Props for ShowReviews component, which accepts an array of review data for multiple rounds
 interface ShowReviewsProps {
   data: Review[][];
 }
 
-//function for ShowReviews
+// RoundHeading component for round titles
+const RoundHeading: React.FC<{ round: number }> = ({ round }) => (
+  <div className="round-heading">Round {round + 1}</div>
+);
+
+// ReviewHeading component for review titles with conditional reviewer name
+const ReviewHeading: React.FC<{ reviewNumber: number; reviewerName: string; isStudent: boolean }> 
+= ({ reviewNumber, reviewerName, isStudent }) => (
+  <div className="review-heading">
+    Review {reviewNumber + 1}: {!isStudent ? reviewerName : ""}
+  </div>
+);
+
+// QuestionReview component for displaying each question’s review and score
+const QuestionReview: React.FC<{ question: Review; review: ReviewComment }> = ({ question, review }) => (
+  <div className="review-block">
+    <div className="question">{question.questionNumber}. {question.questionText}</div>
+    <div className="score-container">
+      <span className={`score ${getColorClass(review.score, question.maxScore)}`}>
+        {review.score}
+      </span>
+      {review.comment && <div className="comment">{review.comment}</div>}
+    </div>
+  </div>
+);
+
+// Main ShowReviews component
 const ShowReviews: React.FC<ShowReviewsProps> = ({ data }) => {
   const rounds = data.length;
 
+  // Authentication state from Redux store to conditionally display reviewer names
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
 
+  const isStudent = auth.user.role === "Student";
 
-  // Render each review for every question in each round
-  const renderReviews = () => {
-    const reviewElements: JSX.Element[] = [];
-    for(let r = 0; r < rounds; r++){
-      const num_of_questions = data[r].length;
-      
-      // Assuming 'reviews' array exists inside the first 'question' of the first 'round'.
-      const num_of_reviews = data[r][0].reviews.length;
-      reviewElements.push(<div className="round-heading">Round {r+1}</div>)
-      for (let i = 0; i < num_of_reviews; i++) {
-        if (auth.user.role !== "Student") {
-          reviewElements.push(
-              <div className="review-heading">Review {i+1}: {data[r][0].reviews[i].name}</div>
-          );
-        } else {
-            reviewElements.push(
-                <div className="review-heading">Review {i+1}</div>
-            );
-        }
-        for (let j = 0; j < num_of_questions; j++) {
-          reviewElements.push(
-            <div key={`round-${r}-question-${j}-review-${i}`} className="review-block">
-              <div className="question">{j+1}. {data[r][j].questionText}</div>
-              <div className="score-container">
-                <span className={`score ${getColorClass(data[r][j].reviews[i].score,data[r][j].maxScore)}`}>{data[r][j].reviews[i].score}</span>
-                {data[r][j].reviews[i].comment && (
-                  <div className="comment">{data[r][j].reviews[i].comment}</div>
-                )}
-              </div>
-            </div>
-          );
-        }
-      }
-    }
-    
-    return reviewElements;
-  };
-
-  return <div>{rounds > 0 ? renderReviews() : <div>No reviews available</div>}</div>;
+  // Render the reviews or a message if there are no reviews available
+  return (
+    <div>
+      {rounds > 0 ? (
+        data.map((roundData, r) => (
+          <React.Fragment key={`round-${r}`}>
+            <RoundHeading round={r} />
+            {roundData[0].reviews.map((_, reviewIndex) => (
+              <React.Fragment key={`round-${r}-review-${reviewIndex}`}>
+                <ReviewHeading
+                  reviewNumber={reviewIndex}
+                  reviewerName={roundData[0].reviews[reviewIndex].name}
+                  isStudent={isStudent}
+                />
+                {roundData.map((question, questionIndex) => (
+                  <QuestionReview
+                    key={`round-${r}-question-${questionIndex}-review-${reviewIndex}`}
+                    question={question}
+                    review={question.reviews[reviewIndex]}
+                  />
+                ))}
+              </React.Fragment>
+            ))}
+          </React.Fragment>
+        ))
+      ) : (
+        <div>No reviews available</div>
+      )}
+    </div>
+  );
 };
 
 export default ShowReviews;

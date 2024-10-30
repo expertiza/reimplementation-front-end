@@ -1,58 +1,63 @@
-import { ReviewData } from './App';
+import { QuestionFeedback } from './Review';
 
-// Function to get color class based on score and maxScore
+// Function to determine color class based on review score and maximum score
 export const getColorClass = (score: number, maxScore: number) => {
-  let scoreColor = score;
- 
-  scoreColor = ((maxScore - scoreColor) / maxScore) * 100;
-  if (scoreColor >= 80) return 'c1';
-  else if (scoreColor >= 60 && scoreColor < 80) return 'c2';
-  else if (scoreColor >= 40 && scoreColor < 60) return 'c3';
-  else if (scoreColor >= 20 && scoreColor < 40) return 'c4';
-  else if (scoreColor >= 0 && scoreColor < 20) return 'c5';
-  else return 'cf';
+  const percentage = (score / maxScore) * 100;
+
+  if (percentage <= 20) return 'c1';
+  else if (percentage <= 40) return 'c2';
+  else if (percentage <= 60) return 'c3';
+  else if (percentage <= 80) return 'c4';
+  else if (percentage <= 100) return 'c5';
+  return 'cf'; // Default color for scores out of bounds
 };
 
-// Function to calculate averages for rows and columns
+// Function to calculate averages for rows and columns in a round of review data
 export const calculateAverages = (
-  currentRoundData: ReviewData[],
+  currentRoundData: QuestionFeedback[],
   sortOrderRow: 'asc' | 'desc' | 'none'
 ) => {
   let totalAvg = 0;
-  let questionCount = 0;
   let totalMaxScore = 0;
+
+  // Calculate row averages and accumulate scores for overall average calculation
   currentRoundData.forEach((row) => {
-    const sum = row.reviews.reduce((acc, val) => acc + val.score, 0);
+    const sum = row.reviews.reduce((acc, review) => acc + review.score, 0);
     row.RowAvg = sum / row.reviews.length;
-    totalAvg = row.RowAvg + totalAvg;
-    totalMaxScore = totalMaxScore + row.maxScore;
-    questionCount++;
+    totalAvg += row.RowAvg * row.maxScore;
+    totalMaxScore += row.maxScore;
   });
 
-  const averagePeerReviewScore =
-    questionCount > 0
-      ? (((totalAvg / totalMaxScore) * 100) > 0 ? ((totalAvg / totalMaxScore) * 100).toFixed(2) : '0.00')
-      : '0.00';
+  const averagePeerReviewScore = totalMaxScore
+    ? ((totalAvg / totalMaxScore) * 100).toFixed(2)
+    : '0.00';
 
-  const columnAverages: number[] = Array.from({ length: currentRoundData[0].reviews.length }, () => 0);
+  // Initialize column averages array for each review column
+  const columnAverages: number[] = Array(currentRoundData[0].reviews.length).fill(0);
 
+  // Sum scores for each column
   currentRoundData.forEach((row) => {
-    row.reviews.forEach((val, index) => {
-      columnAverages[index] += val.score;
+    row.reviews.forEach((review, index) => {
+      columnAverages[index] += review.score;
     });
   });
 
+  // Normalize column averages to a scale of 0 to 5 based on the number of rows
   columnAverages.forEach((sum, index) => {
-    columnAverages[index] = (sum / totalMaxScore) * 5;
+    columnAverages[index] = currentRoundData.length
+      ? (sum / (currentRoundData.length * currentRoundData[0].maxScore)) * 5
+      : 0;
   });
 
-  let sortedData = [...currentRoundData];
-
-  if (sortOrderRow === 'asc') {
-    sortedData = currentRoundData.slice().sort((a, b) => a.RowAvg - b.RowAvg);
-  } else if (sortOrderRow === 'desc') {
-    sortedData = currentRoundData.slice().sort((a, b) => b.RowAvg - a.RowAvg);
-  }
+  // Sort data based on row averages according to the specified order
+  const sortedData = [...currentRoundData].sort((a, b) =>
+    sortOrderRow === 'asc' ? a.RowAvg - b.RowAvg : sortOrderRow === 'desc' ? b.RowAvg - a.RowAvg : 0
+  );
 
   return { averagePeerReviewScore, columnAverages, sortedData };
+};
+
+// Utility function to toggle visibility, used for UI elements with state toggles
+export const toggleVisibility = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+  setter((prevState) => !prevState);
 };

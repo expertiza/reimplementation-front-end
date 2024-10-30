@@ -1,74 +1,35 @@
-/* Set the maximum width of the table container */
-.table-container {
-  max-width: 90%;
-}
-
-/* Circle around max score number */
+/* Circle around max score number for highlighting */
 .circle-container {
-  display: flex;
-  align-items: center;
+  display: inline-flex;
 }
 
-.circle {
+/* Column width classes for table cells */
+.column-width-small { width: 70px; }
+.column-width-large { width: 150px; }
+
+/* Styles for icons used in the table, such as stars or ticks */
+.star, .tick {
+  margin-right: 5px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 1px solid orangered;
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   font-weight: bold;
   color: orangered;
-  margin-left: -20px; /* Add margin to separate the circle from the text */
 }
 
-.tick{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  color: orangered;
-  margin-left: -15px; /* Add margin to separate the circle from the text */
-}
+/* Colors for score cells in the heatgrid view */
+.c0 {background-color: #d3d3d3;} /* Null space in the table */
+.c1 {background-color: #ff8080;} /* Red - poor score */
+.c2 {background-color: #FD992D;} /* Orange */
+.c3 {background-color: #FFEC8B;} /* Yellow - median score */
+.c4 {background-color: #BCED91;} /* Light green */
+.c5 {background-color: #2DE636;} /* Green - good score */
+.cf {background-color: #FFFFFF;} /* Default background color */
 
-/* Colors used for coloring score cells within the heatgrid for the grades view */
-
-/* Null space in the table */
-.c0 {
-  background-color: #d3d3d3;
-}
-
-/* Red, indicative of a poor score */
-.c1 {
-  background-color: #ff8080;
-}
-
-/* Orange */
-.c2 {
-  background-color: #FD992D;
-}
-
-/* Yellow, indicative of a median score */
-.c3 {
-  background-color: #FFEC8B;
-}
-
-/* Light green */
-.c4 {
-  background-color: #BCED91;
-}
-
-/* Green, indicative of a good score */
-.c5 {
-  background-color: #2DE636;
-}
-
-/* Default background color */
-.cf {
-  background-color: #FFFFFF;
-}
-
-/* Style for the grades in the summary report */
+/* Styling for summary report grade circle */
 .grade-circle {
   width: 30px;
   height: 30px;
@@ -79,68 +40,78 @@
   text-align: center;
 }
 
-/* Underline scores which have a comment */
+/* Underlined text for scores with comments */
 .underlined {
   text-decoration: underline;
   font-weight: bold;
 }
 
-/* Styling for the heatgrid table */
+/* Table styling for heatgrid */
 .tbl_heat {
   border: 1px solid black;
-  width: 100%;
-  font-size: 10px;
   text-align: center;
+  min-width: 600px; /* Minimum width before scrolling */
   table-layout: fixed;
-  min-width: 600px; // Minimum width before scrolling kicks in
+  margin-left: 1%;
 }
 
+/* Styling for individual table cells in the heatgrid */
 .tbl_heat td {
-  cursor: pointer;
-  padding: 8px;
-  border: 1px black solid;
-  width: auto;
-  font-size: 11px;
-  table-layout: fixed;
   position: relative;
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 1px solid black;
+  table-layout: fixed;
+  white-space: normal;  /* Allows text to wrap within the cell */
+  word-wrap: break-word; /* Ensures long words do not overflow */
 }
 
-/* Tooltip display for question text on hover */
+/* Left padding for the second column to align text */
+.tbl_heat td:nth-child(2) {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+/* Tooltip styling for cells with additional data */
 .tbl_heat td[data-question]:hover::after {
   content: attr(data-question);
   position: absolute;
-  background-color: rgba($color: #000000, $alpha: 1);
+  background-color: rgba(0, 0, 0, 0.9); /* Dark background for readability */
   color: #ffffff;
-  padding: 4px;
-  border-radius: 4px;
-  bottom: 130%;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  top: calc(100% + 10px);
   left: 0%;
-  white-space: nowrap;
+  z-index: 1000;
+  text-align: left;
+  min-width: 200px; /* Tooltip min width */
+  max-width: 600px; /* Tooltip max width */
+  word-wrap: break-word; /* Ensures long words wrap within tooltip */
 }
 
-/* Styling for table headers */
+/* Header styling for the heatgrid table */
 .tbl_heat th {
-  border: 1px black solid;
-  padding: 10px;
-  font-size: 11px;
-  background-color: #f2f2f2;
-  width: auto;
-  table-layout: fixed;
+  border: 1px solid black;
+  padding: 5px;
 }
 
-/* Hides padding for specific rows */
+/* Hover effect for table rows */
+.tbl_heat tbody tr:hover {
+  background-color: #f0f4ff; /* Light background color on hover */
+}
+
 .hiddenRow {
   padding: 0 !important;
 }
 
-/* Tooltip span styling */
+/* Tooltip styling */
 .spn_tooltip {
   padding-left: 30px;
   color: grey;
   font-size: small;
 }
 
-/* Styling for question toggle span */
+/* Toggle question list link styling */
 .spn_qsttog {
   padding-left: 30px;
   cursor: pointer;
@@ -149,20 +120,17 @@
   font-size: small;
 }
 
-/* Classes for E2100 Tag Reports for Students to style the new HeatGrid of review tags */
-
-/* Styling for action row */
+/* Action row styling for small table cells */
 .action_row {
-  border: 1px black solid;
-  padding: 1px 2px 2px 1px;
+  border: 1px solid black;
+  padding: 1px 2px;
   font-size: 11px;
   text-align: center;
 }
 
-/* Styling for tag heat grid */
+/* Heat grid for tagging */
 .tag_heat_grid {
   padding: 0;
-  spacing: 0;
   border: 1px solid black;
   position: relative;
   float: right;
@@ -171,87 +139,53 @@
   z-index: 2;
 }
 
-/* Styling for tag heat grid headers */
+/* Header styling for tag heat grid */
 .tag_heat_grid th {
   border: 1px solid black;
   font-size: 12px;
   cursor: pointer;
 }
 
-/* Styling for tag heat grid cells */
+/* Cell styling for tag heat grid */
 .tag_heat_grid td {
   border: 0.5px solid black;
   font-size: 8px;
 }
 
-/* Styling for tag heat grid criterion */
+/* Criterion styling for tag heat grid */
 .tag_heat_grid_criterion {
   font-size: 11px !important;
   font-weight: bold !important;
 }
 
-/* Styles for the round selector */
-.round-selector {
-  display: flex;
-}
-
-.round-button {
-  padding: 7px 7px;
-  margin: 5px;
-  border: 2px solid #4a90e2;
-  border-radius: 10px;
-  background-color: #4a90e2;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: #357bd8;
-    border-color: #357bd8;
-  }
-
-  &.current {
-    background-color: #2ecc71;
-    border-color: #2ecc71;
-  }
-
-  .round-selector > div {
-    display: flex;
-    align-items: center;
-    margin: auto;
-  }
-}
-
+/* Container for layout alignment */
 .container {
   display: flex;
-  justify-content: space-between; /* Adjust as needed */
-  width: 80%; /* Ensure the container takes up the full width */
+  justify-content: space-between;
+  width: 80%;
 }
 
-
-.round-heading {
-  font-weight: bold;
-  margin-top: 20px;
-  font-size: 30px;
-}
-
+/* Styling for main headings */
+.round-heading,
 .review-heading {
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: 1rem;
+  font-size: clamp(1.5rem, 2vw, 2rem); /* Responsive font size */
 }
 
+/* Block styling for reviews */
 .review-block {
   border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 0;
 }
 
+/* Styling for question text */
 .question {
   font-weight: bold;
 }
 
+/* Circle styling for individual scores */
 .score {
   border-radius: 50%;
   width: 24px;
@@ -264,32 +198,77 @@
   font-weight: bold;
 }
 
-.comment {
-  flex-grow: 1; /* Ensures comment fills the rest of the container */
-  padding-top: 3px; 
-}
-
-/* Style for even-numbered review blocks */
+/* Alternating background colors for review blocks */
 .review-block:nth-child(even) {
-  background-color: #d9edf7; 
-  
+  background-color: #d9edf7;
 }
-
-/* Style for odd-numbered review blocks */
 .review-block:nth-child(odd) {
-  background-color: #fcf8e3; 
-
+  background-color: #fcf8e3;
 }
 
+/* Container for score with comment alignment */
 .score-container {
   display: flex;
-  align-items: center; 
+  align-items: center;
+  justify-content: space-between;
   margin-top: 5px;
-  padding-top: 10px; 
-
+  padding-top: 10px;
 }
 
+/* Styling for comment text */
+.comment {
+  flex-grow: 1;
+  padding-top: 3px;
+}
 
+/* Container for the entire review section */
 .review-container {
-  margin-bottom: 200px; 
+  margin-bottom: 200px;
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+  .table-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.625rem;
+    padding: 0.4rem;
+  }
+  .table-container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.5rem;
+    padding: 0.3rem;
+  }
+  .tbl_heat {
+    font-size: 0.75rem;
+    min-width: 100%; /* Full width on small screens */
+  }
+  .table-container {
+    padding: 0;
+  }
+}
+
+@media (max-width: 320px) {
+  .tbl_heat th, .tbl_heat td {
+    font-size: 0.45rem;
+    padding: 0.25rem;
+  }
+  .table-container {
+    padding: 0 0.25rem;
+  }
 }

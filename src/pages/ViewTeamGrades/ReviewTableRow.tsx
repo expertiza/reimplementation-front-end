@@ -1,49 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { getColorClass } from './utils'; // Importing utility functions
-import { ReviewData } from './App'; // Importing the ReviewData interface from App
+import { getColorClass } from './utils';
+import { QuestionFeedback } from './Review';
 
-// Props interface for ReviewTableRow component
 interface ReviewTableRowProps {
-  row: ReviewData; // Data for the row
-  showToggleQuestion: boolean; // Flag to toggle the question column
+  row: QuestionFeedback;
+  isQuestionListVisible: boolean;
 }
 
-// Functional component ReviewTableRow
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion }) => {
+// Helper function to get the icon based on maxScore
+const getScoreIcon = (maxScore: number) => {
+  return maxScore !== 1 ? <span className="star">☆</span> : <span className="tick">✓</span>;
+};
+
+// Helper component for rendering individual review cells
+const ReviewCell: React.FC<{ score: number; comment?: string; maxScore: number }> = ({ score, comment, maxScore }) => (
+  <td
+    className={`py-2 px-4 text-center ${getColorClass(score, maxScore)}`}
+    align="center"
+    data-toggle="tooltip"
+    data-question={comment}
+  >
+    <span className={comment ? "underline" : ""}>{score}</span>
+  </td>
+);
+
+// Component to render a single table row with question data, reviews, and average
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, isQuestionListVisible }) => {
+  const { maxScore, questionNumber, questionText, reviews, RowAvg } = row;
 
   return (
-    <tr className={row.maxScore === 1 ? "no-bg" : ""}>
-      {/* Question Number */}
-      <td className="py-2 px-4 text-center" data-question={row.questionText}>
-        <div className="circle-container">
-          {row.maxScore !== 1 ? (
-            <span className="circle">{row.maxScore}</span>
-          ) : (
-            <span className="tick">✓</span>
-          )}
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{row.questionNumber}
-        </div>
+    <tr className={maxScore === 1 ? "no-bg" : undefined}>
+      {/* Display Question Number */}
+      <td className="py-2 px-4 text-center" data-question={questionText}>
+        {questionNumber}
       </td>
-          {/* Toggle Question */}
-      {showToggleQuestion && (
-        <td className="text-center" >{row.questionText}</td>
+
+      {/* Conditional Display of Question Text based on `isQuestionListVisible` prop */}
+      {isQuestionListVisible && (
+        <td width="300px" className="text-left">
+          <div className="circle-container">
+            {getScoreIcon(maxScore)}
+            &nbsp;{questionText}
+          </div>
+        </td>
       )}
 
-      {/* Review Cells */}
-      {row.reviews.map((review, idx) => (
-        <td
-          key={idx}
-          className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
-          data-question={review.comment}
-        >
-          <span style={{ textDecoration: review.comment ? "underline" : "none" }}>{review.score}</span>
-        </td>
+      {/* Review Cells - Render each review cell with appropriate styling */}
+      {reviews.map((review, idx) => (
+        <ReviewCell key={idx} score={review.score} comment={review.comment} maxScore={maxScore} />
       ))}
 
-      {/* Row Average */}
-      <td className="py-2 px-4 text-center">{row.RowAvg.toFixed(2)}</td>
+      {/* Row Average Score - Display average score for each question rounded to 2 decimal places */}
+      <td className="py-2 px-4 text-center">{RowAvg.toFixed(2)}</td>
     </tr>
   );
 };
 
-export default ReviewTableRow; // Exporting the ReviewTableRow component as default
+export default ReviewTableRow;

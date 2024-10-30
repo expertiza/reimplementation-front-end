@@ -1,213 +1,177 @@
-// Statistics.tsx
-import React,{useState, useEffect} from 'react';
-import { calculateAverages } from './utils';
+import { useState, useEffect } from 'react';
+import { calculateAverages, toggleVisibility } from './utils';
 import './grades.scss';
-import CircularProgress  from './CircularProgress';
-import ShowReviews from './ShowReviews'; //importing show reviews component
-import dummyDataRounds from './Data/heatMapData.json'; // Importing dummy data for rounds
-import dummyauthorfeedback from './Data/authorFeedback.json'; // Importing dummy data for author feedback
+import CircularProgress from './CircularProgress';
+import ShowReviews from './ShowReviews';
+import dummyDataRounds from './Data/heatMapData.json';
+import dummyAuthorFeedback from './Data/authorFeedback.json';
 import BarGraph from './BarGraph';
-import teammateData from './Data/teammateData.json'; 
-import AverageMarks from './teamMarks'; 
+import teammateData from './Data/teammateData.json';
+import AverageMarks from './teamMarks';
 
-//props for statistics component
 interface StatisticsProps {
-  average:string;
+  average: string;
 }
 
-//statistics component
-const Statistics: React.FC<StatisticsProps> = ({average}) => {
-  const [sortedData, setSortedData] = useState<any[]>([]);
+// Reusable toggle button component
+const ToggleButton: React.FC<{ isVisible: boolean; onClick: () => void; showText: string; hideText: string }> = ({
+  isVisible,
+  onClick,
+  showText,
+  hideText,
+}) => (
+  <button
+    onClick={(e) => {
+      e.preventDefault();
+      onClick();
+    }}
+    className="link-button"
+  >
+    {isVisible ? hideText : showText}
+  </button>
+);
+
+const Statistics: React.FC<StatisticsProps> = ({ average }) => {
+  const [sortedData, setSortedData] = useState<number[]>([]);
+  const [showStatistics, setShowStatistics] = useState<boolean>(false);
+  const [showReviews, setShowReviews] = useState<boolean>(false);
+  const [showAuthorFeedback, setShowAuthorFeedback] = useState<boolean>(false);
+
   useEffect(() => {
-    const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(dummyDataRounds[0], "asc");
-    const rowAvgArray = sortedData.map(item => item.RowAvg);
-    console.log(rowAvgArray);
-    setSortedData(sortedData.map(item => item.RowAvg));
-  }, []); 
+    const { sortedData } = calculateAverages(dummyDataRounds[0], 'asc');
+    setSortedData(sortedData.map((item) => item.RowAvg));
+  }, []);
 
-  const [statisticsVisible, setstatisticsVisible] = useState<boolean>(false);
-  const toggleStatisticsVisibility = () => {
-      setstatisticsVisible(!statisticsVisible);
-  };
-  const [showReviews, setShowReviews] = useState(false);
-  const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
+  const getTotalReviewsForQuestion = (data: any[], questionNumber: string) =>
+    data.reduce(
+      (total, round) =>
+        total +
+        round.reduce(
+          (count: number, question: any) =>
+            question.questionNumber === questionNumber ? count + question.reviews.length : count,
+          0
+        ),
+      0
+    );
 
-  // Function to toggle the visibility of ShowReviews component
-  const toggleShowReviews = () => {
-    setShowReviews(!showReviews);
-  };
-
-    // Function to toggle the visibility of ShowAuthorFeedback component
-    const toggleAuthorFeedback = () => {
-      setShowAuthorFeedback(!ShowAuthorFeedback);
-    };
-
-  const headerCellStyle: React.CSSProperties = {
-    padding: '10px',
-    textAlign: 'center',
-    
-  };
-
-  //calculation for total reviews recieved
-  let totalReviewsForQuestion1: number = 0;
-  dummyDataRounds.forEach(round => {
-    round.forEach(question => {
-      if (question.questionNumber === "1") {
-        totalReviewsForQuestion1 += question.reviews.length;
-      }
-    });
-  });
-  //calculation for total feedback recieved
-  let totalfeedbackForQuestion1: number = 0;
-  dummyauthorfeedback.forEach(round => {
-    round.forEach(question => {
-      if (question.questionNumber === "1") {
-        totalfeedbackForQuestion1 += question.reviews.length;
-      }
-    });
-  });
-
-
-  const subHeaderCellStyle: React.CSSProperties = {
-    padding: '10px',
-    textAlign: 'center',
-  };
+  const totalReviewsForQuestion1 = getTotalReviewsForQuestion(dummyDataRounds, '1');
+  const totalFeedbackForQuestion1 = getTotalReviewsForQuestion(dummyAuthorFeedback, '1');
 
   return (
-    
-    <div>
-      
-    <table style={{ width: '90%', borderCollapse: 'collapse' }}>
-      <thead>
-      <a href="#" onClick={(e) => { e.preventDefault(); toggleStatisticsVisibility();}}>
-        {statisticsVisible ? 'hide stats' : 'show stats'}
-      </a>
-      {statisticsVisible && (
-     <tr>
-     <th style={headerCellStyle}>Stats</th>
-     <th style={headerCellStyle} colSpan={2}><BarGraph sortedData={sortedData} /></th>
-     <th style={headerCellStyle} colSpan={2}></th>
-     {teammateData.length !== 0 && (
-           <th style={headerCellStyle} colSpan={2}></th>
-          )}
-     
-     <th style={headerCellStyle}><CircularProgress size={70} progress={75} strokeWidth={10} /></th>
-   </tr>
-      )}
-        <tr>
-          <th style={headerCellStyle}></th>
-          <th style={headerCellStyle} colSpan={2}>Submitted Work</th>
-          {dummyauthorfeedback[0].length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Author Feedback</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Teammate Review</th>
-          )}
-          
-        </tr>
-        <tr>
-          <th style={subHeaderCellStyle}>Contributor</th>
-          <th style={subHeaderCellStyle}>Average</th>
-          <th style={subHeaderCellStyle}>Range</th>
-          {dummyauthorfeedback[0].length !== 0 && (
-            <th style={subHeaderCellStyle}>Average</th>
-          )}
-          {dummyauthorfeedback[0].length !== 0 && (
-            <th style={subHeaderCellStyle}>Range</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Average</th>
-          )}
-          {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Range</th>
-          )}
-          <th style={subHeaderCellStyle}>Final Score</th>
-        </tr>
-        <tr>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-                <a href="#">ssshah26 </a><span>(Siddharth Shah)</span>
-                <br />
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-                <div>{average}</div>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggleShowReviews(); }}>
-                    {showReviews ? 'Hide Reviews' : 'Show Reviews'}
-                </a><span>({totalReviewsForQuestion1})</span>
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-                <div>99.99% - 100%</div>
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              
-              {dummyauthorfeedback[0].length !== 0 && (
-                <div style={{textAlign: 'center' }}>
-                <div>96.67</div>
-                <a href="#" onClick={(e) => { e.preventDefault(); toggleAuthorFeedback(); }}>
-                    {ShowAuthorFeedback ? 'Hide Author Feedback' : 'Show Author Feedback'}
-                </a><span>({totalfeedbackForQuestion1})</span>
-              </div>
-              )}
-              <div>
-      </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-              {dummyauthorfeedback[0].length !== 0 && (
-                <div>87% - 100%</div>
-              )}   
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-                    {teammateData.length !== 0 && (
-                      <div><AverageMarks data={teammateData} /></div>
-                    )}
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
-              {teammateData.length !== 0 && (
-                      <div>90% - 100%</div>
-                    )}
-              </div>
-            </td>
-            <td style={subHeaderCellStyle}>
-            {teammateData.length !== 0 && (
-                      <div style={{textAlign: 'center' }}>
-                      <div>75%</div>
-                      <div>(in Finished)</div>
+    <div className="statistics-container mx-auto p-4">
+      <div className="overflow-x-auto max-w-full">
+        <table className="w-full border-collapse">
+          <thead>
+            {/* Toggle button for showing/hiding statistics */}
+            <ToggleButton
+              isVisible={showStatistics}
+              onClick={() => toggleVisibility(setShowStatistics)}
+              showText="Show Stats"
+              hideText="Hide Stats"
+            />
+            {showStatistics && (
+              <tr>
+                <th className="header-cell">Stats</th>
+                <th colSpan={2}>
+                  <BarGraph sortedData={sortedData} />
+                </th>
+                {teammateData.length > 0 && <th colSpan={2}></th>}
+                <th>
+                  <CircularProgress size={70} progress={75} strokeWidth={10} />
+                </th>
+              </tr>
+            )}
+            {/* Column headers */}
+            <tr>
+              <th className="header-cell"></th>
+              <th colSpan={2}>Submitted Work</th>
+              {dummyAuthorFeedback[0].length > 0 && <th colSpan={2}>Author Feedback</th>}
+              {teammateData.length > 0 && <th colSpan={2}>Teammate Review</th>}
+            </tr>
+            {/* Subheaders */}
+            <tr>
+              <th className="subheader-cell">Contributor</th>
+              <th className="subheader-cell">Average</th>
+              <th className="subheader-cell">Range</th>
+              {dummyAuthorFeedback[0].length > 0 && <th className="subheader-cell">Average</th>}
+              {dummyAuthorFeedback[0].length > 0 && <th className="subheader-cell">Range</th>}
+              {teammateData.length > 0 && <th className="subheader-cell">Average</th>}
+              {teammateData.length > 0 && <th className="subheader-cell">Range</th>}
+              <th className="subheader-cell">Final Score</th>
+            </tr>
+            {/* Contributor Row */}
+            <tr>
+              <td className="subheader-cell">
+                <div className="center-text">
+                  <a href="#">ssshah26</a> <span>(Siddharth Shah)</span>
                 </div>
-                    )}
-            
-            </td>
-          </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-    <div>
-        {showReviews && (
-          <div>
-            <h2>Reviews</h2>
-            <ShowReviews data={dummyDataRounds} />
-          </div>
-        )}
-        {ShowAuthorFeedback && (
-          <div>
-            <h2>Author Feedback</h2>
-            <ShowReviews data={dummyauthorfeedback} />
-          </div>
-        )}
+              </td>
+              <td className="subheader-cell">
+                <div className="center-text">
+                  <div>{average}</div>
+                  <ToggleButton
+                    isVisible={showReviews}
+                    onClick={() => toggleVisibility(setShowReviews)}
+                    showText="Show Reviews"
+                    hideText="Hide Reviews"
+                  />
+                  <span>({totalReviewsForQuestion1})</span>
+                </div>
+              </td>
+              <td className="subheader-cell">
+                <div className="center-text">99.99% - 100%</div>
+              </td>
+              {dummyAuthorFeedback[0].length > 0 && (
+                <>
+                  <td className="subheader-cell">
+                    <div className="center-text">
+                      96.67
+                      <ToggleButton
+                        isVisible={showAuthorFeedback}
+                        onClick={() => toggleVisibility(setShowAuthorFeedback)}
+                        showText="Show Author Feedback"
+                        hideText="Hide Author Feedback"
+                      />
+                      <span>({totalFeedbackForQuestion1})</span>
+                    </div>
+                  </td>
+                  <td className="subheader-cell">87% - 100%</td>
+                </>
+              )}
+              {teammateData.length > 0 && (
+                <>
+                  <td className="subheader-cell">
+                    <AverageMarks data={teammateData} />
+                  </td>
+                  <td className="subheader-cell">90% - 100%</td>
+                  <td className="subheader-cell">
+                    <div className="center-text">
+                      75%
+                      <div>(in Finished)</div>
+                    </div>
+                  </td>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-   </div> 
+      {/* Conditionally render reviews and author feedback sections */}
+      {showReviews && (
+        <div>
+          <h2>Reviews</h2>
+          <ShowReviews data={dummyDataRounds} />
+        </div>
+      )}
+      {showAuthorFeedback && (
+        <div>
+          <h2>Author Feedback</h2>
+          <ShowReviews data={dummyAuthorFeedback} />
+        </div>
+      )}
+    </div>
   );
-  
 };
 
 export default Statistics;
