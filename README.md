@@ -28,15 +28,17 @@ In the project directory, you can run:
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-**Admin Credentials**
+**Admin Credentials**  
 
-Username: admin
-Password: password123
-Use these credentials to gain admin view.
+Username: admin  
+Password: password123  
+Use these credentials to gain admin view.  
 
-**Student role**
-Username: user4
-Password: password123
+**Student role**  
+
+Username: user4  
+Password: password123  
+
 
 **View E2464**
 
