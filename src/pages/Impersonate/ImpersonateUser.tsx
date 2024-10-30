@@ -122,26 +122,34 @@ const ImpersonateUser: React.FC = () => {
 
   // Impersonate user
   const handleImpersonate = () => {
+    const fetchSelectedUserEntry = fetchSelectedUser?.data.userList[0];
+
     // Store only the initial User's JWT token and information
     if (!localStorage.getItem("originalUserToken")) {
       localStorage.setItem("originalUserToken", auth.authToken);
     }
-    const impersonateMessage =
-      "Impersonating a " +
-      fetchSelectedUser?.data.userList[0].role.name +
-      " with name " +
-      fetchSelectedUser?.data.userList[0].name;
-    localStorage.setItem("impersonateBannerMessage", impersonateMessage);
-    impersonateUser({
-      method: "post",
-      url: `/impersonate`,
-      data: {
-        impersonate_id: fetchSelectedUser?.data.userList[0]?.id,
-      },
-    });
+
+    if (fetchSelectedUserEntry) {
+      const impersonateMessage =
+        "Impersonating a " +
+        fetchSelectedUserEntry.role.name +
+        " with name " +
+        fetchSelectedUserEntry.name;
+      localStorage.setItem("impersonateBannerMessage", impersonateMessage);
+      impersonateUser({
+        method: "post",
+        url: `/impersonate`,
+        data: {
+          impersonate_id: fetchSelectedUserEntry.id,
+        },
+      });
+    }
+    else {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Cannot impersonate the Super Adminstrator!" }))
+    }
   };
 
-  // Impersonate user alert
+  // Handle any uncaught user impersonation errors
   useEffect(() => {
     if (error) {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
