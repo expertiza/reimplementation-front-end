@@ -34,6 +34,10 @@ Username: admin
 Password: password123
 Use these credentials to gain admin view.
 
+**Student role**
+Username: user4
+Password: password123
+
 **View E2464**
 
 In current project('E2464'), you need to open [http://localhost:3000/project_topics](http://localhost:3000/project_topics) to veiw.
@@ -41,7 +45,7 @@ In current project('E2464'), you need to open [http://localhost:3000/project_top
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
-## Current service online address:
+**Current service online address:**
 http://152.7.179.32:3000
 
 ### `npm test`
