@@ -1,82 +1,76 @@
-# Reimplementation Backend (Docker):
-Prerequisites: Docker needs to be installed on the machine that the application is running on.
 
-Follow these steps to start the project in Docker and add a test user (`user4`).
+# E2464
 
-## Steps to Test the Project with Docker
+## Current Service Online Address
+
+You can test the project online at the following address:  
+[http://152.7.179.32:3000](http://152.7.179.32:3000)
+[http://152.7.179.32:3000/project_topics](http://152.7.179.32:3000/project_topics)
+
+### View Project Topics
+
+To view the current project ('E2464'), open the following link in your browser:  
+[http://localhost:3000/project_topics](http://localhost:3000/project_topics)
+
+The page will reload if you make edits, and you will also see any lint errors in the console.
+
+## Admin Credentials
+
+- **Username:** admin  
+- **Password:** password123  
+
+## Student Role Credentials
+
+- **Username:** user4  
+- **Password:** password123  
+
+## Developing and Deploying with npm
+
+You can also develop and deploy the frontend using npm. Follow these steps:
+
+1. **Clone the Repository**
+
+   Clone the project repository to your local machine:
+   ```bash
+   git clone https://github.com/arlee-shelby/reimplementation-front-end.git
+   cd reimplementation-front-end
+   ```
+
+2. **Install Dependencies**
+
+   Install the required dependencies using npm:
+   ```bash
+   npm install
+   ```
+
+3. **Start the Development Server**
+
+   Run the following command to start the development server:
+   ```bash
+   npm start
+   ```
+
+   The app will run in development mode, and you can access it at [http://localhost:3000](http://localhost:3000).
+
+## Backend Required to Deploy the Project with Docker
+
+**Prerequisites:** Docker needs to be installed on the machine where the application is running.
 
 1. **Start the Docker Containers**
 
    Use the following command to start the containers in detached mode:
    ```bash
    sudo docker compose up -d
-2. **Add the Student role**
-    ```bash
+   ```
+
+2. **Add the Student Role**
+
+   Run the following command to create a test user (`user4`):
+   ```bash
    sudo docker compose exec app rails runner
-
    User.create(name: 'user4', email: 'user4@example.com', password: 'password123', full_name: 'user4', institution_id: 1, role_id: 5)
-# Getting Started with Create React App
+   ```
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Repository
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-**Admin Credentials**  
-
-Username: admin  
-Password: password123  
-Use these credentials to gain admin view.  
-
-**Student role**  
-
-Username: user4  
-Password: password123  
-
-
-**View E2464**
-
-In current project('E2464'), you need to open [http://localhost:3000/project_topics](http://localhost:3000/project_topics) to veiw.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-**Current service online address:**
-http://152.7.179.32:3000
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+For more information and access to the project code, visit the GitHub repository: [Reimplementation Frontend](https://github.com/arlee-shelby/reimplementation-front-end)
