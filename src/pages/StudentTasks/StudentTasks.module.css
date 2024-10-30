@@ -1,0 +1,154 @@
+/* Sidebar styling */
+.sidebar {
+    width: 450px;
+    margin-right: 50px;
+    padding-top: 20px;
+}
+
+/* Styles for the assignments table */
+.tasksTable {
+    width: 100%;
+    border-collapse: collapse;
+    /* Ensures no extra spacing between table borders */
+    margin-top: 1rem;
+    font-size: 14px;
+    /* Adjust font size */
+}
+
+.tasksTable th,
+.tasksTable td {
+    border: 1px solid #ccc;
+    /* Adds a light gray border around cells */
+    padding: 10px 15px;
+    /* Adds padding for better readability */
+    text-align: left;
+    /* Align text to the left */
+    vertical-align: middle;
+    /* Centers content vertically */
+}
+
+/* Only apply flex to headers containing dropdowns */
+.tasksTable th.dropdown-header {
+    display: flex;
+    align-items: flex-start;
+    /* Centers text and dropdown vertically */
+    justify-content: space-between;
+    /* Keeps text and dropdown aligned in row */
+}
+
+.tasksTable th.dropdown-header select {
+    margin-left: 5px;
+    /* Adds space between header text and dropdown */
+    padding: 5px;
+    /* Adds padding inside the dropdown */
+    font-size: 12px;
+    /* Smaller font size for dropdowns */
+    vertical-align: middle;
+    /* Aligns dropdown with text */
+    min-width: 100px;
+    /* Ensures dropdowns have consistent width */
+}
+
+.tasksTable th img,
+.tasksTable td img {
+    margin-left: 5px;
+    /* Adds space between text and info icon */
+    vertical-align: middle;
+}
+
+.tasksTable .centerCheckbox {
+    text-align: center;
+    /* Center-aligns checkboxes */
+}
+
+.tasksTable td a {
+    color: #007acc;
+    /* Adds color to links */
+    text-decoration: none;
+    /* Removes underline */
+}
+
+.tasksTable td a:hover {
+    text-decoration: underline;
+    /* Adds underline on hover for better UX */
+}
+
+/* Sidebar styling */
+.leftSidebar {
+    width: 250px;
+    padding: 15px;
+    background-color: antiquewhite;
+    border-right: 2px solid rgba(157, 27, 27, 0.267);
+    border-left: 2px solid rgba(157, 27, 27, 0.267);
+}
+
+.rightSidebar {
+    position: relative;
+    text-align: start;
+    width: 250px;
+    padding: 15px;
+    border-left: 1px solid #e0b4b4;
+    border-right: 1px solid #e0b4b4;
+    background-color: rgba(250, 235, 215, 0.412);
+}
+
+/* Main content styling */
+.mainContent {
+    padding: 15px;
+    flex: 1;
+}
+
+/* Footer link styling */
+.footerLink {
+    color: #007acc;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.footerLink:hover {
+    text-decoration: underline;
+}
+
+/* General layout adjustments */
+.assignments-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.table-legend {
+    display: flex;
+}
+
+/* .pageLayout {
+    display: flex;
+    width: 100%;
+    max-width: 98%;
+    margin: 10 auto;
+} */
+
+.pageLayout {
+    display: flex;
+    flex-wrap: wrap;
+    /* Allows items to wrap to the next line */
+    justify-content: space-between;
+    /* Distributes space between items */
+}
+
+
+.footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+
+
+.teamedStudents {
+    margin-top: 16px;
+    margin: auto;
+    /* Space above the teamed students section */
+    padding: 30px;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    font-size: 1rem;
+}

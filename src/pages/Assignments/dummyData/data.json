@@ -1,0 +1,11 @@
+{
+    "assignments": [
+      { "id": 1, "name": "Assignment 1", "course_id": 1 },
+      { "id": 2, "name": "Assignment 2", "course_id": 2 }
+    ],
+    "courses": [
+      { "id": 1, "name": "Course 1" },
+      { "id": 2, "name": "Course 2" }
+    ]
+  }
+  
