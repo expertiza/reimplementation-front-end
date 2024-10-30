@@ -130,12 +130,6 @@ const ImpersonateUser: React.FC = () => {
     }
 
     if (fetchSelectedUserEntry) {
-      const impersonateMessage =
-        "Impersonating a " +
-        fetchSelectedUserEntry.role.name +
-        " with name " +
-        fetchSelectedUserEntry.name;
-      localStorage.setItem("impersonateBannerMessage", impersonateMessage);
       impersonateUser({
         method: "post",
         url: `/impersonate`,
@@ -143,11 +137,29 @@ const ImpersonateUser: React.FC = () => {
           impersonate_id: fetchSelectedUserEntry.id,
         },
       });
-    }
-    else {
-      dispatch(alertActions.showAlert({ variant: "danger", message: "Cannot impersonate the Super Adminstrator!" }))
+    } else {
+      dispatch(
+        alertActions.showAlert({
+          variant: "danger",
+          message: "Cannot impersonate the Super Adminstrator!",
+        })
+      );
     }
   };
+
+  // Set Impersonation Message after the impersonateUser POST API call is complete
+  useEffect(() => {
+    if (impersonateUserResponse?.status === 200) {
+      const fetchSelectedUserEntry = fetchSelectedUser?.data.userList[0];
+      const impersonateMessage =
+        "Impersonating a " +
+        fetchSelectedUserEntry.role.name +
+        " with name " +
+        fetchSelectedUserEntry.name;
+
+      localStorage.setItem("impersonateBannerMessage", impersonateMessage);
+    }
+  }, [impersonateUserResponse]);
 
   // Handle any uncaught user impersonation errors
   useEffect(() => {
