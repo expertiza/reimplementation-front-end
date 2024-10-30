@@ -30,7 +30,8 @@ const RoundHeading: React.FC<{ round: number }> = ({ round }) => (
 );
 
 // ReviewHeading component for review titles with conditional reviewer name
-const ReviewHeading: React.FC<{ reviewNumber: number; reviewerName: string; isStudent: boolean }> = ({ reviewNumber, reviewerName, isStudent }) => (
+const ReviewHeading: React.FC<{ reviewNumber: number; reviewerName: string; isStudent: boolean }> 
+= ({ reviewNumber, reviewerName, isStudent }) => (
   <div className="review-heading">
     Review {reviewNumber + 1}: {!isStudent ? reviewerName : ""}
   </div>
