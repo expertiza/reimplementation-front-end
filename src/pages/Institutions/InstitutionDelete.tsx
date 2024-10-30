@@ -6,10 +6,6 @@ import {HttpMethod} from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import {IInstitution} from "../../utils/interfaces";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
-
 interface IDeleteInstitution {
   institutionData: IInstitution;
   onClose: () => void;

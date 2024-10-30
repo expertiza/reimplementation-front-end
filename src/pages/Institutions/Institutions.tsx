@@ -7,16 +7,20 @@ import { institutionColumns as INSTITUTION_COLUMNS } from "./institutionColumns"
 import axiosClient from "../../utils/axios_client";
 import InstitutionDelete from "./InstitutionDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
-import { IInstitution } from "../../utils/interfaces";
-
-/**
- * @author Ankur Mundra on June, 2023
- */
+import { IInstitution, ROLE } from "../../utils/interfaces";
+import { useSelector } from "react-redux";
+import { RootState } from "store/store";
+import { hasAllPrivilegesOf } from "utils/util";
 
 const Institutions = () => {
   const navigate = useNavigate();
   const institutions: any = useLoaderData();
 
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
+  
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IInstitution;
@@ -55,28 +59,41 @@ const Institutions = () => {
             </Col>
             <hr />
           </Row>
-          <Row>
-            <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPlusSquareFill />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <InstitutionDelete
-                institutionData={showDeleteConfirmation.data!}
-                onClose={onDeleteInstitutionHandler}
+          {/*Added authetication for manage institution to be accessed by roles higher than instructor */}
+          {hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) &&(
+            <>
+              <Row>
+              <Col md={{ span: 10, offset: 8 }}>
+                <Button variant="outline-success" onClick={() => navigate("new")}>
+                  <BsPlusSquareFill />
+                </Button>
+              </Col>
+              {showDeleteConfirmation.visible && (
+                <InstitutionDelete
+                  institutionData={showDeleteConfirmation.data!}
+                  onClose={onDeleteInstitutionHandler}
+                />
+              )}
+            </Row>
+            <Row className="justify-content-center">
+              <Col md ={5}>
+              <Table
+                data={tableData}
+                columns={tableColumns}
+                showColumnFilter={false}
+                columnVisibility={{ id: false }}
+                
               />
-            )}
-          </Row>
-          <Row>
-            <Table
-              data={tableData}
-              columns={tableColumns}
-              showColumnFilter={false}
-              columnVisibility={{ id: false }}
-              tableSize={{ span: 6, offset: 3 }}
-            />
-          </Row>
+              </Col>
+            </Row>
+            </>
+          ) }
+
+          {!hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) 
+          && (
+            <h1>Institution changes not allowed</h1>
+          )}
+          
         </Container>
       </main>
     </>
