@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Button, Col, Container, Row } from 'react-bootstrap';
 // import { useNavigate } from 'react-router-dom';
-import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
+import Table from "components/Table/Table";
 import { useLoaderData } from 'react-router-dom';
 
 interface ISubmission {
@@ -12,7 +12,7 @@ interface ISubmission {
 
 const columnHelper = createColumnHelper<ISubmission>();
 
-const ViewSubmissions: React.FC = () => {
+const SubmissionView: React.FC = () => {
   const assignment: any = useLoaderData();
   // const navigate = useNavigate();
 
@@ -70,15 +70,8 @@ const ViewSubmissions: React.FC = () => {
           />
         </Col>
       </Row>
-      {/* <Row>
-        <Col className="text-right">
-          <Button variant="outline-secondary" onClick={handleClose} style={{ marginRight: '10px' }}>
-            Close
-          </Button>
-        </Col>
-      </Row> */}
     </Container>
   );
 };
 
-export default ViewSubmissions;
+export default SubmissionView;

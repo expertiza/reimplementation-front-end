@@ -1,45 +1,46 @@
-import React from "react";
+import RootLayout from "layout/Root";
+import { loadAssignment } from "pages/Assignments/AssignmentUtil";
+import AssignReviewer from "pages/Assignments/AssignReviewer";
+import CreateTeams from "pages/Assignments/CreateTeams";
+import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import ViewReports from "pages/Assignments/ViewReports";
+import ViewScores from "pages/Assignments/ViewScores";
+import Courses from "pages/Courses/Course";
+import CourseEditor from "pages/Courses/CourseEditor";
+import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
+import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+import Home from "pages/Home";
+import Participants from "pages/Participants/Participant";
+import ParticipantEditor from "pages/Participants/ParticipantEditor";
+import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
+import EditProfile from "pages/Profile/Edit";
+import Reviews from "pages/Reviews/reviews";
+import SubmissionsView from "pages/Submissions/SubmissionsView";
+import SubmissionView from "pages/Submissions/SubmissionView";
+import SubmissionHistoryView from "./pages/Submissions/SubmissionHistoryView";
+import TA from "pages/TA/TA";
+import TAEditor from "pages/TA/TAEditor";
+import { loadTAs } from "pages/TA/TAUtil";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
+import Assignment from "./pages/Assignments/Assignment";
+import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
+import Email_the_author from "./pages/Email_the_author/email_the_author";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
-import Assignment from "./pages/Assignments/Assignment";
-import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment } from "pages/Assignments/AssignmentUtil";
+import Users from "./pages/Users/User";
+import UserEditor from "./pages/Users/UserEditor";
+import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
+import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
 import ErrorPage from "./router/ErrorPage";
+import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import NotFound from "./router/NotFound";
-import Participants from "pages/Participants/Participant";
-import ParticipantEditor from "pages/Participants/ParticipantEditor";
-import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
-import RootLayout from "layout/Root";
-import UserEditor from "./pages/Users/UserEditor";
-import Users from "./pages/Users/User";
-import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
-import Courses from "pages/Courses/Course";
-import CourseEditor from "pages/Courses/CourseEditor";
-import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
-import TA from "pages/TA/TA";
-import TAEditor from "pages/TA/TAEditor";
-import { loadTAs } from "pages/TA/TAUtil";
-import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
-import EditProfile from "pages/Profile/Edit";
-import Reviews from "pages/Reviews/reviews";
-import Email_the_author from "./pages/Email_the_author/email_the_author";
-import CreateTeams from "pages/Assignments/CreateTeams";
-import AssignReviewer from "pages/Assignments/AssignReviewer";
-import ViewSubmissions from "pages/Assignments/ViewSubmissions";
-import ViewScores from "pages/Assignments/ViewScores";
-import ViewReports from "pages/Assignments/ViewReports";
-import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 function App() {
   const router = createBrowserRouter([
     {
@@ -72,9 +73,13 @@ function App() {
         },
         {
           path: "assignments/edit/:id/viewsubmissions",
-          element: <ViewSubmissions />,
+          element: <SubmissionView />,
           loader: loadAssignment,
         },
+		{
+		  path: "submissions/history/:submissionId",
+		  element: <ProtectedRoute element={<SubmissionHistoryView />} leastPrivilegeRole={ROLE.TA} />,
+		},
         {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
@@ -121,6 +126,10 @@ function App() {
               loader: loadUserDataRolesAndInstitutions,
             },
           ],
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<SubmissionsView />} leastPrivilegeRole={ROLE.TA} />,
         },
         {
           path: "student_tasks/participants",
