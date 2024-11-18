@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { getColorClass } from './utils'; // Importing utility functions
-import { ReviewData } from './App'; // Importing the ReviewData interface from App
+import React, { useState, useEffect } from "react";
+import { getColorClass } from "./utils"; // Importing utility functions
+import { ReviewData } from "./App"; // Importing the ReviewData interface from App
 
 // Props interface for ReviewTableRow component
 interface ReviewTableRowProps {
@@ -10,7 +10,6 @@ interface ReviewTableRowProps {
 
 // Functional component ReviewTableRow
 const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion }) => {
-
   return (
     <tr className={row.maxScore === 1 ? "no-bg" : ""}>
       {/* Question Number */}

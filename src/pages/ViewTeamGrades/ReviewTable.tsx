@@ -7,9 +7,9 @@ import { calculateAverages, getColorClass } from "./utils";
 import "./grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
-import Filters from './Filters';
-import ShowReviews from './ShowReviews'; //importing show reviews component
-import dummyauthorfeedback from './Data/authorFeedback.json'; // Importing dummy data for author feedback
+import Filters from "./Filters";
+import ShowReviews from "./ShowReviews"; //importing show reviews component
+import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
 
 const ReviewTable: React.FC = () => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
@@ -34,16 +34,16 @@ const ReviewTable: React.FC = () => {
   };
 
   const toggleShowReviews = () => {
-    setShowReviews(prev => !prev);
+    setShowReviews((prev) => !prev);
   };
 
   const selectRound = (r: number) => {
-    setRoundSelected(prev => r);
-  }
+    setRoundSelected((prev) => r);
+  };
 
   // Function to toggle the visibility of ShowAuthorFeedback component
   const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback(prev => !prev);
+    setShowAuthorFeedback((prev) => !prev);
   };
 
   const handleRoundChange = (roundIndex: number) => {
@@ -112,7 +112,6 @@ const ReviewTable: React.FC = () => {
           <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
         </h5>
         <br />
-
       </div>
     );
   };
@@ -183,7 +182,11 @@ const ReviewTable: React.FC = () => {
         : renderTable(dummyDataRounds[currentRound], currentRound)}
 
       <div>
-        <Filters toggleShowReviews={toggleShowReviews} toggleAuthorFeedback={toggleAuthorFeedback} selectRound={selectRound}  />
+        <Filters
+          toggleShowReviews={toggleShowReviews}
+          toggleAuthorFeedback={toggleAuthorFeedback}
+          selectRound={selectRound}
+        />
       </div>
 
       <div>
