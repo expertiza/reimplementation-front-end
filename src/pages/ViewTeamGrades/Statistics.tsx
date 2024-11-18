@@ -74,7 +74,6 @@ const Statistics: React.FC<StatisticsProps> = () => {
     textAlign: "center",
   };
 
-
   return (
     <div className="table-container mb-6">
       <h5 className="font-semibold">Round Summary</h5>
