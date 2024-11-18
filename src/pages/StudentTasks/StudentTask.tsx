@@ -47,7 +47,7 @@ const StudentTask: React.FC = () => {
                 textDecoration: 'underline'
                 }}
             >
-                Send Email To Reviewers
+                Send email to reviewers
             </button>
         </div>
     
@@ -58,7 +58,7 @@ const StudentTask: React.FC = () => {
             <li>
             <a href="#">Your scores</a> (View feedback on your work) 
             <span> | </span>
-            <a href="#">Alternate View</a>
+            <a href="#">Alternate view</a>
             </li>
             <li><a href="#">Change your handle</a> (Provide a different handle for this assignment)</li>
         </ul>
@@ -68,6 +68,7 @@ const StudentTask: React.FC = () => {
             <div key={index} className={`timeline-item ${getStatusClass(item.date)}`}>
                 <li>
             <div className="timeline-circle"></div>
+            <span className="timeline-hline"></span>
             <span className="timeline-date">{item.date}</span>
             <span className="timeline-label">{item.label}</span>
             </li>

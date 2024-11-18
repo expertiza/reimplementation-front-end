@@ -6,7 +6,6 @@
     margin: auto;
     padding: 20px;
     font-family: Arial, sans-serif;
-  /* text-align: center; */
 }
 
 h1 {
@@ -17,9 +16,7 @@ h1 {
 
 .instruction {
     color: green;
-    background-color: #8f8;
     padding: 5px 20px 5px;
-    border: 2px solid #0a0;
     margin-bottom: 20px;
 }
 
@@ -87,8 +84,30 @@ h1 {
     border-radius: 25px;
 }
 
+.past-deadline .timeline-hline {
+    border-top: 2px solid #A90201;
+    margin-left: -10px;
+    margin-right: -10px;
+    top: -20px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    transition: all 200ms ease-in;
+}
+
 .past-deadline .timeline-date,
 .past-deadline .timeline-label {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    transition: all 200ms ease-in;
+}
+
+.approaching-deadline .timeline-hline {
+    border-top: 2px solid #b3aeae;
+    margin-left: -10px;
+    margin-right: -10px;
+    top: -20px;
     display: flex;
     justify-content: center;
     position: relative;
@@ -98,7 +117,7 @@ h1 {
 .approaching-deadline .timeline-circle {
     display: flex;
     justify-content: center;
-    background-color: white;
+    background-color: #b3aeae;
     border-radius: 25px;
     border: 1px solid #b3aeae;
     position: relative;
