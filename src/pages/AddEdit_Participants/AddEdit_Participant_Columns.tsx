@@ -58,12 +58,12 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         enableColumnFilter: false,
         enableGlobalFilter: false,
       }),
-      columnHelper.accessor("email_on_review_of_review", {
-        header: "Meta Review",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
+      // columnHelper.accessor("email_on_review_of_review", {
+      //   header: "Meta Review",
+      //   enableSorting: false,
+      //   enableColumnFilter: false,
+      //   enableGlobalFilter: false,
+      // }),
     ],
   }),
   columnHelper.accessor("institution.name", {

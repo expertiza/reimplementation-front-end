@@ -2,7 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row, Form } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -16,6 +16,8 @@ import { userColumns as USER_COLUMNS } from "./AddEdit_Participant_Columns";
  * @author Ankur Mundra on April, 2023
  */
 const Users = () => {
+  const [userLogin, setUserLogin] = useState("");
+  const [role, setRole] = useState("participant");
   const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -42,7 +44,10 @@ const Users = () => {
   }, [error, dispatch]);
 
   const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
-
+  const handleAddUser = () => {
+    // Logic to add the user, based on the userLogin and role values
+    console.log("Adding user:", userLogin, role);
+  };
   const onEditHandle = useCallback(
     (row: TRow<IUserResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
@@ -75,14 +80,61 @@ const Users = () => {
             <hr />
           </Row>
           <Row>
-            <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPersonFillAdd />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <DeleteUser userData={showDeleteConfirmation.data!} onClose={onDeleteUserHandler} />
-            )}
+          <Col md={6}>
+            <Form.Control
+              type="text"
+              placeholder="Enter a user login"
+              value={userLogin}
+              onChange={(e) => setUserLogin(e.target.value)}
+            />
+          </Col>
+          <Col md={6}>
+            <Form.Check
+              inline
+              label="Participant"
+              name="role"
+              type="radio"
+              value="participant"
+              checked={role === "participant"}
+              onChange={() => setRole("participant")}
+            />
+            <Form.Check
+              inline
+              label="Reader"
+              name="role"
+              type="radio"
+              value="reader"
+              checked={role === "reader"}
+              onChange={() => setRole("reader")}
+            />
+            <Form.Check
+              inline
+              label="Reviewer"
+              name="role"
+              type="radio"
+              value="reviewer"
+              checked={role === "reviewer"}
+              onChange={() => setRole("reviewer")}
+            />
+            <Form.Check
+              inline
+              label="Submitter"
+              name="role"
+              type="radio"
+              value="submitter"
+              checked={role === "submitter"}
+              onChange={() => setRole("submitter")}
+            />
+            <Form.Check
+              inline
+              label="Mentor"
+              name="role"
+              type="radio"
+              value="mentor"
+              checked={role === "mentor"}
+              onChange={() => setRole("mentor")}
+            />
+           </Col>
           </Row>
           <Row>
             <Table
