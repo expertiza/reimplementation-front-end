@@ -40,6 +40,11 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+
+import AddEdit_Participants_Home from "./pages/AddEdit_Participants/AddEdit_Participants_Home";
+import AddEdit_Participants_Editor from "./pages/AddEdit_Participants/AddEdit_Participants_Editor";
+import { loadUserDataRolesAndInstitutions_1 } from "./pages/AddEdit_Participants/AddEditUtil";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -50,6 +55,10 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        // {
+        //   path: "addedit_participants",
+        //   element: <ProtectedRoute element={<AddEdit_Participants_Home />} />,
+        // },
         // Add the ViewTeamGrades route
         {
           path: "view-team-grades",
@@ -118,6 +127,22 @@ function App() {
             {
               path: "edit/:id",
               element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+          ],
+        },
+        {
+          path: "addedit_participants",
+          element: <ProtectedRoute element={<AddEdit_Participants_Home />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            {
+              path: "new",
+              element: <AddEdit_Participants_Editor mode="create" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+            {
+              path: "edit/:id",
+              element: <AddEdit_Participants_Editor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
           ],
