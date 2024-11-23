@@ -2,7 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Row, Form } from "react-bootstrap";
+import { Button, Col, Container, Row, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -68,6 +68,10 @@ const Users = () => {
     [userResponse?.data, isLoading]
   );
 
+  const renderTooltip = (text: string) => (
+    <Tooltip id={`tooltip-${text}`}>{text}</Tooltip>
+  );
+
   return (
     <>
       <Outlet />
@@ -79,7 +83,7 @@ const Users = () => {
             </Col>
             <hr />
           </Row>
-          <Row>
+          <Row className="mb-3">
           <Col md={6}>
             <Form.Control
               type="text"
@@ -88,10 +92,21 @@ const Users = () => {
               onChange={(e) => setUserLogin(e.target.value)}
             />
           </Col>
-          <Col md={6}>
+          <Col md={6} className="d-flex align-items-center">
+          <div className="d-flex align-items-center">
             <Form.Check
               inline
-              label="Participant"
+              style={{ marginRight: '15px' }} // Adds space between radio buttons
+              label={
+                <OverlayTrigger
+                  placement="top"
+                  overlay={renderTooltip(
+                    "A Participant is someone who actively participates in tasks or events."
+                  )}
+                >
+                  <span>Participant</span>
+                </OverlayTrigger>
+              }
               name="role"
               type="radio"
               value="participant"
@@ -100,7 +115,17 @@ const Users = () => {
             />
             <Form.Check
               inline
-              label="Reader"
+              style={{ marginRight: '15px' }} // Adds space between radio buttons
+              label={
+                <OverlayTrigger
+                  placement="top"
+                  overlay={renderTooltip(
+                    "A Reader is someone with read-only access to content."
+                  )}
+                >
+                  <span>Reader</span>
+                </OverlayTrigger>
+              }
               name="role"
               type="radio"
               value="reader"
@@ -109,7 +134,17 @@ const Users = () => {
             />
             <Form.Check
               inline
-              label="Reviewer"
+              style={{ marginRight: '15px' }} // Adds space between radio buttons
+              label={
+                <OverlayTrigger
+                  placement="top"
+                  overlay={renderTooltip(
+                    "A Reviewer provides feedback or evaluation on tasks or submissions."
+                  )}
+                >
+                  <span>Reviewer</span>
+                </OverlayTrigger>
+              }
               name="role"
               type="radio"
               value="reviewer"
@@ -118,7 +153,17 @@ const Users = () => {
             />
             <Form.Check
               inline
-              label="Submitter"
+              style={{ marginRight: '15px' }} // Adds space between radio buttons
+              label={
+                <OverlayTrigger
+                  placement="top"
+                  overlay={renderTooltip(
+                    "A Submitter is someone responsible for submitting work."
+                  )}
+                >
+                  <span>Submitter</span>
+                </OverlayTrigger>
+              }
               name="role"
               type="radio"
               value="submitter"
@@ -127,13 +172,24 @@ const Users = () => {
             />
             <Form.Check
               inline
-              label="Mentor"
+              style={{ marginRight: '15px' }} // Adds space between radio buttons
+              label={
+                <OverlayTrigger
+                  placement="top"
+                  overlay={renderTooltip(
+                    "A Mentor provides guidance and support to other users."
+                  )}
+                >
+                  <span>Mentor</span>
+                </OverlayTrigger>
+              }
               name="role"
               type="radio"
               value="mentor"
               checked={role === "mentor"}
               onChange={() => setRole("mentor")}
             />
+            </div>
            </Col>
           </Row>
           <Row>
