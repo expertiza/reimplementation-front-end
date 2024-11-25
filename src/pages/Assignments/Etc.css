@@ -1,0 +1,88 @@
+/* Container for the page */
+.etc-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  /* Title styling */
+  .etc-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+  
+  /* Grid for the items */
+  .etc-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  /* Individual grid item styling */
+  .etc-item {
+    display: flex;
+    height: 100px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .etc-item:hover {
+    background-color: #f0f0f0;
+    border-color: #A90201;
+    color: #A90201;
+  }
+  
+  /* Icon inside each item */
+  .etc-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
+  }
+  
+  /* Save and Back button styles */
+  .etc-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .save-button,
+  .back-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    color: white;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .save-button {
+    background-color: rgb(4, 146, 4);
+  }
+  
+  .save-button:hover {
+    background-color: green;
+  }
+  
+  .back-button {
+    background-color: #A90201;
+  }
+  
+  .back-button:hover {
+    background-color: #8b0000;
+  }
+  

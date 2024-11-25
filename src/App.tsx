@@ -41,6 +41,7 @@ import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 import StudentTask from "./pages/StudentTasks/StudentTask";
+import EtcView from "./pages/Assignments/EtcView";
 function App() {
   const router = createBrowserRouter([
     {
@@ -89,6 +90,11 @@ function App() {
         {
           path: "assignments/edit/:id/viewdelayedjobs",
           element: <ViewDelayedJobs />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/etc",
+          element: <EtcView />,
           loader: loadAssignment,
         },
         {
