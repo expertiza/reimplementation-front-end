@@ -99,7 +99,6 @@ const EtcView: React.FC = () => {
         {activeTab === 'Rubrics' && <p>Rubrics Content</p>}
         {activeTab === 'Badges' && <p>Badges Content</p>}
         {activeTab === 'Etc' && (
-      // <h2>Etc </h2>
       <div>
       <div className="etc-grid">
         <div className="etc-item">
