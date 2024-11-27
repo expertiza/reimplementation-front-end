@@ -76,18 +76,31 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
+        <Button
+          className="transparent-btn transparent-btn-warning"
+          size="sm"
+          style={{
+            backgroundColor: 'transparent',
+            color: 'rgba(220, 53, 69, 0.5)',
+            borderColor: 'rgba(220, 53, 69, 0.5)',}}
+          onClick={() => handleEdit(row)}
+        >
+          Edit
         </Button>
         <Button
-          variant="outline-danger"
+          className="transparent-btn transparent-btn-danger ms-sm-2"
           size="sm"
-          className="ms-sm-2"
+          style={{
+            backgroundColor: 'transparent',
+            color: 'rgba(220, 53, 69, 0.5)',
+            borderColor: 'rgba(220, 53, 69, 0.5)',}}
           onClick={() => handleDelete(row)}
         >
-          <BsPersonXFill />
+          Delete
         </Button>
       </>
     ),
   }),
+  
+  
 ];

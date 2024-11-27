@@ -2,7 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Col, Container, Row, Form } from "react-bootstrap";
+import { Button, Col, Container, Row, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -44,10 +44,50 @@ const Users = () => {
   }, [error, dispatch]);
 
   const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  
   const handleAddUser = () => {
-    // Logic to add the user, based on the userLogin and role values
-    console.log("Adding user:", userLogin, role);
+    // Create the new user object
+    const newUser: IUserResponse = {
+      id: new Date().getTime(), // Use a timestamp for a unique numeric ID
+
+      // login: userLogin,
+      role: { id: 1, name: role }
+      // Add other necessary fields if required
+      ,
+      name: "",
+      email: "",
+      full_name: "",
+      email_on_review: false,
+      email_on_submission: false,
+      email_on_review_of_review: false,
+      parent: {
+        id: null,
+        name: null
+      },
+      institution: {
+        id: null,
+        name: null
+      }
+    };
+    const updatedUserResponse = userResponse ? { ...userResponse, data: [...userResponse.data, newUser] } : { data: [newUser] };
+
+
+    // Update the local user data by adding the new user
+    // const updatedUserResponse = { ...userResponse, data: [...userResponse.data, newUser] };
+
+    // Set the updated user list to trigger a re-render
+    // Directly update userResponse here (or use a local state if required)
+    fetchUsers({ url: `/users/${auth.user.id}/managed`, data: updatedUserResponse }); 
+
+    // Optionally, show success alert
+    dispatch(
+      alertActions.showAlert({
+        variant: "success",
+        message: `User ${userLogin} added successfully!`,
+      })
+    );
   };
+
   const onEditHandle = useCallback(
     (row: TRow<IUserResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
@@ -68,6 +108,10 @@ const Users = () => {
     [userResponse?.data, isLoading]
   );
 
+  const renderTooltip = (text: string) => (
+    <Tooltip id={`tooltip-${text}`}>{text}</Tooltip>
+  );
+
   return (
     <>
       <Outlet />
@@ -79,62 +123,122 @@ const Users = () => {
             </Col>
             <hr />
           </Row>
-          <Row>
-          <Col md={6}>
-            <Form.Control
-              type="text"
-              placeholder="Enter a user login"
-              value={userLogin}
-              onChange={(e) => setUserLogin(e.target.value)}
-            />
-          </Col>
-          <Col md={6}>
-            <Form.Check
-              inline
-              label="Participant"
-              name="role"
-              type="radio"
-              value="participant"
-              checked={role === "participant"}
-              onChange={() => setRole("participant")}
-            />
-            <Form.Check
-              inline
-              label="Reader"
-              name="role"
-              type="radio"
-              value="reader"
-              checked={role === "reader"}
-              onChange={() => setRole("reader")}
-            />
-            <Form.Check
-              inline
-              label="Reviewer"
-              name="role"
-              type="radio"
-              value="reviewer"
-              checked={role === "reviewer"}
-              onChange={() => setRole("reviewer")}
-            />
-            <Form.Check
-              inline
-              label="Submitter"
-              name="role"
-              type="radio"
-              value="submitter"
-              checked={role === "submitter"}
-              onChange={() => setRole("submitter")}
-            />
-            <Form.Check
-              inline
-              label="Mentor"
-              name="role"
-              type="radio"
-              value="mentor"
-              checked={role === "mentor"}
-              onChange={() => setRole("mentor")}
-            />
-           </Col>
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Control
+                type="text"
+                placeholder="Enter a user login"
+                value={userLogin}
+                onChange={(e) => setUserLogin(e.target.value)}
+              />
+            </Col>
+            <Col md={6} className="d-flex align-items-center">
+              <div className="d-flex align-items-center">
+                <Form.Check
+                  inline
+                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  label={
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={renderTooltip(
+                        "A Participant is someone who actively participates in tasks or events."
+                      )}
+                    >
+                      <span>Participant</span>
+                    </OverlayTrigger>
+                  }
+                  name="role"
+                  type="radio"
+                  value="participant"
+                  checked={role === "participant"}
+                  onChange={() => setRole("participant")}
+                />
+                <Form.Check
+                  inline
+                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  label={
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={renderTooltip(
+                        "A Reader is someone with read-only access to content."
+                      )}
+                    >
+                      <span>Reader</span>
+                    </OverlayTrigger>
+                  }
+                  name="role"
+                  type="radio"
+                  value="reader"
+                  checked={role === "reader"}
+                  onChange={() => setRole("reader")}
+                />
+                <Form.Check
+                  inline
+                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  label={
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={renderTooltip(
+                        "A Reviewer provides feedback or evaluation on tasks or submissions."
+                      )}
+                    >
+                      <span>Reviewer</span>
+                    </OverlayTrigger>
+                  }
+                  name="role"
+                  type="radio"
+                  value="reviewer"
+                  checked={role === "reviewer"}
+                  onChange={() => setRole("reviewer")}
+                />
+                <Form.Check
+                  inline
+                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  label={
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={renderTooltip(
+                        "A Submitter is someone responsible for submitting work."
+                      )}
+                    >
+                      <span>Submitter</span>
+                    </OverlayTrigger>
+                  }
+                  name="role"
+                  type="radio"
+                  value="submitter"
+                  checked={role === "submitter"}
+                  onChange={() => setRole("submitter")}
+                />
+                <Form.Check
+                  inline
+                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  label={
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={renderTooltip(
+                        "A Mentor provides guidance and support to other users."
+                      )}
+                    >
+                      <span>Mentor</span>
+                    </OverlayTrigger>
+                  }
+                  name="role"
+                  type="radio"
+                  value="mentor"
+                  checked={role === "mentor"}
+                  onChange={() => setRole("mentor")}
+                />
+              </div>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col className="d-flex justify-content-end">
+              <Button variant="primary" onClick={handleAddUser}>
+                <BsPersonFillAdd className="me-2" />
+                Add User
+              </Button>
+            </Col>
           </Row>
           <Row>
             <Table
