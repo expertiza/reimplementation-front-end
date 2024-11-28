@@ -214,6 +214,7 @@ useEffect(() => {
                 onChange={(e) => setUserLogin(e.target.value)}
               />
             </Col>
+            
             <Col md={6} className="d-flex align-items-center">
               <div className="d-flex align-items-center">
                 <Form.Check
@@ -312,15 +313,23 @@ useEffect(() => {
                   onChange={() => setRole("mentor")}
                 />
               </div>
+              <Row className="mb-3">
+            <Col className="d-flex justify-content-end">
+              <Button variant="primary" onClick={handleAddUser} className="mt-3">
+                <BsPersonFillAdd className="me-2" />
+                Add User
+              </Button>
+            </Col>
+          </Row>
             </Col>
 
-           {/* <className="mb-3"> */}
+           {/* <className="mb-3">
             <Col className="d-flex justify-content-end">
               <Button variant="primary" onClick={handleAddUser}>
                 <BsPersonFillAdd className="me-2" />
                 Add User
               </Button>
-            </Col>
+            </Col> */}
 
 
             <Table
