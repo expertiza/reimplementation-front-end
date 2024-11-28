@@ -17,7 +17,7 @@ export interface ITAFormValues {
 }
 
 export const transformTAResponse = (taList: string) => {
-  let taData: IFormOption[] = [{ label: "Select a TA", value: "" }]; 
+  let taData: IFormOption[] = []; 
   let tas: ITA[] = JSON.parse(taList);
   tas.forEach((ta) => taData.push({ label: ta.name, value: ta.id! }));
   return taData;
@@ -37,7 +37,7 @@ export async function loadTAs({ params }: any) {
   const taRoleUsersResponse = await axiosClient.get(`/users/role/Teaching Assistant`, {
     transformResponse: transformTAResponse
   });
-  const taUsers = taRoleUsersResponse.data;
-
+  let taUsers = taRoleUsersResponse.data;
+  taUsers = [{label: "Select a TA", value: ""},...taUsers];
   return { taUsers };
 }
