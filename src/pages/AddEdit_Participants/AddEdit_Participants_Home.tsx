@@ -313,16 +313,16 @@ useEffect(() => {
                 />
               </div>
             </Col>
-          </Row>
-          <Row className="mb-3">
+
+           {/* <className="mb-3"> */}
             <Col className="d-flex justify-content-end">
               <Button variant="primary" onClick={handleAddUser}>
                 <BsPersonFillAdd className="me-2" />
                 Add User
               </Button>
             </Col>
-          </Row>
-          <Row>
+
+
             <Table
               data={tableData}
               columns={tableColumns}

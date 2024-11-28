@@ -81,8 +81,8 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
           size="sm"
           style={{
             backgroundColor: 'transparent',
-            color: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgba(220, 53, 69, 0.5)',}}
+            color: 'rgb(0, 0, 0)',
+            borderColor: 'rgb(0, 0, 0)',}}
           onClick={() => handleEdit(row)}
         >
           Edit
@@ -92,8 +92,8 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
           size="sm"
           style={{
             backgroundColor: 'transparent',
-            color: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgba(220, 53, 69, 0.5)',}}
+            color: 'rgb(0, 0, 0)',
+            borderColor: 'rgb(0, 0, 0)',}}
           onClick={() => handleDelete(row)}
         >
           Delete
