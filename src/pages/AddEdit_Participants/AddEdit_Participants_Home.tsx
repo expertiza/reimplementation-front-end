@@ -13,6 +13,7 @@ import { IUserResponse, ROLE } from "../../utils/interfaces";
 import DeleteUser from "./AddEdit_Participant_Delete";
 import { userColumns as USER_COLUMNS } from "./AddEdit_Participant_Columns";
 import dummyUsers from './dummyUsers.json';
+import UserEditor from "./AddEdit_Participants_Editor";
 
 // Define the User type
 type User = {
@@ -29,7 +30,7 @@ type User = {
   };
   institution: {
     id: number | null;
-    name: string;
+    name: string | null;
   };
   role: {
     id: null | number;
@@ -42,7 +43,7 @@ type User = {
 const Users = () => {
   const [userLogin, setUserLogin] = useState("");
   const [role, setRole] = useState("");
-  const [localUsers, setLocalUsers] = useState(dummyUsers);
+  const [localUsers, setLocalUsers] = useState<User[]>(dummyUsers);
   // const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -90,7 +91,6 @@ useEffect(() => {
   setIsLoading(false);
 }, []);
 
-
 useEffect(() => {
   if (!showDeleteConfirmation.visible) {
     setIsLoading(true); // Simulate the loading state
@@ -122,8 +122,9 @@ useEffect(() => {
       );
       return;
     }
-    // Create the new user object
-    const newUser = {
+  
+    // Create the new user object with correct structure
+    const newUser: User = {
       id: new Date().getTime(), // Generate a unique ID
       name: userLogin,
       email: `${userLogin}@example.com`,
@@ -131,78 +132,37 @@ useEffect(() => {
       email_on_review: false,
       email_on_submission: false,
       email_on_review_of_review: false,
-      parent: { id: null, name: null },
-      institution: { id: null, name: "No Institution" },
-      role: { id: 1, name: role },
+      parent: { id: 101, name: null },  // This is valid as per the type
+      institution: { id: 123, name: null },  // Ensure this matches the expected type
+      role: { id: 1, name: role },  // Assuming role has the correct structure
     };
-    //const updatedUserResponse = userResponse ? { ...userResponse, data: [...userResponse.data, newUser] } : { data: [newUser] };
-
-
-    // Update the local user data by adding the new user
-    // const updatedUserResponse = { ...userResponse, data: [...userResponse.data, newUser] };
-
-    // Set the updated user list to trigger a re-render
-    // Directly update userResponse here (or use a local state if required)
-    //fetchUsers({ url: `/users/${auth.user.id}/managed`, data: updatedUserResponse }); 
-
-    //const [localUsers, setLocalUsers] = useState<IUserResponse[]>([]);
-
-    //const [localUsers, setLocalUsers] = useState<IUserResponse[]>([]);
-
-    // const handleAddUser = () => {
-    //   if (!userLogin || !role) {
-    //     dispatch(
-    //       alertActions.showAlert({
-    //         variant: "danger",
-    //         message: "Please enter a user login and select a role.",
-    //       })
-    //     );
-    //     return;
-    //   }
-    
-    //   const newUser = {
-    //     id: new Date().getTime(), // Generate a unique ID
-    //     name: userLogin,
-    //     email: `${userLogin}@example.com`,
-    //     full_name: userLogin,
-    //     email_on_review: false,
-    //     email_on_submission: false,
-    //     email_on_review_of_review: false,
-    //     parent: { id: null, name: null },
-    //     institution: { id: null, name: null },
-    //     role: { id: 1, name: role },
-    //   };
-    
-    //   setLocalUsers((prevUsers) => [...prevUsers, newUser]);
-    
-    //   dispatch(
-    //     alertActions.showAlert({
-    //       variant: "success",
-    //       message: `User ${userLogin} added successfully!`,
-    //     })
-    //   );
-    
-    //   setUserLogin("");
-    //   setRole("");
-    // };
-    
-    // setLocalUsers((prevUsers) => [...prevUsers, newUser]);
-
-    // Optionally, show success alert
+  
+    // Add the new user to the state
+    setLocalUsers((prevUsers: User[]) => [...prevUsers, newUser]);
+  
+    // Show success alert
     dispatch(
       alertActions.showAlert({
         variant: "success",
         message: `User ${userLogin} added successfully!`,
       })
     );
+  
+    // Reset the user login and role fields
+    setUserLogin("");
+    setRole("");
   };
+  
 
   const onDelete = (userId: number) => {
     setLocalUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
   };
 
   const onEditHandle = useCallback(
-    (row: TRow<IUserResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<IUserResponse>) => {
+      // Navigate to the editor with the user ID and mode as "update"
+      navigate(`/users/edit/${row.original.id}`, { state: { mode: "update", userData: row.original } });
+    },
     [navigate]
   );
 
