@@ -209,7 +209,7 @@ useEffect(() => {
             <Col md={6}>
               <Form.Control
                 type="text"
-                placeholder="Enter a user login"
+                placeholder="Enter a username"
                 value={userLogin}
                 onChange={(e) => setUserLogin(e.target.value)}
               />

@@ -15,19 +15,61 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
-    header: "Username",
+  columnHelper.accessor('name', {
+    header: 'Username',
     enableSorting: true,
+    cell: (info) => {
+      return (
+        <a
+          href={'#'} // Replace with your actual link URL or route
+          style={{
+            color: 'orange', // Set the link color
+            textDecoration: 'underline', // Underline to make it look like a link
+            cursor: 'pointer', // Show pointer cursor on hover
+          }}
+        >
+          {info.getValue()}
+        </a>
+      );
+    },
   }),
 
-  columnHelper.accessor("full_name", {
-    header: "Full Name",
+  columnHelper.accessor('full_name', {
+    header: 'Full Name',
     enableSorting: true,
-    enableMultiSort: true,
+    cell: (info) => {
+      return (
+        <a
+          href={'#'} // Replace with your actual link URL or route
+          style={{
+            color: 'orange', // Set the link color
+            textDecoration: 'underline', // Underline to make it look like a link
+            cursor: 'pointer', // Show pointer cursor on hover
+          }}
+        >
+          {info.getValue()}
+        </a>
+      );
+    },
   }),
 
-  columnHelper.accessor("email", {
-    header: "Email",
+  columnHelper.accessor('email', {
+    header: 'Email',
+    enableSorting: true,
+    cell: (info) => {
+      return (
+        <a
+          href={'#'} // Replace with your actual link URL or route
+          style={{
+            color: 'orange', // Set the link color
+            textDecoration: 'underline', // Underline to make it look like a link
+            cursor: 'pointer', // Show pointer cursor on hover
+          }}
+        >
+          {info.getValue()}
+        </a>
+      );
+    },
   }),
 
   columnHelper.accessor("role.name", {
@@ -41,36 +83,31 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Parent",
     enableColumnFilter: false,
   }),
-
-  columnHelper.group({
-    id: "email_preferences",
-    header: "Email Preferences",
-    columns: [
-      columnHelper.accessor("email_on_review", {
-        header: "Review",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      columnHelper.accessor("email_on_submission", {
-        header: "Submission",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
+  columnHelper.accessor("email_on_review", {
+    header: "Review",
+    enableSorting: false,
+    enableColumnFilter: false,
+    enableGlobalFilter: false,
+  }),
+  columnHelper.accessor("email_on_submission", {
+    header: "Submission",
+    enableSorting: false,
+    enableColumnFilter: false,
+    enableGlobalFilter: false,
+  }),  
+      
       // columnHelper.accessor("email_on_review_of_review", {
       //   header: "Meta Review",
       //   enableSorting: false,
       //   enableColumnFilter: false,
       //   enableGlobalFilter: false,
       // }),
-    ],
-  }),
-  columnHelper.accessor("institution.name", {
-    id: "institution",
-    header: "Institution",
-    enableColumnFilter: false,
-  }),
+
+  // columnHelper.accessor("institution.name", {
+  //   id: "institution",
+  //   header: "Institution",
+  //   enableColumnFilter: false,
+  // }),
   columnHelper.display({
     id: "actions",
     header: "Actions",
