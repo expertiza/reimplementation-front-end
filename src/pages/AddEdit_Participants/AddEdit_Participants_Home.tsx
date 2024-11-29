@@ -36,13 +36,14 @@ type User = {
     id: null | number;
     name: string;
   };
+  take_quiz: boolean;
 };
 /**
  * @author Ankur Mundra on April, 2023
  */
 const Users = () => {
   const [userLogin, setUserLogin] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("participant");
   const [localUsers, setLocalUsers] = useState<User[]>(dummyUsers);
   // const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
@@ -135,6 +136,7 @@ useEffect(() => {
       parent: { id: 101, name: null },  // This is valid as per the type
       institution: { id: 123, name: null },  // Ensure this matches the expected type
       role: { id: 1, name: role },  // Assuming role has the correct structure
+      take_quiz: false
     };
   
     // Add the new user to the state
@@ -184,7 +186,7 @@ useEffect(() => {
     () => USER_COLUMNS(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
-
+  
   const tableData = useMemo(() => {
     return localUsers;
   }, [localUsers]);
@@ -201,12 +203,12 @@ useEffect(() => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Users</h1>
+              <h1>Participants for CSE/ECE 517 - Object Oriented Design and Development</h1>
             </Col>
             <hr />
           </Row>
           <Row className="mb-3">
-            <Col md={6}>
+            <Col md={2}>
               <Form.Control
                 type="text"
                 placeholder="Enter a username"
@@ -214,7 +216,6 @@ useEffect(() => {
                 onChange={(e) => setUserLogin(e.target.value)}
               />
             </Col>
-            
             <Col md={6} className="d-flex align-items-center">
               <div className="d-flex align-items-center">
                 <Form.Check

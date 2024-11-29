@@ -213,6 +213,7 @@ type User = {
     id: null | number;
     name: string;
   };
+  take_quiz: boolean;
 };
 
 const initialValues: User = {
@@ -235,6 +236,7 @@ const initialValues: User = {
     id: null,
     name: "",
   },
+  take_quiz: false,
 };
 
 const validationSchema = Yup.object({

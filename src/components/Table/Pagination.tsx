@@ -17,6 +17,7 @@ interface PaginationProps {
   setPageSize: (pageSize: number) => void;
   getPageCount: () => number;
   getState: () => TableState;
+  totalRows: number;
 }
 
 const Pagination: React.FC<PaginationProps> = (props) => {
@@ -29,7 +30,14 @@ const Pagination: React.FC<PaginationProps> = (props) => {
     setPageSize,
     getPageCount,
     getState,
+    totalRows
   } = props;
+
+  // Only show pagination if total rows exceed 25
+  if (totalRows <= 25) {
+    return null; // Don't render pagination controls
+  }
+
   return (
     <Row className="justify-content-center">
       <Col xs="auto">
@@ -66,7 +74,6 @@ const Pagination: React.FC<PaginationProps> = (props) => {
         <Select
           id="pageSize"
           options={[
-            { label: "Show 10", value: "10" },
             { label: "Show 25", value: "25" },
             { label: "Show 50", value: "50" },
           ]}

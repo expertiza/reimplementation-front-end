@@ -9,7 +9,8 @@
       "email_on_review_of_review": true,
       "parent": { "id": 101, "name": "Parent Institution" },
       "institution": { "id": 201, "name": "Institution A" },
-      "role": { "id": 1, "name": "Admin" }
+      "role": { "id": 1, "name": "Admin" },
+      "take_quiz": false
     },
     {
       "id": 1698487390000,
@@ -21,7 +22,8 @@
       "email_on_review_of_review": false,
       "parent": { "id": 102, "name": "Reviewer Group" },
       "institution": { "id": 202, "name": "Institution B" },
-      "role": { "id": 2, "name": "reviewer" }
+      "role": { "id": 2, "name": "reviewer" },
+      "take_quiz": false
     },
     {
       "id": 1698487400000,
@@ -33,7 +35,8 @@
       "email_on_review_of_review": true,
       "parent": { "id": null, "name": null },
       "institution": { "id": null, "name": null },
-      "role": { "id": 3, "name": "mentor" }
+      "role": { "id": 3, "name": "mentor" },
+      "take_quiz": true
     },
     {
       "id": 1698487410000,
@@ -45,7 +48,8 @@
       "email_on_review_of_review": false,
       "parent": { "id": 103, "name": "Submission Team" },
       "institution": { "id": 203, "name": "Institution C" },
-      "role": { "id": 4, "name": "submitter" }
+      "role": { "id": 4, "name": "submitter" },
+      "take_quiz": false
     },
     {
       "id": 1698487420000,
@@ -57,6 +61,7 @@
       "email_on_review_of_review": true,
       "parent": { "id": null, "name": null },
       "institution": { "id": null, "name": null},
-      "role": { "id": 5, "name": "reader" }
+      "role": { "id": 5, "name": "reader" },
+      "take_quiz": false
     }
   ]

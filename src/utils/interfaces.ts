@@ -38,6 +38,7 @@ export interface IUserResponse {
   role: { id: number; name: string };
   parent: { id: number | null; name: string | null };
   institution: { id: number | null; name: string | null };
+  take_quiz: boolean;
 }
 
 

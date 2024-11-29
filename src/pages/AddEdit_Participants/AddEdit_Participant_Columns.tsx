@@ -2,6 +2,9 @@ import {createColumnHelper, Row} from "@tanstack/react-table";
 import {Button} from "react-bootstrap";
 import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
 import {IUserResponse as IUser} from "../../utils/interfaces";
+import editIcon from "C:/Users/Kruthi/reimplementation-front-end/src/pages/AddEdit_Participants/edit-icon.png";
+import deleteIcon from "C:/Users/Kruthi/reimplementation-front-end/src/pages/AddEdit_Participants/delete-icon.png";
+
 /**
  * @author Ankur Mundra on April, 2023
  */
@@ -35,7 +38,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor('full_name', {
-    header: 'Full Name',
+    header: 'Name',
     enableSorting: true,
     cell: (info) => {
       return (
@@ -54,7 +57,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor('email', {
-    header: 'Email',
+    header: 'Email Address',
     enableSorting: true,
     cell: (info) => {
       return (
@@ -85,6 +88,12 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
   columnHelper.accessor("email_on_review", {
     header: "Review",
+    enableSorting: false,
+    enableColumnFilter: false,
+    enableGlobalFilter: false,
+  }),
+  columnHelper.accessor("take_quiz", {
+    header: "Take Quiz",
     enableSorting: false,
     enableColumnFilter: false,
     enableGlobalFilter: false,
@@ -122,7 +131,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
             borderColor: 'rgb(0, 0, 0)',}}
           onClick={() => handleEdit(row)}
         >
-          Edit
+          <img src={editIcon} alt="Edit" style={{ width: "20px", height: "20px" }} />
         </Button>
         <Button
           className="transparent-btn transparent-btn-danger ms-sm-2"
@@ -133,7 +142,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
             borderColor: 'rgb(0, 0, 0)',}}
           onClick={() => handleDelete(row)}
         >
-          Delete
+          <img src={deleteIcon} alt="Edit" style={{ width: "20px", height: "20px" }} />
         </Button>
       </>
     ),
