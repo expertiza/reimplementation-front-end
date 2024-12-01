@@ -58,6 +58,29 @@ const Users = () => {
     visible: boolean;
     data?: IUserResponse;
   }>({ visible: false });
+  const checkStatus = (users: User[]) => {
+    const takeQuizValues = users.map(user => user.take_quiz);
+    const allTrueQuiz = takeQuizValues.every(value => value === true);
+    const allFalseQuiz = takeQuizValues.every(value => value === false);
+    const reviewValues = users.map(user => user.email_on_review);
+    const allTrueReview = reviewValues.every(value => value === true);
+    const allFalseReview = reviewValues.every(value => value === false);
+    const takeSubmitValues = users.map(user => user.email_on_submission);
+    const allTrueSubmit = takeSubmitValues.every(value => value === true);
+    const allFalseSubmit = takeSubmitValues.every(value => value === false);
+
+    return {
+      showQuizColumn: !(allTrueQuiz || allFalseQuiz), // Show column if there are mixed values
+      allTrueQuiz, 
+      showReviewColumn: !(allTrueReview || allFalseReview), // Show column if there are mixed values
+      allTrueReview, 
+      showSubmitColumn: !(allTrueSubmit || allFalseSubmit), // Show column if there are mixed values
+      allTrueSubmit,                            // Indicates if all are true                           // Indicates if all are true                           // Indicates if all are true
+    };
+  };
+  
+  const { showQuizColumn, showReviewColumn, showSubmitColumn, allTrueQuiz, allTrueSubmit, allTrueReview  } = useMemo(() => checkStatus(localUsers), [localUsers]);
+
 
   const [userResponse, setUserResponse] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -178,19 +201,54 @@ useEffect(() => {
     []
   );
 
+  const tableData: IUserResponse[] = useMemo(() => {
+    return localUsers.map(user => ({
+      ...user,
+      role: {
+        ...user.role,
+        id: user.role.id ?? 0, // Ensure role.id is a number
+      },
+    }));
+  }, [localUsers]);
+
+  const tableColumns = useMemo(() => {
+    // Get the initial columns from USER_COLUMNS
+    const columns = USER_COLUMNS(onEditHandle, onDeleteHandle, tableData);
+  
+    // Conditionally filter out columns based on the flags (showReviewColumn, showSubmitColumn, showQuizColumn)
+    let filteredColumns = columns;
+  
+    // Filter out "email_on_review" column if showReviewColumn is false
+    if (!showReviewColumn) {
+      filteredColumns = filteredColumns.filter(column => {
+        return !(column as any).accessorKey || (column as any).accessorKey !== "email_on_review";
+      });
+    }
+  
+    // Filter out "take_quiz" column if showSubmitColumn is false
+    if (!showSubmitColumn) {
+      filteredColumns = filteredColumns.filter(column => {
+        return !(column as any).accessorKey || (column as any).accessorKey !== "email_on_submission";
+      });
+    }
+  
+    // Filter out "take_quiz" column again if showQuizColumn is false
+    if (!showQuizColumn) {
+      filteredColumns = filteredColumns.filter(column => {
+        return !(column as any).accessorKey || (column as any).accessorKey !== "take_quiz";
+      });
+    }
+  
+    // Return the filtered columns
+    return filteredColumns;
+  }, [showReviewColumn, showSubmitColumn, showQuizColumn, onEditHandle, onDeleteHandle, tableData]);
+  
+
+
+
   const closeDeleteModal = () => {
     setShowDeleteConfirmation({ visible: false });
   };
-
-  const tableColumns = useMemo(
-    () => USER_COLUMNS(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
-  );
-  
-  const tableData = useMemo(() => {
-    return localUsers;
-  }, [localUsers]);
-  
 
   const renderTooltip = (text: string) => (
     <Tooltip id={`tooltip-${text}`}>{text}</Tooltip>
@@ -204,6 +262,7 @@ useEffect(() => {
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
               <h1>Participants for CSE/ECE 517 - Object Oriented Design and Development</h1>
+              {/* {allTrueQuiz && <p>All participants have taken the quiz.</p>} */}
             </Col>
             <hr />
           </Row>
@@ -324,15 +383,31 @@ useEffect(() => {
           </Row>
             </Col>
 
-           {/* <className="mb-3">
-            <Col className="d-flex justify-content-end">
-              <Button variant="primary" onClick={handleAddUser}>
-                <BsPersonFillAdd className="me-2" />
-                Add User
-              </Button>
-            </Col> */}
+            {/* Conditionally render the message only when all participants have taken the quiz */}
+          {allTrueQuiz && (
+            <Row className="mb-3">
+              <Col className="text-center">
+                <strong>All participants have taken the quiz</strong>
+              </Col>
+            </Row>
+          )}
 
-
+          {/* Conditionally render the note if all participants can submit*/}
+          {allTrueSubmit && (
+            <Row className="mb-3">
+              <Col className="text-center">
+                <strong>All participants can submit</strong>
+              </Col>
+            </Row>
+          )}
+          {/* Conditionally render the note if all participants can review */}
+          {allTrueReview && (
+            <Row className="mb-3">
+              <Col className="text-center">
+                <strong>All participants can review</strong>
+              </Col>
+            </Row>
+          )}
             <Table
               data={tableData}
               columns={tableColumns}
@@ -355,5 +430,4 @@ useEffect(() => {
     </>
   );
 };
-
 export default Users;

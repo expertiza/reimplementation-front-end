@@ -5,25 +5,25 @@
       "email": "john.doe@example.com",
       "full_name": "Johnathan Doe",
       "email_on_review": true,
-      "email_on_submission": false,
+      "email_on_submission": true,
       "email_on_review_of_review": true,
       "parent": { "id": 101, "name": "Parent Institution" },
       "institution": { "id": 201, "name": "Institution A" },
       "role": { "id": 1, "name": "Admin" },
-      "take_quiz": false
+      "take_quiz": true
     },
     {
       "id": 1698487390000,
       "name": "Jane Smith",
       "email": "jane.smith@example.com",
       "full_name": "Jane Alexandra Smith",
-      "email_on_review": false,
+      "email_on_review": true,
       "email_on_submission": true,
       "email_on_review_of_review": false,
       "parent": { "id": 102, "name": "Reviewer Group" },
       "institution": { "id": 202, "name": "Institution B" },
       "role": { "id": 2, "name": "reviewer" },
-      "take_quiz": false
+      "take_quiz": true
     },
     {
       "id": 1698487400000,
@@ -43,25 +43,25 @@
       "name": "Emily Davis",
       "email": "emily.davis@example.com",
       "full_name": "Emily Charlotte Davis",
-      "email_on_review": false,
+      "email_on_review": true,
       "email_on_submission": true,
       "email_on_review_of_review": false,
       "parent": { "id": 103, "name": "Submission Team" },
       "institution": { "id": 203, "name": "Institution C" },
       "role": { "id": 4, "name": "submitter" },
-      "take_quiz": false
+      "take_quiz": true
     },
     {
       "id": 1698487420000,
       "name": "Michael Johnson",
       "email": "michael.johnson@example.com",
       "full_name": "Michael T. Johnson",
-      "email_on_review": false,
-      "email_on_submission": false,
+      "email_on_review": true,
+      "email_on_submission": true,
       "email_on_review_of_review": true,
       "parent": { "id": null, "name": null },
       "institution": { "id": null, "name": null},
       "role": { "id": 5, "name": "reader" },
-      "take_quiz": false
+      "take_quiz": true
     }
   ]
