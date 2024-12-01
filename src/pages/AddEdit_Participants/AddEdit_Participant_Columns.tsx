@@ -2,9 +2,9 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IUserResponse as IUser } from "../../utils/interfaces";
-import editIcon from "C:/Users/Kruthi/reimplementation-front-end/src/pages/AddEdit_Participants/edit-icon.png";
-import deleteIcon from "C:/Users/Kruthi/reimplementation-front-end/src/pages/AddEdit_Participants/delete-icon.png";
 
+const editIconPath = "/assets/icons/edit-icon.png"; // Absolute path
+const deleteIconPath = "/assets/icons/delete-icon.png";
 /**
  * @author Ankur Mundra on April, 2023
  */
@@ -13,18 +13,15 @@ type Fn = (row: Row<IUser>) => void;
 const columnHelper = createColumnHelper<IUser>();
 
 export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => {
-  // Check if all `take_quiz` values are false
+  // Check if all take_quiz values are false
   const isTakeQuizColumnVisible = data.some((user) => user.take_quiz);
-  const isReviewColumnVisible = data.some((user) => user.email_on_review);
-  const isSubmitColumnVisible = data.some((user) => user.email_on_submission);
-
 
   return [
-    // columnHelper.accessor("id", {
-    //   header: "Id",
-    //   enableColumnFilter: false,
-    //   enableSorting: false,
-    // }),
+    columnHelper.accessor("id", {
+      header: "Id",
+      enableColumnFilter: false,
+      enableSorting: false,
+    }),
 
     columnHelper.accessor("name", {
       header: "Username",
@@ -95,18 +92,14 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
       enableColumnFilter: false,
     }),
 
-    // Conditionally include the `take_quiz` column
-    ...(isReviewColumnVisible
-      ? [
-          columnHelper.accessor("email_on_review", {
-            header: "Review",
-            enableSorting: false,
-            enableColumnFilter: false,
-            enableGlobalFilter: false,
-          }),
-        ]
-      : []),
-    // Conditionally include the `take_quiz` column
+    columnHelper.accessor("email_on_review", {
+      header: "Review",
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableGlobalFilter: false,
+    }),
+
+    // Conditionally include the take_quiz column
     ...(isTakeQuizColumnVisible
       ? [
           columnHelper.accessor("take_quiz", {
@@ -118,17 +111,12 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
         ]
       : []),
 
-    // Conditionally include the `take_quiz` column
-    ...(isSubmitColumnVisible
-      ? [
-          columnHelper.accessor("email_on_submission", {
-            header: "Submit",
-            enableSorting: false,
-            enableColumnFilter: false,
-            enableGlobalFilter: false,
-          }),
-        ]
-      : []),
+    columnHelper.accessor("email_on_submission", {
+      header: "Submission",
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableGlobalFilter: false,
+    }),
 
     columnHelper.display({
       id: "actions",
@@ -146,7 +134,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
             onClick={() => handleEdit(row)}
           >
             <img
-              src={editIcon}
+              src={editIconPath}
               alt="Edit"
               style={{ width: "20px", height: "20px" }}
             />
@@ -162,7 +150,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
             onClick={() => handleDelete(row)}
           >
             <img
-              src={deleteIcon}
+              src={deleteIconPath}
               alt="Delete"
               style={{ width: "20px", height: "20px" }}
             />
