@@ -38,6 +38,15 @@ export async function loadTAs({ params }: any) {
     transformResponse: transformTAResponse
   });
   let taUsers = taRoleUsersResponse.data;
-  taUsers = [{label: "Select a TA", value: ""},...taUsers];
+
+  // Making a GET request to fetch users with the "Student" role
+  const studentRoleUsersResponse = await axiosClient.get(`/users/role/Student`, {
+    transformResponse: transformTAResponse
+  });
+  let studentUsers = studentRoleUsersResponse.data;
+  for(let i=0; i<studentUsers.length; i++)
+    studentUsers[i].role = 'student';
+  taUsers = [{label: "Select a TA", value: ""}, ...taUsers, ...studentUsers];
+
   return { taUsers };
 }
