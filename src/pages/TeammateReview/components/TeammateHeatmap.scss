@@ -1,0 +1,84 @@
+// src/pages/TeammateReview/components/TeammateHeatmap.scss
+
+.teammate-heatmap {
+    .question-no {
+      position: relative;
+      padding-left: 2.5rem;
+  
+      .score-circle {
+        position: absolute;
+        left: 0.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 1px solid #f00678;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f00678;
+      }
+  
+      .check-mark {
+        position: absolute;
+        left: 0.5rem;
+        color: #f00678;
+      }
+    }
+  
+    td, th {
+      text-align: center;
+      vertical-align: middle;
+      padding: 0.5rem;
+    }
+  
+    // Score colors for 5-point scale
+    .score-5 {
+      background-color: #2DE636;
+    }
+  
+    .score-4 {
+      background-color: #BCED91;
+    }
+  
+    .score-3 {
+      background-color: #FFEC8B;
+    }
+  
+    .score-2 {
+      background-color: #FD992D;
+    }
+  
+    .score-1 {
+      background-color: #ff8080;
+    }
+  
+    // Special colors for 1-point scale
+    .score-1-1 {
+      background-color: #2DE636;
+    }
+  
+    .score-0-1 {
+      background-color: #ff8080;
+    }
+  
+    // Hover effects for comments
+    td[title] {
+      cursor: help;
+      position: relative;
+  
+      &:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        z-index: 1000;
+      }
+    }
+  }

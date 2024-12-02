@@ -1,0 +1,33 @@
+// src/pages/TeammateReview/TeammateReview.scss
+
+.teammate-review-container {
+    padding: 2rem;
+  
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+  
+      .review-toggle {
+        display: flex;
+        gap: 1rem;
+      }
+    }
+  
+    .composite-score {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+  
+      .score-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0056b3;
+      }
+    }
+  }

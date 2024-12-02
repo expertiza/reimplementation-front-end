@@ -41,6 +41,7 @@ import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 import ProjectTopics from "pages/ProjectTopics/ProjectTopics";
+import TeammateReview from "./pages/TeammateReview/TeammateReview";
 function App() {
   const router = createBrowserRouter([
     {
@@ -52,6 +53,10 @@ function App() {
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
         // Add the ViewTeamGrades route
+        {
+          path: "teammate_review",
+          element: <ProtectedRoute element={<TeammateReview />} />,
+        },
         {
           path: "project_topics",
           element: <ProtectedRoute element={<ProjectTopics />}  />,
