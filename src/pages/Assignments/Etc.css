@@ -6,6 +6,11 @@
     border: 1px solid #ddd;
     border-radius: 5px;
   }
+
+  .etc-container h2 {
+    font-size: 30px;
+    margin-bottom: 20px;
+  }
   
   /* Style for tabs contatiner */
   .tab-navigation {
@@ -33,7 +38,6 @@
     background-color: #f0f0f0;
     border-color: #986633;;
     color: #A90201;;
-    /* border-bottom: #ccc; */
   }
   
   /* Style for tab content */
@@ -80,7 +84,6 @@
   .etc-icon {
     width: 20px;
     height: 20px;
-    /* margin-bottom: 10px; */
   }
   
   /* Save and Back button styles */
@@ -117,3 +120,11 @@
     background-color: #8b0000;
   }
   
+  .success-banner {
+    color: green;
+    padding: 10px 20px 10px;
+    margin-bottom: 20px;
+    width: 100%; /* Full width */
+    font-size: 14px;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.2); /* Subtle shadow for effect */
+  }
