@@ -1,0 +1,116 @@
+.reviews-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  
+  .round-heading {
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+
+  .review-heading {
+    font-weight: 600;
+    margin-top: 15px;
+    font-size: 18px;
+    color: #444;
+    padding: 8px 0;
+  }
+
+  .review-block {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 1px;
+    transition: background-color 0.2s ease;
+
+    &:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    &:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    &:hover {
+      background-color: #f1f1f1;
+    }
+  }
+
+  .question {
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  .score-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 5px 0;
+  }
+
+  .score {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    min-width: 32px;
+    text-align: center;
+    color: #333;
+
+    // Score colors matching view-team-grades scheme
+    &.score-5 {
+      background-color: #2DE636; // Green
+    }
+
+    &.score-4 {
+      background-color: #BCED91; // Light green
+    }
+
+    &.score-3 {
+      background-color: #FFEC8B; // Yellow
+    }
+
+    &.score-2 {
+      background-color: #FD992D; // Orange
+    }
+
+    &.score-1 {
+      background-color: #FF6961; // Light red
+    }
+
+    &.score-0 {
+      background-color: #FF0000; // Red
+    }
+
+    // Binary scores
+    &.score-1-1 {
+      background-color: #2DE636; // Green
+    }
+
+    &.score-0-1 {
+      background-color: #FF0000; // Red
+    }
+  }
+
+  .comment {
+    flex-grow: 1;
+    line-height: 1.5;
+    color: #555;
+    font-size: 14px;
+    padding: 5px 0;
+  }
+}
+
+// Add button styling
+.show-reviews-btn {
+  text-decoration: none;
+  color: #0d6efd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+}

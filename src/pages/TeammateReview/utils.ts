@@ -10,7 +10,7 @@ const QUESTIONS = [
 
 export const generateReviewScore = (round: number, isCheckbox: boolean): number => {
   if (isCheckbox) return 1;
-  const baseScore = Math.floor(Math.random() * 2) + 4; 
+  const baseScore = Math.floor(Math.random() * 6); 
   const roundBonus = round === 1 ? Math.random() > 0.5 ? 1 : 0 : 0;
   return Math.min(baseScore + roundBonus, 5);
 };
@@ -22,12 +22,12 @@ export const generateComment = (score: number, isCheckbox: boolean): string => {
     [5, ['Excellent performance', 'Outstanding work', 'Exceptional contribution']],
     [4, ['Good work overall', 'Solid performance', 'Consistent effort']],
     [3, ['Average performance', 'Meets expectations', 'Room for improvement']],
-    [2, ['Needs improvement', 'Below expectations', 'Inconsistent performance']],
-    [1, ['Poor performance', 'Significant issues', 'Major concerns']]
+    [2, ['Below expectations', 'Needs significant improvement', 'Inconsistent performance']],
+    [1, ['Poor performance', 'Significant issues', 'Major concerns']],
+    [0, ['No contribution', 'Completely absent', 'Failed to participate']]
   ]);
 
   const comments = commentMap.get(score) || [];
-  // Always return a comment, even if none found in the map
   return comments[Math.floor(Math.random() * comments.length)] || 'No comment provided';
 };
 
