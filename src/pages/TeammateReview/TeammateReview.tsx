@@ -1,41 +1,35 @@
 // src/pages/TeammateReview/TeammateReview.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Container, Form } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import ReviewToggle from './components/ReviewToggle';
 import CompositeScore from './components/CompositeScore';
 import TeammateHeatmap from './components/TeammateHeatmap';
-import { reviewsGiven, reviewsReceived } from './data/dummyData';
+import RoundSelector from './components/RoundSelector';
+import { generateAllReviews } from './utils';
 import './TeammateReview.scss';
 
 const TeammateReview: React.FC = () => {
   const [viewMode, setViewMode] = useState<'given' | 'received'>('received');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [showQuestions, setShowQuestions] = useState(true);
-  
+  const [currentRound, setCurrentRound] = useState(0);
+
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
 
   const isInstructor = auth.user.role === 'Instructor';
-  const showTeammateReviews = true; // Should come from assignment settings
+  const showTeammateReviews = true; // This would come from your assignment settings
 
-  const anonymizeData = (data: any[][]) => {
-    if (!isAnonymous) return data[0];
-    
-    return data[0].map(review => ({
-      ...review,
-      reviews: review.reviews.map((r: any, idx: number) => ({
-        ...r,
-        name: `Student ${idx + 1}`
-      }))
-    }));
-  };
+  const reviewData = useMemo(() => generateAllReviews(), []);
 
-  const currentReviews = viewMode === 'given' ? reviewsGiven : reviewsReceived;
+  const currentReviews = viewMode === 'given' 
+    ? reviewData.given[currentRound]
+    : reviewData.received[currentRound];
 
   return (
     <Container fluid className="teammate-review-container">
@@ -70,13 +64,20 @@ const TeammateReview: React.FC = () => {
       </div>
 
       <CompositeScore
-        reviews={currentReviews}
-        viewMode={viewMode}
+        reviewsGiven={reviewData.given}
+        reviewsReceived={reviewData.received}
       />
 
       <TeammateHeatmap
-        data={anonymizeData(currentReviews)}
+        data={currentReviews}
         showQuestions={showQuestions}
+        isAnonymous={isAnonymous}
+      />
+
+      <RoundSelector
+        currentRound={currentRound}
+        totalRounds={2}
+        onRoundChange={setCurrentRound}
       />
     </Container>
   );

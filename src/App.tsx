@@ -41,7 +41,7 @@ import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 import ProjectTopics from "pages/ProjectTopics/ProjectTopics";
-import TeammateReview from "./pages/TeammateReview/TeammateReview";
+import TeammateReview from "pages/TeammateReview/TeammateReview";
 function App() {
   const router = createBrowserRouter([
     {

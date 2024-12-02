@@ -1,0 +1,32 @@
+// src/pages/TeammateReview/components/RoundSelector.scss
+
+.round-selector {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+    
+    .rounds-container {
+      display: flex;
+      gap: 0.5rem;
+      margin-right: 1.5rem;
+    }
+  
+    .round-button {
+      padding: 0.5rem 1rem;
+      
+      &.current {
+        background-color: #4a90e2;
+        border-color: #4a90e2;
+        
+        &:hover {
+          background-color: #357abd;
+          border-color: #357abd;
+        }
+      }
+    }
+  
+    .team-members {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }

@@ -16,7 +16,7 @@ const ReviewToggle: React.FC<ReviewToggleProps> = ({
   showTeammateReviews = true,
   isInstructor = false 
 }) => {
-  // 如果是学生且不允许查看teammate reviews，则只显示"Reviews Given"
+  // If student and teammate reviews are not allowed, only show "Reviews Given"
   if (!isInstructor && !showTeammateReviews) {
     return (
       <div className="review-toggle">

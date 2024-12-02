@@ -26,10 +26,12 @@
     }
   
     td, th {
-      text-align: center;
-      vertical-align: middle;
-      padding: 0.5rem;
-    }
+        .reviewer-name {
+          font-size: 0.85em;
+          color: #666;
+          font-weight: normal;
+        }
+      }
   
     // Score colors for 5-point scale
     .score-5 {

@@ -1,42 +1,40 @@
 // src/pages/TeammateReview/components/CompositeScore.tsx
-
 import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Review } from '../data/dummyData';
+import { Card, Row, Col } from 'react-bootstrap';
+import { CompositeScoreProps } from '../types';
+import { calculateCompositeScore } from '../utils';
 
-interface CompositeScoreProps {
-  reviews: Review[][];
-  viewMode: 'given' | 'received';
-}
-
-const calculateCompositeScore = (reviews: Review[][]): number => {
-  let totalScore = 0;
-  let totalQuestions = 0;
-
-  reviews.forEach(round => {
-    round.forEach(review => {
-      const avgScore = review.reviews.reduce((sum, r) => sum + r.score, 0) / review.reviews.length;
-      totalScore += avgScore;
-      totalQuestions += 1;
-    });
-  });
-
-  return totalQuestions > 0 ? Number((totalScore / totalQuestions).toFixed(2)) : 0;
-};
-
-const CompositeScore: React.FC<CompositeScoreProps> = ({ reviews, viewMode }) => {
-  const score = calculateCompositeScore(reviews);
-  const maxScore = reviews[0]?.[0]?.maxScore || 5;
+const CompositeScore: React.FC<CompositeScoreProps> = ({ 
+  reviewsGiven, 
+  reviewsReceived 
+}) => {
+  const givenScore = calculateCompositeScore(reviewsGiven);
+  const receivedScore = calculateCompositeScore(reviewsReceived);
+  const overallScore = ((givenScore + receivedScore) / 2);
 
   return (
-    <Card className="mb-3">
+    <Card className="mb-4">
       <Card.Body>
-        <Card.Title>
-          Composite Score - {viewMode === 'given' ? 'Reviews Given' : 'Reviews Received'}
-        </Card.Title>
-        <Card.Text className="display-4 text-center">
-          {score} / {maxScore}
-        </Card.Text>
+        <Row>
+          <Col md={4}>
+            <Card.Title>Reviews Given</Card.Title>
+            <div className="score-display">
+              {givenScore.toFixed(2)} / 5
+            </div>
+          </Col>
+          <Col md={4}>
+            <Card.Title>Reviews Received</Card.Title>
+            <div className="score-display">
+              {receivedScore.toFixed(2)} / 5
+            </div>
+          </Col>
+          <Col md={4}>
+            <Card.Title>Overall Score</Card.Title>
+            <div className="score-display highlight">
+              {overallScore.toFixed(2)} / 5
+            </div>
+          </Col>
+        </Row>
       </Card.Body>
     </Card>
   );
