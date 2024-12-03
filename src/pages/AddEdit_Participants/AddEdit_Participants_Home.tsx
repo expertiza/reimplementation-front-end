@@ -193,14 +193,14 @@ const Users = () => {
     <>
       <main>
         <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
-            <Col className="text-center">
+          <Row className="mt-md-2 mb-md-2 justify-content-center">
+            <Col md={8} className="text-center">
               <h1>Participants for CSC/ECE 517 - Object Oriented Design and Development</h1>
             </Col>
-            <hr />
           </Row>
-          <Row className="mb-3">
-            <Col md={2}>
+          <hr />
+          <Row className="mb-3 justify-content-center align-items-center">
+            <Col md={3}>
               <Form.Control
                 type="text"
                 placeholder="Enter a username"
@@ -208,11 +208,11 @@ const Users = () => {
                 onChange={(e) => setUserLogin(e.target.value)}
               />
             </Col>
-            <Col md={6} className="d-flex align-items-center">
+            <Col md={8} className="d-flex align-items-center justify-content-center">
               <div className="d-flex align-items-center">
                 <Form.Check
                   inline
-                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  style={{ marginRight: "15px" }}
                   label={
                     <OverlayTrigger
                       placement="top"
@@ -220,26 +220,26 @@ const Users = () => {
                         "A Participant is someone who actively participates in tasks or events."
                       )}
                     >
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Participant</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        style={{
-                          padding: '0',
-                          backgroundColor: '#a6c8ff', // Light blue background
-                          borderRadius: '50%', // Circular shape
-                          width: '20px', // Width of the button
-                          height: '20px', // Height of the button
-                          color: '#fff', // White text (icon)
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', // Centering the icon
-                          border: 'none', // No border
-                      }}
-                    >
-                        <BsInfoCircle size={20} />
-                      </Button>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Participant</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          style={{
+                            padding: "0",
+                            backgroundColor: "#a6c8ff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                          }}
+                        >
+                          <BsInfoCircle size={20} />
+                        </Button>
                       </div>
                     </OverlayTrigger>
                   }
@@ -251,7 +251,7 @@ const Users = () => {
                 />
                 <Form.Check
                   inline
-                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  style={{ marginRight: "15px" }}
                   label={
                     <OverlayTrigger
                       placement="top"
@@ -259,26 +259,26 @@ const Users = () => {
                         "A Reader is someone with read-only access to content."
                       )}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Reader</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        style={{
-                          padding: '0',
-                          backgroundColor: '#a6c8ff', // Light blue background
-                          borderRadius: '50%', // Circular shape
-                          width: '20px', // Width of the button
-                          height: '20px', // Height of the button
-                          color: '#fff', // White text (icon)
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', // Centering the icon
-                          border: 'none', // No border
-                      }}
-                    >
-                        <BsInfoCircle size={20} />
-                      </Button>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Reader</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          style={{
+                            padding: "0",
+                            backgroundColor: "#a6c8ff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                          }}
+                        >
+                          <BsInfoCircle size={20} />
+                        </Button>
                       </div>
                     </OverlayTrigger>
                   }
@@ -290,7 +290,7 @@ const Users = () => {
                 />
                 <Form.Check
                   inline
-                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  style={{ marginRight: "15px" }}
                   label={
                     <OverlayTrigger
                       placement="top"
@@ -298,26 +298,26 @@ const Users = () => {
                         "A Reviewer provides feedback or evaluation on tasks or submissions."
                       )}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Reviewer</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        style={{
-                          padding: '0',
-                          backgroundColor: '#a6c8ff', // Light blue background
-                          borderRadius: '50%', // Circular shape
-                          width: '20px', // Width of the button
-                          height: '20px', // Height of the button
-                          color: '#fff', // White text (icon)
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', // Centering the icon
-                          border: 'none', // No border
-                      }}
-                    >
-                        <BsInfoCircle size={20} />
-                      </Button>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Reviewer</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          style={{
+                            padding: "0",
+                            backgroundColor: "#a6c8ff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                          }}
+                        >
+                          <BsInfoCircle size={20} />
+                        </Button>
                       </div>
                     </OverlayTrigger>
                   }
@@ -329,7 +329,7 @@ const Users = () => {
                 />
                 <Form.Check
                   inline
-                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  style={{ marginRight: "15px" }}
                   label={
                     <OverlayTrigger
                       placement="top"
@@ -337,26 +337,26 @@ const Users = () => {
                         "A Submitter is someone responsible for submitting work."
                       )}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Submitter</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        style={{
-                          padding: '0',
-                          backgroundColor: '#a6c8ff', // Light blue background
-                          borderRadius: '50%', // Circular shape
-                          width: '20px', // Width of the button
-                          height: '20px', // Height of the button
-                          color: '#fff', // White text (icon)
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', // Centering the icon
-                          border: 'none', // No border
-                      }}
-                    >
-                        <BsInfoCircle size={20} />
-                      </Button>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Submitter</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          style={{
+                            padding: "0",
+                            backgroundColor: "#a6c8ff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                          }}
+                        >
+                          <BsInfoCircle size={20} />
+                        </Button>
                       </div>
                     </OverlayTrigger>
                   }
@@ -368,7 +368,7 @@ const Users = () => {
                 />
                 <Form.Check
                   inline
-                  style={{ marginRight: '15px' }} // Adds space between radio buttons
+                  style={{ marginRight: "15px" }}
                   label={
                     <OverlayTrigger
                       placement="top"
@@ -376,29 +376,27 @@ const Users = () => {
                         "A Mentor provides guidance and support to other users."
                       )}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <span>Mentor</span>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        style={{
-                          padding: '0',
-                          backgroundColor: '#a6c8ff', // Light blue background
-                          borderRadius: '50%', // Circular shape
-                          width: '20px', // Width of the button
-                          height: '20px', // Height of the button
-                          color: '#fff', // White text (icon)
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', // Centering the icon
-                          border: 'none', // No border
-                          // boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)', // Optional shadow for depth
-                      }}
-                    >
-                        <BsInfoCircle size={20} />
-                      </Button>
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Mentor</span>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          style={{
+                            padding: "0",
+                            backgroundColor: "#a6c8ff",
+                            borderRadius: "50%",
+                            width: "20px",
+                            height: "20px",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                          }}
+                        >
+                          <BsInfoCircle size={20} />
+                        </Button>
                       </div>
-                      
                     </OverlayTrigger>
                   }
                   name="role"
@@ -409,58 +407,59 @@ const Users = () => {
                 />
               </div>
             </Col>
-            <Col className="d-flex">
+            <Col md={2} className="d-flex justify-content-center">
               <Button variant="primary" onClick={handleAddUser}>
                 <BsPersonFillAdd className="me-2" />
                 Add User
               </Button>
             </Col>
-             {/* Conditionally render the message only when all participants have taken the quiz */}
-          {allTrueQuiz && (
-            <Row className="mb-3">
-              <Col className="text">
+          </Row>
+          <Row className="justify-content-center">
+            {allTrueQuiz && (
+              <Col md="auto" className="px-3">
                 <strong>All participants have taken the quiz</strong>
               </Col>
-            </Row>
-          )}
-          {/* Conditionally render the note if all participants can submit*/}
-          {allTrueSubmit && (
-            <Row className="mb-3">
-              <Col className="text">
+            )}
+            {allTrueSubmit && (
+              <Col md="auto" className="px-3">
                 <strong>All participants can submit</strong>
               </Col>
-            </Row>
-          )}
-          {/* Conditionally render the note if all participants can review */}
-          {allTrueReview && (
-            <Row className="mb-3">
-              <Col className="text">
+            )}
+            {allTrueReview && (
+              <Col md="auto" className="px-3">
                 <strong>All participants can review</strong>
               </Col>
-            </Row>
-          )}
+            )}
           </Row>
-          <Table 
-          data={tableData} 
-          columns={tableColumns}
-          columnVisibility={{
-            id: false,
-            institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
-          }}
-           />
+          <Row>
+            <Col md={15} className="justify-content-center">
+              <Table
+                data={tableData}
+                columns={tableColumns}
+                columnVisibility={{
+                  id: false,
+                  institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                }}
+              />
+            </Col>
+          </Row>
         </Container>
       </main>
-
       {/* Edit Modal */}
       {showEditModal && editingUser && (
-        <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal 
+        show={showEditModal} 
+        onHide={() => setShowEditModal(false)}
+        size="lg"
+        dialogClassName="wider-modal"
+        >
           <Modal.Header closeButton>
             <Modal.Title>Edit User</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
               <Form.Group controlId="formEditName">
-                <Form.Label>Name</Form.Label>
+                <Form.Label>Username</Form.Label>
                 <Form.Control
                   type="text"
                   value={editingUser.name}
@@ -470,7 +469,7 @@ const Users = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formEditEmail" className="mt-3">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>Email Address</Form.Label>
                 <Form.Control
                   type="email"
                   value={editingUser.email}
@@ -479,33 +478,98 @@ const Users = () => {
                   }
                 />
               </Form.Group>
-              {/* Add more fields as needed */}
+              <Form.Group controlId="formEditFullname" className="mt-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="full_name"
+                  value={editingUser.full_name}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, full_name: e.target.value })
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="formEditRole" className="mt-3">
+                <Form.Label>Role</Form.Label>
+                <Form.Select
+                  value={editingUser.role.name || ""}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, role:{...editingUser.role, name: e.target.value }})
+                  }
+                  >
+                <option value="">Select a Role</option>
+                <option value="participant">Participant</option>
+                <option value="reader">Reader</option>
+                <option value="reviewer">Reviewer</option>
+                <option value="submitter">Submitter</option>
+                <option value="mentor">Mentor</option>
+                </Form.Select>
+              </Form.Group>
+              <Form.Group controlId="formEditParent" className="mt-3">
+                <Form.Label>Parent</Form.Label>
+                <Form.Control
+                  type="parent.name"
+                  value={editingUser.parent?.name || ""}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, parent:{...editingUser.parent, name: e.target.value} })
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="formEditReview" className="mt-3">
+                <Form.Label>Review</Form.Label>
+                <Form.Check
+                  type="checkbox"
+                  label = "Email on Review"
+                  checked={editingUser.email_on_review}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, email_on_review: e.target.checked} )
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="formEditTakeQuiz" className="mt-3">
+                <Form.Label>take_quiz</Form.Label>
+                <Form.Check
+                  type="checkbox"
+                  label = "Take Quiz"
+                  checked={editingUser.take_quiz}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, take_quiz: e.target.checked} )
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="formEditSubmission" className="mt-3">
+                <Form.Label>email_on_submission</Form.Label>
+                <Form.Check
+                  type="checkbox"
+                  label = "Email on Submission"
+                  checked={editingUser.email_on_submission}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, email_on_submission: e.target.checked} )
+                  }
+                />
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => onSaveEdit(editingUser)}
-            >
+            <Button variant="primary" onClick={() => onSaveEdit(editingUser)}>
               Save Changes
             </Button>
           </Modal.Footer>
         </Modal>
       )}
-      {/* </main> */}
       {/* Render your table and pass the delete modal */}
       {showDeleteConfirmation.visible && showDeleteConfirmation.data && (
         <DeleteUser
           userData={showDeleteConfirmation.data}
           onClose={closeDeleteModal}
-          onDelete={onDelete} // Pass the callback
+          onDelete={onDelete}
         />
       )}
     </>
   );
+  
 };
 
 export default Users;

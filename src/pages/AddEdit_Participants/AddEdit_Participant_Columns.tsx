@@ -23,13 +23,15 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
 
     columnHelper.accessor("name", {
       header: "Username",
-      enableSorting: true,
+      enableSorting: false,
+      enableColumnFilter: false, 
+      enableGlobalFilter: false,
       cell: (info) => {
         return (
           <a
             href={"#"} // Replace with your actual link URL or route
             style={{
-              color: "orange", // Set the link color
+              color: "#C4804D", // Set the link color
               textDecoration: "underline", // Underline to make it look like a link
               cursor: "pointer", // Show pointer cursor on hover
             }}
@@ -42,13 +44,15 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
 
     columnHelper.accessor("full_name", {
       header: "Name",
-      enableSorting: true,
+      enableSorting: false,
+      enableColumnFilter: false, 
+      enableGlobalFilter: false,
       cell: (info) => {
         return (
           <a
             href={"#"} // Replace with your actual link URL or route
             style={{
-              color: "orange", // Set the link color
+              color: "#C4804D", // Set the link color
               textDecoration: "underline", // Underline to make it look like a link
               cursor: "pointer", // Show pointer cursor on hover
             }}
@@ -61,13 +65,15 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
 
     columnHelper.accessor("email", {
       header: "Email Address",
-      enableSorting: true,
+      enableSorting: false,
+      enableColumnFilter: false, 
+      enableGlobalFilter: false,
       cell: (info) => {
         return (
           <a
             href={"#"} // Replace with your actual link URL or route
             style={{
-              color: "orange", // Set the link color
+              color: "#C4804D", // Set the link color
               textDecoration: "underline", // Underline to make it look like a link
               cursor: "pointer", // Show pointer cursor on hover
             }}
