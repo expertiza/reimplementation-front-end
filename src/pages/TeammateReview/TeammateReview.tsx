@@ -5,7 +5,6 @@ import { RootState } from '../../store/store';
 import ReviewToggle from './components/ReviewToggle';
 import CompositeScore from './components/CompositeScore';
 import TeammateHeatmap from './components/TeammateHeatmap';
-import CircularProgress from '../ViewTeamGrades/CircularProgress';
 import ShowReviews from './components/ShowReviews';
 import { generateAllReviews } from './utils';
 import './TeammateReview.scss';
@@ -55,7 +54,6 @@ const TeammateReview: React.FC = () => {
     });
   };
 
-  const statsData = calculateRowAverages();
 
   return (
     <Container fluid className="teammate-review-container">
