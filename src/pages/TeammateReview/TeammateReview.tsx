@@ -5,9 +5,7 @@ import { RootState } from '../../store/store';
 import ReviewToggle from './components/ReviewToggle';
 import CompositeScore from './components/CompositeScore';
 import TeammateHeatmap from './components/TeammateHeatmap';
-import RoundSelector from './components/RoundSelector';
 import CircularProgress from '../ViewTeamGrades/CircularProgress';
-// import BarGraph from '../ViewTeamGrades/BarGraph';
 import ShowReviews from './components/ShowReviews';
 import { generateAllReviews } from './utils';
 import './TeammateReview.scss';
@@ -16,7 +14,6 @@ const TeammateReview: React.FC = () => {
   const [viewMode, setViewMode] = useState<'given' | 'received'>('received');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [showQuestions, setShowQuestions] = useState(true);
-  const [currentRound, setCurrentRound] = useState(0);
   const [showReviews, setShowReviews] = useState(false);
 
   const auth = useSelector(
@@ -25,17 +22,15 @@ const TeammateReview: React.FC = () => {
   );
 
   const isInstructor = auth.user?.role === 'Instructor';
-  const showTeammateReviews = true; // This would come from your assignment settings
+  const showTeammateReviews = true;
 
   const reviewData = useMemo(() => generateAllReviews(), []);
   
-  // Mock assignment data - in a real app, this would come from your state/API
   const assignmentInfo = {
     name: "Final Project",
     teamName: "group1"
   };
 
-  // Calculate column averages
   const calculateColumnAverages = (reviews: any[]) => {
     if (!reviews || reviews.length === 0) return [];
     const numCols = reviews[0].reviews.length;
@@ -50,13 +45,9 @@ const TeammateReview: React.FC = () => {
     return averages.map(sum => sum / reviews.length);
   };
 
-  const currentReviews = viewMode === 'given' 
-    ? reviewData.given[currentRound]
-    : reviewData.received[currentRound];
-
+  const currentReviews = viewMode === 'given' ? reviewData.given : reviewData.received;
   const columnAverages = calculateColumnAverages(currentReviews);
 
-  // Calculate stats for bar graph
   const calculateRowAverages = () => {
     return currentReviews.map(question => {
       const sum = question.reviews.reduce((acc, review) => acc + review.score, 0);
@@ -123,12 +114,6 @@ const TeammateReview: React.FC = () => {
         columnAverages={columnAverages}
       />
 
-      <RoundSelector
-        currentRound={currentRound}
-        totalRounds={2}
-        onRoundChange={setCurrentRound}
-      />
-
       <Collapse in={showReviews}>
         <div>
           <ShowReviews 
@@ -137,18 +122,6 @@ const TeammateReview: React.FC = () => {
           />
         </div>
       </Collapse>
-
-      {/* <div className="stats-section mt-4">
-        <div className="d-flex justify-content-between align-items-center">
-          <BarGraph sortedData={statsData} />
-          <CircularProgress 
-            size={70} 
-            progress={75} 
-            strokeWidth={10} 
-          />
-        </div>
-      </div> */}
-      
     </Container>
   );
 };

@@ -1,39 +1,38 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
-import { getColorClass } from './TeammateHeatmap';
+import { getScoreColorClass } from '../utils';
+import { ShowReviewsProps } from '../types';
 import './ShowReviews.scss';
 
-interface ReviewComment {
-  score: number;
-  comment?: string;
-  name: string;
-}
-
-interface Review {
-  questionNumber: string;
-  questionText: string;
-  reviews: ReviewComment[];
-  maxScore: number;
-}
-
-interface ShowReviewsProps {
-  data: Review[];
-  isAnonymous: boolean;
-}
-
+/**
+ * ShowReviews Component
+ * Displays detailed review information including scores and comments
+ * Uses a fixed 5-point scale (0-5) for all scores
+ * 
+ * @component
+ * @param {ShowReviewsProps} props - Component props
+ * @param {Review[]} props.data - Array of review data for each question
+ * @param {boolean} props.isAnonymous - Whether to anonymize reviewer names
+ */
 const ShowReviews: React.FC<ShowReviewsProps> = ({ data, isAnonymous }) => {
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
 
+  /**
+   * Renders all reviews in a structured format
+   * @returns {JSX.Element[]} Array of review elements
+   */
   const renderReviews = () => {
     const reviewElements: JSX.Element[] = [];
     const num_of_questions = data.length;
     const num_of_reviews = data[0]?.reviews.length || 0;
 
+    // Iterate through each review
     for (let i = 0; i < num_of_reviews; i++) {
+      // Add review header
       reviewElements.push(
         <div key={`review-header-${i}`} className="review-heading">
           Review {i + 1}
@@ -41,6 +40,7 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({ data, isAnonymous }) => {
         </div>
       );
 
+      // Add review details for each question
       for (let j = 0; j < num_of_questions; j++) {
         const review = data[j]?.reviews[i];
         if (review) {
@@ -50,7 +50,7 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({ data, isAnonymous }) => {
                 {data[j].questionNumber}. {data[j].questionText}
               </div>
               <div className="score-container">
-                <span className={`score ${getColorClass(review.score, data[j].maxScore)}`}>
+                <span className={`score ${getScoreColorClass(review.score)}`}>
                   {review.score}
                 </span>
                 {review.comment && <div className="comment">{review.comment}</div>}

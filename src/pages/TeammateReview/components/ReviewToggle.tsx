@@ -24,7 +24,7 @@ const ReviewToggle: React.FC<ReviewToggleProps> = ({
           variant={viewMode === 'given' ? 'primary' : 'outline-primary'}
           onClick={() => onToggle('given')}
         >
-          Reviews Given
+          Reviews given
         </Button>
       </div>
     );
@@ -37,13 +37,13 @@ const ReviewToggle: React.FC<ReviewToggleProps> = ({
         onClick={() => onToggle('given')}
         className="me-2"
       >
-        Reviews Given
+        Reviews given
       </Button>
       <Button 
         variant={viewMode === 'received' ? 'primary' : 'outline-primary'}
         onClick={() => onToggle('received')}
       >
-        Reviews Received
+        Reviews received
       </Button>
     </div>
   );

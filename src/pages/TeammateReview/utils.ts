@@ -1,5 +1,5 @@
 // src/pages/TeammateReview/utils.ts
-import { Review, QuestionReview, RoundReviews } from './types';
+import { Review, QuestionReview } from './types';
 
 const REVIEWERS = ['Alice Johnson', 'Bob Smith', 'Carol Davis'];
 const QUESTIONS = [
@@ -8,16 +8,84 @@ const QUESTIONS = [
   'Did this person complete assigned tasks?'
 ];
 
-export const generateReviewScore = (round: number, isCheckbox: boolean): number => {
-  if (isCheckbox) return 1;
-  const baseScore = Math.floor(Math.random() * 6); 
-  const roundBonus = round === 1 ? Math.random() > 0.5 ? 1 : 0 : 0;
-  return Math.min(baseScore + roundBonus, 5);
+// Color configuration for the heatmap
+export interface HeatmapColorConfig {
+  backgroundColor: string;
+  textColor: string;
+}
+
+// Score ranges and their corresponding colors for 5-point scale (0-5)
+export const HEATMAP_COLORS: Record<string, HeatmapColorConfig> = {
+  'score-5': { backgroundColor: '#2DE636', textColor: '#000' }, // Green
+  'score-4': { backgroundColor: '#BCED91', textColor: '#000' }, // Light green
+  'score-3': { backgroundColor: '#FFEC8B', textColor: '#000' }, // Yellow
+  'score-2': { backgroundColor: '#FD992D', textColor: '#000' }, // Orange
+  'score-1': { backgroundColor: '#FF6B6B', textColor: '#000' }, // Light red
+  'score-0': { backgroundColor: '#FF0000', textColor: '#fff' }  // Red
 };
 
-export const generateComment = (score: number, isCheckbox: boolean): string => {
-  if (isCheckbox) return 'Yes';
-  
+/**
+ * Get the color class for a score on the 5-point scale (0-5)
+ * @param score - The score value (0-5)
+ * @returns The CSS class name for the score's color
+ */
+export const getScoreColorClass = (score: number): string => {
+  // Ensure score is within valid bounds (0-5)
+  const validScore = Math.max(0, Math.min(5, Math.round(score)));
+  return `score-${validScore}`;
+};
+
+/**
+ * Get the color configuration for a specific score
+ * @param score - The score value (0-5)
+ * @returns The color configuration object containing background and text colors
+ */
+export const getScoreColors = (score: number): HeatmapColorConfig => {
+  const colorClass = getScoreColorClass(score);
+  return HEATMAP_COLORS[colorClass];
+};
+
+/**
+ * Calculate the average score for an array of reviews
+ * @param reviews - Array of reviews containing scores
+ * @returns The calculated average score
+ */
+export const calculateAverageScore = (reviews: Review[]): number => {
+  if (!reviews.length) return 0;
+  const sum = reviews.reduce((acc, review) => acc + review.score, 0);
+  return Number((sum / reviews.length).toFixed(2));
+};
+
+export const generateReviews = (): Review[] => {
+  return REVIEWERS.map(name => {
+    const score = Math.floor(Math.random() * 6);
+    return {
+      name,
+      score,
+      comment: generateComment(score)
+    };
+  });
+};
+
+export const generateQuestionReviews = (): QuestionReview[] => {
+  return QUESTIONS.map((text, index) => {
+    return {
+      questionNumber: (index + 1).toString(),
+      questionText: text,
+      reviews: generateReviews(),
+      maxScore: 5
+    };
+  });
+};
+
+export const generateAllReviews = () => {
+  return {
+    given: generateQuestionReviews(),
+    received: generateQuestionReviews()
+  };
+};
+
+export const generateComment = (score: number): string => {
   const commentMap = new Map([
     [5, ['Excellent performance', 'Outstanding work', 'Exceptional contribution']],
     [4, ['Good work overall', 'Solid performance', 'Consistent effort']],
@@ -31,48 +99,14 @@ export const generateComment = (score: number, isCheckbox: boolean): string => {
   return comments[Math.floor(Math.random() * comments.length)] || 'No comment provided';
 };
 
-export const generateReviews = (round: number, isCheckbox: boolean): Review[] => {
-  return REVIEWERS.map(name => {
-    const score = generateReviewScore(round, isCheckbox);
-    return {
-      name,
-      score,
-      comment: generateComment(score, isCheckbox)
-    };
-  });
-};
-
-export const generateQuestionReviews = (round: number): QuestionReview[] => {
-  return QUESTIONS.map((text, index) => {
-    const isCheckbox = index === 2;
-    return {
-      questionNumber: (index + 1).toString(),
-      questionText: text,
-      reviews: generateReviews(round, isCheckbox),
-      maxScore: isCheckbox ? 1 : 5
-    };
-  });
-};
-
-export const generateAllReviews = (): { given: RoundReviews; received: RoundReviews } => {
-  return {
-    given: [generateQuestionReviews(0), generateQuestionReviews(1)],
-    received: [generateQuestionReviews(0), generateQuestionReviews(1)]
-  };
-};
-
-export const calculateCompositeScore = (rounds: RoundReviews): number => {
+export const calculateCompositeScore = (reviews: QuestionReview[]): number => {
   let totalScore = 0;
   let totalReviews = 0;
 
-  rounds.forEach(round => {
-    round.forEach(question => {
-      if (question.maxScore === 5) {
-        question.reviews.forEach(review => {
-          totalScore += review.score;
-          totalReviews++;
-        });
-      }
+  reviews.forEach(question => {
+    question.reviews.forEach(review => {
+      totalScore += review.score;
+      totalReviews++;
     });
   });
 

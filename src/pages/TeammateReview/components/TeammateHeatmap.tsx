@@ -1,43 +1,35 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
 import { HeatmapProps } from '../types';
+import { getScoreColorClass, calculateAverageScore } from '../utils';
 import './TeammateHeatmap.scss';
 
-interface EnhancedHeatmapProps extends HeatmapProps {
-  columnAverages: number[];
-}
-
-export const getColorClass = (score: number, maxScore: number): string => {
-  if (maxScore === 1) {
-    return score === 1 ? 'score-1-1' : 'score-0-1';
-  }
-  
-  const normalizedScore = Math.round((score / maxScore) * 5);
-  
-  switch (normalizedScore) {
-    case 0: return 'score-0';
-    case 1: return 'score-1';
-    case 2: return 'score-2';
-    case 3: return 'score-3';
-    case 4: return 'score-4';
-    case 5: return 'score-5';
-    default: return '';
-  }
-};
-
-const TeammateHeatmap: React.FC<EnhancedHeatmapProps> = ({ 
+/**
+ * TeammateHeatmap Component
+ * Displays a heatmap visualization of teammate reviews with color-coded scores
+ * Uses a fixed 5-point scale (0-5) for all scores
+ * 
+ * @component
+ * @param {HeatmapProps} props - Component props
+ * @param {QuestionReview[]} props.data - Array of review data for each question
+ * @param {boolean} props.showQuestions - Whether to show question text
+ * @param {boolean} props.isAnonymous - Whether to anonymize reviewer names
+ * @param {number[]} props.columnAverages - Pre-calculated averages for each column
+ */
+const TeammateHeatmap: React.FC<HeatmapProps> = ({ 
   data, 
   showQuestions,
   isAnonymous,
   columnAverages 
 }) => {
+  /**
+   * Get the display name for a reviewer based on anonymity settings
+   * @param {string} name - Original reviewer name
+   * @param {number} index - Reviewer index
+   * @returns {string} Display name
+   */
   const getReviewerName = (name: string, index: number): string => {
     return isAnonymous ? `Student ${100 + index}` : name;
-  };
-
-  const calculateRowAverage = (reviews: any[]): number => {
-    const total = reviews.reduce((sum, review) => sum + review.score, 0);
-    return Number((total / reviews.length).toFixed(2));
   };
 
   return (
@@ -49,52 +41,47 @@ const TeammateHeatmap: React.FC<EnhancedHeatmapProps> = ({
           {data[0]?.reviews.map((review, idx) => (
             <th key={idx}>
               Review {idx + 1}
-              <br />
-              <span className="reviewer-name">
-                ({getReviewerName(review.name, idx)})
-              </span>
+              <div className="reviewer-name">
+                {getReviewerName(review.name, idx)}
+              </div>
             </th>
           ))}
-          <th>Avg▼</th>
+          <th>Average</th>
         </tr>
       </thead>
       <tbody>
         {data.map((row, rowIdx) => (
           <tr key={rowIdx}>
             <td className="question-no">
-              {row.maxScore === 1 ? (
-                <span className="check-mark">✓</span>
-              ) : (
-                <span className="score-circle">{row.maxScore}</span>
-              )}
               {row.questionNumber}
             </td>
-            {showQuestions && <td>{row.questionText}</td>}
-            {row.reviews.map((review, idx) => (
-              <td 
-                key={idx} 
-                className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
+            {showQuestions && (
+              <td>{row.questionText}</td>
+            )}
+            {row.reviews.map((review, colIdx) => (
+              <td
+                key={colIdx}
+                className={`py-2 px-4 text-center ${getScoreColorClass(review.score)}`}
                 title={review.comment}
               >
-                <span style={{ textDecoration: review.comment ? "underline" : "none" }}>
-                  {review.score}
-                </span>
+                {review.score}
               </td>
             ))}
-            <td className="text-center">
-              {calculateRowAverage(row.reviews)}
+            <td className="text-center average-cell">
+              {calculateAverageScore(row.reviews).toFixed(2)}
             </td>
           </tr>
         ))}
-        <tr className="averages-row">
-          <td>Column Avg</td>
-          {showQuestions && <td></td>}
+        <tr>
+          <td colSpan={showQuestions ? 2 : 1}>Column Average</td>
           {columnAverages.map((avg, idx) => (
-            <td key={idx} className="text-center">
+            <td
+              key={idx}
+              className="text-center average-cell"
+            >
               {avg.toFixed(2)}
             </td>
           ))}
-          <td></td>
         </tr>
       </tbody>
     </Table>

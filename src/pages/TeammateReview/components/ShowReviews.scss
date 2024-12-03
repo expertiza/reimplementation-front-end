@@ -50,46 +50,54 @@
   }
 
   .score {
-    display: inline-block;
     padding: 4px 8px;
     border-radius: 4px;
-    font-weight: bold;
-    min-width: 32px;
+    font-weight: 600;
+    min-width: 30px;
     text-align: center;
+    display: inline-block;
     color: #333;
 
-    // Score colors matching view-team-grades scheme
+    // Score colors matching heat map color scheme
     &.score-5 {
       background-color: #2DE636; // Green
+      color: #000;
     }
 
     &.score-4 {
       background-color: #BCED91; // Light green
+      color: #000;
     }
 
     &.score-3 {
       background-color: #FFEC8B; // Yellow
+      color: #000;
     }
 
     &.score-2 {
       background-color: #FD992D; // Orange
+      color: #000;
     }
 
     &.score-1 {
-      background-color: #FF6961; // Light red
+      background-color: #FF6B6B; // Light red
+      color: #000;
     }
 
     &.score-0 {
       background-color: #FF0000; // Red
+      color: #fff;
     }
 
     // Binary scores
-    &.score-1-1 {
-      background-color: #2DE636; // Green
+    &.score-0-1 {
+      background-color: #FF0000;
+      color: #fff;
     }
 
-    &.score-0-1 {
-      background-color: #FF0000; // Red
+    &.score-1-1 {
+      background-color: #2DE636;
+      color: #000;
     }
   }
 

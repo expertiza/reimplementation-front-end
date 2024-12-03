@@ -17,19 +17,19 @@ const CompositeScore: React.FC<CompositeScoreProps> = ({
       <Card.Body>
         <Row>
           <Col md={4}>
-            <Card.Title>Reviews Given</Card.Title>
+            <Card.Title>Reviews given</Card.Title>
             <div className="score-display">
               {givenScore.toFixed(2)} / 5
             </div>
           </Col>
           <Col md={4}>
-            <Card.Title>Reviews Received</Card.Title>
+            <Card.Title>Reviews received</Card.Title>
             <div className="score-display">
               {receivedScore.toFixed(2)} / 5
             </div>
           </Col>
           <Col md={4}>
-            <Card.Title>Overall Score</Card.Title>
+            <Card.Title>Overall score</Card.Title>
             <div className="score-display highlight">
               {overallScore.toFixed(2)} / 5
             </div>
