@@ -7,31 +7,29 @@ import { boolean } from "yup";
 interface ReviewToggleProps {
   viewMode: "given" | "received";
   onToggle: (mode: "given" | "received") => void;
-  showTeammateReviews?: boolean;
-  isInstructor?: boolean;
-  disabled?: boolean;
+  showTeammateReviewsToStudents?: boolean;
+  isAdminOrInstructor?: boolean;
 }
 
 const ReviewToggle: React.FC<ReviewToggleProps> = ({
   viewMode,
   onToggle,
-  showTeammateReviews = true,
-  isInstructor = false,
+  showTeammateReviewsToStudents,
+  isAdminOrInstructor
+
 }) => {
   // If student and teammate reviews are not allowed, only show "Reviews Given"
-  if (!isInstructor && !showTeammateReviews) {
+  if (!isAdminOrInstructor && !showTeammateReviewsToStudents) {
     return (
       <div className="review-toggle">
         <Button
           variant={viewMode === "given" ? "primary" : "outline-primary"}
-          onClick={() => onToggle("given")}
         >
           Reviews given
         </Button>
       </div>
     );
   }
-
   return (
     <div className="review-toggle">
       <Button

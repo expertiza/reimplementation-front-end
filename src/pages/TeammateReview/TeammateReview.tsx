@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect} from 'react';
 import { Container, Form, Button, Collapse } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from '../../store/store';
@@ -19,30 +19,23 @@ enum ROLE {
   TA = "Teaching Assistant",
   STUDENT = "Student",
 }
-
 const TeammateReview: React.FC = () => {
   const [viewMode, setViewMode] = useState<'given' | 'received'>('received');
-  const [givenTeammateReviews, setGivenTeammateReviews] = useState(true);
-  const [receivedTeammateReviews, setReceivedTeammateReviews] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [showQuestions, setShowQuestions] = useState(true);
   const [showReviews, setShowReviews] = useState(false);
-  const [showReviewsToStudents, setShowReviewsToStudents] = useState(false);
+  const [showTeammateReviewsToStudents, setShowTeammateReviewsToStudents] = useState(false);
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
   const userRole = auth.user?.role || "";
-
   const isAdmin = userRole === ROLE.ADMIN || userRole === ROLE.SUPER_ADMIN;
-  const isStudent = userRole === ROLE.STUDENT;
   const isInstructor = userRole === ROLE.INSTRUCTOR;
   const isAdminOrInstructor = isAdmin || isInstructor;
-  const showTeammateReviews = true;
 
   const reviewData = useMemo(() => generateAllReviews(), []);
-  
   const assignmentInfo = {
     name: "Final Project",
     teamName: "group1"
@@ -63,10 +56,6 @@ const TeammateReview: React.FC = () => {
   };
 
   const currentReviews = viewMode === 'given' ? reviewData.given : reviewData.received;
-  // if(givenTeammateReviews) {
-  //   const currentReviews =  reviewData.given}
-  // if(receivedTeammateReviews) {
-  //   const currentReviews = reviewData.received}
 
   const columnAverages = calculateColumnAverages(currentReviews);
 
@@ -76,8 +65,22 @@ const TeammateReview: React.FC = () => {
       return sum / question.reviews.length;
     });
   };
-  const handleInstructorSelectionChange =  () => {
-    setShowReviewsToStudents(!showReviewsToStudents);
+
+  useEffect(() => {
+    const storedValue = localStorage.getItem('checkboxSetting');
+    if (storedValue !== null) {
+      setShowTeammateReviewsToStudents(storedValue === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('checkboxSetting', showTeammateReviewsToStudents.toString());
+  }, [showTeammateReviewsToStudents]);
+
+  const handleChange = (event: {
+    target: { checked: boolean | ((prevState: boolean) => boolean) };
+  }) => {
+    setShowTeammateReviewsToStudents(event.target.checked);
   };
 
 
@@ -96,7 +99,8 @@ const TeammateReview: React.FC = () => {
               type="checkbox"
               id="instructor_selection"
               label="Allow students to view their teammate reviews?"
-              onChange = {handleInstructorSelectionChange}
+              onChange = {handleChange}
+              checked = {showTeammateReviewsToStudents}
             />
           </Form>
         </div>
@@ -106,17 +110,9 @@ const TeammateReview: React.FC = () => {
           <ReviewToggle
             viewMode={viewMode}
             onToggle={setViewMode}
-            showTeammateReviews={showTeammateReviews}
-            isInstructor={isInstructor}
-            disabled={!showReviewsToStudents}
+            showTeammateReviewsToStudents={showTeammateReviewsToStudents}
+            isAdminOrInstructor={isAdminOrInstructor}
           />
-
-          {/*<Button*/}
-          {/*  variant="link"*/}
-          {/*  onClick={() => setViewMode(!viewMode)}*/}
-          {/*  className="show-reviews-btn ms-4"*/}
-          {/*  >*/}
-          {/*</Button>*/}
 
           <Form.Check
             type="switch"
