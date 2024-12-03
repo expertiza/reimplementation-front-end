@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
-import { HeatmapProps } from '../types';
+import { HeatmapProps } from '../index';
 import { getScoreColorClass, calculateAverageScore } from '../utils';
 import './TeammateHeatmap.scss';
 

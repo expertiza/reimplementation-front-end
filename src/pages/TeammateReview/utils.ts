@@ -1,5 +1,5 @@
 // src/pages/TeammateReview/utils.ts
-import { Review, QuestionReview } from './types';
+import { Review, QuestionReview } from './index';
 
 const REVIEWERS = ['Alice Johnson', 'Bob Smith', 'Carol Davis'];
 const QUESTIONS = [

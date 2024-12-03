@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Container, Form, Button, Collapse } from 'react-bootstrap';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from '../../store/store';
 import ReviewToggle from './components/ReviewToggle';
 import CompositeScore from './components/CompositeScore';
@@ -8,19 +8,37 @@ import TeammateHeatmap from './components/TeammateHeatmap';
 import ShowReviews from './components/ShowReviews';
 import { generateAllReviews } from './utils';
 import './TeammateReview.scss';
+import { alertActions } from "../../store/slices/alertSlice";
+import styles from "../ProjectTopics/ProjectTopics.module.css";
+
+
+enum ROLE {
+  SUPER_ADMIN = "Super Administrator",
+  ADMIN = "Administrator",
+  INSTRUCTOR = "Instructor",
+  TA = "Teaching Assistant",
+  STUDENT = "Student",
+}
 
 const TeammateReview: React.FC = () => {
   const [viewMode, setViewMode] = useState<'given' | 'received'>('received');
+  const [givenTeammateReviews, setGivenTeammateReviews] = useState(true);
+  const [receivedTeammateReviews, setReceivedTeammateReviews] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [showQuestions, setShowQuestions] = useState(true);
   const [showReviews, setShowReviews] = useState(false);
+  const [showReviewsToStudents, setShowReviewsToStudents] = useState(false);
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
+  const userRole = auth.user?.role || "";
 
-  const isInstructor = auth.user?.role === 'Instructor';
+  const isAdmin = userRole === ROLE.ADMIN || userRole === ROLE.SUPER_ADMIN;
+  const isStudent = userRole === ROLE.STUDENT;
+  const isInstructor = userRole === ROLE.INSTRUCTOR;
+  const isAdminOrInstructor = isAdmin || isInstructor;
   const showTeammateReviews = true;
 
   const reviewData = useMemo(() => generateAllReviews(), []);
@@ -45,6 +63,11 @@ const TeammateReview: React.FC = () => {
   };
 
   const currentReviews = viewMode === 'given' ? reviewData.given : reviewData.received;
+  // if(givenTeammateReviews) {
+  //   const currentReviews =  reviewData.given}
+  // if(receivedTeammateReviews) {
+  //   const currentReviews = reviewData.received}
+
   const columnAverages = calculateColumnAverages(currentReviews);
 
   const calculateRowAverages = () => {
@@ -53,17 +76,31 @@ const TeammateReview: React.FC = () => {
       return sum / question.reviews.length;
     });
   };
+  const handleInstructorSelectionChange =  () => {
+    setShowReviewsToStudents(!showReviewsToStudents);
+  };
 
 
   return (
     <Container fluid className="teammate-review-container">
       <h2 className="mb-4">Teammate Reviews</h2>
-      
+
       <div className="assignment-info">
         <h2>Assignment: {assignmentInfo.name}</h2>
         <h3>Team: {assignmentInfo.teamName}</h3>
       </div>
-      
+      {isAdminOrInstructor && (
+        <div className="controls mb-4">
+          <Form>
+            <Form.Check
+              type="checkbox"
+              id="instructor_selection"
+              label="Allow students to view their teammate reviews?"
+              onChange = {handleInstructorSelectionChange}
+            />
+          </Form>
+        </div>
+      )}
       <div className="controls mb-4">
         <div className="control-group d-flex align-items-center">
           <ReviewToggle
@@ -71,8 +108,16 @@ const TeammateReview: React.FC = () => {
             onToggle={setViewMode}
             showTeammateReviews={showTeammateReviews}
             isInstructor={isInstructor}
+            disabled={!showReviewsToStudents}
           />
-          
+
+          {/*<Button*/}
+          {/*  variant="link"*/}
+          {/*  onClick={() => setViewMode(!viewMode)}*/}
+          {/*  className="show-reviews-btn ms-4"*/}
+          {/*  >*/}
+          {/*</Button>*/}
+
           <Form.Check
             type="switch"
             id="question-toggle"
@@ -87,10 +132,11 @@ const TeammateReview: React.FC = () => {
             onClick={() => setShowReviews(!showReviews)}
             className="show-reviews-btn ms-4"
           >
-            {showReviews ? 'Hide Reviews' : 'Show Reviews'} ({currentReviews[0]?.reviews.length || 0})
+            {showReviews ? "Hide Reviews" : "Show Reviews"} (
+            {currentReviews[0]?.reviews.length || 0})
           </Button>
         </div>
-        
+
         <Form.Check
           type="switch"
           id="anonymous-mode"
@@ -100,10 +146,7 @@ const TeammateReview: React.FC = () => {
         />
       </div>
 
-      <CompositeScore
-        reviewsGiven={reviewData.given}
-        reviewsReceived={reviewData.received}
-      />
+      <CompositeScore reviewsGiven={reviewData.given} reviewsReceived={reviewData.received} />
 
       <TeammateHeatmap
         data={currentReviews}
@@ -114,10 +157,7 @@ const TeammateReview: React.FC = () => {
 
       <Collapse in={showReviews}>
         <div>
-          <ShowReviews 
-            data={currentReviews}
-            isAnonymous={isAnonymous}
-          />
+          <ShowReviews data={currentReviews} isAnonymous={isAnonymous} />
         </div>
       </Collapse>
     </Container>

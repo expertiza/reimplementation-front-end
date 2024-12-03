@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
 import { getScoreColorClass } from '../utils';
-import { ShowReviewsProps } from '../types';
+import { ShowReviewsProps } from '../index';
 import './ShowReviews.scss';
 
 /**

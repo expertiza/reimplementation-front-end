@@ -1,7 +1,7 @@
 // src/pages/TeammateReview/components/CompositeScore.tsx
 import React from 'react';
 import { Card, Row, Col } from 'react-bootstrap';
-import { CompositeScoreProps } from '../types';
+import { CompositeScoreProps } from '../index';
 import { calculateCompositeScore } from '../utils';
 
 const CompositeScore: React.FC<CompositeScoreProps> = ({ 
