@@ -1,9 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
-// import useAPI from "hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
-// import { Button, Col, Container, Row, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -13,9 +11,8 @@ import { IUserResponse, ROLE } from "../../utils/interfaces";
 import DeleteUser from "./AddEdit_Participant_Delete";
 import { userColumns as USER_COLUMNS } from "./AddEdit_Participant_Columns";
 import dummyUsers from './dummyUsers.json';
-import UserEditor from "./AddEdit_Participants_Editor";
+import EditUser from "./AddEdit_Participants_Editor";
 
-// Define the User type
 type User = {
   id: number;
   name: string;
@@ -38,14 +35,11 @@ type User = {
   };
   take_quiz: boolean;
 };
-/**
- * @author Ankur Mundra on April, 2023
- */
+
 const Users = () => {
   const [userLogin, setUserLogin] = useState("");
   const [role, setRole] = useState("participant");
   const [localUsers, setLocalUsers] = useState<User[]>(dummyUsers);
-  // const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -55,6 +49,11 @@ const Users = () => {
   const dispatch = useDispatch();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
+    visible: boolean;
+    data?: IUserResponse;
+  }>({ visible: false });
+
+  const [showEditConfirmation, setShowEditConfirmation] = useState<{
     visible: boolean;
     data?: IUserResponse;
   }>({ visible: false });
@@ -134,7 +133,7 @@ useEffect(() => {
     }
   }, [error, dispatch]);
 
-  const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  // const onDeleteUserHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
   
   const handleAddUser = () => {
     if (!userLogin || !role) {
@@ -182,18 +181,18 @@ useEffect(() => {
   const onDelete = (userId: number) => {
     setLocalUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
   };
-
   const onEditHandle = useCallback(
     (row: TRow<IUserResponse>) => {
-      // Navigate to the editor with the user ID and mode as "update"
-      navigate(`/users/edit/${row.original.id}`, { state: { mode: "update", userData: row.original } });
+      if (!row.original) {
+        console.error("Row data is undefined");
+        return;
+      }
+      navigate(`/users/edit/${row.original.id}`, {
+        state: { mode: "edit", userData: row.original },
+      });
     },
     [navigate]
   );
-
-  const handleDeleteUser = (userId: number) => {
-    setLocalUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId)); // Update local state
-  };
 
   const onDeleteHandle = useCallback(
     (row: TRow<IUserResponse>) =>
@@ -249,8 +248,7 @@ useEffect(() => {
   const closeDeleteModal = () => {
     setShowDeleteConfirmation({ visible: false });
   };
-
-  const renderTooltip = (text: string) => (
+   const renderTooltip = (text: string) => (
     <Tooltip id={`tooltip-${text}`}>{text}</Tooltip>
   );
 
