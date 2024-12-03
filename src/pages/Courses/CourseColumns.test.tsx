@@ -20,7 +20,7 @@ describe("courseColumns", () => {
   };
 
   test("should define all required columns", () => {
-    const columns = courseColumns(mockHandleEdit, mockHandleDelete, mockHandleTA, mockHandleCopy);
+    const columns = courseColumns(mockHandleEdit, mockHandleDelete, mockHandleTA, mockHandleCopy, "Super Administrator");
     expect(columns).toHaveLength(5);
 
     // Check each column's header
@@ -36,7 +36,8 @@ describe("courseColumns", () => {
       mockHandleEdit,
       mockHandleDelete,
       mockHandleTA,
-      mockHandleCopy
+      mockHandleCopy, 
+      "Super Administrator"
     ).find((col) => col.id === "actions");
     const CellComponent = actionsColumn?.cell as React.FC<{ row: Row<any> }>;
 
@@ -53,7 +54,8 @@ describe("courseColumns", () => {
       mockHandleEdit,
       mockHandleDelete,
       mockHandleTA,
-      mockHandleCopy
+      mockHandleCopy,
+      "Super Administrator"
     ).find((col) => col.id === "actions");
     const CellComponent = actionsColumn?.cell as React.FC<{ row: Row<any> }>;
 
@@ -70,7 +72,8 @@ describe("courseColumns", () => {
       mockHandleEdit,
       mockHandleDelete,
       mockHandleTA,
-      mockHandleCopy
+      mockHandleCopy,
+      "Super Administrator"
     ).find((col) => col.id === "actions");
     const CellComponent = actionsColumn?.cell as React.FC<{ row: Row<any> }>;
 
@@ -87,7 +90,8 @@ describe("courseColumns", () => {
       mockHandleEdit,
       mockHandleDelete,
       mockHandleTA,
-      mockHandleCopy
+      mockHandleCopy,
+      "Super Administrator"
     ).find((col) => col.id === "actions");
     const CellComponent = actionsColumn?.cell as React.FC<{ row: Row<any> }>;
 

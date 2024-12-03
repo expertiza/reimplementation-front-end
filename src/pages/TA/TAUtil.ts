@@ -4,8 +4,9 @@ import axiosClient from "../../utils/axios_client";
 import { ITA, ITARequest } from "../../utils/interfaces";
 
 /**
- * @author Atharva Thorve, on December, 2023
- * @author Divit Kalathil, on December, 2023
+ * @author Anurag Gorkar, on December, 2024
+ * @author Makarand Pundalik, on December, 2024
+ * @author Rutvik Kulkarni, on December, 2024
  */
 
 /**
