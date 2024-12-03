@@ -1,13 +1,11 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
-import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
+// import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IUserResponse as IUser } from "../../utils/interfaces";
 
-const editIconPath = "/assets/icons/edit-icon.png"; // Absolute path
-const deleteIconPath = "/assets/icons/delete-icon.png";
-/**
- * @author Ankur Mundra on April, 2023
- */
+const editIconPath = require("../../assets/icons/edit-icon.png");
+const deleteIconPath = require("../../assets/icons/delete-icon.png");
+
 
 type Fn = (row: Row<IUser>) => void;
 const columnHelper = createColumnHelper<IUser>();

@@ -10,6 +10,7 @@ import { IUserResponse, ROLE } from "../../utils/interfaces";
 import DeleteUser from "./AddEdit_Participant_Delete";
 import { userColumns as USER_COLUMNS } from "./AddEdit_Participant_Columns";
 import dummyUsers from "./dummyUsers.json";
+import { BsInfoCircle } from "react-icons/bs";
 
 type User = {
   id: number;
@@ -219,7 +220,27 @@ const Users = () => {
                         "A Participant is someone who actively participates in tasks or events."
                       )}
                     >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Participant</span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        style={{
+                          padding: '0',
+                          backgroundColor: '#a6c8ff', // Light blue background
+                          borderRadius: '50%', // Circular shape
+                          width: '20px', // Width of the button
+                          height: '20px', // Height of the button
+                          color: '#fff', // White text (icon)
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', // Centering the icon
+                          border: 'none', // No border
+                      }}
+                    >
+                        <BsInfoCircle size={20} />
+                      </Button>
+                      </div>
                     </OverlayTrigger>
                   }
                   name="role"
@@ -238,7 +259,27 @@ const Users = () => {
                         "A Reader is someone with read-only access to content."
                       )}
                     >
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Reader</span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        style={{
+                          padding: '0',
+                          backgroundColor: '#a6c8ff', // Light blue background
+                          borderRadius: '50%', // Circular shape
+                          width: '20px', // Width of the button
+                          height: '20px', // Height of the button
+                          color: '#fff', // White text (icon)
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', // Centering the icon
+                          border: 'none', // No border
+                      }}
+                    >
+                        <BsInfoCircle size={20} />
+                      </Button>
+                      </div>
                     </OverlayTrigger>
                   }
                   name="role"
@@ -257,7 +298,27 @@ const Users = () => {
                         "A Reviewer provides feedback or evaluation on tasks or submissions."
                       )}
                     >
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Reviewer</span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        style={{
+                          padding: '0',
+                          backgroundColor: '#a6c8ff', // Light blue background
+                          borderRadius: '50%', // Circular shape
+                          width: '20px', // Width of the button
+                          height: '20px', // Height of the button
+                          color: '#fff', // White text (icon)
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', // Centering the icon
+                          border: 'none', // No border
+                      }}
+                    >
+                        <BsInfoCircle size={20} />
+                      </Button>
+                      </div>
                     </OverlayTrigger>
                   }
                   name="role"
@@ -276,7 +337,27 @@ const Users = () => {
                         "A Submitter is someone responsible for submitting work."
                       )}
                     >
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Submitter</span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        style={{
+                          padding: '0',
+                          backgroundColor: '#a6c8ff', // Light blue background
+                          borderRadius: '50%', // Circular shape
+                          width: '20px', // Width of the button
+                          height: '20px', // Height of the button
+                          color: '#fff', // White text (icon)
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', // Centering the icon
+                          border: 'none', // No border
+                      }}
+                    >
+                        <BsInfoCircle size={20} />
+                      </Button>
+                      </div>
                     </OverlayTrigger>
                   }
                   name="role"
@@ -295,7 +376,29 @@ const Users = () => {
                         "A Mentor provides guidance and support to other users."
                       )}
                     >
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span>Mentor</span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        style={{
+                          padding: '0',
+                          backgroundColor: '#a6c8ff', // Light blue background
+                          borderRadius: '50%', // Circular shape
+                          width: '20px', // Width of the button
+                          height: '20px', // Height of the button
+                          color: '#fff', // White text (icon)
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', // Centering the icon
+                          border: 'none', // No border
+                          // boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)', // Optional shadow for depth
+                      }}
+                    >
+                        <BsInfoCircle size={20} />
+                      </Button>
+                      </div>
+                      
                     </OverlayTrigger>
                   }
                   name="role"
@@ -306,12 +409,36 @@ const Users = () => {
                 />
               </div>
             </Col>
-            <Col className="d-flex justify-content-end">
+            <Col className="d-flex">
               <Button variant="primary" onClick={handleAddUser}>
                 <BsPersonFillAdd className="me-2" />
                 Add User
               </Button>
             </Col>
+             {/* Conditionally render the message only when all participants have taken the quiz */}
+          {allTrueQuiz && (
+            <Row className="mb-3">
+              <Col className="text">
+                <strong>All participants have taken the quiz</strong>
+              </Col>
+            </Row>
+          )}
+          {/* Conditionally render the note if all participants can submit*/}
+          {allTrueSubmit && (
+            <Row className="mb-3">
+              <Col className="text">
+                <strong>All participants can submit</strong>
+              </Col>
+            </Row>
+          )}
+          {/* Conditionally render the note if all participants can review */}
+          {allTrueReview && (
+            <Row className="mb-3">
+              <Col className="text">
+                <strong>All participants can review</strong>
+              </Col>
+            </Row>
+          )}
           </Row>
           <Table 
           data={tableData} 
