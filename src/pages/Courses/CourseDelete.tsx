@@ -6,10 +6,6 @@ import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
-/**
- * @author Atharva Thorve, on December, 2023
- * @author Mrityunjay Joshi on December, 2023
- */
 
 // DeleteCourse Component: Modal for deleting a course
 
@@ -19,7 +15,7 @@ interface IDeleteCourse {
 }
 
 const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
-  // State and hook declarations
+  
   const { data: deletedCourse, error: courseError, sendRequest: DeleteCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -32,18 +28,22 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
   useEffect(() => {
     if (courseError) dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
   }, [courseError, dispatch]);
-
+ 
+  //Added this method to be called in below and achieve LSP
+  const handleDeleteSuccess = () => {
+    setShow(false);
+    dispatch(
+      alertActions.showAlert({
+        variant: "success",
+        message: `Course ${courseData.name} deleted successfully!`,
+      })
+    );
+    onClose();
+  };
   // Close modal if course is deleted
   useEffect(() => {
     if (deletedCourse?.status && deletedCourse?.status >= 200 && deletedCourse?.status < 300) {
-      setShow(false);
-      dispatch(
-        alertActions.showAlert({
-          variant: "success",
-          message: `Course ${courseData.name} deleted successfully!`,
-        })
-      );
-      onClose();
+      handleDeleteSuccess();
     }
   }, [deletedCourse?.status, dispatch, onClose, courseData.name]);
 
@@ -55,7 +55,7 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
 
   // Render the DeleteCourse modal
   return (
-    <Modal show={show} onHide={closeHandler}>
+    <Modal show={show} onHide={closeHandler}centered>
       <Modal.Header closeButton>
         <Modal.Title>Delete Course</Modal.Title>
       </Modal.Header>

@@ -8,13 +8,22 @@ import DebouncedInput from "./DebouncedInput";
 interface FilterProps {
   filterValue: string | number;
   setFilterValue: (value: string | number) => void;
+  isDisabled?: boolean; // New optional prop to disable the filter
 }
 
-const GlobalFilter: React.FC<FilterProps> = ({ filterValue, setFilterValue }) => {
+const GlobalFilter: React.FC<FilterProps> = ({
+  filterValue,
+  setFilterValue,
+  isDisabled = true, // Default to true for disabling
+}) => {
   const searchHandler = useCallback(
     (value: string | number) => setFilterValue(value),
     [setFilterValue]
   );
+
+  if (isDisabled) {
+    return null; // Render nothing when disabled
+  }
 
   return (
     <DebouncedInput

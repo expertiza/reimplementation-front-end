@@ -8,7 +8,7 @@ import { IFormikFieldProps, IFormPropsWithOption } from "./interfaces";
  * @author Ankur Mundra on May, 2023
  */
 
-const FormSelect: React.FC<IFormPropsWithOption> = (props) => {
+const FormSelect: React.FC<IFormPropsWithOption & { onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void }> = (props) => {
   const {
     as,
     md,
@@ -21,6 +21,7 @@ const FormSelect: React.FC<IFormPropsWithOption> = (props) => {
     tooltipPlacement,
     disabled,
     inputGroupPrepend,
+    onChange, // Add onChange to props to detect chnage in selected institutions.
   } = props;
 
   const displayLabel = tooltip ? (
@@ -48,6 +49,12 @@ const FormSelect: React.FC<IFormPropsWithOption> = (props) => {
                 disabled={disabled}
                 isInvalid={isInvalid}
                 feedback={form.errors[field.name]}
+                onChange={(event) => {
+                  field.onChange(event); // Call Formik's onChange
+                  if (onChange) {
+                    onChange(event); // Call the passed onChange if provided
+                  }
+                }}
               >
                 {options.map((option) => {
                   return (
