@@ -200,7 +200,7 @@ const Users = () => {
           </Row>
           <hr />
           <Row className="mb-3 d-flex align-items-center justify-content-end">
-            <Col md="4">
+            <Col md="2">
               <Form.Control
                 type="text"
                 placeholder="Enter a username"
@@ -208,7 +208,7 @@ const Users = () => {
                 onChange={(e) => setUserLogin(e.target.value)}
               />
             </Col>
-            <Col md="2" className="d-flex justify-content-end">
+            <Col md="2" className="mb-3 d-flex justify">
             <Button
               variant="outline-secondary" // Use an outline style
               style={{
@@ -217,6 +217,19 @@ const Users = () => {
                 border: "1px solid #ccc", // Light gray border
                 padding: "4px 16px", // Add some padding to match the spacing
                 borderRadius: "4px", // Optional: Add a slight border radius
+                transition: "background-color 0.3s ease", // Smooth transition
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "white"; // Remove hover effect
+              }}
+              onMouseDown={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "gray"; // Click effect
+              }}
+              onMouseUp={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Revert after click
               }}
               onClick={handleAddUser}
             >
@@ -224,8 +237,8 @@ const Users = () => {
             </Button>
 
             </Col>
-            <Col md={6} className="d-flex align-items-center justify-content-start">
-              <div className="d-flex align-items-center flex-wrap">
+            <Col md={6} className="d-flex align-items-center flex">
+              <div className="d-flex align-items-center flex">
                 <Form.Check
                   inline
                   style={{ marginRight: "15px" }}
@@ -580,10 +593,54 @@ const Users = () => {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            <Button
+              variant="outline-secondary"
+              style={{
+                backgroundColor: "white", // Default background
+                color: "black", // Default text color
+                border: "1px solid #ccc", // Light gray border
+                padding: "4px 16px",
+                borderRadius: "4px", // Slight border radius
+                transition: "background-color 0.3s ease", // Smooth transition
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "white"; // Remove hover effect
+              }}
+              onMouseDown={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "gray"; // Click effect
+              }}
+              onMouseUp={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Revert after click
+              }} 
+              onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={() => onSaveEdit(editingUser)}>
+            <Button 
+              variant="outline-secondary"
+              style={{
+                backgroundColor: "white", // Default background
+                color: "black", // Default text color
+                border: "1px solid #ccc", // Light gray border
+                padding: "4px 16px",
+                borderRadius: "4px", // Slight border radius
+                transition: "background-color 0.3s ease", // Smooth transition
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "white"; // Remove hover effect
+              }}
+              onMouseDown={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "gray"; // Click effect
+              }}
+              onMouseUp={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Revert after click
+              }} 
+              onClick={() => onSaveEdit(editingUser)}>
               Save Changes
             </Button>
           </Modal.Footer>

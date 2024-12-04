@@ -41,10 +41,52 @@ const deleteHandler = () => {
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="outline-secondary" onClick={closeHandler}>
+        <Button variant="outline-secondary"
+              style={{
+                backgroundColor: "white", // Default background
+                color: "black", // Default text color
+                border: "1px solid #ccc", // Light gray border
+                padding: "4px 16px",
+                borderRadius: "4px", // Slight border radius
+                transition: "background-color 0.3s ease", // Smooth transition
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "white"; // Remove hover effect
+              }}
+              onMouseDown={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "gray"; // Click effect
+              }}
+              onMouseUp={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Revert after click
+              }} 
+              onClick={closeHandler}>
           Cancel
         </Button>
-        <Button variant="outline-danger" onClick={deleteHandler}>
+        <Button variant="outline-secondary"
+              style={{
+                backgroundColor: "white", // Default background
+                color: "black", // Default text color
+                border: "1px solid #ccc", // Light gray border
+                padding: "4px 16px",
+                borderRadius: "4px", // Slight border radius
+                transition: "background-color 0.3s ease", // Smooth transition
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Hover effect
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "white"; // Remove hover effect
+              }}
+              onMouseDown={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "gray"; // Click effect
+              }}
+              onMouseUp={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = "lightgray"; // Revert after click
+              }} 
+              onClick={deleteHandler}>
           Delete
         </Button>
       </Modal.Footer>
