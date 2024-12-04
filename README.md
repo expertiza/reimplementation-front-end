@@ -5,7 +5,8 @@
 The project deals with implementing the review for teammate, the view is available in both student as well as instructor view. The current implementation does not have a designated heatgrid for either of the view that is specifically shown, the problem is far worse in the instructor section which has no clarification whether the score is about the reviews given by the student or given to the student. The main task here is to use the heatgrid component, and create the UI to display the teammate review scores. It is important to also ensure that the design stays consistent with other heatgrid components that are utilized in order to ensure uniformity throughout.
 
 ## View Teammate Reviews 
-###Current Service Online Address
+
+### Current Service Online Address
 
 You can visit the project online at the following address:  
 [http://152.7.179.32:3000](http://152.7.179.32:3000)
@@ -81,8 +82,7 @@ For more information and access to the project code, visit the GitHub repository
 
 
 
-
-#The previous project of our team is E2464
+# The previous project of our team is E2464
 
 ## Current Service Online Address
 
