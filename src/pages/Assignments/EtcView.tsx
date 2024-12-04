@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Etc.css';
+import headerConfig from './EtcDummyData.json';
 import scoreIcon from '../../assets/scores.png';
 import ParticipantIcon from '@mui/icons-material/Person';
 import CreateTeamIcon from '@mui/icons-material/Groups3';
@@ -40,7 +41,8 @@ const EtcView: React.FC = () => {
           The assignment was successfully saved!
         </div>
       )}
-      <h2>Editing Assignment: Meta Review Fix_1</h2>
+      {/* Adding the header dynamically */}
+      <h2>{headerConfig.header}</h2>
       <div className="etc-tab-pane">
       {/* Tab Navigation */}
         <div className="tab-navigation" >
