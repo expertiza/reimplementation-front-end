@@ -46,25 +46,21 @@ const EtcView: React.FC = () => {
         <div className="tab-navigation" >
           <button
             className={`tab ${activeTab === 'General' ? 'active' : ''}`}
-            // onClick={() => handleTabClick('General')}
           >
             General
           </button>
           <button
             className={`tab ${activeTab === 'Rubrics' ? 'active' : ''}`}
-            // onClick={() => handleTabClick('Rubrics')}
           >
             Rubrics
           </button>
           <button
             className={`tab ${activeTab === 'Review Strategy' ? 'active' : ''}`}
-            // onClick={() => handleTabClick('Review Strategy')}
           >
             Review Strategy
           </button>
           <button
             className={`tab ${activeTab === 'Due Dates' ? 'active' : ''}`}
-            // onClick={() => handleTabClick('Due Dates')}
           >
             Due Dates
           </button>
@@ -85,8 +81,6 @@ const EtcView: React.FC = () => {
 
       
         <div className="tab-content">
-          {/* {activeTab === 'General' && <p>General Content</p>}
-          {activeTab === 'Rubrics' && <p>Rubrics Content</p>} */}
           {activeTab === 'Badges' && <p>Badges Content</p>}
           {activeTab === 'Etc' &&  (
             <div>
