@@ -181,7 +181,7 @@ const Users = () => {
   
     // Return the filtered columns
     return filteredColumns;
-    return USER_COLUMNS(onEditHandle, () => {}, tableData);
+    //return USER_COLUMNS(onEditHandle, () => {}, tableData);
   }, [showReviewColumn, showSubmitColumn, showQuizColumn, onEditHandle, onDeleteHandle, tableData]);
   const closeDeleteModal = () => {
     setShowDeleteConfirmation({ visible: false });
@@ -199,8 +199,8 @@ const Users = () => {
             </Col>
           </Row>
           <hr />
-          <Row className="mb-3 justify-content-center align-items-center">
-            <Col md={3}>
+          <Row className="mb-3 d-flex align-items-center justify-content-end">
+            <Col md="4">
               <Form.Control
                 type="text"
                 placeholder="Enter a username"
@@ -208,20 +208,36 @@ const Users = () => {
                 onChange={(e) => setUserLogin(e.target.value)}
               />
             </Col>
-            <Col md={8} className="d-flex align-items-center justify-content-center">
-              <div className="d-flex align-items-center">
+            <Col md="2" className="d-flex justify-content-end">
+            <Button
+              variant="outline-secondary" // Use an outline style
+              style={{
+                backgroundColor: "white", // Match the white background
+                color: "black", // Black text color
+                border: "1px solid #ccc", // Light gray border
+                padding: "4px 16px", // Add some padding to match the spacing
+                borderRadius: "4px", // Optional: Add a slight border radius
+              }}
+              onClick={handleAddUser}
+            >
+              Add user
+            </Button>
+
+            </Col>
+            <Col md={6} className="d-flex align-items-center justify-content-start">
+              <div className="d-flex align-items-center flex-wrap">
                 <Form.Check
                   inline
                   style={{ marginRight: "15px" }}
                   label={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Participant</span>
                     <OverlayTrigger
                       placement="top"
                       overlay={renderTooltip(
                         "A Participant is someone who actively participates in tasks or events."
                       )}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>Participant</span>
                         <Button
                           variant="link"
                           size="sm"
@@ -229,8 +245,8 @@ const Users = () => {
                             padding: "0",
                             backgroundColor: "#a6c8ff",
                             borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
+                            width: "15px",
+                            height: "15px",
                             color: "#fff",
                             display: "flex",
                             alignItems: "center",
@@ -238,10 +254,10 @@ const Users = () => {
                             border: "none",
                           }}
                         >
-                          <BsInfoCircle size={20} />
+                          <BsInfoCircle size={15} />
                         </Button>
-                      </div>
                     </OverlayTrigger>
+                    </div>
                   }
                   name="role"
                   type="radio"
@@ -253,14 +269,14 @@ const Users = () => {
                   inline
                   style={{ marginRight: "15px" }}
                   label={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Reader</span>
                     <OverlayTrigger
                       placement="top"
                       overlay={renderTooltip(
                         "A Reader is someone with read-only access to content."
                       )}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>Reader</span>
                         <Button
                           variant="link"
                           size="sm"
@@ -268,8 +284,8 @@ const Users = () => {
                             padding: "0",
                             backgroundColor: "#a6c8ff",
                             borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
+                            width: "15px",
+                            height: "15px",
                             color: "#fff",
                             display: "flex",
                             alignItems: "center",
@@ -277,10 +293,10 @@ const Users = () => {
                             border: "none",
                           }}
                         >
-                          <BsInfoCircle size={20} />
+                          <BsInfoCircle size={15} />
                         </Button>
-                      </div>
                     </OverlayTrigger>
+                    </div>
                   }
                   name="role"
                   type="radio"
@@ -292,14 +308,15 @@ const Users = () => {
                   inline
                   style={{ marginRight: "15px" }}
                   label={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Reviewer</span>
                     <OverlayTrigger
                       placement="top"
                       overlay={renderTooltip(
                         "A Reviewer provides feedback or evaluation on tasks or submissions."
                       )}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>Reviewer</span>
+                      
                         <Button
                           variant="link"
                           size="sm"
@@ -307,8 +324,8 @@ const Users = () => {
                             padding: "0",
                             backgroundColor: "#a6c8ff",
                             borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
+                            width: "15px",
+                            height: "15px",
                             color: "#fff",
                             display: "flex",
                             alignItems: "center",
@@ -316,10 +333,11 @@ const Users = () => {
                             border: "none",
                           }}
                         >
-                          <BsInfoCircle size={20} />
+                          <BsInfoCircle size={15} />
                         </Button>
-                      </div>
                     </OverlayTrigger>
+                    </div>
+
                   }
                   name="role"
                   type="radio"
@@ -331,14 +349,15 @@ const Users = () => {
                   inline
                   style={{ marginRight: "15px" }}
                   label={
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Submitter</span>
                     <OverlayTrigger
                       placement="top"
                       overlay={renderTooltip(
                         "A Submitter is someone responsible for submitting work."
                       )}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>Submitter</span>
+                      
                         <Button
                           variant="link"
                           size="sm"
@@ -346,8 +365,8 @@ const Users = () => {
                             padding: "0",
                             backgroundColor: "#a6c8ff",
                             borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
+                            width: "15px",
+                            height: "15px",
                             color: "#fff",
                             display: "flex",
                             alignItems: "center",
@@ -355,10 +374,10 @@ const Users = () => {
                             border: "none",
                           }}
                         >
-                          <BsInfoCircle size={20} />
+                          <BsInfoCircle size={15} />
                         </Button>
-                      </div>
                     </OverlayTrigger>
+                    </div>
                   }
                   name="role"
                   type="radio"
@@ -369,15 +388,14 @@ const Users = () => {
                 <Form.Check
                   inline
                   style={{ marginRight: "15px" }}
-                  label={
+                  label={<div style={{ display: "flex", alignItems: "center" }}>
+                        <span>Mentor</span>
                     <OverlayTrigger
                       placement="top"
                       overlay={renderTooltip(
                         "A Mentor provides guidance and support to other users."
                       )}
                     >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <span>Mentor</span>
                         <Button
                           variant="link"
                           size="sm"
@@ -385,8 +403,8 @@ const Users = () => {
                             padding: "0",
                             backgroundColor: "#a6c8ff",
                             borderRadius: "50%",
-                            width: "20px",
-                            height: "20px",
+                            width: "15px",
+                            height: "15px",
                             color: "#fff",
                             display: "flex",
                             alignItems: "center",
@@ -394,10 +412,10 @@ const Users = () => {
                             border: "none",
                           }}
                         >
-                          <BsInfoCircle size={20} />
+                          <BsInfoCircle size={15} />
                         </Button>
-                      </div>
                     </OverlayTrigger>
+                    </div>
                   }
                   name="role"
                   type="radio"
@@ -407,12 +425,7 @@ const Users = () => {
                 />
               </div>
             </Col>
-            <Col md={2} className="d-flex justify-content-center">
-              <Button variant="primary" onClick={handleAddUser}>
-                <BsPersonFillAdd className="me-2" />
-                Add User
-              </Button>
-            </Col>
+            
           </Row>
           <Row className="justify-content-center">
             {allTrueQuiz && (
@@ -431,18 +444,35 @@ const Users = () => {
               </Col>
             )}
           </Row>
-          <Row>
-            <Col md={15} className="justify-content-center">
+          {/* <Row>
+            <Col 
+             className="justify-content-center">
               <Table
                 data={tableData}
                 columns={tableColumns}
+                style={{ width: "100%", maxWidth: "1200px", margin: "0 auto" }}
                 columnVisibility={{
                   id: false,
                   institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
                 }}
               />
             </Col>
-          </Row>
+          </Row> */}
+          <Row>
+  <Col md={12}>
+    <div style={{ width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
+      <Table
+        data={tableData}
+        columns={tableColumns}
+        columnVisibility={{
+          id: false,
+          institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+        }}
+      />
+    </div>
+  </Col>
+</Row>
+
         </Container>
       </main>
       {/* Edit Modal */}

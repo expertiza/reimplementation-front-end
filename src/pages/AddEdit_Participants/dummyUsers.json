@@ -4,13 +4,13 @@
       "name": "John Doe",
       "email": "john.doe@example.com",
       "full_name": "Johnathan Doe",
-      "email_on_review": true,
-      "email_on_submission": true,
-      "email_on_review_of_review": true,
+      "email_on_review": false,
+      "email_on_submission": false,
+      "email_on_review_of_review": false,
       "parent": { "id": 101, "name": "Parent Institution" },
       "institution": { "id": 201, "name": "Institution A" },
       "role": { "id": 1, "name": "Admin" },
-      "take_quiz": true
+      "take_quiz": false
     },
     {
       "id": 1698487390000,
