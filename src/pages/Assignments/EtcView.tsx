@@ -21,9 +21,9 @@ const EtcView: React.FC = () => {
   const handleSave = () => {
     setShowBanner(true);
     // Hide banner after 3 seconds
-    // setTimeout(() => {
-    //   setShowBanner(false);
-    // }, 3000);
+    setTimeout(() => {
+      setShowBanner(false);
+    }, 3000);
   };
 
   // Back button click handler
