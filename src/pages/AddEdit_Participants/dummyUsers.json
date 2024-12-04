@@ -9,7 +9,7 @@
       "email_on_review_of_review": false,
       "parent": { "id": 101, "name": "Parent Institution" },
       "institution": { "id": 201, "name": "Institution A" },
-      "role": { "id": 1, "name": "Admin" },
+      "role": { "id": 1, "name": "participant" },
       "take_quiz": false
     },
     {

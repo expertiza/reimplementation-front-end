@@ -473,7 +473,7 @@ const Users = () => {
           </Row> */}
           <Row>
   <Col md={12}>
-    <div style={{ width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ width: "150%", maxWidth: "1300px", margin: "0 auto" }}>
       <Table
         data={tableData}
         columns={tableColumns}
@@ -485,7 +485,6 @@ const Users = () => {
     </div>
   </Col>
 </Row>
-
         </Container>
       </main>
       {/* Edit Modal */}
@@ -532,14 +531,14 @@ const Users = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formEditRole" className="mt-3">
-                <Form.Label>Role</Form.Label>
+                <Form.Label>Participation</Form.Label>
                 <Form.Select
                   value={editingUser.role.name || ""}
                   onChange={(e) =>
                     setEditingUser({ ...editingUser, role:{...editingUser.role, name: e.target.value }})
                   }
                   >
-                <option value="">Select a Role</option>
+                <option value="">Select Participation</option>
                 <option value="participant">Participant</option>
                 <option value="reader">Reader</option>
                 <option value="reviewer">Reviewer</option>
@@ -569,7 +568,7 @@ const Users = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formEditTakeQuiz" className="mt-3">
-                <Form.Label>take_quiz</Form.Label>
+                <Form.Label>Take Quiz</Form.Label>
                 <Form.Check
                   type="checkbox"
                   label = "Take Quiz"
@@ -580,7 +579,7 @@ const Users = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formEditSubmission" className="mt-3">
-                <Form.Label>email_on_submission</Form.Label>
+                <Form.Label>Submission</Form.Label>
                 <Form.Check
                   type="checkbox"
                   label = "Email on Submission"

@@ -86,7 +86,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn, data: IUser[]) => 
 
     columnHelper.accessor("role.name", {
       id: "role",
-      header: "Role",
+      header: "Participation",
       enableColumnFilter: false,
     }),
 
