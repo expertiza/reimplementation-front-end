@@ -6,10 +6,15 @@ import { ReviewData } from './App'; // Importing the ReviewData interface from A
 interface ReviewTableRowProps {
   row: ReviewData; // Data for the row
   showToggleQuestion: boolean; // Flag to toggle the question column
+  showToggle10WordComments: boolean; // Flag to toggle the > 10 word column
+  showToggle20WordComments: boolean; // Flag to toggle the > 20 word column
+  showToggleCustomWordComment: boolean; // Flag to toggle the custom feature
+  customCharacterNumber: number; // 
 }
 
 // Functional component ReviewTableRow
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion }) => {
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion, showToggle10WordComments, showToggle20WordComments, showToggleCustomWordComment, customCharacterNumber}) => {
+
 
   return (
     <tr className={row.maxScore === 1 ? "no-bg" : ""}>
@@ -32,9 +37,9 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
       {/* Review Cells */}
       {row.reviews.map((review, idx) => (
         <td
-          key={idx}
-          className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
-          data-question={review.comment}
+        key={idx}
+        className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
+        data-question={review.comment}
         >
           <span style={{ textDecoration: review.comment ? "underline" : "none" }}>{review.score}</span>
         </td>
@@ -42,6 +47,22 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
 
       {/* Row Average */}
       <td className="py-2 px-4 text-center">{row.RowAvg.toFixed(2)}</td>
+
+      {/* Toggle >= 10 word comments */}
+      {showToggle10WordComments && (
+        <td className='text-center'>{row.reviews.filter(review => review?.comment && review.comment.split(' ').length >= 10).length}</td>
+      )}
+
+      {/* Toggle >= 20 word comments */}
+      {showToggle20WordComments && (
+        <td className='text-center'>{row.reviews.filter(review => review?.comment && review.comment.split(' ').length >= 20).length}</td>
+      )}
+
+      {/* Toggle >= (input value) character */}
+      {showToggleCustomWordComment && (
+        <td className='text-center'>{row.reviews.filter(review => review?.comment && review.comment.length >= customCharacterNumber).length}</td>
+      )}
+
     </tr>
   );
 };

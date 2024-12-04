@@ -293,3 +293,20 @@
 .review-container {
   margin-bottom: 200px; 
 }
+
+
+.toggle-button { 
+ color: rgb(226, 23, 23);
+ display: inline;
+ cursor: pointer; 
+}
+.toggle-button:hover {
+  text-decoration: underline;
+}
+
+.toggle-pannel {
+  background-color: #f8f5f5;
+  width: fit-content;
+  padding-right: 1%;
+  padding-left: 1%;
+}

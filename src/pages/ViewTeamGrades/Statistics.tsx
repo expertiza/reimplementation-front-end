@@ -77,7 +77,7 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
     
     <div>
       
-    <table style={{ width: '90%', borderCollapse: 'collapse' }}>
+    <table style={{ width: '90%', borderBottom: '1px solid black' }}>
       <thead>
       <a href="#" onClick={(e) => { e.preventDefault(); toggleStatisticsVisibility();}}>
         {statisticsVisible ? 'hide stats' : 'show stats'}
@@ -95,58 +95,58 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
    </tr>
       )}
         <tr>
-          <th style={headerCellStyle}></th>
-          <th style={headerCellStyle} colSpan={2}>Submitted Work</th>
+          <th style={{border: '1px solid black',borderBottom: 'none' }}></th>
+          <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center',border: '1px solid black',borderBottom: 'none'}} colSpan={2}>Submitted Work</th>
           {dummyauthorfeedback[0].length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Author Feedback</th>
+            <th style={{textAlign: 'center', border: '1px solid black',borderBottom: 'none'}} colSpan={2}>Author Feedback</th>
           )}
           {teammateData.length !== 0 && (
-            <th style={headerCellStyle} colSpan={2}>Teammate Review</th>
+            <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center',border: '1px solid black',borderBottom: 'none'}} colSpan={2}>Teammate Review</th>
           )}
-          
+          <th style={{border: '1px solid black',borderBottom: 'none' }}></th>
         </tr>
         <tr>
-          <th style={subHeaderCellStyle}>Contributor</th>
-          <th style={subHeaderCellStyle}>Average</th>
-          <th style={subHeaderCellStyle}>Range</th>
+          <th style={{ borderLeft: '1px solid black', textAlign: 'center' }}>Contributor</th>
+          <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderLeft: '1px solid black'  }}>Average</th>
+          <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center'}}>Range</th>
           {dummyauthorfeedback[0].length !== 0 && (
-            <th style={subHeaderCellStyle}>Average</th>
+            <th style={{textAlign: 'center', borderLeft: '1px solid black' }}>Average</th>
           )}
           {dummyauthorfeedback[0].length !== 0 && (
             <th style={subHeaderCellStyle}>Range</th>
           )}
           {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Average</th>
+            <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderLeft: '1px solid black' }}>Average</th>
           )}
           {teammateData.length !== 0 && (
-            <th style={subHeaderCellStyle}>Range</th>
+            <th style={{ backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderRight: '1px solid black'}}>Range</th>
           )}
-          <th style={subHeaderCellStyle}>Final Score</th>
+          <th style={{textAlign: 'center', borderRight: '1px solid black'}}>Final Score</th>
         </tr>
         <tr>
-            <td style={subHeaderCellStyle}>
+            <td style={{borderLeft: '1px solid black', textAlign: 'center' }}>
               <div style={{textAlign: 'center' }}>
                 <a href="#">ssshah26 </a><span>(Siddharth Shah)</span>
                 <br />
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+            <td style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderLeft: '1px solid black'  }}>
+              <div style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center'}}>
                 <div>{average}</div>
                 <a href="#" onClick={(e) => { e.preventDefault(); toggleShowReviews(); }}>
                     {showReviews ? 'Hide Reviews' : 'Show Reviews'}
                 </a><span>({totalReviewsForQuestion1})</span>
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+            <td style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center' }}>
+              <div style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center' }}>
                 <div>99.99% - 100%</div>
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
+            <td style={{textAlign: 'center', borderLeft: '1px solid black'  }}>
               
               {dummyauthorfeedback[0].length !== 0 && (
-                <div style={{textAlign: 'center' }}>
+                <div style={{textAlign: 'center'}}>
                 <div>96.67</div>
                 <a href="#" onClick={(e) => { e.preventDefault(); toggleAuthorFeedback(); }}>
                     {ShowAuthorFeedback ? 'Hide Author Feedback' : 'Show Author Feedback'}
@@ -163,21 +163,21 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
               )}   
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+            <td style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderLeft: '1px solid black'  }}>
+              <div style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center' }}>
                     {teammateData.length !== 0 && (
                       <div><AverageMarks data={teammateData} /></div>
                     )}
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
-              <div style={{textAlign: 'center' }}>
+            <td style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center',borderRight: '1px solid black'}}>
+              <div style={{backgroundColor: 'rgb(232,232,232)', textAlign: 'center' }}>
               {teammateData.length !== 0 && (
                       <div>90% - 100%</div>
                     )}
               </div>
             </td>
-            <td style={subHeaderCellStyle}>
+            <td style={{borderRight: '1px solid black'}}>
             {teammateData.length !== 0 && (
                       <div style={{textAlign: 'center' }}>
                       <div>75%</div>
@@ -191,7 +191,7 @@ const Statistics: React.FC<StatisticsProps> = ({average}) => {
       <tbody>
       </tbody>
     </table>
-    <div>
+    <div> 
         {showReviews && (
           <div>
             <h2>Reviews</h2>
