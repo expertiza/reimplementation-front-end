@@ -76,6 +76,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           options={[
             { label: "Show 25", value: "25" },
             { label: "Show 50", value: "50" },
+            { label: "Show all", value: "1000" },
           ]}
           input={{
             value: getState().pagination.pageSize,

@@ -103,6 +103,11 @@ const Table: React.FC<TableProps> = ({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 25, // Set the default page size to 25
+      },
+    },
   });
 
   const {

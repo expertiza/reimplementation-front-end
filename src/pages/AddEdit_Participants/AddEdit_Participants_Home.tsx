@@ -473,7 +473,7 @@ const Users = () => {
           </Row> */}
           <Row>
   <Col md={12}>
-    <div style={{ width: "150%", maxWidth: "1300px", margin: "0 auto" }}>
+    <div style={{ width: "150%", maxWidth: "1550px", margin: "0 auto" }}>
       <Table
         data={tableData}
         columns={tableColumns}
