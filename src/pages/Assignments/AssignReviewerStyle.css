@@ -1,0 +1,94 @@
+/* Container for the whole component */
+.assign-reviewer-container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Table Styling */
+  .assign-reviewer-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .assign-reviewer-table th,
+  .assign-reviewer-table td {
+    vertical-align: top;
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  .assign-reviewer-table td div {
+    margin-bottom: 5px; /* Adds spacing between lines */
+  }
+
+  .assign-reviewer-table th {
+    background-color: #f4f4f4;
+  }
+  
+  /* Buttons */
+  .add-reviewer-button,
+  .unsubmit-button,
+  .submit-button,
+  .cancel-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .add-reviewer-button {
+    background-color: green;
+  }
+  
+  .unsubmit-link {
+    color: #007bff;
+    cursor: pointer;
+  }
+  
+  .unsubmit-link:hover {
+    color: lightgreen;
+  }
+  
+  .submit-button {
+    background-color: green;
+    width: 100%;
+  }
+  
+  .cancel-button {
+    background-color: gray;
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
