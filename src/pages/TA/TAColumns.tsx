@@ -3,6 +3,7 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPersonXFill } from "react-icons/bs";
 import { ITAResponse as ITA } from "../../utils/interfaces";
+import ColumnButton from "../../components/ColumnButton";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -38,14 +39,15 @@ export const TAColumns = (handleDelete: Fn) => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button
+        <ColumnButton
+          id="delete-ta"
           variant="outline-danger"
           size="sm"
           className="ms-sm-2"
           onClick={() => handleDelete(row)}
-        >
-          <BsPersonXFill />
-        </Button>
+          tooltip="Delete TA"
+          icon={<BsPersonXFill />}
+        />
       </>
     ),
   }),
