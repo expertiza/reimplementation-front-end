@@ -33,8 +33,6 @@ describe("TAColumns", () => {
     render(<CellComponent row={mockRow as Row<any>} />);
     const deleteButton = screen.getByTestId("delete-ta");
     expect(deleteButton).toBeTruthy();
-    // expect(deleteButton).toContain("Delete TA");
-    // expect(deleteButton).toHaveAttribute("tooltip", "Delete TA");
   });
 
   test("should call handleDelete when delete button is clicked", async () => {

@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Row } from "@tanstack/react-table";
 import { courseColumns } from "./CourseColumns";
-// import ColumnButton from "../../components/ColumnButton";
 
 // Mock the ColumnButton component
 jest.mock("../../components/ColumnButton", () => ({ id, ...props }: any) => (
