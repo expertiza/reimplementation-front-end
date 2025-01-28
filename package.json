@@ -17,6 +17,7 @@
     "@types/react-dom": "^18.2.4",
     "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
+    "@types/lodash.debounce": "^4.0.8",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.1.1",

@@ -1,11 +1,14 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
+import { authenticationActions } from "../store/slices/authenticationSlice";
+import { setAuthToken } from "../utils/auth";
 import detective from "../assets/detective.png";
+import masqueradeMask from "../assets/masquerade-mask.png";
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -16,9 +19,10 @@ const Header: React.FC = () => {
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  const navigate = useNavigate();
-
   const [visible, setVisible] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const CustomBtn = () => {
     return (
@@ -63,9 +67,67 @@ const Header: React.FC = () => {
     );
   };
 
-  // useEffect(() => {
-  //   console.log(visible, 'Changed');
-  // }, [visible]);
+  // Cancel impersonation
+  const handleCancelImpersonate = () => {
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
+      })
+    );
+
+    localStorage.removeItem("originalUserToken");
+    localStorage.removeItem("impersonateBannerMessage");
+
+    navigate(location.state?.from ? location.state.from : "/");
+    navigate(0);
+  };
+
+  const impersonateUserPayload = localStorage.getItem("impersonateBannerMessage");
+  const ImpersonateBanner = () => {
+    return (
+      <div
+        style={{
+          backgroundColor: "#fff",
+          color: "#333",
+          padding: "10px 4px",
+          borderRadius: 4,
+          marginRight: 8,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img src={masqueradeMask} width={25} style={{ marginRight: 4 }} />
+
+          {impersonateUserPayload}
+
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              padding: 1,
+              marginLeft: 6,
+              backgroundColor: "red",
+              borderRadius: 50,
+              color: "white",
+              width: 18,
+              fontSize: 10,
+              fontWeight: 800,
+            }}
+            onClick={handleCancelImpersonate}
+          >
+            x
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Fragment>
@@ -159,6 +221,7 @@ const Header: React.FC = () => {
                   Anonymized View
                 </Nav.Link>
               </Nav>
+              {impersonateUserPayload && <ImpersonateBanner />}
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
                   User: {auth.user.full_name}
