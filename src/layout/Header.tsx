@@ -1,10 +1,14 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import useAPI from "hooks/useAPI";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { RootState } from "../store/store";
+import { alertActions } from "store/slices/alertSlice";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
+import { authenticationActions } from "../store/slices/authenticationSlice";
+import { setAuthToken } from "../utils/auth";
 import detective from "../assets/detective.png";
 
 /**
@@ -12,11 +16,14 @@ import detective from "../assets/detective.png";
  */
 
 const Header: React.FC = () => {
+  const { data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
 
   const [visible, setVisible] = useState(true);
 
@@ -66,6 +73,136 @@ const Header: React.FC = () => {
   // useEffect(() => {
   //   console.log(visible, 'Changed');
   // }, [visible]);
+
+const impersonateUserPayload = localStorage.getItem("impersonateBannerMessage");
+
+useEffect(() => {
+        fetchUsers({
+        method: "get",
+        url: `/users/${auth.user.id}/managed`,
+      });
+    }, [fetchUsers, auth.user.id]);
+
+const ImpersonateBanner = () => {
+  const [impersonateName, setImpersonateName] = useState("");
+  const { error, data: impersonateUserResponse, sendRequest: impersonateUser } = useAPI();
+  const handleImpersonate = (value: string) => {
+      if (!userResponse || !userResponse.data) {
+          console.error("userResponse is undefined or does not have data.");
+          return;
+      }
+      const matchedUser = userResponse.data.find((user: { name: string }) => user.name === value);
+      if (matchedUser) {
+          console.log("Match found:", matchedUser.id);
+          impersonateUser({
+              method: "post",
+              url: `/impersonate`,
+              data: {
+                impersonate_id: matchedUser.id,
+              },
+          });
+      } else {
+          console.log("No match found for", value);
+          dispatch(
+              alertActions.showAlert({
+                variant: "danger",
+                message: "Invalid Request!",
+              })
+            );
+      }
+  };
+
+  // Set Impersonation Message after the impersonateUser POST API call is complete
+  useEffect(() => {
+    if (impersonateUserResponse?.status === 200) {
+      const impersonateMessage =
+        "impersonate..."
+      localStorage.setItem("impersonateBannerMessage", impersonateMessage);
+    }
+  }, [impersonateUserResponse]);
+
+  // Handle any uncaught user impersonation errors
+  useEffect(() => {
+    if (error) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
+    }
+  }, [error, dispatch]);
+
+  // Impersonate user authentication
+  useEffect(() => {
+    if (impersonateUserResponse?.data) {
+      dispatch(
+        authenticationActions.setAuthentication({
+          authToken: impersonateUserResponse.data.token,
+          user: setAuthToken(impersonateUserResponse.data.token),
+        })
+      );
+
+      navigate(location.state?.from ? location.state.from : "/");
+      navigate(0);
+    }
+  }, [impersonateUserResponse]);
+
+  const handleCancelImpersonate = () => {
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: localStorage.getItem("originalUserToken"),
+        user: setAuthToken(localStorage.getItem("originalUserToken") || ""),
+      })
+    );
+
+    localStorage.removeItem("originalUserToken");
+    localStorage.removeItem("impersonateBannerMessage");
+
+    navigate(location.state?.from ? location.state.from : "/");
+    navigate(0);
+  };
+
+  return (
+      <li id="impersonate" style={{ backgroundColor: 'transparent', padding: 0, listStyle: 'none', marginBottom: -20}}>
+        <div className="input-group">
+          <input
+            type="text"
+            id="inputImpersonateBox"
+            value={impersonateName}
+            placeholder="impersonate..."
+            onChange={(e) => setImpersonateName(e.target.value)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                    handleImpersonate(impersonateName); // Call the impersonate API on "Enter"
+                }
+            }}
+            style={{
+              backgroundColor: 'white',  /* White background */
+              border: '1px solid #24a0ed', /* Border */
+              padding: '3px 8px',        /* Reduced padding */
+              height: '28px',            /* Reduced height */
+              fontSize: '14px',          /* Reduced font size */
+              width: '110px',            /* Fixed width to fit placeholder */
+              outline: 'none',          /* Remove default outline */
+            }}
+           />
+          <span className="input-group-btn" style={{ margin: 0, padding: 0 }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              id="impersonate-button"
+              onClick={handleCancelImpersonate}
+              style={{
+                padding: '3px 8px',  /* Reduced padding */
+                height: '28px',      /* Same height as the input */
+                fontSize: '14px',    /* Same font size as the input */
+                display: 'flex',
+                alignItems: 'center', /* Vertically center the text in the button */
+              }}
+            >
+              Revert
+            </button>
+          </span>
+        </div>
+      </li>
+  );
+};
 
   return (
     <Fragment>
@@ -159,6 +296,7 @@ const Header: React.FC = () => {
                   Anonymized View
                 </Nav.Link>
               </Nav>
+              {impersonateUserPayload && <ImpersonateBanner />}
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
                   User: {auth.user.full_name}
