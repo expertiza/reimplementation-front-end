@@ -146,6 +146,9 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/student_tasks">
                   Assignments
                 </Nav.Link>
+                <Nav.Link as={Link} to="/project_topics">
+                  Topics
+                </Nav.Link>
                 <Nav.Link as={Link} to="/profile">
                   Profile
                 </Nav.Link>
@@ -154,6 +157,9 @@ const Header: React.FC = () => {
                 </Nav.Link>
                 <Nav.Link as={Link} to="/view-team-grades">
                   Grades View
+                </Nav.Link>
+                <Nav.Link as={Link} to="/teammate_review">
+                  Teammate Review
                 </Nav.Link>
                 <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>
                   Anonymized View

@@ -1,46 +1,99 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# E2494
 
-## Available Scripts
+## Project Overview
+The project deals with implementing the review for teammate, the view is available in both student as well as instructor view. The current implementation does not have a designated heatgrid for either of the view that is specifically shown, the problem is far worse in the instructor section which has no clarification whether the score is about the reviews given by the student or given to the student. The main task here is to use the heatgrid component, and create the UI to display the teammate review scores. It is important to also ensure that the design stays consistent with other heatgrid components that are utilized in order to ensure uniformity throughout.
 
-In the project directory, you can run:
+## View Teammate Reviews 
 
-### `npm start`
+### Current Service Online Address
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+You can visit the project online at the following address:  
+[http://152.7.179.32:3000](http://152.7.179.32:3000)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+[http://152.7.179.32:3000/teammate_review](http://152.7.179.32:3000/teammate_review)
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Admin Credentials
 
-### `npm run build`
+- **Username:** admin  
+- **Password:** password123  
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Student Role Credentials
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Username:** user4  
+- **Password:** password123  
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Developing and Deploying with npm
 
-### `npm run eject`
+You can also develop and deploy the frontend using npm. Follow these steps:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+1. **Clone the Repository**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   Clone the project repository to your local machine:
+   ```bash
+   git clone https://github.com/arlee-shelby/reimplementation-front-end.git
+   cd reimplementation-front-end
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+2. **Install Dependencies**
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+   Install the required dependencies using npm:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. **Start the Development Server**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   Run the following command to start the development server:
+   ```bash
+   npm start
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+   The app will run in development mode, and you can access it at [http://localhost:3000](http://localhost:3000).
+
+## Backend Required to Deploy the Project with Docker
+
+**Prerequisites:** 
+
+Docker needs to be installed on the machine where the application is running. 
+
+Backend Project address:https://github.com/expertiza/reimplementation-back-end
+
+1. **Start the Docker Containers**
+
+   Use the following command to start the containers in detached mode:
+   ```bash
+   sudo docker compose up -d
+   ```
+
+2. **Add the Student Role**
+
+   Run the following command to create a test user (`user4`):
+   ```bash
+   sudo docker compose exec app rails runner
+   
+   User.create(name: 'user4', email: 'user4@example.com', password: 'password123', full_name: 'user4', institution_id: 1, role_id: 5)
+   ```
+
+## Project Repository
+
+For more information and access to the project code, visit the GitHub repository: [Reimplementation Frontend](https://github.com/arlee-shelby/reimplementation-front-end)
+
+
+
+# The previous project of our team is E2464
+
+## Current Service Online Address
+
+You can test the project online at the following address:  
+[http://152.7.179.32:3000](http://152.7.179.32:3000)
+
+[http://152.7.179.32:3000/project_topics](http://152.7.179.32:3000/project_topics)
+
+### View Project Topics
+
+To view the current project ('E2464'), open the following link in your browser:  
+[http://localhost:3000/project_topics](http://localhost:3000/project_topics)
+
+##The step up pathway is the same as E2494.

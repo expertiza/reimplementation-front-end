@@ -1,0 +1,99 @@
+// src/pages/TeammateReview/TeammateReview.scss
+
+.teammate-review-container {
+    padding: 2rem;
+  
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 0.5rem;
+  
+      .review-toggle {
+        display: flex;
+        gap: 1rem;
+
+        .btn-primary, .btn-outline-primary {
+          background-color: #dc3545;
+          border-color: #dc3545;
+          color: white;
+
+          &:hover, &:focus {
+            background-color: #c82333;
+            border-color: #bd2130;
+          }
+        }
+
+        .btn-outline-primary {
+          background-color: transparent;
+          color: #dc3545;
+
+          &:hover, &:focus {
+            background-color: #dc3545;
+            color: white;
+          }
+        }
+      }
+
+      // Style for Form.Check switches
+      .form-switch {
+        .form-check-input {
+          &:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+          }
+          
+          &:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+          }
+        }
+      }
+
+      .show-reviews-btn {
+        color: #6c757d;
+        text-decoration: none;
+
+        &:hover, &:focus {
+          color: #545b62;
+        }
+      }
+    }
+  
+    .composite-score {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+  
+      .score-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0056b3;
+      }
+    }
+
+    .assignment-info {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #dee2e6;
+      text-align: left;
+
+      h2 {
+        font-size: 1.75rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+        text-align: left;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        color: #666;
+        font-weight: normal;
+        text-align: left;
+      }
+    }
+  }

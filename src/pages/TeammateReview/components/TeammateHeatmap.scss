@@ -1,0 +1,97 @@
+// src/pages/TeammateReview/components/TeammateHeatmap.scss
+
+.teammate-heatmap {
+    .question-no {
+      position: relative;
+      padding-left: 2.5rem;
+  
+      .score-circle {
+        position: absolute;
+        left: 0.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 1px solid #f00678;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f00678;
+      }
+  
+      .check-mark {
+        position: absolute;
+        left: 0.5rem;
+        color: #f00678;
+      }
+    }
+  
+    td, th {
+        .reviewer-name {
+          font-size: 0.85em;
+          color: #666;
+          font-weight: normal;
+        }
+      }
+  
+    // Score colors matching view-team-grades scheme
+    .score-5 {
+      background-color: #2DE636; // Green
+    }
+  
+    .score-4 {
+      background-color: #BCED91; // Light green
+    }
+  
+    .score-3 {
+      background-color: #FFEC8B; // Yellow
+    }
+  
+    .score-2 {
+      background-color: #FD992D; // Orange
+    }
+  
+    .score-1 {
+      background-color: #ff8080; // Red
+    }
+
+    .score-0 {
+      background-color: #ff0000; // Deep red for zero score
+    }
+  
+    // Special colors for checkbox questions (1-point scale)
+    .score-1-1 {
+      background-color: #ff8080; // Red for unchecked
+    }
+  
+    .score-0-1 {
+      background-color: #2DE636; // Green for checked
+    }
+  
+    // Hover effects for comments
+    td[title] {
+      cursor: help;
+      position: relative;
+  
+      &:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        z-index: 1000;
+      }
+    }
+  
+    // Average cell styling
+    .average-cell {
+      background-color: transparent;
+      color: #333;
+      font-weight: 600;
+    }
+  }
