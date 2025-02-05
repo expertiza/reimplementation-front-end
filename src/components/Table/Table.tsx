@@ -103,6 +103,11 @@ const Table: React.FC<TableProps> = ({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 25, // Set the default page size to 25
+      },
+    },
   });
 
   const {
@@ -144,6 +149,9 @@ const Table: React.FC<TableProps> = ({
     setIsGlobalFilterVisible(!isGlobalFilterVisible);
   };
 
+  // Get the total rows
+  const totalRows = initialData.length;
+
   return (
     <>
       <Container>
@@ -154,8 +162,8 @@ const Table: React.FC<TableProps> = ({
             )}
           </Col>
           <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
-            <FaSearch style={{ cursor: "pointer" }} />
-            {isGlobalFilterVisible ? " Hide" : " Show"}
+            {/* <FaSearch style={{ cursor: "pointer" }} /> */}
+            {/* {isGlobalFilterVisible ? " Hide" : " Show"} */}
           </span>{" "}
         </Row>
       </Container>
@@ -222,6 +230,7 @@ const Table: React.FC<TableProps> = ({
                 setPageSize={setPageSize}
                 getPageCount={getPageCount}
                 getState={getState}
+                totalRows={totalRows} // Pass totalRows here
               />
             )}
           </Col>

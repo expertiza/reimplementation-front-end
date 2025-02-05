@@ -122,6 +122,9 @@ const Header: React.FC = () => {
                     <NavDropdown.Item as={Link} to="/users">
                       Users
                     </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/addedit_participants">
+                      addedit_participants
+                    </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/courses">
                       Courses
                     </NavDropdown.Item>
