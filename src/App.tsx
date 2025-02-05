@@ -23,7 +23,8 @@ import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+import EditQuestionnaire from "pages/EditQuestionnaire/Questionnaire";
+import Questionnaire from "pages/Questionnaire/questionnaire";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
@@ -55,9 +56,13 @@ function App() {
           path: "view-team-grades",
           element: <ProtectedRoute element={<ReviewTable />} />,
         },
-        {
-          path: "edit-questionnaire",
-          element: <ProtectedRoute element={<Questionnaire />} />,
+        { 
+          path: "edit-questionnaire/:id", 
+          element: <ProtectedRoute element={<EditQuestionnaire />} /> 
+        },
+		    { 
+          path: "questionnaire", 
+          element: <ProtectedRoute element={<Questionnaire />} /> 
         },
         {
           path: "assignments/edit/:id/createteams",
