@@ -5,22 +5,28 @@ import ExportModal from "./ExportModal";
 interface ImportedData {
   title: string;
   data: Array<{
-    seq: number;
-    question: string;
-    type: string;
-    weight: number;
-    text_area_size: string;
-    max_label: string;
-    min_label: string;
+    id: number,
+    sequence: number; // defines the order of questions
+    question: string; // the question itself
+    type: string; // type of item which can be Criterion, DropDown, multiple choice etc..
+    weight: number; // defines the weight of the question
+    text_area_size: string; // size of the text area in rows and columns
+    max_label: string;  // the maximum value, differs according to the type
+    min_label: string; // the minimum value, differs according to the type
   }>;
 }
 
+// Various Types of items available 
+const itemTypeArray = ['Criterion','Scale','Cake','Dropdown','Checkbox','TextArea','TextField','UploadFile','SectionHeader','TableHeader','ColumnHeader'];
+
 const Questionnaire = () => {
-  const sample_questionnaire = {
+// Sample data for initial questionnaire
+  const initialQuestionnaire = {
     title: "Edit Teammate Review",
     data: [
       {
-        seq: 1.0,
+        id:1,
+        sequence: 1.0,
         question: "How many times was this person late to meetings?",
         type: "Criterion",
         weight: 1,
@@ -29,7 +35,8 @@ const Questionnaire = () => {
         min_label: "almost always",
       },
       {
-        seq: 2.0,
+        id:2,
+        sequence: 2.0,
         question: "How many times did this person not show up?",
         type: "Criterion",
         weight: 1,
@@ -38,7 +45,8 @@ const Questionnaire = () => {
         min_label: "almost always",
       },
       {
-        seq: 3.0,
+        id:3,
+        sequence: 3.0,
         question: "How much did this person offer to do in this project?",
         type: "Criterion",
         weight: 1,
@@ -47,7 +55,8 @@ const Questionnaire = () => {
         min_label: "20%-0%",
       },
       {
-        seq: 4.0,
+        id:4,
+        sequence: 4.5,
         question: "What fraction of the work assigned to this person did s(he) do?",
         type: "Criterion",
         weight: 1,
@@ -56,16 +65,8 @@ const Questionnaire = () => {
         min_label: "20%-0%",
       },
       {
-        seq: 4.5,
-        question: "Did this person do assigned work on time?",
-        type: "Criterion",
-        weight: 1,
-        text_area_size: "50, 30",
-        max_label: "always",
-        min_label: "never",
-      },
-      {
-        seq: 5.0,
+        id:5,
+        sequence: 5.0,
         question: "How much initiative did this person take on this project?",
         type: "Criterion",
         weight: 1,
@@ -74,7 +75,8 @@ const Questionnaire = () => {
         min_label: "total deadbeat",
       },
       {
-        seq: 6.0,
+        id:6,
+        sequence: 6.0,
         question: "Did this person try to avoid doing any task that was necessary?",
         type: "Criterion",
         weight: 1,
@@ -83,7 +85,8 @@ const Questionnaire = () => {
         min_label: "absolutely",
       },
       {
-        seq: 7.0,
+        id:7,
+        sequence: 7.0,
         question: "How many of the useful ideas did this person come up with?",
         type: "Criterion",
         weight: 1,
@@ -92,7 +95,8 @@ const Questionnaire = () => {
         min_label: "20%-0%",
       },
       {
-        seq: 8.0,
+        id:8,
+        sequence: 8.0,
         question: "What fraction of the coding did this person do?",
         type: "Criterion",
         weight: 1,
@@ -101,7 +105,8 @@ const Questionnaire = () => {
         min_label: "20%-0%",
       },
       {
-        seq: 9.0,
+        id:9,
+        sequence: 9.0,
         question: "What fraction of the documentation did this person write?",
         type: "Criterion",
         weight: 1,
@@ -110,7 +115,8 @@ const Questionnaire = () => {
         min_label: "20%-0%",
       },
       {
-        seq: 11.0,
+        id:10,
+        sequence: 10.0,
         question: "How important is this person to the team?",
         type: "Criterion",
         weight: 1,
@@ -118,75 +124,108 @@ const Questionnaire = () => {
         max_label: "indispensable",
         min_label: "redundant",
       },
+      // ... additional questions omitted for brevity
     ],
   };
+  // State hooks for questionnaire settings
+  const [selectedItemType, setSelectedItemType] = useState(''); // State to track selected value
+  const [itemQuantity,setItemQuantity] = useState("1");
   const [minScore, setMinScore] = useState(0);
   const [maxScore, setMaxScore] = useState(5);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isReviewPrivate, setIsReviewPrivate] = useState(false);
 
-  const [questionnaireData, setQuestionnaireData] = useState(sample_questionnaire);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
+  // State hooks for questionnaire data and modals
+  const [questionnaireData, setQuestionnaireData] = useState(initialQuestionnaire);
+  const [isImportModalVisible, setImportModalVisible] = useState(false);
+  const [isExportModalVisible, setExportModalVisible] = useState(false);
 
   // Function to export questionnaire data
   const exportQuestionnaire = () => {
     const dataToExport = JSON.stringify(questionnaireData);
     const blob = new Blob([dataToExport], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "questionnaire.json";
-    a.click();
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = "questionnaire.json";
+    downloadLink.click();
 
     URL.revokeObjectURL(url);
   };
 
-  // Function to handle imported data
-  const handleFileChange = (importedData: ImportedData) => {
+  // Function to handle imported data to update questionnaire
+  const handleImportData = (importedData: ImportedData) => {
     setQuestionnaireData(importedData);
   };
 
+  // Function to add a new item to the questionnaire
+  const handleAddItem = ()=> {
+    let updatedData = questionnaireData.data;
+    for (let i=0; i< parseInt(itemQuantity); i++) {
+    const newQuestion = {
+      id: questionnaireData.data.slice(-1)[0].id + 1,
+      sequence: questionnaireData.data.slice(-1)[0].id + 1,
+      question: "Type your question",
+      type: selectedItemType,
+      weight: 1,
+      text_area_size: "50, 30",
+      max_label: "max value",
+      min_label: "min value"
+    };
+    updatedData.push(newQuestion);
+  }
+  setQuestionnaireData({...questionnaireData, data: updatedData });
+  }
 
+  // function to handle the dropdown change event
+  const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedItemType(event.target.value); // Safely access the value
+  };
+
+  // function for removing the item
+  const handleRemoveItem = (seq: number)=>{
+    let updatedData = questionnaireData.data.filter(q=> +q.id!== seq);
+    setQuestionnaireData({...questionnaireData, data: [...updatedData] });
+  }
   return (
-    <div>
-      <div className="container">
-        <h1 className="mt-4">{sample_questionnaire.title}</h1>
-        <div className="row m-2">
-          <div className="col-6">
+    <div style={{width:"80%", margin:"auto"}}>
+      <div>
+        <h1 className="mt-4">{questionnaireData.title}</h1>
+        <div className="row" style={{alignItems:"center"}}>
+        {/* Min Score Input */}
+          <div className="col-3">
             Min item score:
             <input
               className="form-control"
               type="number"
               value={minScore}
               onChange={(e) => setMinScore(parseInt(e.target.value, 10))}
+              min={0}
               // Using parseInt to convert the input value to a number
             ></input>
           </div>
-        </div>
-        <div className="row m-2">
-          <div className="col-6">
+        {/* Max Score Input */}
+        <div className="col-3">
             Max item score:
             <input
               className="form-control"
               type="number"
               value={maxScore}
               onChange={(e) => setMaxScore(parseInt(e.target.value, 10))}
+              min={0}
               // Using parseInt to convert the input value to a number
             ></input>
-          </div>
         </div>
-        <div className="row m-2">
-          <div className="col-6">
+        {/* Privacy Toggle */}
+        <div className="col-3">
             Is this Teammate review private:{' '} 
             <input
               type="checkbox"
-              checked={isPrivate}
-              onChange={() => setIsPrivate(!isPrivate)}
+              checked={isReviewPrivate}
+              onChange={() => setIsReviewPrivate(!isReviewPrivate)}
             />
-          </div>
         </div>
-        <div className="row m-2">
-          <div className="col-6">
+        {/* Update Parameters Button */}
+        <div className="col-3">
             <button
               type="button"
               style={{ borderColor: "black" }}
@@ -194,110 +233,117 @@ const Questionnaire = () => {
             >
               Update questionnaire parameters
             </button>
-          </div>
+        </div>
         </div>
         <hr />
-             
-        <div className="row m-2">
-          <div className="col-1">Seq</div>
-          <div className="col-3">Question</div>
-          <div className="col-1">Type</div>
-          <div className="col-1">Weight</div>
-          <div className="col-1">Text_area_size</div>
-          <div className="col-2">Max_label</div>
-          <div className="col-2">Min_label</div>
-          <div className="col-1">Action</div>
+
+        {/* Display questionnaire items */}
+        <div className="row" style={{textAlign:"center"}}>
+          <h6 className="col-1">Sequence</h6>
+          <h6 className="col-2">Question</h6>
+          <h6 className="col-2">Type</h6>
+          <h6 className="col-1">Weight</h6>
+          <h6 className="col-1">Text Area Size</h6>
+          <h6 className="col-2">Max Label</h6>
+          <h6 className="col-2">Min Label</h6>
+          <h6 className="col-1">Action</h6>
         </div>
-        {sample_questionnaire.data.map((item) => {
+        {/* Iterate over questions */}
+        {questionnaireData.data.map((item) => {
           return (
-            <div className="row m-2">
-              <div className="col-1" >
+            <div className="row my-3" key={item.sequence}  style={{ border:"2px solid gray", padding:"8px"}}>
+              {/* Sequence number */}
+              <div className="col-1">
                 <input
-                  className="form-control"
-                  style={{ borderColor: "black",width: "50px" }}
+                  className="form-control d-block mx-auto"
+                  style={{ borderColor: "black",width: "40px",}}
                   type="text"
-                  value={item.seq}
+                  value={item.sequence}
                   disabled
                 />
               </div>
-              <div className="col-3">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.question}
-                ></input>
+              {/* The Question Text field */}
+              <div className="col-2">
+                <textarea
+                  style={{ borderColor: "black",height:"auto",marginBottom:"0px",resize:"vertical",overflowY:"hidden" }}
+                  rows={2}
+                  defaultValue={item.question}
+                ></textarea>
               </div>
-              <div className="col-1">
+              {/* The Item type dropdown */}
+              <div className="col-2">
               <select
                 className="form-select"
-                style={{ borderColor: "black" }}
+                style={{ borderColor: "black"}}
                 defaultValue = {item.type}
               >
-                <option value="Criterion">Criterion</option>
-                <option value="Scale">Scale</option>
-                <option value="Cake">Cake</option>
-                <option value="Dropdown">Dropdown</option>
-                <option value="Checkbox">Checkbox</option>
-                <option value="TextArea">TextArea</option>
-                <option value="TextField">TextField</option>
-                <option value="UploadFile">UploadFile</option>
-                <option value="SectionHeader">SectionHeader</option>
-                <option value="TableHeader">TableHeader</option>
-                <option value="ColumnHeader">ColumnHeader</option>
+                {/* Iterating item array for getting all the various type of items as options to select from dropdown */}
+                {itemTypeArray.map((itemType) => 
+                    <option key={itemType} value={itemType}>
+                      {itemType}
+                    </option>
+                  )
+                }
               </select>
               </div>
+              {/* The weight of the item chosen */}
               <div className="col-1">
                 <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
+                  className="form-control d-block mx-auto"
+                  style={{ borderColor: "black", width:"60px"}}
                   type="number"
                   placeholder="1"
                   pattern="[0-9]*" // Only allow numeric values
-                  value={item.weight}
+                  defaultValue={item.weight}
                 ></input>
               </div>
+              {/* The text-area size of the item being added */}
               <div className="col-1">
                 <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
+                  className="form-control d-block mx-auto"
+                  style={{ borderColor: "black",width:"70px" }}
                   type="text"
-                  value={item.text_area_size}
-                  defaultValue="80, 1"
+                  defaultValue={item.text_area_size}
                 ></input>
               </div>
+              {/* The maximum label you want to attach to that item */}
               <div className="col-2">
                 <input
-                  className="form-control"
+                  className="form-control d-block mx-auto"
                   style={{ borderColor: "black" }}
                   type="text"
-                  value={item.max_label}
+                  defaultValue={item.max_label}
                 ></input>
               </div>
+              {/* The minimum label you want to attach to that item */}
               <div className="col-2">
                 <input
-                  className="form-control"
+                  className="form-control d-block mx-auto"
                   style={{ borderColor: "black" }}
                   type="text"
-                  value={item.min_label}
+                  defaultValue={item.min_label}
                 ></input>
-              </div>              
+              </div>  
+              {/* Remove item button */}            
               <div className="col-1">
               <button
                 type="button"
                 className="btn btn-light"
+                style={{display:"block",margin:"auto"}}
+                onClick={()=> handleRemoveItem(item.id)}
               >
-                Remove
+                <img height="20" src="https://expertiza.ncsu.edu/assets/close-8a5d1b64ae50a63b14630b78411fcb0c2d2ed0d6eac7230b448b2824f08f6f68.png" alt="Close"/>
               </button>  
               </div>
             </div>
           );
         })}
         <br /> 
+        {/* Add new item inputs */}
         <div className="row m-2">
         <br /> 
         <div className="col-1">
-            <input className="form-control" type="text" placeholder="1"></input>
+            <input className="form-control" type="text" placeholder={itemQuantity} onChange={(e)=> setItemQuantity(e.target.value)}></input>
         </div>
         <div className="col-1">
         <p style={{ fontSize: "18px", paddingLeft: 0, paddingRight: 0 }}>
@@ -305,18 +351,14 @@ const Questionnaire = () => {
         </p>
         </div>
         <div className="col-2">
-            <select className="form-select">
-            <option value="Criterion">Criterion</option>
-            <option value="Scale">Scale</option>
-            <option value="Cake">Cake</option>
-            <option value="Dropdown">Dropdown</option>
-            <option value="Checkbox">Checkbox</option>
-            <option value="TextArea">TextArea</option>
-            <option value="TextField">TextField</option>
-            <option value="UploadFile">UploadFile</option>
-            <option value="SectionHeader">SectionHeader</option>
-            <option value="TableHeader">TableHeader</option>
-            <option value="ColumnHeader">ColumnHeader</option>
+            <select className="form-select"  onChange={handleDropdownChange} defaultValue='Criterion'>
+            {/* Iterating item array for getting all the various type of items as options to select from dropdown */}
+            {itemTypeArray.map((itemType) => 
+              <option key={itemType} value={itemType}>
+                {itemType}
+              </option>
+              )
+            }
             </select>
         </div>
         <div className="col-1">
@@ -324,69 +366,74 @@ const Questionnaire = () => {
         question(s)
         </p>
         </div>
+        {/* Add a new question button */}
         <div className="col-2">
-        <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
-            className="btn btn-primary"
-          >
-            Add Question
-          </button> 
+          <button
+              type="button"
+              style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
+              className="btn btn-primary"
+              onClick={handleAddItem}
+            >
+              Add Question
+            </button>   
           </div>
         </div>
         <br /> 
         <div className="row m-2">
-        <div className="col-2">
-          <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
-            className="btn btn-primary"
-          >
-            Save all questions
-          </button>
-        </div>
-        </div>
-        <div className="row m-2">
-        <div className="col-2">
-          <button
-            type="button"
-            style={{ borderColor: "black" }}
-            className="btn btn-light"
-          >
-            Edit/View Advice
-          </button>
-        </div>
+        {/* Save all questions button */}
+          {/* <div className="col-2">
+            <button
+              type="button"
+              style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
+              className="btn btn-primary"
+            >
+              Save all questions
+            </button>
+          </div> */}
+        {/* Edit/View Advice button */}
+          {/* <div className="col-2">
+            <button
+              type="button"
+              style={{ borderColor: "black" }}
+              className="btn btn-light"
+            >
+              Edit/View Advice
+            </button>
+          </div> */}
         </div>
         <hr />
-        <div>
-          <div>
-            <a
-             
-              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
-              onClick={() => setShowImportModal(true)}
-            >
-              Import Questionnaire
-            </a>{" "}
-            |
-            <a
-             
-              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
-              onClick={() => setShowExportModal(true)}
+        {/* Import/Export Section */}
+        <div className="row m-2">
+          {/*  button  for Importing Questionnaire*/}
+          <div className="col-2">
+              <button
+                style={{ color: "#b28b66",padding:"8px",borderRadius:"6px" }}
+                onClick={() => setImportModalVisible(true)}
+              >
+                Import Questionnaire
+              </button>{" "}
+            </div>
+          {/*  button  for Importing Questionnaire*/}
+          <div className="col-2">
+            <button
+            
+              style={{ color: "#b28b66",padding:"8px",borderRadius:"6px" }}
+              onClick={() => setExportModalVisible(true)}
             >
               Export Questionnaire
-            </a>
+            </button> 
           </div>
 
           {/* Render import and export modals conditionally */}
-          {showImportModal && (
+          {isImportModalVisible && (
             <ImportModal
-              onClose={() => setShowImportModal(false)}
-              onImport={handleFileChange}
+              onClose={() => setImportModalVisible(false)}
+              onImport={handleImportData}
             />
           )}
-          {showExportModal && (
+          {isExportModalVisible && (
             <ExportModal
-              onClose={() => setShowExportModal(false)}
+              onClose={() => setExportModalVisible(false)}
               onExport={exportQuestionnaire}
             />
           )}
