@@ -8,9 +8,9 @@ Icons are available in four sizes: 16, 24, 32, and 48. However, it is possible t
 **Sr. No.** | **Element Name** | **Image** | **Guide**	
 |---|---|---|---|
 |  1 |  Add assignment | ![Add Assignment](public/assets/icons/add-assignment-24.png)  | To add 'add assignment' icon, use path **```/public/assets/icons/add-assignment-24.png```** |
-|  2 |  Add Teaching assistant | ![Add TA](public/assets/icons/add-ta-24.png)  | To add 'add TA' icon, use path **```public/assets/icons/add-ta-24.png```** |
-|  3 |  Add Private | ![Add Private](public/assets/icons/add-private-24.png)  | To add 'add private' icon, use path **```public/assets/icons/add-private-24.png```** |
-|  4 |  Add Public | ![Add Public](public/assets/icons/add-public-24.png)  | To add 'add public' icon, use path **```public/assets/icons/add-public-24.png```** |
+|  2 |  Add teaching assistant | ![Add TA](public/assets/icons/add-ta-24.png)  | To add 'add TA' icon, use path **```public/assets/icons/add-ta-24.png```** |
+|  3 |  Add private | ![Add Private](public/assets/icons/add-private-24.png)  | To add 'add private' icon, use path **```public/assets/icons/add-private-24.png```** |
+|  4 |  Add public | ![Add Public](public/assets/icons/add-public-24.png)  | To add 'add public' icon, use path **```public/assets/icons/add-public-24.png```** |
 |  5 |  Add Signup Sheet | ![Add Signup sheet](public/assets/icons/add-signup-sheet-24.png)  | To add 'add signup sheet' icon, use path **```public/assets/icons/add-signup-sheet-24.png```** |
 |  6 |  Assign Course Blue | ![Assign Course Blue](public/assets/icons/assign-course-blue-24.png)  | To add 'Assign Course Blue' icon, use path **```public/assets/icons/assign-course-blue-24.png```** |
 |  7 |  Assign Course Green | ![Assign Course Green](public/assets/icons/assign-course-green-24.png)  | To add 'Assign Course Green' icon, use path **```public/assets/icons/assign-course-green-24.png```** |
@@ -114,12 +114,30 @@ export default function ExampleTable() {
 
 ## Notifications :
 
-**Sr. No.** | **Element Name** | **Image** | **Guide**	
+All notifications must follow **Bootstrap’s alert styling** and use the **predefined classes** to ensure consistency across the UI.
+
+### 📌 Notification Styles
+| **Sr. No.** | **Element Name** | **Guide** | **Class** |
 |---|---|---|---|
-|  1 |  Success | *to be added*  | For notification, add class as ```flash_note alert alert-success``` |
-|  2 |  Error | *to be added*  | For notification, add class as ```flash_note alert alert-danger``` |
-|  3 |  Info | *to be added*  | For notification, add class as ```flash_note alert alert-info``` |
-|  3 |  Warn | *to be added*  | For notification, add class as ```flash_note alert alert-warning``` |
+|  1 |  Success | Display success messages | ```flash_note alert alert-success``` |
+|  2 |  Error | Display error messages | ```flash_note alert alert-danger``` |
+|  3 |  Info | Display informational messages | ```flash_note alert alert-info``` |
+|  4 |  Warn | Display warning messages | ```flash_note alert alert-warning``` |
+
+---
+
+### ✅ Example Usage
+
+#### **Success Notification**
+```tsx
+import { Alert } from "react-bootstrap";
+
+<Alert className="flash_note alert alert-success">
+  Operation completed successfully!
+</Alert>
+```
+
+
 
 ---
 
