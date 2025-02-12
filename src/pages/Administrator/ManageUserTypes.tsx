@@ -4,7 +4,7 @@
 import { useLoaderData, useNavigate, useParams } from "react-router-dom";
 import React, { useCallback, useMemo, useState } from "react";
 import { IUserResponse } from "../../utils/interfaces";
-import { Row as TRow } from "@tanstack/table-core/build/lib/types";
+import { Row as TRow } from "@tanstack/react-table";
 import { userColumns as USER_COLUMNS } from "../Users/userColumns";
 import { Col, Container, Row } from "react-bootstrap";
 import DeleteUser from "../Users/UserDelete";

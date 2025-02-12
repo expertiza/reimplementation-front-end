@@ -40,6 +40,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import AssignmentParticipants from "pages/AssignmentParticipants/AssignmentParticipants";
 function App() {
   const router = createBrowserRouter([
     {
@@ -58,6 +59,10 @@ function App() {
         {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
+        },
+        {
+          path: "participants",
+          element: <AssignmentParticipants assignmentProps={{ hasQuiz: false, hasMentor: false }} />,
         },
         {
           path: "assignments/edit/:id/createteams",
@@ -192,11 +197,11 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
