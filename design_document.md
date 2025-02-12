@@ -107,6 +107,8 @@ If it is a online form (an input with a submit button), the form must be given a
 
 ## Dropdowns and Toggling dropdowns :
 
+For dropdowns and toggling functionality, we recommend using the `Dropdown` class from `react-bootstrap` to ensure a consistent and unified appearance. The `react-bootstrap` library is already included in the `package.json` file, so you can directly utilize the provided dropdown styles.
+
 ## Pagination: 
 
 Disable pagination components when fewer than 10 items are displayed on the page.
