@@ -43,20 +43,72 @@ Icons are available in four sizes: 16, 24, 32, and 48. However, it is possible t
 
 The default color for buttons is red 
 
-**Sr. No.** | **Element Name** | **Image** | **Guide** | **Class**	
-|---|---|---|---|---|
-|  1 |  Button - Default style | *to be added*  | Default button | ```btn btn-default btn-md``` |
-|  2 |  Button - Success style | *to be added*  | For accepting. | ```btn btn-success btn-md``` |
-|  3 |  Button - Danger style | *to be added*  | For rejecting. | ```btn btn-danger btn-md``` |
-|  4 |  Button - New style | *to be added*  | For create buttons alone. | ```btn btn-primary pull-right new-button btn-md``` |
+we recommend using the `Button` class from `react-bootstrap` to ensure a consistent and unified appearance.
+
+**Sr. No.** | **Element Name** | **Image** | **Guide** | **Class** | **Variant** |
+|---|---|---|---|---|---|
+|  1 |  Button - Default style | *to be added*  | Default button | `btn btn-md` | `outline-secondary` |
+|  2 |  Button - Success style | *to be added*  | For accepting. | `btn btn-md` | `success` |
+|  3 |  Button - Danger style | *to be added*  | For rejecting. | `btn btn-md` | `danger` |
+|  4 |  Button - New style | *to be added*  | For create buttons alone. | `btn pull-right new-button btn-md` | `primary` |
+
+### ✅ Example Usage
+
+#### **Default Button**
+```tsx
+import { Button } from "react-bootstrap";
+
+<Button className="btn btn-default btn-md">Click Me</Button>
+```
+
 
 ---
 
 ## Tables :
 
-For the tables, we recommend using bootstrap table class to make tables looks unified. We already include bootstrap reference, feel free to reference that table styles. For react.js tables, we can still use [react-bootstrap-table](http://allenfang.github.io/react-bootstrap-table/) to make tables unified.
+The **Table Component** is prebuilt and must be used for all table-related functionalities. The component is located in:  
+**`src/components/Table/Table.tsx`**
 
-The class to be used in a table tag is ```table table-striped```.
+### Table Usage
+| **Requirement**        | **Implementation** |
+|----------------------|------------------|
+| **Component**       | Use **`Table.tsx`** (Do not create new table components) |
+| **Styling**         | Bootstrap: `table table-striped` |
+| **Global Filter**   | **Disabled** |
+| **Column Filter**   | **Disabled** |
+| **Pagination**      | Enabled only if **items ≥ 10** |
+| **Sorting**        | Built-in with sorting indicators (`🔼` / `🔽`) |
+| **Row Selection**   | Available if `onSelectionChange` is provided |
+| **Column Visibility** | Configurable via `columnVisibility` prop |
+
+### Example Usage
+
+```tsx
+import Table from "src/components/Table/Table";
+
+const columns = [
+  { accessorKey: "name", header: "Student Name" },
+  { accessorKey: "email", header: "Email Address" },
+];
+
+const data = [
+  { name: "John Doe", email: "john@example.com" },
+  { name: "Jane Smith", email: "jane@example.com" },
+];
+
+export default function ExampleTable() {
+  return (
+    <Table
+      data={data}
+      columns={columns}
+      showGlobalFilter={false}
+      showColumnFilter={false}
+      showPagination={data.length >= 10}
+    />
+  );
+}
+```
+
 
 ---
 
@@ -100,14 +152,28 @@ Headings/ Main title of page should be given in ```<h2>Title</h2>``` tag
 
 ## Forms :
 
-All form elements must have the class ```form-control```
+The **Form Component** is prebuilt and must be used for all Form-related functionalities. The component is located in:  
+**`src/components/Form`**
 
-If it is a online form (an input with a submit button), the form must be given a class ```form-inline```. And appropriate width must be added to that element to make it uniform with the page.
+| **Requirement**          | **Implementation**                                             |
+|--------------------------|----------------------------------------------------------------|
+| **Component**            | Use **prebuilt form components** (Do not create new form elements) |
+| **Styling**              | Bootstrap: `form-control`                                      |
+| **Validation**           | Built-in via **Formik**                                        |
+| **Tooltips**             | Use `ToolTip` from `src/components/ToolTip.tsx`                |
+| **Date Picker**          | Uses `react-datepicker`, preconfigured                         |
+| **Checkbox & Radio Groups** | Prebuilt in `FormCheckboxGroup.tsx` and `FormRadioGroup.tsx`    |
+| **Dropdowns**            | Use `FormSelect.tsx` (prebuilt)                                |
+| **Range Sliders**        | Use `FormRange.tsx`                                            |
+
+
 
 
 ## Dropdowns and Toggling dropdowns :
 
-For dropdowns and toggling functionality, we recommend using the `Dropdown` class from `react-bootstrap` to ensure a consistent and unified appearance. The `react-bootstrap` library is already included in the `package.json` file, so you can directly utilize the provided dropdown styles.
+For dropdowns and toggling functionality, we recommend using the `Dropdown` class from `react-bootstrap` to ensure a consistent and unified appearance. 
+
+The `react-bootstrap` library is already included in the `package.json` file, so you can directly utilize the provided dropdown styles.
 
 ## Pagination: 
 
