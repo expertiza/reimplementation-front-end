@@ -27,6 +27,7 @@ const Courses = () => {
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
+  const currUserRole = auth.user.role.valueOf();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -96,7 +97,7 @@ const Courses = () => {
   );
 
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle, currUserRole),
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
