@@ -1,6 +1,30 @@
 # Design guidelines for Reimplementation of Expertiza
 
-This document outlines the common design features to be followed when developing views in the Expertiza environment.
+## Overview  
+This document serves as a comprehensive guide for the reimplementation of views in the Expertiza platform. The purpose of these guidelines is to ensure consistency, maintainability, and adherence to predefined UI/UX standards across all pages.  
+
+Web applications consist of various interface elements that must follow a structured design approach. These elements include:  
+
+- **Typography & Text Formatting** – Defines font styles, sizes, and capitalization rules for headings, subheadings, and body text to maintain a uniform visual hierarchy.  
+- **Tables** – Standardizes the use of a prebuilt Table component to enforce a unified structure, styling, and data representation.  
+- **Icons** – Specifies the approved icon library, icon sizes, and their usage in different UI components.  
+- **Buttons** – Ensures consistent button styles, colors, and behavior across the platform using predefined Bootstrap-based components.  
+- **Notifications** – Establishes a standardized approach for alert messages (success, error, info, warnings) to enhance user feedback and clarity.  
+- **Forms** – Enforces the use of prebuilt form components, including input fields, dropdowns, validation messages, and tooltips for improved accessibility and usability.  
+- **Dropdowns & Toggles** – Outlines best practices for dropdown menus and interactive UI elements using Bootstrap’s dropdown system.  
+- **Pagination** – Defines when and how to enable pagination to optimize performance and usability for data-heavy pages.  
+
+By following these design guidelines, developers can ensure that all UI components remain visually cohesive, functionally robust, and user-friendly. These standards not only streamline development but also enhance the overall user experience by maintaining consistency across the platform. 
+
+## Index  
+1. [Text](#text)  
+2. [Tables](#tables)  
+3. [Icon Library](#icon-library)  
+4. [Buttons](#buttons)  
+5. [Notifications](#notifications)  
+6. [Forms](#forms)  
+7. [Dropdowns and Toggling Dropdowns](#dropdowns-and-toggling-dropdowns)  
+8. [Pagination](#pagination)  
 
 ## Text
 
@@ -41,7 +65,7 @@ The **Table component** is prebuilt and must be used for all table-related funct
 | **Styling**         | Bootstrap: `table table-striped` |
 | **Global filter**   | **Disabled** |
 | **Column filter**   | **Disabled** |
-| **Pagination**      | Enabled only if **items ≥ 10** |
+| **Pagination**      | Enabled only if **page is full** |
 | **Sorting**        | Built-in with sorting indicators (`🔼` / `🔽`) |
 | **Row selection**   | Available if `onSelectionChange` is provided |
 | **Column visibility** | Configurable via `columnVisibility` prop |
@@ -114,6 +138,14 @@ Icons are available in four sizes: 16, 24, 32, and 48. However, it is possible t
 |  28 |  View survey | ![View survey](public/assets/icons/view-survey-24.png)  | To add "View survey" icon,  use path **```public/assets/icons/view-survey-24.png```**   |
 ---
 
+### Example Usage
+
+```tsx
+<Button className="btn btn-md btn-primary">
+  <img src="/public/assets/icons/add-assignment-24.png" alt="Add" width="16" height="16" /> Add Assignment
+</Button>
+```
+---
 ## Buttons 
 
 The default color for buttons is red 
@@ -150,7 +182,6 @@ All notifications must follow **Bootstrap’s alert styling** and use the **pred
 |  3 |  Info | Display informational messages | ```flash_note alert alert-info``` |
 |  4 |  Warn | Display warning messages | ```flash_note alert alert-warning``` |
 
----
 
 ### ✅ Example usage
 
@@ -183,7 +214,31 @@ The **Form component** is prebuilt and must be used for all Form-related functio
 | **Dropdowns**            | Use `FormSelect.tsx` (prebuilt)                                |
 | **Range sliders**        | Use `FormRange.tsx`                                            |
 
+### Example usage
 
+The example below demonstrates how to use the FormCheckBox component. There are additional form components, such as FormInput, FormSelect, and FormRadioGroup. Import them and modify their props according to your requirements.
+
+```tsx
+import FormCheckBox from '../Form/FormCheckBox';
+
+const formProps = {
+  controlId: 'exampleCheckBox',
+  label: 'Example Checkbox',
+  name: 'exampleCheckBox',
+  tooltip: 'Tooltip text',
+  tooltipPlacement: 'right',
+};
+
+const MyPage: React.FC = () => (
+  <div>
+    <h1>My Page</h1>
+    <FormCheckBox {...formProps} />
+  </div>
+);
+
+export default MyPage;
+```
+---
 
 
 ## Dropdowns and toggling dropdowns
@@ -192,8 +247,75 @@ For dropdowns and toggling functionality, we recommend using the `Dropdown` clas
 
 The `react-bootstrap` library is already included in the `package.json` file, so you can directly utilize the provided dropdown styles.
 
+### Example usage
+
+```tsx
+import { Dropdown } from "react-bootstrap";
+
+export default function ExampleDropdown() {
+  return (
+    <Dropdown>
+      <Dropdown.Toggle variant="primary" id="dropdown-basic">
+        Select an Option
+      </Dropdown.Toggle>
+
+      <Dropdown.Menu>
+        <Dropdown.Item href="#/action-1">Action 1</Dropdown.Item>
+        <Dropdown.Item href="#/action-2">Action 2</Dropdown.Item>
+        <Dropdown.Item href="#/action-3">Action 3</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+}
+```
+---
+
 ## Pagination 
 
-Disable pagination components when fewer than 10 items are displayed on the page.
+Enable pagination component when page is full. The user should be able to disable the pagination component if they want to search through the information.
 
 Pagination Component is already included in the Repository under **```src\components\Table\Pagination.tsx```**. We recommend using this component to maintain consistency.
+
+### Example usage
+
+```tsx
+import React from "react";
+import { useTable, usePagination, TableState } from "@tanstack/react-table";
+import Pagination from "../Pagination";
+
+const MyTableComponent: React.FC = () => {
+  const {
+    getState,
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    setPageIndex,
+    setPageSize,
+    getPageCount,
+  } = usePagination();
+
+  return (
+    <div>
+      <table>
+        {/* Your table structure goes here */}
+      </table>
+      
+      {/* Pagination Component */}
+      <Pagination
+        nextPage={nextPage}
+        previousPage={previousPage}
+        canNextPage={canNextPage}
+        canPreviousPage={canPreviousPage}
+        setPageIndex={setPageIndex}
+        setPageSize={setPageSize}
+        getPageCount={getPageCount}
+        getState={getState as () => TableState} 
+      />
+    </div>
+  );
+};
+
+export default MyTableComponent;
+```
+---
