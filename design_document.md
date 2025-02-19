@@ -13,6 +13,7 @@ Web applications consist of various interface elements that must follow a struct
 - **Forms** – Enforces the use of prebuilt form components, including input fields, dropdowns, validation messages, and tooltips for improved accessibility and usability.  
 - **Dropdowns & Toggles** – Outlines best practices for dropdown menus and interactive UI elements using Bootstrap’s dropdown system.  
 - **Pagination** – Defines when and how to enable pagination to optimize performance and usability for data-heavy pages.  
+- **Date Formatting** – Ensures all dates and timestamps are displayed and stored in a consistent format across tables and forms.
 
 By following these design guidelines, developers can ensure that all UI components remain visually cohesive, functionally robust, and user-friendly. These standards not only streamline development but also enhance the overall user experience by maintaining consistency across the platform. 
 
@@ -24,7 +25,8 @@ By following these design guidelines, developers can ensure that all UI componen
 5. [Notifications](#notifications)  
 6. [Forms](#forms)  
 7. [Dropdowns and Toggling Dropdowns](#dropdowns-and-toggling-dropdowns)  
-8. [Pagination](#pagination)  
+8. [Pagination](#pagination)
+9. [Date formatting](#date-formatting)  
 
 ## Text
 
@@ -210,6 +212,7 @@ The **Form component** is prebuilt and must be used for all Form-related functio
 | **Validation**           | Built-in via **Formik**                                        |
 | **Tooltips**             | Use `ToolTip` from `src/components/ToolTip.tsx`                |
 | **Date picker**          | Uses `react-datepicker`, preconfigured                         |
+| **Date format**          | Use `YYYY-MM-DD` (ISO 8601) format for consistency.       |
 | **Checkbox & radio groups** | Prebuilt in `FormCheckboxGroup.tsx` and `FormRadioGroup.tsx`    |
 | **Dropdowns**            | Use `FormSelect.tsx` (prebuilt)                                |
 | **Range sliders**        | Use `FormRange.tsx`                                            |
@@ -319,3 +322,7 @@ const MyTableComponent: React.FC = () => {
 export default MyTableComponent;
 ```
 ---
+
+## Date formatting
+
+To ensure consistency across the platform, all date values used in Tables and Forms should follow the **ISO 8601 format (`YYYY-MM-DD HH:MM:SS`)**.
