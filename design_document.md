@@ -325,4 +325,4 @@ export default MyTableComponent;
 
 ## Date formatting
 
-To ensure consistency across the platform, all date values used in Tables and Forms should follow the **ISO 8601 format (`YYYY-MM-DD HH:MM:SS`)**.
+To ensure consistency across the platform, all date values displayed in Tables and Forms should be formatted as hours:minutes (HH:MM) and shown in the user’s preferred time zone and never display seconds or milliseconds for dates!
