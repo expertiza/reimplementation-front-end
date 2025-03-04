@@ -1,0 +1,23 @@
+{
+    "home": "Home",
+    "administration": "Administration",
+    "roles": "Roles",
+    "institutions": "Institutions",
+    "instructors": "Instructors",
+    "administrators": "Administrators",
+    "super_administrators": "Super Administrators",
+    "pending_requests": "Pending Requests",
+    "manage": "Manage",
+    "users": "Users",
+    "courses": "Courses",
+    "assignments": "Assignments",
+    "questionnaire": "Questionnaire",
+    "edit_questionnaire": "Edit Questionnaire",
+    "profile": "Profile",
+    "grades_view": "Grades View",
+    "logout": "Logout",
+    "user": "User",
+    "student_view": "Student View",
+    "anonymized_view": "Anonymized View"
+  }
+  

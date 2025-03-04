@@ -1,5 +1,7 @@
 import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./i18n";
 import AdministratorLayout from "./layout/Administrator";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Login from "./pages/Authentication/Login";
@@ -40,6 +42,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -64,7 +67,6 @@ function App() {
           element: <CreateTeams />,
           loader: loadAssignment,
         },
-
         {
           path: "assignments/edit/:id/assignreviewer",
           element: <AssignReviewer />,
@@ -192,11 +194,11 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
@@ -294,7 +296,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <I18nextProvider i18n={i18n}>
+      <RouterProvider router={router} />
+    </I18nextProvider>
+  );
 }
 
 export default App;

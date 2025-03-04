@@ -1,0 +1,23 @@
+{
+    "home": "होम",
+    "administration": "प्रशासन",
+    "roles": "भूमिकाएँ",
+    "institutions": "संस्थान",
+    "instructors": "प्रशिक्षक",
+    "administrators": "प्रशासक",
+    "super_administrators": "सुपर प्रशासक",
+    "pending_requests": "लंबित अनुरोध",
+    "manage": "प्रबंधन",
+    "users": "उपयोगकर्ता",
+    "courses": "पाठ्यक्रम",
+    "assignments": "असाइनमेंट",
+    "questionnaire": "प्रश्नावली",
+    "edit_questionnaire": "प्रश्नावली संपादित करें",
+    "profile": "प्रोफाइल",
+    "grades_view": "ग्रेड व्यू",
+    "logout": "लॉगआउट",
+    "user": "यूज़र",
+    "student_view": "छात्र दृश्य",
+    "anonymized_view": "गुमनाम दृश्य"
+  }
+  
