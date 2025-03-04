@@ -1,8 +1,7 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next"; // Import i18n hook
 import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
@@ -13,18 +12,13 @@ import detective from "../assets/detective.png";
  */
 
 const Header: React.FC = () => {
-  const { t, i18n } = useTranslation(); // Initialize translations
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
   const navigate = useNavigate();
-  const [visible, setVisible] = useState(true);
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem("language", lang);
-  };
+  const [visible, setVisible] = useState(true);
 
   const CustomBtn = () => {
     return (
@@ -46,7 +40,7 @@ const Header: React.FC = () => {
           }}
         >
           <img src={detective} width={25} style={{ marginRight: 4 }} />
-          <div>{t("anonymized_view")}</div>
+          <div>Anonymized View</div>
           <button
             style={{
               background: "none",
@@ -68,6 +62,10 @@ const Header: React.FC = () => {
       </div>
     );
   };
+
+  // useEffect(() => {
+  //   console.log(visible, 'Changed');
+  // }, [visible]);
 
   return (
     <Fragment>
@@ -93,41 +91,77 @@ const Header: React.FC = () => {
             <Navbar.Toggle aria-controls="navbarScroll" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
-                <Nav.Link as={Link} to="/">{t("home")}</Nav.Link>
+                <Nav.Link as={Link} to="/">
+                  Home
+                </Nav.Link>
                 {hasAllPrivilegesOf(auth.user.role, ROLE.ADMIN) && (
-                  <NavDropdown title={t("administration")} id="basic-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="administrator/roles">{t("roles")}</NavDropdown.Item>
+                  <NavDropdown title="Administration" id="basic-nav-dropdown">
+                    <NavDropdown.Item as={Link} to="administrator/roles">
+                      Roles
+                    </NavDropdown.Item>
                     <NavDropdown.Divider />
-                    <NavDropdown.Item as={Link} to="administrator/institutions">{t("institutions")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="administrator/instructors">{t("instructors")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="administrator/administrators">{t("administrators")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="administrator/super_administrators">{t("super_administrators")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="administrator/account_request">{t("pending_requests")}</NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="administrator/institutions">
+                      Institutions
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="administrator/instructors">
+                      Instructors
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="administrator/administrators">
+                      Administrators
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="administrator/super_administrators">
+                      Super Administrators
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="administrator/account_request">
+                      Pending Requests
+                    </NavDropdown.Item>
                   </NavDropdown>
                 )}
                 {hasAllPrivilegesOf(auth.user.role, ROLE.TA) && (
-                  <NavDropdown title={t("manage")} id="basic-nav-dropdown">
-                    <NavDropdown.Item as={Link} to="/users">{t("users")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/courses">{t("courses")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/assignments">{t("assignments")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/questionnaire">{t("questionnaire")}</NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/edit-questionnaire">{t("edit_questionnaire")}</NavDropdown.Item>
+                  <NavDropdown title="Manage" id="basic-nav-dropdown">
+                    <NavDropdown.Item as={Link} to="/users">
+                      Users
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/courses">
+                      Courses
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/assignments">
+                      Assignments
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/questionnaire">
+                      Questionnaire
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/edit-questionnaire">
+                      Edit Questionnaire
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item as={Link} to="/impersonate">
+                      Impersonate User
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="#">
+                      Anonymized View
+                    </NavDropdown.Item>
                   </NavDropdown>
                 )}
-                <Nav.Link as={Link} to="/student_tasks">{t("assignments")}</Nav.Link>
-                <Nav.Link as={Link} to="/profile">{t("profile")}</Nav.Link>
-                <Nav.Link as={Link} to="/student_view">{t("student_view")}</Nav.Link>
-                <Nav.Link as={Link} to="/view-team-grades">{t("grades_view")}</Nav.Link>
-                <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>{t("anonymized_view")}</Nav.Link>
+                <Nav.Link as={Link} to="/student_tasks">
+                  Assignments
+                </Nav.Link>
+                <Nav.Link as={Link} to="/profile">
+                  Profile
+                </Nav.Link>
+                <Nav.Link as={Link} to="/student_view">
+                  Student View
+                </Nav.Link>
+                <Nav.Link as={Link} to="/view-team-grades">
+                  Grades View
+                </Nav.Link>
+                <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>
+                  Anonymized View
+                </Nav.Link>
               </Nav>
-
-              {/* Language Switcher */}
-              <Button variant="outline-light" onClick={() => changeLanguage("en")}>🇺🇸 English</Button>
-              <Button variant="outline-light" onClick={() => changeLanguage("hi")}>🇮🇳 हिंदी</Button>
-
               {visible ? (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
-                  {t("user")}: {auth.user.full_name}
+                  User: {auth.user.full_name}
                 </Nav.Item>
               ) : (
                 <Nav.Item className="text-light ps-md-3 pe-md-3">
@@ -139,12 +173,13 @@ const Header: React.FC = () => {
                       alignItems: "center",
                     }}
                   >
-                    <CustomBtn /> {t("user")}: Student 10592
+                    <CustomBtn /> User: Student 10592
                   </div>
                 </Nav.Item>
               )}
-
-              <Button variant="outline-light" onClick={() => navigate("/logout")}>{t("logout")}</Button>
+              <Button variant="outline-light" onClick={() => navigate("/logout")}>
+                Logout
+              </Button>
             </Navbar.Collapse>
           </Container>
         )}
