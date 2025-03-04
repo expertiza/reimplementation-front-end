@@ -3,9 +3,12 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import './Edit.css'; // Importing custom CSS styles
 import { Button } from 'react-bootstrap'; // Importing Button component from react-bootstrap
+import { useTranslation } from 'react-i18next'; // Importing useTranslation hook from react-i18next
 
 // Define initial form values and validation schema using Yup
 const Edit: React.FC = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
+  
   const initialValues = {
     fullName: 'Admin',
     password: '',
@@ -43,7 +46,7 @@ const Edit: React.FC = () => {
 
   return (
     <div className="edit-form-container"> {/* Container for the entire form */}
-      <h2 className='h2-user-profile'>User Profile Information</h2> {/* Heading for user profile */}
+      <h2 className='h2-user-profile'>{t('profile.edit.user_profile_info')}</h2> {/* Heading for user profile */}
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -53,39 +56,39 @@ const Edit: React.FC = () => {
           <Form> {/* Form component */}
             {/* Form fields with labels, inputs, and error messages */}
             <div className="form-field">
-              <label htmlFor="fullName" style={{ fontWeight: 800 }}>Full name (last, first[middle]):</label>
+              <label htmlFor="fullName" style={{ fontWeight: 800 }}>{t('users.name.name_convention')}</label>
               <Field type="text" name="fullName" />
               <ErrorMessage name="fullName" component="div" className="error-message" />
             </div>
 
             {/* Password and Confirm Password fields with validation */}
             <div className="form-field">
-              <label htmlFor="password">Password:</label>
+              <label htmlFor="password">{t('users.password.password_label')}</label>
               <Field type="password" name="password" />
               <ErrorMessage name="password" component="div" className="error-message" />
             </div>
 
             <div className="form-field">
-              <label htmlFor="confirmPassword">Confirm your password:</label>
+              <label htmlFor="confirmPassword">{t('users.password.confirm_password')}</label>
               <Field type="password" name="confirmPassword" />
               <ErrorMessage name="confirmPassword" component="div" className="error-message" />
             </div>
 
             {/* Note regarding password field */}
             <div className='italics'>
-              <p>If password field is blank, the password will not be updated</p>
+              <p>{t('profile.edit.password_msg')}</p>
             </div>
 
             {/* Email field */}
             <div className="form-field">
-              <label htmlFor="email" style={{ fontWeight: 800 }}>E-mail address:</label>
+              <label htmlFor="email" style={{ fontWeight: 800 }}>{t('users.email.email_add')}</label>
               <Field type="email" name="email" />
               <ErrorMessage name="email" component="div" className="error-message" />
             </div>
 
             {/* Institution field */}
             <div className="form-field">
-              <label htmlFor="institution" style={{ fontWeight: 800 }}>Institution:</label>
+              <label htmlFor="institution" style={{ fontWeight: 800 }}>{t('users.institutions.inst_name')}</label>
               <Field as="select" name="institution">
                 <option value="Other">Other</option>
                 <option value="North Carolina State University">North Carolina State University</option>
@@ -97,15 +100,15 @@ const Edit: React.FC = () => {
 
             {/* Action Preference radio buttons */}
             <div className="form-field action-preference custom-column-flex">
-              <label style={{ fontWeight: 800 }}>Action Preference:</label>
+              <label style={{ fontWeight: 800 }}>{t('profile.edit.action_pref')}</label>
               <div className="radio-group">
                 <label style={{ marginRight: 8 }}>
                   <Field type="radio" name="actionPreference" value="canShowActions" />
-                  Homepage can show actions
+                  {t('profile.edit.homepage_can')}
                 </label>
                 <label>
                   <Field type="radio" name="actionPreference" value="cannotShowActions" />
-                  Homepage cannot show actions
+                  {t('profile.edit.homepage_cant')}
                 </label>
               </div>
               <ErrorMessage name="actionPreference" component="div" className="error-message" />
@@ -115,14 +118,14 @@ const Edit: React.FC = () => {
 
             {/* Handle field with instructions */}
             <div className='custom-column-flex'>
-              <label style={{ fontWeight: 800 }}>Handle</label>
-              <div>A "handle" can be used to conceal your username from people who view your wiki pages. If you have a handle, your wiki account should be named after your handle instead of after your user-ID. If you do not have a handle, your Expertiza user-ID will be used instead. A blank entry in the field below will cause the handle to be set back to your Expertiza user-ID. <div style={{ marginTop: -12 }}><br /></div>
-                Note: By using this form, you are changing your default handle, which will be used for all future assignments. To change your handle for a specific assignment, select that assignment and choose the Change Handle action.</div>
+              <label style={{ fontWeight: 800 }}>{t('profile.handle.handle')}</label>
+              <div>{t('profile.handle.handle_prof')} <div style={{ marginTop: -12 }}><br /></div>
+              {t('profile.handle.note')}</div>
             </div>
 
             {/* Handle input field */}
             <div className="form-field" style={{ marginTop: 28 }}>
-              <label htmlFor="handle">Default Handle:</label>
+              <label htmlFor="handle">{t('profile.handle.default_handle')}:</label>
               <Field type="text" name="handle" />
               <ErrorMessage name="handle" component="div" className="error-message" />
             </div>
@@ -130,21 +133,21 @@ const Edit: React.FC = () => {
             {/* Email Options checkboxes */}
             <div className="email-options-container">
               <div className="email-options-header">
-                <label className="email-options-heading">Email Options:</label>
-                <p className="email-instructions">Check the boxes representing the times when you want to receive e-mail.</p>
+                <label className="email-options-heading">{t('users.prefs.email')}</label>
+                <p className="email-instructions">{t('users.prefs.email_option')}</p>
               </div>
               <div className="checkbox-group">
                 <label>
                   <Field type="checkbox" name="emailOptions.reviewNotification" />
-                  When someone else reviews my work
+                  {t('users.prefs.email_review')} 
                 </label>
                 <label>
                   <Field type="checkbox" name="emailOptions.submissionNotification" />
-                  When someone else submits work I am assigned to review
+                  {t('users.prefs.email_other_review')}
                 </label>
                 <label>
                   <Field type="checkbox" name="emailOptions.metaReviewNotification" />
-                  When someone else reviews one of my reviews (meta-reviews my work)
+                  {t('users.prefs.see_review')}
                 </label>
               </div>
             </div>
@@ -161,7 +164,7 @@ const Edit: React.FC = () => {
 
             {/* Preferred Language field */}
             <div className="form-field">
-              <label htmlFor="language">Preferred Language:</label>
+              <label htmlFor="language">{t('profile.edit.preferred_language')}:</label>
               <Field as="select" name="language">
                 <option value="No Preference">No Preference</option>
                 <option value="English">English</option>
@@ -173,7 +176,7 @@ const Edit: React.FC = () => {
             {/* Submit button */}
             <div className="form-field">
               <Button type="submit" disabled={isSubmitting} variant="outline-success">
-                Save
+                {t('profile.edit.save')}
               </Button>
             </div>
           </Form>
