@@ -67,6 +67,40 @@
             "participants": "हिस्सा लेनेवाला"
         }
     },
+    "email_the_author": {
+        "title": "लेखक को ईमेल करें",
+        "subject": "विषय:",
+        "description": "विवरण:",
+        "send": "भेजें"
+    },
+    "tas": {
+        "manage_tas": "टीए का प्रबंधन करें",
+        "columns": {
+            "id": "आईडी",
+            "name": "टीए का नाम",
+            "full_name": "पूरा नाम",
+            "email": "ईमेल",
+            "actions": "क्रियाएँ"
+        },
+        "actions": {
+            "delete": "हटाएं"
+        },
+        "delete": {
+            "title": "टीए हटाएं",
+            "confirm_message": "क्या आप वाकई टीए हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "टीए {{TAName}} सफलतापूर्वक हटाया गया!"
+        },
+        "add_title": "टीए जोड़ें",
+        "success_message": "टीए {{TAName}} सफलतापूर्वक {{mode}} किया गया!",
+        "close": "बंद करें",
+        "add": "टीए जोड़ें",
+        "fields": {
+            "name": "शिक्षण सहायक का नाम",
+            "ta": "टीए"
+        }
+    },
     "shared_scripts": {
         "user_list": {
             "email": "ईमेल ...",
