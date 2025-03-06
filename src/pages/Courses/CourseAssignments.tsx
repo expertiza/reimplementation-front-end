@@ -147,12 +147,17 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   const assignments = generateFakeAssignments();
   const columns = getAssignmentColumns(actionHandlers);
 
+  // Remove the 'Course Name' column from column definitions to hide it
+  const filteredColumns = columns.filter((col) => col.header !== "Course Name");
+  // Remove 'courseName' field from assignment data to hide it
+  const filteredAssignments = assignments.map(({ courseName, ...rest }) => rest);
+
   return (
     <div className="px-4 py-2 bg-light">
       <h5 className="mb-3">Assignments for {courseName}</h5>
       <Table
-        data={assignments}
-        columns={columns}
+        data={filteredAssignments}
+        columns={filteredColumns}
         showGlobalFilter={false}
         showColumnFilter={false}
         showPagination={false}
