@@ -2,16 +2,36 @@
     "display_name": "Hindi",
     "database_encoding": 2,
     "courses": {
+        "manage_courses": "कोर्स प्रबंधित करें",
         "edit": {
             "course_title": "एडिट कोर्स"
         },
         "course": {
             "institute_name": "इन्स्टिट्यूशन का नाम",
+            "instructor_name": "प्रशिक्षक का नाम",
             "course_name": "कोर्स का नाम",
             "course_directory": "कोर्स डाइरेक्टरी",
             "directory_warning": "(आवश्यक स्थान। कोई जगह या विशेष वर्ण नहीं।)",
             "course_info": "कोर्स संबंधी जानकारी",
-            "language": "भाषा चुनिए"
+            "language": "भाषा चुनिए",
+            "course_visibility": "कोर्स दृश्यता",
+            "close": "बंद करें",
+            "update_course": "कोर्स अपडेट करें",
+            "create_course": "कोर्स बनाएं"
+        },
+        "copy": {
+            "title": "कोर्स कॉपी करें",
+            "confirm_message": "क्या आप वाकई कोर्स कॉपी करना चाहते हैं",
+            "cancel": "रद्द करें",
+            "copy": "कॉपी करें",
+            "success_message": "कोर्स {{courseName}} सफलतापूर्वक कॉपी किया गया!"
+        },
+        "delete": {
+            "title": "कोर्स हटाएं",
+            "confirm_message": "क्या आप वाकई कोर्स हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "कोर्स {{courseName}} सफलतापूर्वक हटाया गया!"
         },
         "view_teaching_assistants": {
             "teaching_assistants": "शिक्षण सहायक",
