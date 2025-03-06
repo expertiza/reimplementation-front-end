@@ -11,6 +11,7 @@ import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
 import { IEditor } from "../../utils/interfaces";
 import { ITAFormValues, transformTARequest } from "./TAUtil";
+import { useTranslation } from "react-i18next"; 
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -26,6 +27,7 @@ const validationSchema = Yup.object({
 });
 
 const TAEditor: React.FC<IEditor> = ({ mode }) => {
+  const { t } = useTranslation(); 
   const { data: TAResponse, error: TAError, sendRequest } = useAPI();
   const TAData = { ...initialValues };
 
@@ -45,12 +47,12 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `TA ${TAData.name} ${mode}d successfully!`,
+          message: t('tas.success_message', { TAName: TAData.name, mode }),
         })
       );
       navigate(location.state?.from ? location.state.from : "/TAs");
     }
-  }, [dispatch, mode, navigate, TAData.name, TAResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, TAData.name, TAResponse, location.state?.from, t]);
 
   // Show the error message if the TA is not updated successfully
   useEffect(() => {
@@ -79,7 +81,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>Add TA</Modal.Title>
+        <Modal.Title>{t('tas.add_title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {TAError && <p className="text-danger">{TAError}</p>}
@@ -95,16 +97,16 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
               <Form>
                 <FormSelect
                   controlId="TA-name"
-                  label="Teaching Assistant Name"
+                  label={t('tas.fields.name')}
                   name="name"
                   options={taUsers}
                   inputGroupPrepend={
-                    <InputGroup.Text id="TA-name-prep">TA</InputGroup.Text>
+                    <InputGroup.Text id="TA-name-prep">{t('tas.fields.ta')}</InputGroup.Text>
                   }
                 />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                    {t('tas.close')}
                   </Button>
 
                   <Button
@@ -112,7 +114,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    "Add TA"
+                    {t('tas.add')}
                   </Button>
                 </Modal.Footer>
               </Form>

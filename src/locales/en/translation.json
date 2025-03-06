@@ -68,6 +68,40 @@
             "participants": "Participants:"
         }
     },
+    "email_the_author": {
+      "title": "Email the author",
+      "subject": "Subject:",
+      "description": "Description:",
+      "send": "Send"
+    },
+    "tas": {
+      "manage_tas": "Manage TAs",
+      "columns": {
+        "id": "Id",
+        "name": "TA Name",
+        "full_name": "Full Name",
+        "email": "Email",
+        "actions": "Actions"
+      },
+      "actions": {
+        "delete": "Delete"
+      },
+      "delete": {
+        "title": "Delete TA",
+        "confirm_message": "Are you sure you want to delete TA",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "success_message": "TA {{TAName}} deleted successfully!"
+      },
+      "add_title": "Add TA",
+      "success_message": "TA {{TAName}} {{mode}}d successfully!",
+      "close": "Close",
+      "add": "Add TA",
+      "fields": {
+        "name": "Teaching Assistant Name",
+        "ta": "TA"
+      }
+    },
     "shared_scripts": {
         "user_list": {
             "email": "E-mail on ...",
