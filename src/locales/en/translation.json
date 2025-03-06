@@ -522,6 +522,47 @@
         }
     },
     "participants": {
+        "manage_participants": "Manage Participants",
+        "create_title": "Create Participant",
+        "update_title": "Update Participant",
+        "success_message": "Participant {{participantName}} {{mode}}d successfully!",
+        "close": "Close",
+        "create": "Create",
+        "update": "Update",
+        "fields": {
+          "role": "Role",
+          "name": "Participant Name",
+          "first_name": "First Name",
+          "last_name": "Last Name",
+          "email": "Email",
+          "email_preferences": "Email Preferences",
+          "institution": "Institution"
+        },
+        "columns": {
+          "id": "Id",
+          "name": "Participant Name",
+          "full_name": "Full Name",
+          "email": "Email",
+          "role": "Role",
+          "parent": "Parent",
+          "email_preferences": "Email Preferences",
+          "review": "Review",
+          "submission": "Submission",
+          "meta_review": "Meta Review",
+          "institution": "Institution",
+          "actions": "Actions"
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "delete": {
+          "title": "Delete Participant",
+          "confirm_message": "Are you sure you want to delete participant",
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "success_message": "Participant {{participantName}} deleted successfully!"
+        },
         "change_handle": {
             "create_or_change": "Create or Change Handle for Current Assignment",
             "your": "Your",
