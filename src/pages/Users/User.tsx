@@ -11,11 +11,13 @@ import { RootState } from "../../store/store";
 import { IUserResponse, ROLE } from "../../utils/interfaces";
 import DeleteUser from "./UserDelete";
 import { userColumns as USER_COLUMNS } from "./userColumns";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on April, 2023
  */
 const Users = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { error, isLoading, data: userResponse, sendRequest: fetchUsers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -70,7 +72,7 @@ const Users = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Users</h1>
+              <h1>{t('users.manage_users')}</h1>
             </Col>
             <hr />
           </Row>
