@@ -13,12 +13,14 @@ import { RootState } from "../../store/store";
 import { ITAResponse, ROLE } from "../../utils/interfaces";
 import { TAColumns as TA_COLUMNS } from "./TAColumns";
 import DeleteTA from "./TADelete";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Atharva Thorve, on December, 2023
  * @author Divit Kalathil, on December, 2023
  */
 const TAs = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { error, isLoading, data: TAResponse, sendRequest: fetchTAs } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -72,7 +74,7 @@ const TAs = () => {
     // ToDo: After dependency has been updated do change the size of the Modal.
     <Modal size="xl" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>Manage TAs</Modal.Title>
+        <Modal.Title>{t('tas.manage_tas')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Outlet />
@@ -80,7 +82,7 @@ const TAs = () => {
           <Container fluid className="px-md-4">
             <Row className="mt-md-2 mb-md-2">
               <Col className="text-center">
-                <h1>Manage TAs</h1>
+                <h1>{t('tas.manage_tas')}</h1>
               </Col>
               <hr />
             </Row>

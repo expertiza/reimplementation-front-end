@@ -7,6 +7,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ITAResponse as ITA } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -19,6 +20,7 @@ interface IDeleteTA {
 }
 
 const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: deletedTA, error: TAError, sendRequest: deleteTA } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -42,12 +44,12 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `TA ${TAData.name} deleted successfully!`,
+          message: t('tas.delete.success_message', { TAName: TAData.name }),
         })
       );
       onClose();
     }
-  }, [deletedTA?.status, dispatch, onClose, TAData.name]);
+  }, [deletedTA?.status, dispatch, onClose, TAData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -58,19 +60,19 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete TA</Modal.Title>
+        <Modal.Title>{t('tas.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete TA <b>{TAData.name}?</b>
+          {t('tas.delete.confirm_message')} <b>{TAData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('tas.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('tas.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>
