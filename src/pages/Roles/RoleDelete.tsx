@@ -5,6 +5,7 @@ import {alertActions} from "store/slices/alertSlice";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import {IRole} from "../../utils/interfaces";
+import {useTranslation} from "react-i18next";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -16,6 +17,7 @@ interface IDeleteRole {
 }
 
 const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: response, error: roleError, sendRequest: deleteRole } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -36,12 +38,12 @@ const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Role: ${roleData.name} deleted successfully!`,
+          message: t('roles.delete.success_message', { roleName: roleData.name }),
         })
       );
       onClose();
     }
-  }, [response?.status, dispatch, onClose, roleData.name]);
+  }, [response?.status, dispatch, onClose, roleData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,19 +53,19 @@ const DeleteRole: React.FC<IDeleteRole> = ({ roleData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Role</Modal.Title>
+        <Modal.Title>{t('roles.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete role <b>{roleData.name}?</b>
+          {t('roles.delete.confirm_message')} <b>{roleData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('roles.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('roles.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>

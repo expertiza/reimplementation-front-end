@@ -8,12 +8,14 @@ import { BsPlusSquareFill } from "react-icons/bs";
 import { IRole } from "../../utils/interfaces";
 import { roleColumns as ROLE_COLUMNS } from "./roleColumns";
 import DeleteRole from "./RoleDelete";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on June, 2023
  */
 
 const Roles = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const navigate = useNavigate();
   const roles: any = useLoaderData();
 
@@ -47,7 +49,7 @@ const Roles = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Roles</h1>
+              <h1>{t('roles.manage_roles')}</h1>
             </Col>
             <hr />
           </Row>

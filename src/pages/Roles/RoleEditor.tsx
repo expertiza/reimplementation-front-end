@@ -12,6 +12,7 @@ import axiosClient from "../../utils/axios_client";
 import { IEditor, IRole } from "../../utils/interfaces";
 import FormSelect from "../../components/Form/FormSelect";
 import { transformRolesResponse } from "../Users/userUtil";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -25,29 +26,30 @@ const initialValues: IRole = {
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
-    .min(3, "Institution name must be at least 3 characters")
-    .max(16, "Institution name must be at most 16 characters"),
+    .min(3, "Role name must be at least 3 characters")
+    .max(16, "Role name must be at most 16 characters"),
 });
 
 const RoleEditor: React.FC<IEditor> = ({ mode }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: roleResponse, error, sendRequest } = useAPI();
   const availableRoles = transformRolesResponse(JSON.stringify(useRouteLoaderData("roles")));
   const role: any = useRouteLoaderData("edit-role");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Close the modal if the role is updated successfully and navigate to the institutions page
+  // Close the modal if the role is updated successfully and navigate to the roles page
   useEffect(() => {
     if (roleResponse && roleResponse.status >= 200 && roleResponse.status < 300) {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Role ${mode}d successfully!`,
+          message: t('roles.success_message', { mode }),
         })
       );
       navigate("/administrator/roles");
     }
-  }, [dispatch, mode, navigate, roleResponse]);
+  }, [dispatch, mode, navigate, roleResponse, t]);
 
   // Show the error message if the role is not updated successfully
   useEffect(() => {
@@ -76,7 +78,7 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update " : "Create "}Role</Modal.Title>
+        <Modal.Title>{mode === "update" ? t('roles.update_title') : t('roles.create_title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {error && <p className="text-danger">{error}</p>}
@@ -90,23 +92,23 @@ const RoleEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormInput controlId="role-name" label="Role Name" name="name" />
+                <FormInput controlId="role-name" label={t('roles.fields.name')} name="name" />
                 <FormSelect
                   controlId="role-parent"
                   name="parent_id"
                   options={availableRoles}
-                  inputGroupPrepend={<InputGroup.Text id="role-p-prepend">Parent</InputGroup.Text>}
+                  inputGroupPrepend={<InputGroup.Text id="role-p-prepend">{t('roles.fields.parent')}</InputGroup.Text>}
                 />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                    {t('roles.close')}
                   </Button>
                   <Button
                     variant="outline-success"
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update " : "Create "}Role
+                    {mode === "update" ? t('roles.update') : t('roles.create')}
                   </Button>
                 </Modal.Footer>
               </Form>
