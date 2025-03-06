@@ -6,6 +6,7 @@ import { IAssignmentResponse as IAssignment } from "../../utils/interfaces";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
 import { useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 interface IDeleteAssignment {
   assignmentData: IAssignment;
@@ -13,6 +14,7 @@ interface IDeleteAssignment {
 }
 
 const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: deletedAssignment, error: assignmentError, sendRequest: deleteAssignment } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -39,12 +41,12 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Assignment ${assignmentData.name} deleted successfully!`, 
+          message: t('assignments.delete.success_message', { assignmentName: assignmentData.name }),
         })
       );
       onClose();
     }
-  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name]); 
+  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -54,19 +56,19 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Assignment</Modal.Title>
+        <Modal.Title>{t('assignments.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete assignment <b>{assignmentData.name}?</b> 
+          {t('assignments.delete.confirm_message')} <b>{assignmentData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('assignments.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('assignments.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>
