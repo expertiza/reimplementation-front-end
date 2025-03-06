@@ -10,6 +10,7 @@ import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
 import { IEditor, IInstitution } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -27,6 +28,7 @@ const validationSchema = Yup.object({
 });
 
 const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: institutionResponse, error, sendRequest } = useAPI();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,12 +44,12 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Institution ${mode}d successfully!`,
+          message: t('institutions.success_message', { mode }),
         })
       );
       navigate("/administrator/institutions");
     }
-  }, [dispatch, mode, navigate, institutionResponse]);
+  }, [dispatch, mode, navigate, institutionResponse, t]);
 
   // Show the error message if the institution is not updated successfully
   useEffect(() => {
@@ -76,7 +78,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update " : "Create "}Institution</Modal.Title>
+        <Modal.Title>{mode === "update" ? t('institutions.update_title') : t('institutions.create_title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {error && <p className="text-danger">{error}</p>}
@@ -90,10 +92,10 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormInput controlId="institution-name" label="Institution Name" name="name" />
+                <FormInput controlId="institution-name" label={t('institutions.fields.name')} name="name" />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                    {t('institutions.close')}
                   </Button>
 
                   <Button
@@ -101,7 +103,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update " : "Create "}Institution
+                    {mode === "update" ? t('institutions.update') : t('institutions.create')}
                   </Button>
                 </Modal.Footer>
               </Form>

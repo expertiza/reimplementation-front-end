@@ -8,12 +8,14 @@ import axiosClient from "../../utils/axios_client";
 import InstitutionDelete from "./InstitutionDelete";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { IInstitution } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on June, 2023
  */
 
 const Institutions = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const navigate = useNavigate();
   const institutions: any = useLoaderData();
 
@@ -51,7 +53,7 @@ const Institutions = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Institutions</h1>
+              <h1>{t('institutions.manage_institutions')}</h1>
             </Col>
             <hr />
           </Row>

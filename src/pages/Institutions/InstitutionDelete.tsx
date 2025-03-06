@@ -5,6 +5,7 @@ import {alertActions} from "store/slices/alertSlice";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import {IInstitution} from "../../utils/interfaces";
+import {useTranslation} from "react-i18next";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -16,6 +17,7 @@ interface IDeleteInstitution {
 }
 
 const DeleteInstitution: React.FC<IDeleteInstitution> = ({ institutionData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: response, error: userError, sendRequest: deleteUser } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -36,12 +38,12 @@ const DeleteInstitution: React.FC<IDeleteInstitution> = ({ institutionData, onCl
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Institution ${institutionData.name} deleted successfully!`,
+          message: t('institutions.delete.success_message', { institutionName: institutionData.name }),
         })
       );
       onClose();
     }
-  }, [response?.status, dispatch, onClose, institutionData.name]);
+  }, [response?.status, dispatch, onClose, institutionData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,19 +53,19 @@ const DeleteInstitution: React.FC<IDeleteInstitution> = ({ institutionData, onCl
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Institution</Modal.Title>
+        <Modal.Title>{t('institutions.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete institution <b>{institutionData.name}?</b>
+          {t('institutions.delete.confirm_message')} <b>{institutionData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('institutions.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('institutions.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>
