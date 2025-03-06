@@ -13,6 +13,7 @@ import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 import { formatDate, mergeDataAndNames } from "./CourseUtil";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 // Courses Component: Displays and manages courses, including CRUD operations.
 
@@ -21,6 +22,7 @@ import { formatDate, mergeDataAndNames } from "./CourseUtil";
  * @author Mrityunjay Joshi on December, 2023
  */
 const Courses = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const auth = useSelector(
@@ -127,7 +129,7 @@ const Courses = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Courses</h1>
+              <h1>{t('courses.manage_courses')}</h1>
             </Col>
             <hr />
           </Row>
