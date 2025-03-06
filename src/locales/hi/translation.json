@@ -500,6 +500,47 @@
         }
     },
     "participants": {
+        "manage_participants": "प्रतिभागियों का प्रबंधन करें",
+        "create_title": "प्रतिभागी बनाएं",
+        "update_title": "प्रतिभागी अपडेट करें",
+        "success_message": "प्रतिभागी {{participantName}} सफलतापूर्वक {{mode}} किया गया!",
+        "close": "बंद करें",
+        "create": "बनाएं",
+        "update": "अपडेट करें",
+        "fields": {
+        "role": "भूमिका",
+        "name": "प्रतिभागी का नाम",
+        "first_name": "पहला नाम",
+        "last_name": "अंतिम नाम",
+        "email": "ईमेल",
+        "email_preferences": "ईमेल प्राथमिकताएं",
+        "institution": "संस्थान"
+        },
+        "columns": {
+            "id": "आईडी",
+            "name": "प्रतिभागी का नाम",
+            "full_name": "पूरा नाम",
+            "email": "ईमेल",
+            "role": "भूमिका",
+            "parent": "माता-पिता",
+            "email_preferences": "ईमेल प्राथमिकताएं",
+            "review": "समीक्षा",
+            "submission": "प्रस्तुति",
+            "meta_review": "मेटा समीक्षा",
+            "institution": "संस्थान",
+            "actions": "क्रियाएँ"
+        },
+        "actions": {
+            "edit": "संपादित करें",
+            "delete": "हटाएं"
+        },
+        "delete": {
+            "title": "प्रतिभागी हटाएं",
+            "confirm_message": "क्या आप वाकई प्रतिभागी हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "प्रतिभागी {{participantName}} सफलतापूर्वक हटाया गया!"
+        },
         "change_handle": {
             "create_or_change": "वर्तमान असाइनमेंट के लिए हैंडल बनाएं या बदलें",
             "your": "आपका",

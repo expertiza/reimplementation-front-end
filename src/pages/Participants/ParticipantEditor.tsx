@@ -13,6 +13,8 @@ import * as Yup from "yup";
 import { RootState } from "../../store/store";
 import { ROLE } from "../../utils/interfaces";
 import { IParticipantFormValues, emailOptions, transformParticipantRequest } from "./participantUtil";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
+
 /**
  * @author Mrityunjay Joshi on October, 2023
  */
@@ -46,6 +48,7 @@ const validationSchema = Yup.object({
 });
 
 const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: participantResponse, error: participantError, sendRequest } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -66,12 +69,12 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Participant ${participantData.name} ${mode}d successfully!`,
+          message: t('participants.success_message', { participantName: participantData.name, mode }),
         })
       );
       navigate(location.state?.from ? location.state.from : `/${type}/participants`);
     }
-  }, [dispatch, mode, navigate, participantData.name, participantResponse, location.state?.from, type]);
+  }, [dispatch, mode, navigate, participantData.name, participantResponse, location.state?.from, type, t]);
 
   // Show the error message if the participant is not updated successfully
   useEffect(() => {
@@ -98,12 +101,12 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : `/${type}/participants`);  
+  const handleClose = () => navigate(location.state?.from ? location.state.from : `/${type}/participants`);
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update Participant" : "Create Participant"}</Modal.Title>
+        <Modal.Title>{mode === "update" ? t('participants.update_title') : t('participants.create_title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {participantError && <p className="text-danger">{participantError}</p>}
@@ -121,11 +124,11 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
                   controlId="participant-role"
                   name="role_id"
                   options={roles}
-                  inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
+                  inputGroupPrepend={<InputGroup.Text id="role-prepend">{t('participants.fields.role')}</InputGroup.Text>}
                 />
                 <FormInput
                   controlId="participant-name"
-                  label="Participant Name"
+                  label={t('participants.fields.name')}
                   name="name"
                   disabled={mode === "update"}
                   inputGroupPrepend={<InputGroup.Text id="participant-name-prep">@</InputGroup.Text>}
@@ -134,20 +137,20 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
                   <FormInput
                     as={Col}
                     controlId="participant-first-name"
-                    label="First name"
+                    label={t('participants.fields.first_name')}
                     name="firstName"
                   />
                   <FormInput
                     as={Col}
                     controlId="participant-last-name"
-                    label="Last name"
+                    label={t('participants.fields.last_name')}
                     name="lastName"
                   />
                 </Row>
-                <FormInput controlId="participant-email" label="Email" name="email" />
+                <FormInput controlId="participant-email" label={t('participants.fields.email')} name="email" />
                 <FormCheckBoxGroup
                   controlId="email-pref"
-                  label="Email Preferences"
+                  label={t('participants.fields.email_preferences')}
                   name="emailPreferences"
                   options={emailOptions}
                 />
@@ -157,12 +160,12 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
                   disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={institutions}
                   inputGroupPrepend={
-                    <InputGroup.Text id="participant-inst-prep">Institution</InputGroup.Text>
+                    <InputGroup.Text id="participant-inst-prep">{t('participants.fields.institution')}</InputGroup.Text>
                   }
                 />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                    {t('participants.close')}
                   </Button>
 
                   <Button
@@ -170,7 +173,7 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update Participant" : "Create Participant"}
+                    {mode === "update" ? t('participants.update') : t('participants.create')}
                   </Button>
                 </Modal.Footer>
               </Form>

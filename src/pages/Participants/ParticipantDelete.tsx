@@ -5,6 +5,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Atharva Thorve on October, 2023
@@ -16,6 +17,7 @@ interface IDeleteParticipant {
 }
 
 const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: deletedParticipant, error: participantError, sendRequest: deleteParticipant } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -36,12 +38,12 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${participantData.name} deleted successfully!`,
+          message: t('participants.delete.success_message', { participantName: participantData.name }),
         })
       );
       onClose();
     }
-  }, [deletedParticipant?.status, dispatch, onClose, participantData.name]);
+  }, [deletedParticipant?.status, dispatch, onClose, participantData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,19 +53,19 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Participant</Modal.Title>
+        <Modal.Title>{t('participants.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete participant <b>{participantData.name}?</b>
+          {t('participants.delete.confirm_message')} <b>{participantData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('participants.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('participants.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>
