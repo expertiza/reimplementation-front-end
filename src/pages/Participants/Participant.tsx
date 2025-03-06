@@ -11,6 +11,7 @@ import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
 import DeleteParticipant from "./ParticipantDelete";
 import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Atharva Thorve on October, 2023
@@ -22,6 +23,7 @@ interface IModel {
 }
 
 const Participants: React.FC<IModel> = ({ type, id }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -76,7 +78,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Participants</h1>
+              <h1>{t('participants.manage_participants')}</h1>
             </Col>
             <hr />
           </Row>
