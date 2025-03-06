@@ -13,6 +13,7 @@ import * as Yup from "yup";
 import { RootState } from "../../store/store";
 import { IEditor, ROLE } from "../../utils/interfaces";
 import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transformCourseRequest } from "./CourseUtil";
+import { useTranslation } from "react-i18next";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -44,6 +45,7 @@ const validationSchema = Yup.object({
 });
 
 const CourseEditor: React.FC<IEditor> = ({ mode }) => {
+  const { t } = useTranslation();
 
   // API hook for making requests
   const { data: courseResponse, error: courseError, sendRequest } = useAPI();
@@ -104,7 +106,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update Course" : "Create Course"}</Modal.Title>
+        <Modal.Title>{mode === "update" ? t('courses.course.update_course') : t('courses.course.create_course')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {courseError && <p className="text-danger">{courseError}</p>}
@@ -124,7 +126,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={institutions}
                   inputGroupPrepend={
-                    <InputGroup.Text id="course-inst-prep">Institution</InputGroup.Text>
+                    <InputGroup.Text id="course-inst-prep">{t('courses.course.institute_name')}</InputGroup.Text>
                   }
                 />
                 <FormSelect
@@ -133,31 +135,31 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={instructors}
                   inputGroupPrepend={
-                    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
+                    <InputGroup.Text id="course-inst-prep">{t('courses.course.instructor_name')}</InputGroup.Text>
                   }
                 />
                 <FormInput
                   controlId="name"
-                  label="Name"
+                  label={t('courses.course.course_name')}
                   name="name"
                   disabled={mode === "update"}
                 />
                 <FormInput
                   controlId="directory"
-                  label="Course Directory (Mandatory field. No Spaces, Special Characters, or quotes)"
+                  label={`${t('courses.course.course_directory')} ${t('courses.course.directory_warning')}`}
                   name="directory"
                 />
-                <FormInput controlId="info" label="Course Information" name="info" />
+                <FormInput controlId="info" label={t('courses.course.course_info')} name="info" />
                 <FormCheckBoxGroup
                   controlId="course-visibility"
-                  label="Course Visibility"
+                  label={t('courses.course.course_visibility')}
                   name="private"
                   options={courseVisibility}
                 />
 
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                  {t('courses.course.close')}
                   </Button>
 
                   <Button
@@ -165,7 +167,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update Course" : "Create Course"}
+                    {mode === "update" ? t('courses.course.update_course') : t('courses.course.create_course')}
                   </Button>
                 </Modal.Footer>
               </Form>
