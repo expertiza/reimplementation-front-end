@@ -5,6 +5,7 @@ import {alertActions} from "store/slices/alertSlice";
 import {HttpMethod} from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import {IUserResponse as IUser} from "../../utils/interfaces";
+import {useTranslation} from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -16,6 +17,7 @@ interface IDeleteUser {
 }
 
 const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: deletedUser, error: userError, sendRequest: deleteUser } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -36,12 +38,12 @@ const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} deleted successfully!`,
+          message: t('users.delete.success_message', { userName: userData.name }),
         })
       );
       onClose();
     }
-  }, [deletedUser?.status, dispatch, onClose, userData.name]);
+  }, [deletedUser?.status, dispatch, onClose, userData.name, t]);
 
   const closeHandler = () => {
     setShow(false);
@@ -51,19 +53,19 @@ const DeleteUser: React.FC<IDeleteUser> = ({ userData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete User</Modal.Title>
+        <Modal.Title>{t('users.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete user <b>{userData.name}?</b>
+          {t('users.delete.confirm_message')} <b>{userData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('users.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('users.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>

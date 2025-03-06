@@ -627,6 +627,47 @@
         }
     },
     "users": {
+        "manage_users": "उपयोगकर्ताओं का प्रबंधन करें",
+        "create_title": "उपयोगकर्ता बनाएं",
+        "update_title": "उपयोगकर्ता अपडेट करें",
+        "success_message": "उपयोगकर्ता {{userName}} सफलतापूर्वक {{mode}} किया गया!",
+        "close": "बंद करें",
+        "create": "बनाएं",
+        "update": "अपडेट करें",
+        "fields": {
+            "role": "भूमिका",
+            "username": "उपयोगकर्ता नाम",
+            "first_name": "पहला नाम",
+            "last_name": "अंतिम नाम",
+            "email": "ईमेल",
+            "email_preferences": "ईमेल प्राथमिकताएं",
+            "institution": "संस्थान"
+        },
+        "columns": {
+            "id": "आईडी",
+            "username": "उपयोगकर्ता नाम",
+            "full_name": "पूरा नाम",
+            "email": "ईमेल",
+            "role": "भूमिका",
+            "parent": "पेअरॅन्ट",
+            "email_preferences": "ईमेल प्राथमिकताएं",
+            "review": "समीक्षा",
+            "submission": "प्रस्तुति",
+            "meta_review": "मेटा समीक्षा",
+            "institution": "संस्थान",
+            "actions": "क्रियाएँ"
+        },
+        "actions": {
+            "edit": "संपादित करें",
+            "delete": "हटाएं"
+        },
+        "delete": {
+            "title": "उपयोगकर्ता हटाएं",
+            "confirm_message": "क्या आप वाकई उपयोगकर्ता हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "उपयोगकर्ता {{userName}} सफलतापूर्वक हटाया गया!"
+        },
         "prefs": {
             "email": "ईमेल के विकल्प",
             "email_option": " चुनाव कीजिये जब आप ईमेल प्राप्त करना चाहते हैं ",

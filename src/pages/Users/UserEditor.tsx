@@ -13,6 +13,7 @@ import useAPI from "hooks/useAPI";
 import * as Yup from "yup";
 import { IEditor, ROLE } from "../../utils/interfaces";
 import { RootState } from "../../store/store";
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -42,6 +43,7 @@ const validationSchema = Yup.object({
 });
 
 const UserEditor: React.FC<IEditor> = ({ mode }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { data: userResponse, error: userError, sendRequest } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -62,12 +64,12 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} ${mode}d successfully!`,
+          message: t('users.success_message', { userName: userData.name, mode }),
         })
       );
       navigate(location.state?.from ? location.state.from : "/users");
     }
-  }, [dispatch, mode, navigate, userData.name, userResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, userData.name, userResponse, location.state?.from, t]);
 
   // Show the error message if the user is not updated successfully
   useEffect(() => {
@@ -99,7 +101,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update User" : "Create User"}</Modal.Title>
+        <Modal.Title>{mode === "update" ? t('users.update_title') : t('users.create_title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {userError && <p className="text-danger">{userError}</p>}
@@ -117,11 +119,11 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                   controlId="user-role"
                   name="role_id"
                   options={roles}
-                  inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
+                  inputGroupPrepend={<InputGroup.Text id="role-prepend">{t('users.fields.role')}</InputGroup.Text>}
                 />
                 <FormInput
                   controlId="user-name"
-                  label="Username"
+                  label={t('users.fields.username')}
                   name="name"
                   disabled={mode === "update"}
                   inputGroupPrepend={<InputGroup.Text id="user-name-prep">@</InputGroup.Text>}
@@ -130,20 +132,20 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                   <FormInput
                     as={Col}
                     controlId="user-first-name"
-                    label="First name"
+                    label={t('users.fields.first_name')}
                     name="firstName"
                   />
                   <FormInput
                     as={Col}
                     controlId="user-last-name"
-                    label="Last name"
+                    label={t('users.fields.last_name')}
                     name="lastName"
                   />
                 </Row>
-                <FormInput controlId="user-email" label="Email" name="email" />
+                <FormInput controlId="user-email" label={t('users.fields.email')} name="email" />
                 <FormCheckBoxGroup
                   controlId="email-pref"
-                  label="Email Preferences"
+                  label={t('users.fields.email_preferences')}
                   name="emailPreferences"
                   options={emailOptions}
                 />
@@ -153,12 +155,12 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                   disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={institutions}
                   inputGroupPrepend={
-                    <InputGroup.Text id="user-inst-prep">Institution</InputGroup.Text>
+                    <InputGroup.Text id="user-inst-prep">{t('users.fields.institution')}</InputGroup.Text>
                   }
                 />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
+                    {t('users.close')}
                   </Button>
 
                   <Button
@@ -166,7 +168,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    {mode === "update" ? "Update User" : "Create User"}
+                    {mode === "update" ? t('users.update') : t('users.create')}
                   </Button>
                 </Modal.Footer>
               </Form>

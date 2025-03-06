@@ -652,6 +652,47 @@
         }
     },
     "users": {
+        "manage_users": "Manage Users",
+        "create_title": "Create User",
+        "update_title": "Update User",
+        "success_message": "User {{userName}} {{mode}}d successfully!",
+        "close": "Close",
+        "create": "Create",
+        "update": "Update",
+        "fields": {
+          "role": "Role",
+          "username": "Username",
+          "first_name": "First Name",
+          "last_name": "Last Name",
+          "email": "Email",
+          "email_preferences": "Email Preferences",
+          "institution": "Institution"
+        },
+        "columns": {
+          "id": "Id",
+          "username": "Username",
+          "full_name": "Full Name",
+          "email": "Email",
+          "role": "Role",
+          "parent": "Parent",
+          "email_preferences": "Email Preferences",
+          "review": "Review",
+          "submission": "Submission",
+          "meta_review": "Meta Review",
+          "institution": "Institution",
+          "actions": "Actions"
+        },
+        "actions": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "delete": {
+          "title": "Delete User",
+          "confirm_message": "Are you sure you want to delete user",
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "success_message": "User {{userName}} deleted successfully!"
+        },
         "prefs": {
             "email": "E-mail Options",
             "email_option": "Check the boxes representing the times when you want to receive e-mail.",
