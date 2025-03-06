@@ -43,6 +43,25 @@
             "add_ta": "शिक्षण सहायक को शामिल करना"
         }
     },
+    "institutions": {
+        "manage_institutions": "संस्थानों का प्रबंधन करें",
+        "create_title": "संस्थान बनाएं",
+        "update_title": "संस्थान अपडेट करें",
+        "success_message": "संस्थान सफलतापूर्वक {{mode}} किया गया!",
+        "close": "बंद करें",
+        "create": "बनाएं",
+        "update": "अपडेट करें",
+        "fields": {
+            "name": "संस्थान का नाम"
+        },
+        "delete": {
+            "title": "संस्थान हटाएं",
+            "confirm_message": "क्या आप वाकई संस्थान हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "संस्थान {{institutionName}} सफलतापूर्वक हटाया गया!"
+        }
+    },
     "participant": {
         "list": {
             "participants": "हिस्सा लेनेवाला"

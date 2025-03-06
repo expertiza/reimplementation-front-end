@@ -44,6 +44,25 @@
             "add_ta": "Add TA"
         }
     },
+    "institutions": {
+      "manage_institutions": "Manage Institutions",
+      "create_title": "Create Institution",
+      "update_title": "Update Institution",
+      "success_message": "Institution {{mode}}d successfully!",
+      "close": "Close",
+      "create": "Create",
+      "update": "Update",
+      "fields": {
+        "name": "Institution Name"
+      },
+      "delete": {
+        "title": "Delete Institution",
+        "confirm_message": "Are you sure you want to delete institution",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "success_message": "Institution {{institutionName}} deleted successfully!"
+      }
+    },
     "participant": {
         "list": {
             "participants": "Participants:"
