@@ -2,18 +2,38 @@
     "display_name": "English",
     "database_encoding": 1,
     "courses": {
+        "manage_courses": "Manage Courses",
         "edit": {
             "course_title": "Edit course"
         },
         "course": {
             "institute_name": "Institution Name",
+            "instructor_name": "Instructor Name",
             "course_name": "Course Name",
             "course_directory": "Course Directory",
             "directory_warning": "(Mandatory field. No space or special chars.)",
             "course_info": "Course Information",
             "language": "Select language",
-            "assignment_name": "Assignment Name"
+            "assignment_name": "Assignment Name",
+            "course_visibility": "Course Visibility",
+            "close": "Close",
+            "update_course": "Update Course",
+            "create_course": "Create Course"
         },
+        "copy": {
+            "title": "Copy Course",
+            "confirm_message": "Are you sure you want to copy course",
+            "cancel": "Cancel",
+            "copy": "Copy",
+            "success_message": "Course {{courseName}} copied successfully!"
+          },
+        "delete": {
+            "title": "Delete Course",
+            "confirm_message": "Are you sure you want to delete course",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "success_message": "Course {{courseName}} deleted successfully!"
+          },  
         "view_teaching_assistants": {
             "teaching_assistants": "Teaching Assistants",
             "course": "Course",
