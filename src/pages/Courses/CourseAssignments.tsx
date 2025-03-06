@@ -1,6 +1,6 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
-import React from 'react';
+import React from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
 
 interface ActionHandler {
@@ -18,85 +18,85 @@ interface CourseAssignmentsProps {
 const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName }) => {
   const actionHandlers: ActionHandler[] = [
     {
-      icon: '/assets/icons/edit-temp.png',
-      label: 'Edit',
+      icon: "/assets/icons/edit-temp.png",
+      label: "Edit",
       handler: (row: TRow<any>) => {
-        console.log('Edit assignment:', row.original);
+        console.log("Edit assignment:", row.original);
       },
-      className: 'text-primary'
+      className: "text-primary",
     },
     {
-      icon: '/assets/icons/delete-temp.png',
-      label: 'Delete',
+      icon: "/assets/icons/delete-temp.png",
+      label: "Delete",
       handler: (row: TRow<any>) => {
-        console.log('Delete assignment:', row.original);
+        console.log("Delete assignment:", row.original);
       },
-      className: 'text-danger'
+      className: "text-danger",
     },
     {
-      icon: '/assets/icons/add-participant-24.png',
-      label: 'Add Participant',
+      icon: "/assets/icons/add-participant-24.png",
+      label: "Add Participant",
       handler: (row: TRow<any>) => {
-        console.log('Add participant to assignment:', row.original);
+        console.log("Add participant to assignment:", row.original);
       },
-      className: 'text-success'
+      className: "text-success",
     },
     {
-      icon: '/assets/icons/assign-reviewers-24.png',
-      label: 'Assign Reviewers',
+      icon: "/assets/icons/assign-reviewers-24.png",
+      label: "Assign Reviewers",
       handler: (row: TRow<any>) => {
-        console.log('Assign reviewers for:', row.original);
+        console.log("Assign reviewers for:", row.original);
       },
-      className: 'text-info'
+      className: "text-info",
     },
     {
-      icon: '/assets/icons/create-teams-24.png',
-      label: 'Create Teams',
+      icon: "/assets/icons/create-teams-24.png",
+      label: "Create Teams",
       handler: (row: TRow<any>) => {
-        console.log('Create teams for:', row.original);
+        console.log("Create teams for:", row.original);
       },
-      className: 'text-primary'
+      className: "text-primary",
     },
     {
-      icon: '/assets/icons/view-review-report-24.png',
-      label: 'View Review Report',
+      icon: "/assets/icons/view-review-report-24.png",
+      label: "View Review Report",
       handler: (row: TRow<any>) => {
-        console.log('View review report:', row.original);
+        console.log("View review report:", row.original);
       },
-      className: 'text-secondary'
+      className: "text-secondary",
     },
     {
-      icon: '/assets/icons/view-scores-24.png',
-      label: 'View Scores',
+      icon: "/assets/icons/view-scores-24.png",
+      label: "View Scores",
       handler: (row: TRow<any>) => {
-        console.log('View scores:', row.original);
+        console.log("View scores:", row.original);
       },
-      className: 'text-info'
+      className: "text-info",
     },
     {
-      icon: '/assets/icons/view-submissions-24.png',
-      label: 'View Submissions',
+      icon: "/assets/icons/view-submissions-24.png",
+      label: "View Submissions",
       handler: (row: TRow<any>) => {
-        console.log('View submissions:', row.original);
+        console.log("View submissions:", row.original);
       },
-      className: 'text-secondary'
+      className: "text-secondary",
     },
     {
-      icon: '/assets/icons/copy-temp.png',
-      label: 'Copy Assignment',
+      icon: "/assets/icons/copy-temp.png",
+      label: "Copy Assignment",
       handler: (row: TRow<any>) => {
-        console.log('Copy assignment:', row.original);
+        console.log("Copy assignment:", row.original);
       },
-      className: 'text-success'
+      className: "text-success",
     },
     {
-      icon: '/assets/icons/export-temp.png',
-      label: 'Export',
+      icon: "/assets/icons/export-temp.png",
+      label: "Export",
       handler: (row: TRow<any>) => {
-        console.log('Export assignment:', row.original);
+        console.log("Export assignment:", row.original);
       },
-      className: 'text-primary'
-    }
+      className: "text-primary",
+    },
   ];
 
   const generateFakeAssignments = () => {
@@ -112,45 +112,62 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   };
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
-    const baseColumns = getBaseAssignmentColumns(() => {}, () => {}).filter(col => 
-      !['edit', 'delete', 'actions'].includes(String(col.id))
-    );
-    
+    const baseColumns = getBaseAssignmentColumns(
+      () => {},
+      () => {}
+    ).filter((col) => !["edit", "delete", "actions"].includes(String(col.id)));
+
     const actionsColumn = {
-		id: 'actions',
-		header: 'Actions',
-		cell: ({ row }: { row: TRow<any> }) => (
-		  <div className="d-flex gap-1" style={{ minWidth: 'max-content' }}>
-			{actions.map((action, index) => (
-			  <button
-				key={index}
-				onClick={() => action.handler(row)}
-				className="btn btn-link p-0"
-				title={action.label}
-				style={{ lineHeight: 0 }}
-			  >
-				<img 
-				  src={action.icon} 
-				  alt={action.label} 
-				  width="21" 
-				  height="21"
-				/>
-			  </button>
-			))}
-		  </div>
-		)
-	  };
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: { row: TRow<any> }) => (
+        <div className="d-flex gap-1" style={{ minWidth: "max-content" }}>
+          {actions.map((action, index) => (
+            <button
+              key={index}
+              onClick={() => action.handler(row)}
+              className="btn btn-link p-0"
+              title={action.label}
+              style={{ lineHeight: 0 }}
+            >
+              <img src={action.icon} alt={action.label} width="21" height="21" />
+            </button>
+          ))}
+        </div>
+      ),
+    };
 
     return [...baseColumns, actionsColumn];
   };
 
+  // Helper function to format the dates
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric', 
+      hour: 'numeric', 
+      minute: 'numeric', 
+      hour12: true 
+    };
+    return date.toLocaleString('en-US', options);
+  };
+  
+
   const assignments = generateFakeAssignments();
   const columns = getAssignmentColumns(actionHandlers);
 
-  // Remove the 'Course Name' column from column definitions to hide it
+  // Remove the 'Course Name' column from column definitions to hide it.
   const filteredColumns = columns.filter((col) => col.header !== "Course Name");
-  // Remove 'courseName' field from assignment data to hide it
-  const filteredAssignments = assignments.map(({ courseName, ...rest }) => rest);
+  // Remove 'courseName' field from assignment data to hide it and Format date fields.
+  const filteredAssignments = assignments.map(
+    ({ courseName, created_at, updated_at, ...rest }) => ({
+      ...rest,
+      created_at: formatDate(created_at), // Format 'created_at' date
+      updated_at: formatDate(updated_at), // Format 'updated_at' date
+    })
+  );
 
   return (
     <div className="px-4 py-2 bg-light">
