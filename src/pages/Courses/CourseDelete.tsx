@@ -5,6 +5,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -19,6 +20,8 @@ interface IDeleteCourse {
 }
 
 const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
+
   // State and hook declarations
   const { data: deletedCourse, error: courseError, sendRequest: DeleteCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
@@ -40,12 +43,12 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Course ${courseData.name} deleted successfully!`,
+          message: t('courses.delete.success_message', { courseName: courseData.name }),
         })
       );
       onClose();
     }
-  }, [deletedCourse?.status, dispatch, onClose, courseData.name]);
+  }, [deletedCourse?.status, dispatch, onClose, courseData.name, t]);
 
   // Function to close the modal
   const closeHandler = () => {
@@ -57,19 +60,19 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Delete Course</Modal.Title>
+        <Modal.Title>{t('courses.delete.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete course <b>{courseData.name}?</b>
+          {t('courses.delete.confirm_message')} <b>{courseData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('courses.delete.cancel')}
         </Button>
         <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+          {t('courses.delete.delete')}
         </Button>
       </Modal.Footer>
     </Modal>
