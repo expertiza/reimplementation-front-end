@@ -681,6 +681,26 @@
             "email_add": "E-mail address:"
         }
     },
+    "roles": {
+      "manage_roles": "Manage Roles",
+      "create_title": "Create Role",
+      "update_title": "Update Role",
+      "success_message": "Role {{mode}}d successfully!",
+      "close": "Close",
+      "create": "Create",
+      "update": "Update",
+      "fields": {
+        "name": "Role Name",
+        "parent": "Parent Role"
+      },
+      "delete": {
+        "title": "Delete Role",
+        "confirm_message": "Are you sure you want to delete role",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "success_message": "Role: {{roleName}} deleted successfully!"
+      }
+    },
     "datetime": {
         "distance_in_words": {
             "about_x_hours": {

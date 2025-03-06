@@ -522,7 +522,7 @@
             "full_name": "पूरा नाम",
             "email": "ईमेल",
             "role": "भूमिका",
-            "parent": "माता-पिता",
+            "parent": "पेअरॅन्ट",
             "email_preferences": "ईमेल प्राथमिकताएं",
             "review": "समीक्षा",
             "submission": "प्रस्तुति",
@@ -654,6 +654,26 @@
         },
         "email": {
             "email_add": "ईमेल पता:"
+        }
+    },
+    "roles": {
+         "manage_roles": "भूमिकाओं का प्रबंधन करें",
+        "create_title": "भूमिका बनाएं",
+        "update_title": "भूमिका अपडेट करें",
+        "success_message": "भूमिका सफलतापूर्वक {{mode}} किया गया!",
+        "close": "बंद करें",
+        "create": "बनाएं",
+        "update": "अपडेट करें",
+        "fields": {
+        "name": "भूमिका का नाम",
+        "parent": "पेअरॅन्ट"
+        },
+        "delete": {
+            "title": "भूमिका हटाएं",
+            "confirm_message": "क्या आप वाकई भूमिका हटाना चाहते हैं",
+            "cancel": "रद्द करें",
+            "delete": "हटाएं",
+            "success_message": "भूमिका: {{roleName}} सफलतापूर्वक हटाई गई!"
         }
     },
     "shared": {
