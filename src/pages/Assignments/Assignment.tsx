@@ -11,9 +11,10 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
-
+import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 
 const Assignments = () => {
+  const { t } = useTranslation(); // Initialize useTranslation hook
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
 
@@ -98,14 +99,14 @@ const Assignments = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Assignments</h1>
+              <h1>{t('assignments.manage_assignments')}</h1>
             </Col>
             <hr />
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
               <Button variant="outline-info" onClick={() => navigate("new")} className="d-flex align-items-center">
-                <span className="me-1">Create</span><BsFileText />
+                <span className="me-1">{t('assignments.create')}</span><BsFileText />
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
