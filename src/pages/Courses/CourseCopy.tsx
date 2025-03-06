@@ -5,6 +5,7 @@ import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
+import { useTranslation } from "react-i18next";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -19,6 +20,7 @@ interface ICopyCourse {
 }
 
 const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
+  const { t } = useTranslation(); 
   // State and hook declarations
   const { data: copiedCourse, error: courseError, sendRequest: CopyCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
@@ -40,12 +42,12 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Course ${courseData.name} copied successfully!`,
+          message: t('courses.copy.success_message', { courseName: courseData.name }),
         })
       );
       onClose();
     }
-  }, [copiedCourse?.status, dispatch, onClose, courseData.name]);
+  }, [copiedCourse?.status, dispatch, onClose, courseData.name, t]);
 
   // Function to close the modal
   const closeHandler = () => {
@@ -57,19 +59,19 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
   return (
     <Modal show={show} onHide={closeHandler}>
       <Modal.Header closeButton>
-        <Modal.Title>Copy Course</Modal.Title>
+        <Modal.Title>{t('courses.copy.title')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to copy course <b>{courseData.name}?</b>
+          {t('courses.copy.confirm_message')} <b>{courseData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
+          {t('courses.copy.cancel')}
         </Button>
         <Button variant="outline-primary" onClick={copyHandler}>
-          Copy
+          {t('courses.copy.copy')}
         </Button>
       </Modal.Footer>
     </Modal>
