@@ -162,7 +162,18 @@ const Table: React.FC<TableProps> = ({
   };
 
   const firstRenderRef = useRef(true);
+  const toCamelCase = (str: string) => {
+    return str
+      .split(" ")
+      .map((word, index) =>
+        index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      )
+      .join("");
+  };
 
+  const capitalizeSentence = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
   return (
     <>
       <Container>
@@ -199,7 +210,12 @@ const Table: React.FC<TableProps> = ({
                                 onClick: header.column.getToggleSortingHandler(),
                               }}
                             >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
+                              {/* {flexRender(header.column.columnDef.header, header.getContext())} */}
+                              <th key={header.id} style={{ fontSize: "13px", lineHeight: "30px" }}>
+                                {typeof header.column.columnDef.header === "string"
+                                  ? toCamelCase(header.column.columnDef.header)
+                                  : flexRender(header.column.columnDef.header, header.getContext())}
+                              </th>
                               {{
                                 asc: " 🔼",
                                 desc: " 🔽",
@@ -220,8 +236,12 @@ const Table: React.FC<TableProps> = ({
                   <React.Fragment key={row.id}>
                     <tr>
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <td key={cell.id} style={{ fontSize: "15px", lineHeight: "1.428em" }}>
+                          {/* {flexRender(cell.column.columnDef.cell, cell.getContext())} */}
+                          {typeof cell.getValue() === "string"
+                            ? capitalizeSentence(cell.getValue() as string) // Explicit type assertion
+                            : flexRender(cell.column.columnDef.cell, cell.getContext())}
+
                         </td>
                       ))}
                     </tr>
