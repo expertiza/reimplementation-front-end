@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
-import dummyDataRounds from "./Data/heatMapData.json";
-import dummyData from "./Data/dummyData.json";
-import { calculateAverages, getColorClass } from "./utils";
-import "./grades.scss";
+import dummyDataRounds from "../../pages/ViewTeamGrades/Data/heatMapData.json";
+import dummyData from "../../pages/ViewTeamGrades/Data/dummyData.json";
+import { calculateAverages, getColorClass } from "../../pages/ViewTeamGrades/utils";
+import "../../pages/ViewTeamGrades/grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
 import Filters from "./Filters";
 import ShowReviews from "./ShowReviews"; //importing show reviews component
-import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
+import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json"; // Importing dummy data for author feedback
 
 const ReviewTable: React.FC = () => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
