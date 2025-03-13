@@ -13,21 +13,21 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 1px solid orangered;
+  border: 1px solid rgb(176, 4, 4);
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  color: orangered;
+  color: rgb(176, 4, 4);;
   margin-left: -20px; /* Add margin to separate the circle from the text */
 }
 
-.tick{
+.tick {
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  color: orangered;
+  color: rgb(176, 4, 4);;
   margin-left: -15px; /* Add margin to separate the circle from the text */
 }
 
@@ -190,44 +190,51 @@
   font-weight: bold !important;
 }
 
-/* Styles for the round selector */
+
 .round-selector {
   display: flex;
+  gap: 8px;
+  /* Adjust spacing between buttons */
 }
 
 .round-button {
-  padding: 7px 7px;
-  margin: 5px;
-  border: 2px solid #4a90e2;
-  border-radius: 10px;
-  background-color: #4a90e2;
-  color: white;
-  font-size: 10px;
+  padding: 10px 20px;
+  margin: 8px;
+  /* Adjusts margin to remove left margin */
+  border: 2px solid #b00404;
+  /* Red border */
+  border-radius: 2px;
+  /* Slightly less rounded corners */
+  background-color: transparent;
+  /* Transparent background for unselected button */
+  color: #b00404;
+  /* Red text for unselected button */
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 
   &:hover {
-    background-color: #357bd8;
-    border-color: #357bd8;
+    background-color: rgba(176, 4, 4, 0.1);
+    /* Light red background on hover */
   }
 
-  &.current {
-    background-color: #2ecc71;
-    border-color: #2ecc71;
-  }
-
-  .round-selector > div {
-    display: flex;
-    align-items: center;
-    margin: auto;
-  }
 }
+
+.round-button.current {
+  background-color: rgb(176, 4, 4);
+  /* Solid red background for selected button */
+  color: white;
+  /* White text for selected button */
+}
+
 
 .container {
   display: flex;
-  justify-content: space-between; /* Adjust as needed */
-  width: 80%; /* Ensure the container takes up the full width */
+  justify-content: space-between;
+  /* Adjust as needed */
+  width: 80%;
+  /* Ensure the container takes up the full width */
 }
 
 
@@ -265,31 +272,48 @@
 }
 
 .comment {
-  flex-grow: 1; /* Ensures comment fills the rest of the container */
-  padding-top: 3px; 
+  flex-grow: 1;
+  /* Ensures comment fills the rest of the container */
+  padding-top: 3px;
 }
 
 /* Style for even-numbered review blocks */
 .review-block:nth-child(even) {
-  background-color: #d9edf7; 
-  
+  background-color: #d9edf7;
+
 }
 
 /* Style for odd-numbered review blocks */
 .review-block:nth-child(odd) {
-  background-color: #fcf8e3; 
+  background-color: #fcf8e3;
 
 }
 
 .score-container {
   display: flex;
-  align-items: center; 
+  align-items: center;
   margin-top: 5px;
-  padding-top: 10px; 
+  padding-top: 10px;
 
 }
 
 
 .review-container {
-  margin-bottom: 200px; 
+  margin-bottom: 200px;
+}
+
+
+.toggle-container {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+// Styling the checkbox if needed
+.toggle-container input[type="checkbox"] {
+  margin: 0;
+  padding: 0;
+  // Reset any unwanted inherited styles
 }
