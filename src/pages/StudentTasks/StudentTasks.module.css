@@ -110,37 +110,6 @@ input[type="checkbox"][disabled] {
   color: #d9534f; /* Red color for the number badge */
 }
 
-/* New styles for the links based on the uploaded image */
-table td {
-  padding: 8px; /* Padding specified in your screenshot */
-  max-width: 100px; /* Adjust the width as needed for your design */
-  white-space: normal;
-  padding: 8px;
-  line-height: 1.428571429;
-  vertical-align: top;
-  border-top: 1px solid #ddd;
-}
-
-/* Table data cell link styling */
-table td a {
-  color: #986633;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  padding: 0px 1px 2px;
-  display: block;
-  margin: 10px 0;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 4px;
-  transition: box-shadow 0.2s ease-in-out, background-color 0.3s;
-}
-
-/* Table data cell link hover and focus styling */
-table td a:hover, table td a:focus {
-  color: #337ab7;
-  text-decoration: underline;
-}
-
 /* Page layout styling */
 .pageLayout {
   display: flex;
