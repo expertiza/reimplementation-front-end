@@ -210,12 +210,7 @@ const Table: React.FC<TableProps> = ({
                                 onClick: header.column.getToggleSortingHandler(),
                               }}
                             >
-                              {/* {flexRender(header.column.columnDef.header, header.getContext())} */}
-                              <th key={header.id} style={{ fontSize: "13px", lineHeight: "30px" }}>
-                                {typeof header.column.columnDef.header === "string"
-                                  ? toCamelCase(header.column.columnDef.header)
-                                  : flexRender(header.column.columnDef.header, header.getContext())}
-                              </th>
+                              {flexRender(header.column.columnDef.header, header.getContext())}
                               {{
                                 asc: " 🔼",
                                 desc: " 🔽",
@@ -237,11 +232,7 @@ const Table: React.FC<TableProps> = ({
                     <tr>
                       {row.getVisibleCells().map((cell) => (
                         <td key={cell.id} style={{ fontSize: "15px", lineHeight: "1.428em" }}>
-                          {/* {flexRender(cell.column.columnDef.cell, cell.getContext())} */}
-                          {typeof cell.getValue() === "string"
-                            ? capitalizeSentence(cell.getValue() as string) // Explicit type assertion
-                            : flexRender(cell.column.columnDef.cell, cell.getContext())}
-
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
                     </tr>
