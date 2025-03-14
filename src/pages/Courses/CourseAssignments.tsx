@@ -111,6 +111,10 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     }));
   };
 
+  const capitalizeSentence = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   const getAssignmentColumns = (actions: ActionHandler[]) => {
     const baseColumns = getBaseAssignmentColumns(
       () => {},
@@ -162,8 +166,9 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   const filteredColumns = columns.filter((col) => col.header !== "Course Name");
   // Remove 'courseName' field from assignment data to hide it and Format date fields.
   const filteredAssignments = assignments.map(
-    ({ courseName, created_at, updated_at, ...rest }) => ({
+    ({ name, courseName, created_at, updated_at, ...rest }) => ({
       ...rest,
+      name: capitalizeSentence(name),
       created_at: formatDate(created_at), // Format 'created_at' date
       updated_at: formatDate(updated_at), // Format 'updated_at' date
     })
