@@ -11,7 +11,26 @@ import Filters from "./Filters";
 import ShowReviews from "./ShowReviews"; //importing show reviews component
 import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json"; // Importing dummy data for author feedback
 
-const ReviewTable: React.FC = () => {
+interface Review {
+  name: string;
+  score: number;
+  comment?: string;
+}
+
+interface RoundData {
+  questionNumber: string;
+  questionText: string;
+  reviews: Review[];
+  RowAvg: number;
+  maxScore: number;
+}
+
+interface ReviewTableProps {
+  currentUser?: { id: string };  
+  project?: { student: { id: string } }; 
+}
+
+const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
   const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");
   const [showToggleQuestion, setShowToggleQuestion] = useState(false);
@@ -54,7 +73,7 @@ const ReviewTable: React.FC = () => {
     setShowToggleQuestion(!showToggleQuestion);
   };
 
-  const renderTable = (roundData: any, roundIndex: number) => {
+  const renderTable = (roundData: RoundData[], roundIndex: number) => {
     const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
       roundData,
       sortOrderRow
@@ -76,10 +95,12 @@ const ReviewTable: React.FC = () => {
                   Question
                 </th>
               )}
-              {Array.from({ length: roundData[0].reviews.length }, (_, i) => (
-                <th key={i} className="py-2 px-4 text-center" style={{ width: "70px" }}>{`Review ${
-                  i + 1
-                }`}</th>
+              {roundData[0]?.reviews?.map((review: Review, index: number) => (
+                <th key={index} className="py-2 px-4 text-center" style={{ width: "70px" }}>
+                  {currentUser?.id === project?.student?.id 
+                    ? `Review ${index + 1}` 
+                    : review.name}
+                </th>
               ))}
               <th className="py-2 px-4" style={{ width: "70px" }} onClick={toggleSortOrderRow}>
                 Average
