@@ -676,7 +676,8 @@
             "save": "Save",
             "action_pref": "Action Preference",
             "homepage_cant": "homepage cannot show actions",
-            "homepage_can": "homepage can show actions"
+            "homepage_can": "homepage can show actions",
+            "preferred_language": "Preferred Language"
         },
         "handle": {
             "handle": "Handle",

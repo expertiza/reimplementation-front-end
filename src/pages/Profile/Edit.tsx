@@ -125,7 +125,7 @@ const Edit: React.FC = () => {
 
             {/* Handle input field */}
             <div className="form-field" style={{ marginTop: 28 }}>
-              <label htmlFor="handle">{t('profile.handle.default_handle')}:</label>
+              <label htmlFor="handle">{t('profile.handle.default_handle')}</label>
               <Field type="text" name="handle" />
               <ErrorMessage name="handle" component="div" className="error-message" />
             </div>
@@ -154,7 +154,7 @@ const Edit: React.FC = () => {
 
             {/* Preferred Time Zone field */}
             <div className="form-field">
-              <label htmlFor="timeZone">Preferred Time Zone:</label>
+              <label htmlFor="timeZone">{t('profile.edit.preferred_time_zone')}</label>
               <Field as="select" name="timeZone">
                 <option value="GMT-05:00">GMT-05:00 Eastern Time (US)</option>
                 <option value="GMT+01:00">GMT+01:00 Berlin</option>
