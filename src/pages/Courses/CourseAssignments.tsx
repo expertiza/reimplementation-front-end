@@ -2,7 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import React from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
-import { capitalizeSentence, formatDate } from "utils/dataFormatter";
+import { capitalizeFirstWord, formatDate } from "utils/dataFormatter";
 
 interface ActionHandler {
   icon: string;
@@ -144,16 +144,16 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   const assignments = generateFakeAssignments();
   const columns = getAssignmentColumns(actionHandlers);
 
-  // Format all heading data fields.
+  // Format all heading data fields. 
   const filteredColumns = columns.map(({ header, ...rest }) => ({
     ...rest,
-    header: capitalizeSentence(header as string),
+    header: capitalizeFirstWord(header as string),
   }));
 
   // Format some assignment data fields.
   const filteredAssignments = assignments.map(({ name, created_at, updated_at, ...rest }) => ({
     ...rest,
-    name: capitalizeSentence(name),
+    name: capitalizeFirstWord(name),
     created_at: formatDate(created_at), // Format 'created_at' date
     updated_at: formatDate(updated_at), // Format 'updated_at' date
   }));

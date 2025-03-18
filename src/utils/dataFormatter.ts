@@ -4,7 +4,7 @@
  * @param str - The input string to capitalize.
  * @returns A string with the first letter capitalized and the rest in lowercase.
  */
-export const capitalizeSentence = (str: string) => {
+export const capitalizeFirstWord = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
