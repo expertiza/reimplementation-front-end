@@ -8,7 +8,7 @@
             "topic": "Ruby",
             "current_stage": "In progress",
             "review_grade": {
-                "comment": "40/40"
+                "comment": "Score: 30/100 \nComment: 4 reviews x 10 pts/review x 75% = 30 points \nA few explanationtion were given for the scores. The explanations (-25%)"
             },
             "badges": false,
             "stage_deadline": "2024-02-26 12:00:00 -0500",
@@ -45,11 +45,14 @@
             "course": "CSC 517",
             "topic": "Reimplementation Backend",
             "current_stage": "In progress",
-            "review_grade": "120/120",
+            "review_grade": {
+                "comment": "Score: 40/100 \nComment: 4 reviews x 10 pts/review x 100% = 40 points. The comments were detailed and provide good explanations of the given score. \nGood job!"
+            },
             "badges": false,
             "stage_deadline": "2024-02-26 12:00:00 -0500",
             "publishing_rights": true,
             "participant_id": 1
+            
         },
         {
             "id": 5,
