@@ -10,9 +10,6 @@ export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("name", {
     header: "Name",
   }),
-  columnHelper.accessor("courseName", {
-    header: "Course Name",
-  }),
   columnHelper.accessor("created_at", {
     header: "Creation Date",
   }),
