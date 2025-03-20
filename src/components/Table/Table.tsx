@@ -45,7 +45,7 @@ const Table: React.FC<TableProps> = ({
   tableSize = { span: 12, offset: 0 },
   renderSubComponent,
   getRowCanExpand,
-  disableGlobalFilter = false, // // Disable the Global Search
+  disableGlobalFilter = false, // Disable the Global Search
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -200,6 +200,13 @@ const Table: React.FC<TableProps> = ({
                               }}
                             >
                               {flexRender(header.column.columnDef.header, header.getContext())}
+                              {header.column.columnDef.comment ? (
+                                <img
+                                  src="assets/icons/info.png"
+                                  alt="Review Grade"
+                                  title={header.column.columnDef.comment}
+                                />
+                              ) : null}
                               {{
                                 asc: " 🔼",
                                 desc: " 🔽",

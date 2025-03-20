@@ -115,7 +115,11 @@ const StudentTasks: React.FC = () => {
         ),
     },
     ...(showBadges ? [{ accessorKey: "badges", header: "Badges" }] : []),
-    { accessorKey: "stageDeadline", header: "Stage Deadline" },
+    {
+      accessorKey: "stageDeadline",
+      header: "Stage Deadline",
+      comment: "'You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+    },
     {
       accessorKey: "publishingRights",
       header: "Publishing Rights",
@@ -126,6 +130,7 @@ const StudentTasks: React.FC = () => {
           onChange={() => togglePublishingRights(Number(info.row.original.id))}
         />
       ),
+      comment: "Grant publishing rights",
     },
   ].map(({ header, ...rest }) => ({
     ...rest,
