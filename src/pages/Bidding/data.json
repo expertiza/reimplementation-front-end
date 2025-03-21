@@ -3,52 +3,57 @@
     {
       "topicId": 5135,
       "topicName": "Topic OODD",
-      "firstPriorityBids": 0,
-      "secondPriorityBids": 3,
-      "thirdPriorityBids": 1,
+      "bidding": {
+        "#1": [],
+        "#2": ["Team_1", "Team_2", "Team_3"],
+        "#3": ["Team_4"]
+      },
       "totalBids": 4,
-      "percentageFirstBids": 0,
-      "biddingTeams": ["Team_1", "Team_2", "Team_3", "Team_4"]
+      "percentageFirstBids": 0
     },
     {
       "topicId": 5136,
       "topicName": "Topic2",
-      "firstPriorityBids": 0,
-      "secondPriorityBids": 0,
-      "thirdPriorityBids": 1,
+      "bidding": {
+        "#1": [],
+        "#2": [],
+        "#3": ["Team_2", "Team_3", "Team_4"]
+      },
       "totalBids": 3,
-      "percentageFirstBids": 0,
-      "biddingTeams": ["Team_2", "Team_3", "Team_4"]
+      "percentageFirstBids": 0
     },
     {
       "topicId": 5137,
       "topicName": "Topic3",
-      "firstPriorityBids": 1,
-      "secondPriorityBids": 1,
-      "thirdPriorityBids": 0,
+      "bidding": {
+        "#1": ["Team_1"],
+        "#2": ["Team_2"],
+        "#3": ["Team_3"]
+      },
       "totalBids": 3,
-      "percentageFirstBids": 33.33,
-      "biddingTeams": ["Team_1", "Team_2", "Team_3"]
+      "percentageFirstBids": 33.33
     },
     {
       "topicId": 5138,
       "topicName": "Topic new",
-      "firstPriorityBids": 0,
-      "secondPriorityBids": 0,
-      "thirdPriorityBids": 1,
+      "bidding": {
+        "#1": [],
+        "#2": [],
+        "#3": ["Team_4"]
+      },
       "totalBids": 1,
-      "percentageFirstBids": 0,
-      "biddingTeams": ["Team_4"]
+      "percentageFirstBids": 0
     },
     {
       "topicId": 5139,
       "topicName": "Topic decode",
-      "firstPriorityBids": 3,
-      "secondPriorityBids": 0,
-      "thirdPriorityBids": 0,
+      "bidding": {
+        "#1": ["Team_4", "Team_3", "Team_2"],
+        "#2": [],
+        "#3": []
+      },
       "totalBids": 3,
-      "percentageFirstBids": 100,
-      "biddingTeams": ["Team_4", "Team_3", "Team_2"]
+      "percentageFirstBids": 100
     }
   ]
 } 
