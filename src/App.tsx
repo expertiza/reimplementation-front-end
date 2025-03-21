@@ -293,7 +293,7 @@ function App() {
         { path: "*", element: <NotFound /> },
         { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
         {
-          path: "bidding",
+          path: "bidding/:assignmentId",
           element: <BiddingPage />,
         },
       ],
