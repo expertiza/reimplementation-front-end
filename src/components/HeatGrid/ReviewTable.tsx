@@ -81,9 +81,19 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
 
     return (
       <div key={roundIndex} className="table-container mb-6">
-        <h4 className="text-xl font-semibold">
-          Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
-        </h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-xl font-semibold">
+            Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
+          </h4>
+          <a
+            href="#"
+            onClick={toggleShowQuestion}
+            className="text-blue-500 underline cursor-pointer"
+          >
+            {showToggleQuestion ? "Hide Question List" : "Show Question List"}
+          </a>
+        </div>
+
         <table className="tbl_heat">
           <thead>
             <tr className="bg-gray-200">
@@ -185,17 +195,6 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
       <br />
 
       <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
-
-      <div className="toggle-container">
-        <input
-          type="checkbox"
-          id="toggleQuestion"
-          name="toggleQuestion"
-          checked={showToggleQuestion}
-          onChange={toggleShowQuestion}
-        />
-        <label htmlFor="toggleQuestion"> &nbsp;Toggle Question List</label>
-      </div>
 
       {/* Conditionally render tables based on currentRound */}
       {currentRound === -1
