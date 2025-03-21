@@ -5,6 +5,7 @@ import { faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faGavel } from '@fortawesome/free-solid-svg-icons';
 import { Button, FormSelect, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
@@ -201,6 +202,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
               <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
                 <FontAwesomeIcon icon={faClock} className="icon" />
                 <span>View Delayed Jobs</span>
+              </div>
+              <div className="custom-tab-button" onClick={() => navigate(`/bidding/${assignmentData.id}`)}>
+                <FontAwesomeIcon icon={faGavel} className="icon" />
+                <span>View Bid</span>
               </div>
             </div>
 
