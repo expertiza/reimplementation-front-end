@@ -1,0 +1,120 @@
+.bidding-page {
+  padding: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+  }
+
+  .bidding-card {
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+      padding: 15px;
+
+      h5 {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .topic-id {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 4px;
+      }
+    }
+
+    .card-body {
+      padding: 15px;
+    }
+
+    .card-footer {
+      background-color: #f8f9fa;
+      padding: 15px;
+    }
+  }
+
+  .bid-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .bid-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .stat-label {
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: #212529;
+    }
+  }
+
+  .percentage-badge {
+    display: flex;
+    justify-content: center;
+    
+    .badge {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+
+  .teams-section {
+    .teams-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #495057;
+    }
+
+    .teams-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .team-badge {
+        padding: 6px 10px;
+        font-weight: 500;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  .percentage-zero {
+    background-color: #ffebee;
+    color: #d32f2f;
+  }
+
+  .percentage-partial {
+    background-color: #fff3e0;
+    color: #f57c00;
+  }
+
+  .percentage-full {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+} 
