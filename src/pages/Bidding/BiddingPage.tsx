@@ -58,16 +58,18 @@ const BiddingPage: React.FC = () => {
             topic.bidding['#3'].length,
           ],
           backgroundColor: [
-            'rgba(75, 192, 192, 0.6)',
-            'rgba(54, 162, 235, 0.6)',
-            'rgba(255, 206, 86, 0.6)',
+            'rgba(46, 125, 50, 0.7)',  // Green for first priority
+            'rgba(33, 150, 243, 0.7)', // Blue for second priority
+            'rgba(255, 152, 0, 0.7)',  // Orange for third priority
           ],
           borderColor: [
-            'rgba(75, 192, 192, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
+            'rgba(46, 125, 50, 1)',
+            'rgba(33, 150, 243, 1)',
+            'rgba(255, 152, 0, 1)',
           ],
-          borderWidth: 1,
+          borderWidth: 2,
+          borderRadius: 8,
+          barThickness: 40,
         },
       ],
     };
@@ -75,13 +77,57 @@ const BiddingPage: React.FC = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: 'easeInOutQuart' as const,
+    },
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          padding: 20,
+          font: {
+            size: 14,
+            weight: 'bold' as const,
+          },
+          usePointStyle: true,
+          pointStyle: 'circle',
+        },
       },
       title: {
         display: true,
         text: 'Bid Distribution by Priority',
+        font: {
+          size: 18,
+          weight: 'bold' as const,
+        },
+        padding: {
+          top: 10,
+          bottom: 20,
+        },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        titleColor: '#333',
+        bodyColor: '#666',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: false,
+        callbacks: {
+          label: function(context: any) {
+            const priority = context.label;
+            const value = context.raw;
+            const priorityNumber = priority.split(' ')[0];
+            const priorityKey = `#${priorityNumber}` as '#1' | '#2' | '#3';
+            const teams = selectedTopic?.bidding[priorityKey] || [];
+            return [
+              `Bids: ${value}`,
+              `Teams: ${teams.join(', ')}`,
+            ];
+          },
+        },
       },
     },
     scales: {
@@ -89,6 +135,26 @@ const BiddingPage: React.FC = () => {
         beginAtZero: true,
         ticks: {
           stepSize: 1,
+          font: {
+            size: 12,
+            weight: 'bold' as const,
+          },
+          padding: 10,
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 12,
+            weight: 'bold' as const,
+          },
+          padding: 10,
+        },
+        grid: {
+          display: false,
         },
       },
     },
@@ -162,14 +228,17 @@ const BiddingPage: React.FC = () => {
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>{selectedTopic?.topicName}</Modal.Title>
+          <div className="d-flex align-items-center">
+            <Modal.Title className="mb-0">{selectedTopic?.topicName}</Modal.Title>
+            <Badge bg="secondary" className="ms-2">
+              ID: {selectedTopic?.topicId}
+            </Badge>
+          </div>
         </Modal.Header>
         <Modal.Body>
           {selectedTopic && (
             <div className="modal-content">
               <div className="topic-details">
-                <h5>Topic ID: {selectedTopic.topicId}</h5>
-                
                 <div className="chart-container">
                   <Bar options={chartOptions} data={getChartData(selectedTopic)} />
                 </div>
