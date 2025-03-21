@@ -8,59 +8,7 @@ const BiddingPage: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<BiddingTopic | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Sample data - replace with actual data from your API
-  const biddingData: BiddingTopic[] = [
-    {
-      topicId: 5135,
-      topicName: 'Topic OODD',
-      firstPriorityBids: 0,
-      secondPriorityBids: 3,
-      thirdPriorityBids: 1,
-      totalBids: 4,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_1', 'Team_2', 'Team_3', 'Team_4'],
-    },
-    {
-      topicId: 5136,
-      topicName: 'Topic2',
-      firstPriorityBids: 0,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 1,
-      totalBids: 3,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_2', 'Team_3', 'Team_4'],
-    },
-    {
-      topicId: 5137,
-      topicName: 'Topic3',
-      firstPriorityBids: 1,
-      secondPriorityBids: 1,
-      thirdPriorityBids: 0,
-      totalBids: 3,
-      percentageFirstBids: 33.33,
-      biddingTeams: ['Team_1', 'Team_2', 'Team_3'],
-    },
-    {
-      topicId: 5138,
-      topicName: 'Topic new',
-      firstPriorityBids: 0,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 1,
-      totalBids: 1,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_4'],
-    },
-    {
-      topicId: 5139,
-      topicName: 'Topic decode',
-      firstPriorityBids: 3,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 0,
-      totalBids: 3,
-      percentageFirstBids: 100,
-      biddingTeams: ['Team_4', 'Team_3', 'Team_2'],
-    },
-  ];
+  const topics: BiddingTopic[] = biddingData.topics;
 
   const getBidPercentageVariant = (percentage: number): string => {
     if (percentage === 0) return 'danger';
@@ -98,15 +46,15 @@ const BiddingPage: React.FC = () => {
                 <div className="bid-stats">
                   <div className="bid-stat">
                     <span className="stat-label">#1 Bids:</span>
-                    <span className="stat-value">{topic.firstPriorityBids}</span>
+                    <span className="stat-value">{topic.bidding['#1'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">#2 Bids:</span>
-                    <span className="stat-value">{topic.secondPriorityBids}</span>
+                    <span className="stat-value">{topic.bidding['#2'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">#3 Bids:</span>
-                    <span className="stat-value">{topic.thirdPriorityBids}</span>
+                    <span className="stat-value">{topic.bidding['#3'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">Total Bids:</span>
@@ -124,10 +72,12 @@ const BiddingPage: React.FC = () => {
                 <div className="teams-section">
                   <div className="teams-label">Bidding Teams:</div>
                   <div className="teams-list">
-                    {topic.biddingTeams.map((team, index) => (
-                      <Badge key={index} bg="secondary" className="team-badge">
-                        {team}
-                      </Badge>
+                    {Object.entries(topic.bidding).map(([priority, teams]) => (
+                      teams.map((team, index) => (
+                        <Badge key={`${priority}-${index}`} bg="secondary" className="team-badge">
+                          {team} ({priority})
+                        </Badge>
+                      ))
                     ))}
                   </div>
                 </div>
@@ -154,15 +104,15 @@ const BiddingPage: React.FC = () => {
                 <div className="bid-stats">
                   <div className="bid-stat">
                     <span className="stat-label">First Priority Bids:</span>
-                    <span className="stat-value">{selectedTopic.firstPriorityBids}</span>
+                    <span className="stat-value">{selectedTopic.bidding['#1'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">Second Priority Bids:</span>
-                    <span className="stat-value">{selectedTopic.secondPriorityBids}</span>
+                    <span className="stat-value">{selectedTopic.bidding['#2'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">Third Priority Bids:</span>
-                    <span className="stat-value">{selectedTopic.thirdPriorityBids}</span>
+                    <span className="stat-value">{selectedTopic.bidding['#3'].length}</span>
                   </div>
                   <div className="bid-stat">
                     <span className="stat-label">Total Bids:</span>
@@ -175,14 +125,19 @@ const BiddingPage: React.FC = () => {
                   </Badge>
                 </div>
                 <div className="teams-section mt-4">
-                  <h6>Bidding Teams:</h6>
-                  <div className="teams-list">
-                    {selectedTopic.biddingTeams.map((team, index) => (
-                      <Badge key={index} bg="secondary" className="team-badge">
-                        {team}
-                      </Badge>
-                    ))}
-                  </div>
+                  <h6>Bidding Teams by Priority:</h6>
+                  {Object.entries(selectedTopic.bidding).map(([priority, teams]) => (
+                    <div key={priority} className="priority-group">
+                      <h6>{priority} Priority:</h6>
+                      <div className="teams-list">
+                        {teams.map((team, index) => (
+                          <Badge key={index} bg="secondary" className="team-badge">
+                            {team}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -1,12 +1,13 @@
 export interface BiddingTopic {
   topicId: number;
   topicName: string;
-  firstPriorityBids: number;
-  secondPriorityBids: number;
-  thirdPriorityBids: number;
+  bidding: {
+    '#1': string[];
+    '#2': string[];
+    '#3': string[];
+  };
   totalBids: number;
   percentageFirstBids: number;
-  biddingTeams: string[];
 }
 
 export interface BiddingSummary {
