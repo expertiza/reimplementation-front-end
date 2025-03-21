@@ -1,62 +1,11 @@
 import React from 'react';
 import { Card, Row, Col, Badge } from 'react-bootstrap';
 import { BiddingTopic } from '../../utils/types';
+import biddingData from './data.json';
 import './BiddingPage.scss';
 
 const BiddingPage: React.FC = () => {
-  // Sample data - replace with actual data from your API
-  const biddingData: BiddingTopic[] = [
-    {
-      topicId: 5135,
-      topicName: 'Topic OODD',
-      firstPriorityBids: 0,
-      secondPriorityBids: 3,
-      thirdPriorityBids: 1,
-      totalBids: 4,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_1', 'Team_2', 'Team_3', 'Team_4'],
-    },
-    {
-      topicId: 5136,
-      topicName: 'Topic2',
-      firstPriorityBids: 0,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 1,
-      totalBids: 3,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_2', 'Team_3', 'Team_4'],
-    },
-    {
-      topicId: 5137,
-      topicName: 'Topic3',
-      firstPriorityBids: 1,
-      secondPriorityBids: 1,
-      thirdPriorityBids: 0,
-      totalBids: 3,
-      percentageFirstBids: 33.33,
-      biddingTeams: ['Team_1', 'Team_2', 'Team_3'],
-    },
-    {
-      topicId: 5138,
-      topicName: 'Topic new',
-      firstPriorityBids: 0,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 1,
-      totalBids: 1,
-      percentageFirstBids: 0,
-      biddingTeams: ['Team_4'],
-    },
-    {
-      topicId: 5139,
-      topicName: 'Topic decode',
-      firstPriorityBids: 3,
-      secondPriorityBids: 0,
-      thirdPriorityBids: 0,
-      totalBids: 3,
-      percentageFirstBids: 100,
-      biddingTeams: ['Team_4', 'Team_3', 'Team_2'],
-    },
-  ];
+  const topics: BiddingTopic[] = biddingData.topics;
 
   const getBidPercentageVariant = (percentage: number): string => {
     if (percentage === 0) return 'danger';
@@ -69,7 +18,7 @@ const BiddingPage: React.FC = () => {
       <h2>Assignment Bidding Summary by Priority</h2>
       
       <Row xs={1} md={2} lg={3} className="g-4">
-        {biddingData.map((topic) => (
+        {topics.map((topic) => (
           <Col key={topic.topicId}>
             <Card className="bidding-card">
               <Card.Header>
