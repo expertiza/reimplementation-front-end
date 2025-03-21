@@ -2,7 +2,27 @@ import React, { useState } from 'react';
 import { Card, Row, Col, Badge, Modal } from 'react-bootstrap';
 import { BiddingTopic } from '../../utils/types';
 import biddingData from './data.json';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import './BiddingPage.scss';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const BiddingPage: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<BiddingTopic | null>(null);
@@ -24,6 +44,54 @@ const BiddingPage: React.FC = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTopic(null);
+  };
+
+  const getChartData = (topic: BiddingTopic) => {
+    return {
+      labels: ['First Priority', 'Second Priority', 'Third Priority'],
+      datasets: [
+        {
+          label: 'Number of Bids',
+          data: [
+            topic.bidding['#1'].length,
+            topic.bidding['#2'].length,
+            topic.bidding['#3'].length,
+          ],
+          backgroundColor: [
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+          ],
+          borderColor: [
+            'rgba(75, 192, 192, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+          ],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Bid Distribution by Priority',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
   };
 
   return (
@@ -101,6 +169,11 @@ const BiddingPage: React.FC = () => {
             <div className="modal-content">
               <div className="topic-details">
                 <h5>Topic ID: {selectedTopic.topicId}</h5>
+                
+                <div className="chart-container">
+                  <Bar options={chartOptions} data={getChartData(selectedTopic)} />
+                </div>
+
                 <div className="bid-stats">
                   <div className="bid-stat">
                     <span className="stat-label">First Priority Bids:</span>
