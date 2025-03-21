@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Badge, Modal } from 'react-bootstrap';
+import { Card, Row, Col, Badge, Modal, Table } from 'react-bootstrap';
 import { BiddingTopic } from '../../utils/types';
 import biddingData from './data.json';
 import {
@@ -195,12 +195,6 @@ const BiddingPage: React.FC = () => {
                     <span className="stat-value">{topic.totalBids}</span>
                   </div>
                 </div>
-                
-                <div className="percentage-badge mt-3">
-                  <Badge bg={getBidPercentageVariant(topic.percentageFirstBids)}>
-                    {topic.percentageFirstBids.toFixed(1)}% First Priority
-                  </Badge>
-                </div>
               </Card.Body>
               <Card.Footer>
                 <div className="teams-section">
@@ -261,25 +255,46 @@ const BiddingPage: React.FC = () => {
                     <span className="stat-value">{selectedTopic.totalBids}</span>
                   </div>
                 </div>
-                <div className="percentage-badge mt-3">
-                  <Badge bg={getBidPercentageVariant(selectedTopic.percentageFirstBids)}>
-                    {selectedTopic.percentageFirstBids.toFixed(1)}% First Priority
-                  </Badge>
-                </div>
-                <div className="teams-section mt-4">
-                  <h6>Bidding Teams by Priority:</h6>
-                  {Object.entries(selectedTopic.bidding).map(([priority, teams]) => (
-                    <div key={priority} className="priority-group">
-                      <h6>{priority} Priority:</h6>
-                      <div className="teams-list">
-                        {teams.map((team, index) => (
-                          <Badge key={index} bg="secondary" className="team-badge">
-                            {team}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+
+                <div className="bidding-table mt-4">
+                  <h6>Bidding Details</h6>
+                  <Table striped bordered hover responsive>
+                    <thead>
+                      <tr>
+                        <th>Priority</th>
+                        <th>Number of Bids</th>
+                        <th>Teams</th>
+                        <th>Percentage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(selectedTopic.bidding).map(([priority, teams]) => (
+                        <tr key={priority}>
+                          <td>
+                            <Badge bg={
+                              priority === '#1' ? 'success' :
+                              priority === '#2' ? 'primary' : 'warning'
+                            }>
+                              {priority}
+                            </Badge>
+                          </td>
+                          <td>{teams.length}</td>
+                          <td>
+                            <div className="d-flex flex-wrap gap-1">
+                              {teams.map((team, index) => (
+                                <Badge key={index} bg="secondary">
+                                  {team}
+                                </Badge>
+                              ))}
+                            </div>
+                          </td>
+                          <td>
+                            {((teams.length / selectedTopic.totalBids) * 100).toFixed(1)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </div>
               </div>
             </div>
