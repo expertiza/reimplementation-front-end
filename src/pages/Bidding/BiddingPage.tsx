@@ -1,9 +1,12 @@
-import React from 'react';
-import { Card, Row, Col, Badge } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Card, Row, Col, Badge, Modal } from 'react-bootstrap';
 import { BiddingTopic } from '../../utils/types';
 import './BiddingPage.scss';
 
 const BiddingPage: React.FC = () => {
+  const [selectedTopic, setSelectedTopic] = useState<BiddingTopic | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
   // Sample data - replace with actual data from your API
   const biddingData: BiddingTopic[] = [
     {
@@ -64,6 +67,16 @@ const BiddingPage: React.FC = () => {
     return 'warning';
   };
 
+  const handleCardClick = (topic: BiddingTopic) => {
+    setSelectedTopic(topic);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedTopic(null);
+  };
+
   return (
     <div className="bidding-page">
       <h2>Assignment Bidding Summary by Priority</h2>
@@ -71,7 +84,11 @@ const BiddingPage: React.FC = () => {
       <Row xs={1} md={2} lg={3} className="g-4">
         {biddingData.map((topic) => (
           <Col key={topic.topicId}>
-            <Card className="bidding-card">
+            <Card 
+              className="bidding-card" 
+              onClick={() => handleCardClick(topic)}
+              style={{ cursor: 'pointer' }}
+            >
               <Card.Header>
                 <h5 className="mb-0">{topic.topicName}</h5>
                 <div className="topic-id">ID: {topic.topicId}</div>
@@ -118,6 +135,59 @@ const BiddingPage: React.FC = () => {
           </Col>
         ))}
       </Row>
+
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>{selectedTopic?.topicName}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedTopic && (
+            <div className="modal-content">
+              <div className="topic-details">
+                <h5>Topic ID: {selectedTopic.topicId}</h5>
+                <div className="bid-stats">
+                  <div className="bid-stat">
+                    <span className="stat-label">First Priority Bids:</span>
+                    <span className="stat-value">{selectedTopic.firstPriorityBids}</span>
+                  </div>
+                  <div className="bid-stat">
+                    <span className="stat-label">Second Priority Bids:</span>
+                    <span className="stat-value">{selectedTopic.secondPriorityBids}</span>
+                  </div>
+                  <div className="bid-stat">
+                    <span className="stat-label">Third Priority Bids:</span>
+                    <span className="stat-value">{selectedTopic.thirdPriorityBids}</span>
+                  </div>
+                  <div className="bid-stat">
+                    <span className="stat-label">Total Bids:</span>
+                    <span className="stat-value">{selectedTopic.totalBids}</span>
+                  </div>
+                </div>
+                <div className="percentage-badge mt-3">
+                  <Badge bg={getBidPercentageVariant(selectedTopic.percentageFirstBids)}>
+                    {selectedTopic.percentageFirstBids.toFixed(1)}% First Priority
+                  </Badge>
+                </div>
+                <div className="teams-section mt-4">
+                  <h6>Bidding Teams:</h6>
+                  <div className="teams-list">
+                    {selectedTopic.biddingTeams.map((team, index) => (
+                      <Badge key={index} bg="secondary" className="team-badge">
+                        {team}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
