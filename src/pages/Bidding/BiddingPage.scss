@@ -9,13 +9,13 @@
 
   .bidding-card {
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     border: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
     &:hover {
       transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     .card-header {
@@ -116,5 +116,60 @@
   .percentage-full {
     background-color: #e8f5e9;
     color: #2e7d32;
+  }
+}
+
+.modal-content {
+  padding: 1rem;
+
+  .topic-details {
+    h5 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    .bid-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+
+      .bid-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+
+        .stat-label {
+          color: #666;
+          font-weight: 500;
+        }
+
+        .stat-value {
+          font-weight: 600;
+          color: #333;
+        }
+      }
+    }
+
+    .teams-section {
+      h6 {
+        margin-bottom: 1rem;
+        color: #333;
+      }
+
+      .teams-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .team-badge {
+          font-size: 0.9rem;
+          padding: 0.5rem 1rem;
+        }
+      }
+    }
   }
 } 
