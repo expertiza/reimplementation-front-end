@@ -3,6 +3,7 @@ import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IUserResponse as IUser } from "../../utils/interfaces";
 import { useTranslation } from "react-i18next"; // Importing useTranslation hook
+import type { TFunction } from 'i18next';
 
 /**
  * Author: Ankur Mundra on April, 2023
@@ -11,8 +12,7 @@ import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 type Fn = (row: Row<IUser>) => void;
 const columnHelper = createColumnHelper<IUser>();
 
-export const userColumns = (handleEdit: Fn, handleDelete: Fn) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+export const userColumns = (t: TFunction, handleEdit: Fn, handleDelete: Fn) => {
 
   return [
     columnHelper.accessor("id", {

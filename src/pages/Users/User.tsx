@@ -56,7 +56,7 @@ const Users = () => {
   );
 
   const tableColumns = useMemo(
-    () => USER_COLUMNS(onEditHandle, onDeleteHandle),
+    () => USER_COLUMNS(t, onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 
