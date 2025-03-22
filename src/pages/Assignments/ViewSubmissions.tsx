@@ -156,7 +156,7 @@ const ViewSubmissions: React.FC = () => {
   // reimplementation back end. In the current version of expertiza, the assign grades page links to
   // /grades/view_team?id=45297
   const handleAssignGradesClick = useCallback(
-    (row: TRow<ISubmission>) => navigate(`/assignments/edit/${row.original.id}`),
+    (row: TRow<ISubmission>) => navigate(`/grades/view_team/${row.original.id}`),
     [navigate]
   );
 
