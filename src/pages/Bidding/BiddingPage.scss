@@ -205,23 +205,52 @@
   }
 }
 
-.download-pdf-btn {
-  padding: 0.6rem 1.5rem;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  background-color: #4285f4;
-  border: none;
-  box-shadow: 0 4px 6px rgba(66, 133, 244, 0.3);
-  
-  &:hover {
-    background-color: #3367d6;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(66, 133, 244, 0.4);
-  }
-  
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
+.download-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+
+  .download-btn {
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+
+    &.btn-primary {
+      background-color: #4285f4;
+      box-shadow: 0 4px 6px rgba(66, 133, 244, 0.3);
+      
+      &:hover {
+        background-color: #3367d6;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(66, 133, 244, 0.4);
+      }
+    }
+
+    &.btn-success {
+      background-color: #34a853;
+      box-shadow: 0 4px 6px rgba(52, 168, 83, 0.3);
+      
+      &:hover {
+        background-color: #2d8e46;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(52, 168, 83, 0.4);
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+
+    i {
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+    }
   }
 } 
