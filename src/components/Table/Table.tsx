@@ -32,6 +32,7 @@ interface TableProps {
   renderSubComponent?: (props: { row: any }) => React.ReactNode;
   getRowCanExpand?: (row: any) => boolean;
   disableGlobalFilter?: boolean; // Disable the Global Search
+  headingComments?: Record<string, string>;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -46,6 +47,7 @@ const Table: React.FC<TableProps> = ({
   renderSubComponent,
   getRowCanExpand,
   disableGlobalFilter = false, // Disable the Global Search
+  headingComments = {},
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -187,38 +189,42 @@ const Table: React.FC<TableProps> = ({
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan}>
-                        {header.isPlaceholder ? null : (
-                          <>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick: header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              {header.column.columnDef.comment ? (
-                                <img
-                                  src="assets/icons/info.png"
-                                  alt="Review Grade"
-                                  title={header.column.columnDef.comment}
-                                />
+                    {headerGroup.headers.map((header) => {
+                      // Add info icon to Heading if comment exists.
+                      const comment = headingComments[header.column.columnDef.header as string];
+                      return (
+                        <th key={header.id} colSpan={header.colSpan}>
+                          {header.isPlaceholder ? null : (
+                            <>
+                              <div
+                                {...{
+                                  className: header.column.getCanSort()
+                                    ? "cursor-pointer select-none"
+                                    : "",
+                                  onClick: header.column.getToggleSortingHandler(),
+                                }}
+                              >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                {comment && (
+                                  <img
+                                    src="assets/icons/info.png"
+                                    alt="Review Grade"
+                                    title={comment}
+                                  />
+                                )}
+                                {{
+                                  asc: " 🔼",
+                                  desc: " 🔽",
+                                }[header.column.getIsSorted() as string] ?? null}
+                              </div>
+                              {showColumnFilter && header.column.getCanFilter() ? (
+                                <ColumnFilter column={header.column} />
                               ) : null}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                            {showColumnFilter && header.column.getCanFilter() ? (
-                              <ColumnFilter column={header.column} />
-                            ) : null}
-                          </>
-                        )}
-                      </th>
-                    ))}
+                            </>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 ))}
               </thead>

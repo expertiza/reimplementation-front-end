@@ -118,7 +118,7 @@ const StudentTasks: React.FC = () => {
     {
       accessorKey: "stageDeadline",
       header: "Stage Deadline",
-      comment: "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+      // comment: "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
     },
     {
       accessorKey: "publishingRights",
@@ -130,7 +130,7 @@ const StudentTasks: React.FC = () => {
           onChange={() => togglePublishingRights(Number(info.row.original.id))}
         />
       ),
-      comment: "Grant publishing rights",
+      // comment: "Grant publishing rights",
     },
   ].map(({ header, ...rest }) => ({
     ...rest,
@@ -172,6 +172,10 @@ const StudentTasks: React.FC = () => {
               showColumnFilter={false}
               showPagination={false}
               tableSize={{ span: 12, offset: 0 }}
+              headingComments={{
+                "Stage deadline": "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+                "Publishing rights": "Grant publishing rights",
+              }}
             />
           </div>
         </div>
