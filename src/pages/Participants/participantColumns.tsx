@@ -2,7 +2,7 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
-import { useTranslation } from "react-i18next"; // Importing useTranslation hook
+import {TFunction} from "i18next";
 
 /**
  * @author Divit Kalathil on October, 2023
@@ -11,8 +11,7 @@ import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
 
-export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+export const participantColumns = (t: TFunction, handleEdit: Fn, handleDelete: Fn) => {
 
   return [
     columnHelper.accessor("id", {

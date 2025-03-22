@@ -62,7 +62,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
 
   const tableColumns = useMemo(
-    () => PARPTICIPANT_COLUMNS(onEditHandle, onDeleteHandle),
+    () => PARPTICIPANT_COLUMNS(t, onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 

@@ -10,8 +10,10 @@ import { Col, Container, Row } from "react-bootstrap";
 import DeleteUser from "../Users/UserDelete";
 import Table from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
+import { useTranslation } from "react-i18next";
 
 const ManageUserTypes: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user_type } = useParams();
   const data: any = useLoaderData();
@@ -34,7 +36,7 @@ const ManageUserTypes: React.FC = () => {
   );
 
   const tableColumns = useMemo(
-    () => USER_COLUMNS(onEditHandle, onDeleteHandle),
+    () => USER_COLUMNS(t, onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 
