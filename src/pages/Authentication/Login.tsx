@@ -33,6 +33,7 @@ const Login: React.FC = () => {
       .post("http://localhost:3002/login", values)
       .then((response) => {
         const payload = setAuthToken(response.data.token);
+        localStorage.setItem("userId", payload.id.toString());
 
         dispatch(
           authenticationActions.setAuthentication({

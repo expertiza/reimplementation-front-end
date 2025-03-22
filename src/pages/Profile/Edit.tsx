@@ -41,11 +41,11 @@ const Edit: React.FC = () => {
   const handleSubmit = (values: any, { setSubmitting }: any) => {
     // Determine language and backend locale code
     let selectedLang = 'en';
-    let selectedLocale = 'en_US';
+    let selectedLocale = 'en';
   
     if (values.language === 'Hindi') {
       selectedLang = 'hi';
-      selectedLocale = 'hi_IN';
+      selectedLocale = 'hi';
     }
   
     i18n.changeLanguage(selectedLang);
