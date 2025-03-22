@@ -151,6 +151,8 @@ export enum ROLE {
 }
 
 export interface IAssignmentResponse {
+  has_topics: boolean;
+  has_teams: boolean;
   id: number;
   name: string;
   course_id: number;
@@ -165,7 +167,7 @@ export interface IAssignmentResponse {
   has_badge:boolean;
   staggered_deadline:boolean;
   is_calibrated:boolean;
-  
+  max_team_size: number;
 }
 
 
