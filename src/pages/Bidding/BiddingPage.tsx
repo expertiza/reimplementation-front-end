@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, Row, Col, Badge, Modal, Table } from 'react-bootstrap';
+import React, { useState, useRef } from 'react';
+import { Card, Row, Col, Badge, Modal, Table, Button } from 'react-bootstrap';
 import { BiddingTopic } from '../../utils/types';
 import biddingData from './data.json';
 import {
@@ -13,6 +13,9 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import './BiddingPage.scss';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 // Register ChartJS components
 ChartJS.register(
@@ -27,6 +30,7 @@ ChartJS.register(
 const BiddingPage: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<BiddingTopic | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const topics: BiddingTopic[] = biddingData.topics;
 
@@ -44,6 +48,64 @@ const BiddingPage: React.FC = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTopic(null);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!selectedTopic || !chartRef.current) return;
+    
+    // Create a new PDF document
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    
+    // Add a title
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Bidding Report: ${selectedTopic.topicName}`, 20, 20);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Topic ID: ${selectedTopic.topicId}`, 20, 30);
+    
+    try {
+      // Capture the chart as an image
+      const canvas = await html2canvas(chartRef.current);
+      const chartImage = canvas.toDataURL('image/png');
+      
+      // Add the chart image to the PDF (positioned below the title)
+      pdf.addImage(chartImage, 'PNG', 20, 40, 170, 80);
+      
+      // Add bidding stats as text
+      pdf.setFontSize(12);
+      pdf.text('Bidding Summary:', 20, 130);
+      pdf.text(`First Priority Bids: ${selectedTopic.bidding['#1'].length}`, 30, 140);
+      pdf.text(`Second Priority Bids: ${selectedTopic.bidding['#2'].length}`, 30, 150);
+      pdf.text(`Third Priority Bids: ${selectedTopic.bidding['#3'].length}`, 30, 160);
+      pdf.text(`Total Bids: ${selectedTopic.totalBids}`, 30, 170);
+      
+      // Add the bidding details table
+      pdf.text('Bidding Details Table:', 20, 180);
+      
+      // Define table data
+      const tableData = Object.entries(selectedTopic.bidding).map(([priority, teams]) => [
+        priority,
+        teams.length,
+        teams.join(', '),
+        ((teams.length / selectedTopic.totalBids) * 100).toFixed(1) + '%'
+      ]);
+      
+      // Add table to PDF
+      autoTable(pdf, {
+        startY: 185,
+        head: [['Priority', 'Number of Bids', 'Teams', 'Percentage']],
+        body: tableData,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [66, 135, 245] },
+        margin: { top: 20 },
+      });
+      
+      // Save the PDF
+      pdf.save(`bidding_report_${selectedTopic.topicId}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
   const getChartData = (topic: BiddingTopic) => {
@@ -233,7 +295,7 @@ const BiddingPage: React.FC = () => {
           {selectedTopic && (
             <div className="modal-content">
               <div className="topic-details">
-                <div className="chart-container">
+                <div className="chart-container" ref={chartRef}>
                   <Bar options={chartOptions} data={getChartData(selectedTopic)} />
                 </div>
 
@@ -295,6 +357,16 @@ const BiddingPage: React.FC = () => {
                       ))}
                     </tbody>
                   </Table>
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <Button 
+                    variant="primary" 
+                    onClick={handleDownloadPDF}
+                    className="download-pdf-btn"
+                  >
+                    Download as PDF
+                  </Button>
                 </div>
               </div>
             </div>
