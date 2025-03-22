@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import './Edit.css'; // Importing custom CSS styles
 import { Button } from 'react-bootstrap'; // Importing Button component from react-bootstrap
 import { useTranslation } from 'react-i18next'; // Importing useTranslation hook from react-i18next
+import i18n from '../../i18n';
 
 // Define initial form values and validation schema using Yup
 const Edit: React.FC = () => {
@@ -18,7 +19,7 @@ const Edit: React.FC = () => {
     actionPreference: 'cannotShowActions',
     handle: '',
     timeZone: 'GMT-05:00',
-    language: 'No Preference',
+    language: localStorage.getItem('language') === 'hi' ? 'Hindi' : 'English',
     emailOptions: {
       reviewNotification: true,
       submissionNotification: true,
@@ -38,10 +39,47 @@ const Edit: React.FC = () => {
 
   // Handle form submission
   const handleSubmit = (values: any, { setSubmitting }: any) => {
-    setTimeout(() => {
-      alert(JSON.stringify(values, null, 2)); // Display form values as JSON
-      setSubmitting(false);
-    }, 400);
+    // Determine language and backend locale code
+    let selectedLang = 'en';
+    let selectedLocale = 'en_US';
+  
+    if (values.language === 'Hindi') {
+      selectedLang = 'hi';
+      selectedLocale = 'hi_IN';
+    }
+  
+    i18n.changeLanguage(selectedLang);
+    localStorage.setItem('language', selectedLang);
+  
+    const payload = {
+      ...values,
+      locale: selectedLocale,
+    };
+  
+    const userId = localStorage.getItem('userId'); 
+  
+    fetch(`/api/v1/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Failed to update user profile');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log('Profile updated:', data);
+        setSubmitting(false);
+      })
+      .catch((err) => {
+        console.error('Update failed:', err);
+        setSubmitting(false);
+      });
   };
 
   return (
