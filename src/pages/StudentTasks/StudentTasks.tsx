@@ -118,7 +118,7 @@ const StudentTasks: React.FC = () => {
     {
       accessorKey: "stageDeadline",
       header: "Stage Deadline",
-      comment: "'You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+      comment: "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
     },
     {
       accessorKey: "publishingRights",
