@@ -108,6 +108,38 @@ const BiddingPage: React.FC = () => {
     }
   };
 
+  const handleDownloadCSV = () => {
+    if (!selectedTopic) return;
+
+    // Create CSV headers
+    const headers = ['Priority', 'Number of Bids', 'Teams', 'Percentage'];
+    
+    // Create CSV rows
+    const rows = Object.entries(selectedTopic.bidding).map(([priority, teams]) => [
+      priority,
+      teams.length,
+      teams.join('; '),
+      ((teams.length / selectedTopic.totalBids) * 100).toFixed(1) + '%'
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bidding_report_${selectedTopic.topicId}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const getChartData = (topic: BiddingTopic) => {
     return {
       labels: ['First Priority', 'Second Priority', 'Third Priority'],
@@ -360,13 +392,24 @@ const BiddingPage: React.FC = () => {
                 </div>
                 
                 <div className="mt-4 text-center">
-                  <Button 
-                    variant="primary" 
-                    onClick={handleDownloadPDF}
-                    className="download-pdf-btn"
-                  >
-                    Download as PDF
-                  </Button>
+                  <div className="download-buttons">
+                    <Button 
+                      variant="primary" 
+                      onClick={handleDownloadPDF}
+                      className="download-btn"
+                    >
+                      <i className="fas fa-file-pdf me-2"></i>
+                      Download as PDF
+                    </Button>
+                    <Button 
+                      variant="success" 
+                      onClick={handleDownloadCSV}
+                      className="download-btn"
+                    >
+                      <i className="fas fa-file-csv me-2"></i>
+                      Download as CSV
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
