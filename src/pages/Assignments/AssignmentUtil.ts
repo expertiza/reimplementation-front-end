@@ -12,6 +12,9 @@ export interface IAssignmentFormValues {
   has_badge:boolean;
   staggered_deadline:boolean;
   is_calibrated:boolean;
+  has_teams:boolean;
+  has_topics:boolean;
+  max_team_size:number;
 }
 
 
@@ -45,7 +48,9 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     has_badge:assignment.has_badge,
     staggered_deadline:assignment.staggered_deadline,
     is_calibrated:assignment.is_calibrated,
-    
+    has_teams:assignment.has_teams,
+    has_topics:assignment.has_topics,
+    max_team_size:assignment.max_team_size,
   };
   return assignmentValues;
 };
