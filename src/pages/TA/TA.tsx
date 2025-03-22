@@ -57,7 +57,7 @@ const TAs = () => {
   );
 
   const tableColumns = useMemo(
-    () => TA_COLUMNS(onDeleteHandle),
+    () => TA_COLUMNS(t, onDeleteHandle),
     [onDeleteHandle]
   );
 

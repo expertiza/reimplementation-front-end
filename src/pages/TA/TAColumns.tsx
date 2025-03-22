@@ -3,7 +3,7 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPersonXFill } from "react-icons/bs";
 import { ITAResponse as ITA } from "../../utils/interfaces";
-import { useTranslation } from "react-i18next"; // Importing useTranslation hook
+import type { TFunction } from "i18next";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -13,8 +13,8 @@ import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 type Fn = (row: Row<ITA>) => void;
 const columnHelper = createColumnHelper<ITA>();
 
-export const TAColumns = (handleDelete: Fn) => {
-  const { t } = useTranslation(); // Initialize useTranslation hook
+export const TAColumns = (t: TFunction, handleDelete: Fn) => {
+ // Initialize useTranslation hook
 
   return [
     columnHelper.accessor("id", {
