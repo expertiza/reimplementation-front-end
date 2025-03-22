@@ -2,7 +2,6 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IUserResponse as IUser } from "../../utils/interfaces";
-import { useTranslation } from "react-i18next"; // Importing useTranslation hook
 import type { TFunction } from 'i18next';
 
 /**
