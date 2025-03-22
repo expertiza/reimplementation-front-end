@@ -27,6 +27,7 @@ import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
@@ -58,6 +59,10 @@ function App() {
         {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} leastPrivilegeRole={ROLE.STUDENT} />,
         },
         {
           path: "assignments/edit/:id/createteams",

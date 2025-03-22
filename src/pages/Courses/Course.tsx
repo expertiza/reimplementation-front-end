@@ -139,7 +139,6 @@ const Courses = () => {
     created_at: formatDate(item.created_at),
     updated_at: formatDate(item.updated_at),
   }));
-
   return (
     <>
       <Outlet />

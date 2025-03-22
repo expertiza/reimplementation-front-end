@@ -2,6 +2,7 @@ import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import React from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
+import { capitalizeFirstWord, formatDate } from "utils/dataFormatter";
 
 interface ActionHandler {
   icon: string;
@@ -99,20 +100,16 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     },
   ];
 
+  // TODO: update it with actual api calls to get assignment list
   const generateFakeAssignments = () => {
     const numAssignments = 3 + Math.floor(Math.random() * 3);
     return Array.from({ length: numAssignments }, (_, idx) => ({
       id: parseInt(`${courseId}${idx}`),
-      name: `Assignment ${idx + 1} for ${courseName}`,
-      courseName: courseName,
+      name: `Assignment ${idx + 1}`,
       description: "This is a fake assignment",
       created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
       updated_at: new Date().toISOString(),
     }));
-  };
-
-  const capitalizeSentence = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
@@ -144,35 +141,22 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     return [...baseColumns, actionsColumn];
   };
 
-  // Helper function to format the dates
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric', 
-      hour: 'numeric', 
-      minute: 'numeric', 
-      hour12: true 
-    };
-    return date.toLocaleString('en-US', options);
-  };
-  
-
   const assignments = generateFakeAssignments();
   const columns = getAssignmentColumns(actionHandlers);
 
-  // Remove the 'Course Name' column from column definitions to hide it.
-  const filteredColumns = columns.filter((col) => col.header !== "Course Name");
-  // Remove 'courseName' field from assignment data to hide it and Format date fields.
-  const filteredAssignments = assignments.map(
-    ({ name, courseName, created_at, updated_at, ...rest }) => ({
-      ...rest,
-      name: capitalizeSentence(name),
-      created_at: formatDate(created_at), // Format 'created_at' date
-      updated_at: formatDate(updated_at), // Format 'updated_at' date
-    })
-  );
+  // Format all heading data fields. 
+  const filteredColumns = columns.map(({ header, ...rest }) => ({
+    ...rest,
+    header: capitalizeFirstWord(header as string),
+  }));
+
+  // Format some assignment data fields.
+  const filteredAssignments = assignments.map(({ name, created_at, updated_at, ...rest }) => ({
+    ...rest,
+    name: capitalizeFirstWord(name),
+    created_at: formatDate(created_at), // Format 'created_at' date
+    updated_at: formatDate(updated_at), // Format 'updated_at' date
+  }));
 
   return (
     <div className="px-4 py-2 bg-light">
