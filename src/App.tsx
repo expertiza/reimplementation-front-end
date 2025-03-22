@@ -18,6 +18,7 @@ import NotFound from "./router/NotFound";
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
+// import { loadParticipants } from "pages/Participants/participantUtil";
 import RootLayout from "layout/Root";
 import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
@@ -40,6 +41,11 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+
+
+import AssignGrades from "pages/Assignments/AssignGrades";
+
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -50,7 +56,14 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
-        // Add the ViewTeamGrades route
+
+        // Assign Grades page route
+        {
+          path: "grades/view_team/:id",
+          element: <AssignGrades />,
+          loader: loadAssignment,
+        },
+
         {
           path: "view-team-grades",
           element: <ProtectedRoute element={<ReviewTable />} />,
