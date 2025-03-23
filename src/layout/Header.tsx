@@ -20,6 +20,13 @@ const Header: React.FC = () => {
 
   const [visible, setVisible] = useState(true);
 
+  // Debug role for development purposes
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      console.log("Current user role:", auth.user.role);
+    }
+  }, [auth.isAuthenticated, auth.user?.role]);
+
   const CustomBtn = () => {
     return (
       <div
@@ -62,10 +69,6 @@ const Header: React.FC = () => {
       </div>
     );
   };
-
-  // useEffect(() => {
-  //   console.log(visible, 'Changed');
-  // }, [visible]);
 
   return (
     <Fragment>
@@ -155,6 +158,14 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/view-team-grades">
                   Grades View
                 </Nav.Link>
+                
+                {/* View Bid link - STRICTLY ONLY for students with role "Student" */}
+                {auth.isAuthenticated && auth.user.role === "Student" && (
+                  <Nav.Link as={Link} to="/bidding/1">
+                    View Bid
+                  </Nav.Link>
+                )}
+                
                 <Nav.Link as={Link} to="#" onClick={() => setVisible(!visible)}>
                   Anonymized View
                 </Nav.Link>
