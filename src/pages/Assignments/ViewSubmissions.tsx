@@ -7,6 +7,7 @@ import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
 import { Row as TRow } from "@tanstack/table-core/build/lib/types";
 import { IUserResponse } from "../../utils/interfaces";
 import ErrorPage from "../../router/ErrorPage";
+import AlertMessage from "components/Alert";
 
 
 interface ISubmission {
@@ -17,6 +18,13 @@ interface ISubmission {
   team_id: number;
 }
 
+interface IAlertProps {
+  variant: string;
+  title?: string;
+  message: string;
+}
+
+
 const columnHelper = createColumnHelper<ISubmission>();
 
 const ViewSubmissions: React.FC = () => {
@@ -24,6 +32,8 @@ const ViewSubmissions: React.FC = () => {
   const navigate = useNavigate();
   const assignment: any = useLoaderData();
   const [error, setError] = useState(false);
+  const [alert, setAlert] = useState<IAlertProps | null>(null);
+  const [submissions, setSubmissions] = useState([]);
   let columns: ColumnDef<ISubmission, any>[] = [];
 
 
@@ -60,7 +70,6 @@ const ViewSubmissions: React.FC = () => {
     }));
   }
   else {
-    console.log("no teams");
     columns.push(columnHelper.accessor("participants", {
       header: () => "Student",
       cell: (info) => (
@@ -74,36 +83,35 @@ const ViewSubmissions: React.FC = () => {
   }
 
 
-
-  // SUBMISSIONS
-  const [submissions, setSubmissions] = useState([]);
+  // fetch submissions data
   useEffect(() => {
     try {
       async function fetchSubmissions() {
-        const submissionsResponse = await axiosClient.get(`/assignments/${assignment.id}/list_submissions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log("Submissions Data:", submissionsResponse.data);
-        setSubmissions(submissionsResponse.data);
+        try {
+          const submissionsResponse = await axiosClient.get(`/assignments/${assignment.id}/list_submissions`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+          });
+          setSubmissions(submissionsResponse.data);
+        }
+        catch (e) {
+          console.error(e);
+          setAlert({
+            variant: "danger",
+            title: "Error",
+            message: "Unable to fetch submissions for this assignment.",
+          });
+        }
       }
-
       fetchSubmissions();
     }
     catch (e) {
-      setError(true)
+      setError(true);
     }
   }, [assignment, token]);
-
-
-  // display updates to the participants state
-  useEffect(() => {
-    console.log("Updated Submissions:", submissions);
-  }, [submissions]);
-
 
 
   // links column
@@ -175,6 +183,7 @@ const ViewSubmissions: React.FC = () => {
           </Row>
           <Row>
             <Col>
+              {alert && <AlertMessage {...alert} />}
               <Table
                 data={submissions}
                 columns={columns}
