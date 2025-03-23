@@ -18,7 +18,7 @@ import NotFound from "./router/NotFound";
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
-// import { loadParticipants } from "pages/Participants/participantUtil";
+import { loadParticipants } from "pages/Participants/participantUtil";
 import RootLayout from "layout/Root";
 import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
@@ -61,7 +61,7 @@ function App() {
         {
           path: "grades/view_team/:id",
           element: <AssignGrades />,
-          loader: loadAssignment,
+          loader: loadParticipants,
         },
 
         {

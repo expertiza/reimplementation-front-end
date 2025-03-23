@@ -29,6 +29,23 @@ export interface IParticipantFormValues {
   emailPreferences: Array<PermittedEmailPreferences>;
 }
 
+
+export interface IParticipant {
+  id: number;
+  user_id: number;
+  assignment_id: number;
+  team_id: number;
+  topic: string;
+}
+
+export interface IParticipantValues{
+  id: number;
+  user_id: number;
+  assignment_id: number;
+  team_id?: number;
+  topic?: string;
+}
+
 export const emailOptions: IFormOption[] = [
   { label: "When someone else reviews my work", value: EmailPreference.EMAIL_ON_REVIEW },
   {
@@ -122,3 +139,43 @@ export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
   const roles = await rolesResponse.data;
   return { participantData, roles, institutions };
 }
+
+
+
+
+
+
+
+// +============================
+export const transformResponse = (participantResponse: string) => {
+  const participant: IParticipant = JSON.parse(participantResponse);
+  console.log("Participant @ Line 152 of Utils: ", participant);
+  const participantValues: IParticipantValues= {
+    id: participant.id,
+    user_id: participant.user_id,
+    assignment_id: participant.assignment_id,
+    team_id: participant.team_id,
+    topic: participant.topic,
+  };
+  console.log(participantValues);
+  return participantValues;
+};
+
+
+
+export async function loadParticipants({ params }: any) {
+  let participantData = {};
+  // if params contains id, then we are editing a participant, so we need to load the participant data
+  if (params.id) {
+    const participantResponse = await axiosClient.get(`/participants/${params.id}`, {
+      transformResponse: transformResponse,
+    });
+    participantData = await participantResponse.data;
+
+  }
+  return participantData ;
+
+}
+
+
+
