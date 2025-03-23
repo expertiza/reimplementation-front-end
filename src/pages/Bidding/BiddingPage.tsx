@@ -213,12 +213,12 @@ const BiddingPage: React.FC = () => {
           label: function(context: any) {
             const priority = context.label;
             const value = context.raw;
-            const priorityNumber = priority.split(' ')[0];
-            const priorityKey = `#${priorityNumber}` as '#1' | '#2' | '#3';
+            const priorityKey = priority === 'First Priority' ? '#1' :
+                              priority === 'Second Priority' ? '#2' : '#3';
             const teams = selectedTopic?.bidding[priorityKey] || [];
             return [
               `Bids: ${value}`,
-              `Teams: ${teams.join(', ')}`,
+              teams.length > 0 ? `Teams: ${teams.join(', ')}` : 'No teams'
             ];
           },
         },
