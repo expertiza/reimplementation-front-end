@@ -10,6 +10,7 @@ import Statistics from "./Statistics";
 import Filters from "./Filters";
 import ShowReviews from "./ShowReviews"; //importing show reviews component
 import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json"; // Importing dummy data for author feedback
+import ToolTip from "components/ToolTip";
 
 interface Review {
   name: string;
@@ -80,18 +81,33 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
     );
 
     return (
-      <div key={roundIndex} className="table-container mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-xl font-semibold">
-            Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
-          </h4>
+      <div className="flex items-center justify-between mb-4 space-x-4">
+        <h4 className="text-xl font-semibold">
+          Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
+        </h4>
+        <div className="flex items-center gap-4"> {/* USE gap-4 for EVEN Spacing */}
           <a
             href="#"
             onClick={toggleShowQuestion}
-            className="text-blue-500 underline cursor-pointer"
+            className="text-blue-500 underline cursor-pointer px-2"
           >
-            {showToggleQuestion ? "Hide Question List" : "Show Question List"}
+            {showToggleQuestion ? "toggle question list" : "toggle question list"}
           </a>
+
+          <a
+            href="#"
+            className="text-blue-500 underline cursor-pointer px-2"
+          >
+            hide tags
+          </a>
+
+          <span className="text-blue-500 underline cursor-pointer px-2">
+            color legend <ToolTip id="colorLegend" info="Colors are scaled from poor to excellent in the following order: red, orange, yellow, light-green, dark-green" placement="right" />
+          </span>
+
+          <span className="text-blue-500 underline cursor-pointer px-2">
+            interaction legend <ToolTip id="interactionLegend" info="This legend explains the interaction patterns between reviewers and reviewees." placement="right" />
+          </span>
         </div>
 
         <table className="tbl_heat">
