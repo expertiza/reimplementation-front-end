@@ -40,7 +40,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
-import BiddingPage from "pages/Bidding/BiddingPage";
+import { BiddingPage } from "./pages/Bidding";
 
 function App() {
   const router = createBrowserRouter([
@@ -294,7 +294,7 @@ function App() {
         { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
         {
           path: "bidding/:assignmentId",
-          element: <BiddingPage />,
+          element: <ProtectedRoute element={<BiddingPage />} leastPrivilegeRole={ROLE.STUDENT} />,
         },
       ],
     },
