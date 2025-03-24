@@ -74,6 +74,8 @@
     "@types/jqueryui": "^1.12.21",
     "@types/react-bootstrap": "^0.32.32",
     "@types/react-datepicker": "^4.10.0",
-    "prettier": "^2.8.7"
+    "@types/redux-mock-store": "^1.5.0",
+    "prettier": "^2.8.7",
+    "redux-mock-store": "^1.5.5"
   }
 }
