@@ -79,13 +79,13 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
       roundData,
       sortOrderRow
     );
-
+  
     return (
       <div className="flex items-center justify-between mb-4 space-x-4">
         <h4 className="text-xl font-semibold">
           Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
         </h4>
-        <div className="flex items-center gap-4"> {/* USE gap-4 for EVEN Spacing */}
+        <div className="flex items-center gap-4">
           <a
             href="#"
             onClick={toggleShowQuestion}
@@ -93,23 +93,8 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
           >
             {showToggleQuestion ? "toggle question list" : "toggle question list"}
           </a>
-
-          <a
-            href="#"
-            className="text-blue-500 underline cursor-pointer px-2"
-          >
-            hide tags
-          </a>
-
-          <span className="text-blue-500 underline cursor-pointer px-2">
-            color legend <ToolTip id="colorLegend" info="Colors are scaled from poor to excellent in the following order: red, orange, yellow, light-green, dark-green" placement="right" />
-          </span>
-
-          <span className="text-blue-500 underline cursor-pointer px-2">
-            interaction legend <ToolTip id="interactionLegend" info="This legend explains the interaction patterns between reviewers and reviewees." placement="right" />
-          </span>
         </div>
-
+  
         <table className="tbl_heat">
           <thead>
             <tr className="bg-gray-200">
@@ -121,13 +106,14 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
                   Question
                 </th>
               )}
-              {roundData[0]?.reviews?.map((review: Review, index: number) => (
+              {roundData[0]?.reviews?.map((_, index) => (
                 <th key={index} className="py-2 px-4 text-center" style={{ width: "70px" }}>
-                  {currentUser?.id === project?.student?.id 
-                    ? `Review ${index + 1}` 
-                    : review.name}
+                  Review {index + 1}
                 </th>
               ))}
+              <th className="py-2 px-4 text-center" style={{ width: "70px" }}>
+                Word Count
+              </th>
               <th className="py-2 px-4" style={{ width: "70px" }} onClick={toggleSortOrderRow}>
                 Average
                 {sortOrderRow === "none" && <span>▲▼</span>}
