@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Spinner, Alert } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
-/**
- * @author Atharva Thorve, on December, 2023
- * @author Mrityunjay Joshi on December, 2023
- */
 
 // CopyCourse Component: Modal for copying a course.
 
@@ -20,17 +16,24 @@ interface ICopyCourse {
 
 const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
   // State and hook declarations
-  const { data: copiedCourse, error: courseError, sendRequest: CopyCourse } = useAPI();
+  const { data: copiedCourse, error: courseError, sendRequest: copyCourseRequest } = useAPI();
   const [show, setShow] = useState<boolean>(true);
+  const [isCopying, setIsCopying] = useState<boolean>(false); // State to track copying process
   const dispatch = useDispatch();
+  const courseId = courseData.id;
 
   // Function to initiate the course copy process
-  const copyHandler = () =>
-    CopyCourse({ url: `/courses/${courseData.id}/copy`, method: HttpMethod.GET });
+  const copyHandler = () => {
+    setIsCopying(true); // Set copying state to true  
+    copyCourseRequest({ url: `/courses/${courseId}/copy`, method: HttpMethod.GET });//Applying Interface Segregation principle to use only courseId instead of the whole object
+  };
 
   // Show error if any
   useEffect(() => {
-    if (courseError) dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
+    if (courseError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
+      setIsCopying(false); // Reset copying state on error
+    }
   }, [courseError, dispatch]);
 
   // Close modal if course is copied
@@ -55,25 +58,28 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
 
   // Render the CopyCourse modal
   return (
-    <Modal show={show} onHide={closeHandler}>
+    <Modal show={show} onHide={closeHandler}centered>
       <Modal.Header closeButton>
         <Modal.Title>Copy Course</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to copy course <b>{courseData.name}?</b>
+          Are you sure you want to copy the course <b>{courseData.name}?</b>
         </p>
+        <div className="d-flex flex-column align-items-center justify-content-center">
+        {isCopying && <Spinner animation="border" variant="primary" />}
+        {courseError && <Alert variant="danger">{courseError}</Alert>} {/* Display error message */}
+        </div>
       </Modal.Body>
+
       <Modal.Footer>
-        <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
-        </Button>
-        <Button variant="outline-primary" onClick={copyHandler}>
-          Copy
+        <Button variant="danger" className="btn btn-md" onClick={copyHandler}disabled={isCopying}>
+          {isCopying ? "Copying..." : "Copy"}
         </Button>
       </Modal.Footer>
     </Modal>
   );
 };
+
 
 export default CopyCourse;

@@ -66,10 +66,7 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="outline-secondary" onClick={closeHandler}>
-          Cancel
-        </Button>
-        <Button variant="outline-danger" onClick={deleteHandler}>
+        <Button variant="danger" className="btn btn-md" onClick={deleteHandler}>
           Delete
         </Button>
       </Modal.Footer>

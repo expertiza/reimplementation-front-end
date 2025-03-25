@@ -1,9 +1,8 @@
-// Importing necessary interfaces and modules
-import FormSelect from "components/Form/FormSelect";
+import React, { useEffect, useState } from "react";
+import Select from 'react-select';
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
-import React, { useEffect } from "react";
-import { Button, InputGroup, Modal } from "react-bootstrap";
+import { Alert, Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "store/slices/alertSlice";
@@ -13,9 +12,18 @@ import { IEditor } from "../../utils/interfaces";
 import { ITAFormValues, transformTARequest } from "./TAUtil";
 
 /**
- * @author Atharva Thorve, on December, 2023
- * @author Divit Kalathil, on December, 2023
+ * @author Anurag Gorkar, on December, 2024
+ * @author Makarand Pundalik, on December, 2024
+ * @author Rutvik Kulkarni, on December, 2024
  */
+
+
+// Type definition for user options
+type UserOption = {
+  label: string;
+  value: string | number;
+  role?: string;
+};
 
 const initialValues: ITAFormValues = {
   name: "",
@@ -29,7 +37,6 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: TAResponse, error: TAError, sendRequest } = useAPI();
   const TAData = { ...initialValues };
 
-  // Load data from the server
   const { taUsers }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -37,9 +44,9 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
   const params = useParams();
   const { courseId } = params;
 
-  // logged-in TA is the parent of the TA being created and the institution is the same as the parent's
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserOption>({ label: "", value: "" });
 
-  // Close the modal if the TA is updated successfully and navigate to the TAs page
   useEffect(() => {
     if (TAResponse && TAResponse.status >= 200 && TAResponse.status < 300) {
       dispatch(
@@ -48,79 +55,127 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
           message: `TA ${TAData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/TAs");
+      navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
     }
-  }, [dispatch, mode, navigate, TAData.name, TAResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, TAData.name, TAResponse, location.state?.from, showConfirmModal]);
 
-  // Show the error message if the TA is not updated successfully
   useEffect(() => {
     TAError && dispatch(alertActions.showAlert({ variant: "danger", message: TAError }));
   }, [TAError, dispatch]);
 
   const onSubmit = (values: ITAFormValues, submitProps: FormikHelpers<ITAFormValues>) => {
+    const selectedUserData = taUsers.find((user: UserOption) => 
+      parseInt(String(user.value)) === parseInt(String(values.name))
+    );
+ 
+    if (selectedUserData?.role === 'student') {
+      // If selected user is a student, show confirmation modal
+      setSelectedUser(selectedUserData);
+      setShowConfirmModal(true);
+    } else {
+      // If TA or other role, directly submit
+      submitTA(values);
+    }
+    submitProps.setSubmitting(false);
+  };
+
+  const submitTA = (values: ITAFormValues) => {
     let method: HttpMethod = HttpMethod.GET;
-    // ToDo: Need to create API in the backend for this call. 
-    // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed. 
-    // Currently we send the username of the user we want to add as the TA for the course.
     let url: string = `/courses/${courseId}/add_ta/${values.name}`;
 
-    // to be used to display message when TA is created
     sendRequest({
       url: url,
       method: method,
       data: {},
       transformRequest: transformTARequest,
     });
-    submitProps.setSubmitting(false);
+  };
+
+  const handleConfirmAddStudent = () => {
+    // Submit TA addition if confirmed
+    submitTA({ name: String(selectedUser.value) });
+    setShowConfirmModal(false);
   };
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
-  //Validation of TA Entry 
-  return (
-    <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title>Add TA</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {TAError && <p className="text-danger">{TAError}</p>}
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          validationSchema={validationSchema}
-          validateOnChange={false}
-          enableReinitialize={true}
-        >
-          {(formik) => {
-            return (
-              <Form>
-                <FormSelect
-                  controlId="TA-name"
-                  label="Teaching Assistant Name"
-                  name="name"
-                  options={taUsers}
-                  inputGroupPrepend={
-                    <InputGroup.Text id="TA-name-prep">TA</InputGroup.Text>
-                  }
-                />
-                <Modal.Footer>
-                  <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
-                  </Button>
 
-                  <Button
-                    variant="outline-success"
-                    type="submit"
-                    disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-                  >
-                    "Add TA"
-                  </Button>
-                </Modal.Footer>
-              </Form>
-            );
-          }}
-        </Formik>
-      </Modal.Body>
-    </Modal>
+  return (
+    <>
+      <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
+        <Modal.Header closeButton>
+          <Modal.Title>Add TA</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          { TAError && (
+            <Alert variant="flash_note alert alert-danger">
+              {TAError}
+            </Alert>
+          )}
+          <Formik
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+            validationSchema={validationSchema}
+            validateOnChange={false}
+            enableReinitialize={true}
+          >
+            {(formik) => {
+              return (
+                <Form>
+                  <div className="mb-3">
+                    <label htmlFor="TA-name">Teaching assistant name</label>
+                    <Select
+                      id="TA-name"
+                      name="name"
+                      options={taUsers}
+                      value={taUsers.find((option: UserOption) => option.value === formik.values.name) || null}
+                      onChange={(selectedOption: UserOption | null) => {
+                        formik.setFieldValue('name', selectedOption ? selectedOption.value : '');
+                      }}
+                      placeholder="Search and select Teaching Assistant"
+                      isSearchable={true}
+                      // Custom filtering to search through label and value
+                      filterOption={(option, inputValue) => {
+                        const label = String(option.label).toLowerCase();
+                        const value = String(option.value).toLowerCase();
+                        const input = inputValue.toLowerCase();
+                        return label.includes(input) || value.includes(input);
+                      }}
+                    />
+                  </div>
+                  <Modal.Footer>
+                    <Button
+                      variant="danger"
+                      type="submit"
+                      className="btn btn-md"
+                      disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+                    >
+                      Confirm
+                    </Button>
+                  </Modal.Footer>
+                </Form>
+              );
+            }}
+          </Formik>
+        </Modal.Body>
+      </Modal>
+
+      {/* Confirmation Modal for Student */}
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Adding Student as TA</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to add {selectedUser.label} (a student) as a teaching assistant for this course? 
+          This action will convert {selectedUser.label} to a TA. 
+        </Modal.Body>
+        <Modal.Footer>
+        <Button variant="danger" className="btn btn-md" onClick={handleConfirmAddStudent}>
+          Confirm
+        </Button>
+
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

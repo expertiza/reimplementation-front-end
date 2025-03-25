@@ -30,6 +30,7 @@ interface TableProps {
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
+  disableGlobalFilter?: boolean;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -41,6 +42,7 @@ const Table: React.FC<TableProps> = ({
   onSelectionChange,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
+  disableGlobalFilter = false,
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
@@ -154,8 +156,12 @@ const Table: React.FC<TableProps> = ({
             )}
           </Col>
           <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
-            <FaSearch style={{ cursor: "pointer" }} />
-            {isGlobalFilterVisible ? " Hide" : " Show"}
+            {!disableGlobalFilter && (
+              <div>
+                <FaSearch style={{ cursor: "pointer" }} />
+                { isGlobalFilterVisible ? " Hide" : " Show" }
+              </div>
+            )}
           </span>{" "}
         </Row>
       </Container>
