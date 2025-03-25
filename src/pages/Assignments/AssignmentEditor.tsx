@@ -34,6 +34,9 @@ const initialValues: IAssignmentFormValues = {
   has_badge: false,
   staggered_deadline: false,
   is_calibrated: false,
+  has_teams:false,
+  has_topics:false,
+  max_team_size: 1,
   // Add other assignment-specific initial values
 };
 
