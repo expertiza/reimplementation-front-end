@@ -185,7 +185,7 @@ const ImpersonateBanner = () => {
           <span className="input-group-btn" style={{ margin: 0, padding: 0 }}>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-danger"
               id="impersonate-button"
               onClick={handleCancelImpersonate}
               style={{
