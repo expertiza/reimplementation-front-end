@@ -3,14 +3,15 @@ import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
 import dummyDataRounds from "../../pages/ViewTeamGrades/Data/heatMapData.json";
 import dummyData from "../../pages/ViewTeamGrades/Data/dummyData.json";
-import { calculateAverages, getColorClass } from "../../pages/ViewTeamGrades/utils";
+import { calculateAverages } from "../../pages/ViewTeamGrades/utils";
 import "../../pages/ViewTeamGrades/grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
 import Filters from "./Filters";
-import ShowReviews from "./ShowReviews"; //importing show reviews component
-import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json"; // Importing dummy data for author feedback
+import ShowReviews from "./ShowReviews";
+import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json";
 import ToolTip from "components/ToolTip";
+import { Button } from "react-bootstrap";
 
 interface Review {
   name: string;
@@ -27,15 +28,15 @@ interface RoundData {
 }
 
 interface ReviewTableProps {
-  currentUser?: { id: string };  
-  project?: { student: { id: string } }; 
+  currentUser?: { id: string };
+  project?: { student: { id: string } };
 }
 
 const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
   const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");
+  const [sortByTotalScore, setSortByTotalScore] = useState<"asc" | "desc" | "none">("none");
   const [showToggleQuestion, setShowToggleQuestion] = useState(false);
-  const [open, setOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const [showReviews, setShowReviews] = useState(false);
   const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
@@ -46,55 +47,75 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
   }, []);
 
   const toggleSortOrderRow = () => {
-    setSortOrderRow((prevSortOrder) => {
-      if (prevSortOrder === "asc") return "desc";
-      if (prevSortOrder === "desc") return "none";
-      return "asc";
-    });
+    setSortOrderRow((prev) =>
+      prev === "asc" ? "desc" : prev === "desc" ? "none" : "asc"
+    );
   };
 
-  const toggleShowReviews = () => {
-    setShowReviews((prev) => !prev);
+  const toggleSortByTotalScore = () => {
+    setSortByTotalScore((prev) =>
+      prev === "asc" ? "desc" : prev === "desc" ? "none" : "asc"
+    );
   };
 
-  const selectRound = (r: number) => {
-    setRoundSelected((prev) => r);
-  };
-
-  // Function to toggle the visibility of ShowAuthorFeedback component
-  const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback((prev) => !prev);
-  };
-
-  const handleRoundChange = (roundIndex: number) => {
-    setCurrentRound(roundIndex);
-  };
-
-  const toggleShowQuestion = () => {
-    setShowToggleQuestion(!showToggleQuestion);
-  };
+  const toggleShowReviews = () => setShowReviews((prev) => !prev);
+  const toggleAuthorFeedback = () => setShowAuthorFeedback((prev) => !prev);
+  const selectRound = (r: number) => setRoundSelected(r);
+  const toggleShowQuestion = () => setShowToggleQuestion(!showToggleQuestion);
+  const handleRoundChange = (roundIndex: number) => setCurrentRound(roundIndex);
 
   const renderTable = (roundData: RoundData[], roundIndex: number) => {
     const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
       roundData,
       sortOrderRow
     );
-  
+
+    let displayData = [...sortedData];
+
+    if (sortByTotalScore !== "none") {
+      displayData.sort((a, b) => {
+        const totalA = a.reviews.reduce((sum, r) => sum + r.score, 0);
+        const totalB = b.reviews.reduce((sum, r) => sum + r.score, 0);
+        return sortByTotalScore === "asc" ? totalA - totalB : totalB - totalA;
+      });
+    }
+
     return (
-      <div className="flex items-center justify-between mb-4 space-x-4">
-        <h4 className="text-xl font-semibold">
-          Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
-        </h4>
-        <div className="flex items-center gap-4">
-          <a
-            href="#"
-            onClick={toggleShowQuestion}
-            className="text-blue-500 underline cursor-pointer px-2"
-          >
-            {showToggleQuestion ? "toggle question list" : "toggle question list"}
-          </a>
+      <div className="flex flex-col mb-6" key={roundIndex}>
+        <div className="flex items-center justify-between mb-2 space-x-4">
+          <h4 className="text-xl font-semibold">
+            Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
+          </h4>
+          <div className="flex items-center gap-4">
+            <a
+              href="#"
+              onClick={toggleShowQuestion}
+              className="text-blue-500 underline cursor-pointer px-2"
+            >
+              {showToggleQuestion ? "Hide Questions" : "Show Questions"}
+            </a>
+            <a href="#" className="text-blue-500 underline cursor-pointer px-2">
+              Hide Tags
+            </a>
+            <span className="text-blue-500 underline cursor-pointer px-2">
+              Color Legend{" "}
+              <ToolTip
+                id="colorLegend"
+                info="Colors are scaled from poor to excellent: red, orange, yellow, light-green, dark-green"
+                placement="right"
+              />
+            </span>
+            <span className="text-blue-500 underline cursor-pointer px-2">
+              Interaction Legend{" "}
+              <ToolTip
+                id="interactionLegend"
+                info="This legend explains the interaction patterns between reviewers and reviewees."
+                placement="right"
+              />
+            </span>
+          </div>
         </div>
-  
+
         <table className="tbl_heat">
           <thead>
             <tr className="bg-gray-200">
@@ -106,30 +127,30 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
                   Question
                 </th>
               )}
-              {roundData[0]?.reviews?.map((_, index) => (
+              {roundData[0]?.reviews?.map((review, index) => (
                 <th key={index} className="py-2 px-4 text-center" style={{ width: "70px" }}>
-                  Review {index + 1}
+                  {currentUser?.id === project?.student?.id
+                    ? `Review ${index + 1}`
+                    : review.name}
                 </th>
               ))}
-              <th className="py-2 px-4 text-center" style={{ width: "70px" }}>
+              <th className="py-2 px-4 text-center" style={{ width: "90px" }}>
                 Word Count
               </th>
               <th className="py-2 px-4" style={{ width: "70px" }} onClick={toggleSortOrderRow}>
                 Average
-                {sortOrderRow === "none" && <span>▲▼</span>}
+                {sortOrderRow === "none" && <span> ▲▼</span>}
                 {sortOrderRow === "asc" && <span> ▲</span>}
                 {sortOrderRow === "desc" && <span> ▼</span>}
               </th>
             </tr>
           </thead>
           <tbody>
-            {sortedData.map((row, index) => (
+            {displayData.map((row, index) => (
               <ReviewTableRow key={index} row={row} showToggleQuestion={showToggleQuestion} />
             ))}
             <tr className="no-bg">
-              <td className="py-2 px-4" style={{ width: "70px" }}>
-                Avg
-              </td>
+              <td className="py-2 px-4">Avg</td>
               {showToggleQuestion && <td></td>}
               {columnAverages.map((avg, index) => (
                 <td key={index} className="py-2 px-4 text-center">
@@ -139,12 +160,22 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
             </tr>
           </tbody>
         </table>
-        <br />
-        <h5>
-          Average peer review score:{" "}
-          <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
-        </h5>
-        <br />
+
+        <div className="mt-2 mb-2">
+          <Button
+            onClick={toggleSortByTotalScore}
+            style={{ backgroundColor: "#3F51B5", color: "white", fontWeight: "bold" }}
+          >
+            Sort by Total Review Score ({sortByTotalScore === "none" ? "Off" : sortByTotalScore})
+          </Button>
+        </div>
+
+        <div className="mt-2">
+          <h5>
+            Average peer review score:{" "}
+            <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
+          </h5>
+        </div>
       </div>
     );
   };
@@ -162,6 +193,7 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
           </span>
         ))}
       </span>
+
       <div className="mt-2">
         <h5>Submission Links</h5>
         <ul>
@@ -193,40 +225,35 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
       </div>
 
       <Statistics />
-
       <br />
 
       <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
 
-      {/* Conditionally render tables based on currentRound */}
       {currentRound === -1
-        ? dummyDataRounds.map((roundData, index) => renderTable(roundData, index)) // Render a table for each round if "All Rounds" is selected
+        ? dummyDataRounds.map((roundData, index) => renderTable(roundData, index))
         : renderTable(dummyDataRounds[currentRound], currentRound)}
 
-      <div>
-        <Filters
-          toggleShowReviews={toggleShowReviews}
-          toggleAuthorFeedback={toggleAuthorFeedback}
-          selectRound={selectRound}
-        />
-      </div>
+      <Filters
+        toggleShowReviews={toggleShowReviews}
+        toggleAuthorFeedback={toggleAuthorFeedback}
+        selectRound={selectRound}
+      />
 
-      <div>
-        {showReviews && (
-          <div>
-            <h2>Reviews</h2>
-            <ShowReviews data={dummyDataRounds} roundSelected={roundSelected} />
-          </div>
-        )}
-        {ShowAuthorFeedback && (
-          <div>
-            <h2>Author Feedback</h2>
-            <ShowReviews data={dummyauthorfeedback} roundSelected={roundSelected} />
-          </div>
-        )}
-      </div>
+      {showReviews && (
+        <div>
+          <h2>Reviews</h2>
+          <ShowReviews data={dummyDataRounds} roundSelected={roundSelected} />
+        </div>
+      )}
 
-      <p className="mt-4">
+      {ShowAuthorFeedback && (
+        <div>
+          <h2>Author Feedback</h2>
+          <ShowReviews data={dummyauthorfeedback} roundSelected={roundSelected} />
+        </div>
+      )}
+
+      <div className="mt-4">
         <h3>Grade and comment for submission</h3>
         Grade: {dummyData.grade}
         <br />
@@ -234,7 +261,7 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
         <br />
         Late Penalty: {dummyData.late_penalty}
         <br />
-      </p>
+      </div>
 
       <Link to="/">Back</Link>
     </div>
