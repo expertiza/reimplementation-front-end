@@ -18,9 +18,9 @@ const ErrorPage: React.FC = () => {
         <div>
           <Alert variant="danger">
             <Alert.Heading>Oops! Something went wrong.</Alert.Heading>
-            <p>{error.message || error}</p>
-            <p>{error.data}</p>
-            <p>{error.response && error.response.data.error}</p>
+            <p>{error?.message || "An unexpected error occurred."}</p>
+            {error?.data && <p>{error.data}</p>}
+            {error?.response?.data?.error && <p>{error.response.data.error}</p>}
             <hr />
             <div className="d-flex justify-content-end">
               <Button variant="secondary" onClick={() => navigate("/")}>
@@ -33,5 +33,6 @@ const ErrorPage: React.FC = () => {
     </>
   );
 };
+
 
 export default ErrorPage;
