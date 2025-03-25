@@ -1,5 +1,5 @@
 import React from "react";
-import { getColorClass } from "./utils";
+import { getColorClass } from "../../pages/ViewTeamGrades/utils";
 import { RootState } from "../../store/store";
 import { useDispatch, useSelector } from "react-redux";
 

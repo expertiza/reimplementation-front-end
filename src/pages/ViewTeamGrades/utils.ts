@@ -1,4 +1,4 @@
-import { ReviewData } from './App';
+import { ReviewData } from '../../components/HeatGrid/App';
 
 // Function to get color class based on score and maxScore
 export const getColorClass = (score: number, maxScore: number) => {

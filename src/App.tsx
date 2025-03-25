@@ -30,7 +30,7 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
-import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
+import ReviewTable from "./components/HeatGrid/ReviewTable";
 import EditProfile from "pages/Profile/Edit";
 import Reviews from "pages/Reviews/reviews";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
