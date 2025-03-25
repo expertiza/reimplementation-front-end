@@ -18,11 +18,14 @@ const AssignGrades: React.FC = () => {
   const [comment, setComment] = useState("");
 
   const handleSave = () => {
-    console.log("Saving Grade:", grade, "Comment:", comment);
-    // Here you could POST to /participants/:id/grade if hooking into your backend
-    alert("Grade and comment saved successfully!");
+    // If grade is empty, show error and stop
+    if (!grade) {
+      alert("Grade is required!");
+      return;
+    }
 
-    // Navigate to the home page (or another route of your choice)
+    // Otherwise, show success message and navigate home
+    alert("Grade and comment saved successfully!");
     navigate("/");
   };
 
@@ -70,7 +73,11 @@ const AssignGrades: React.FC = () => {
         <Col>
           <h3>Grade and comment for submission</h3>
 
-          <Form.Group controlId="gradeInput" className="mb-3 mt-2" style={{ maxWidth: "200px" }}>
+          <Form.Group
+            controlId="gradeInput"
+            className="mb-3 mt-2"
+            style={{ maxWidth: "200px" }}
+          >
             <Form.Label>Grade</Form.Label>
             <Form.Control
               type="number"
@@ -80,7 +87,11 @@ const AssignGrades: React.FC = () => {
             />
           </Form.Group>
 
-          <Form.Group controlId="commentInput" className="mb-3" style={{ maxWidth: "500px" }}>
+          <Form.Group
+            controlId="commentInput"
+            className="mb-3"
+            style={{ maxWidth: "500px" }}
+          >
             <Form.Label>Comments</Form.Label>
             <Form.Control
               as="textarea"
