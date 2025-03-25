@@ -160,6 +160,13 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                 >
                     Sort by Total Review Score ({sortByTotalScore === "none" ? "Off" : sortByTotalScore})
                 </Button>
+                Teamates:
+                {["Raj Patel", "Aditya Pai", "Parth Kulkarni"].map((teammate, index) => (
+                    <span key={index}>
+                        {teammate}
+                    </span>
+                ))}
+
             </div>
             <div className="mt-2">
                 <h5>
