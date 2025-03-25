@@ -4,8 +4,9 @@ import { ReviewData } from "./App"; // Importing the ReviewData interface from A
 
 // Props interface for ReviewTableRow component
 interface ReviewTableRowProps {
-  row: ReviewData; // Data for the row
-  showToggleQuestion: boolean; // Flag to toggle the question column
+  row: ReviewData;
+  showToggleQuestion: boolean;
+  showWordCount: number; // NEW
 }
 
 // Helper function to calculate word count
@@ -31,7 +32,7 @@ const countShortAndLongComments = (reviews: { comment?: string }[]) => {
 };
 
 // Functional component ReviewTableRow
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion }) => {
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion , showWordCount }) => {
   const { shortCount, longCount } = countShortAndLongComments(row.reviews);
 
   return (
@@ -66,12 +67,14 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
         </td>
       ))}
 
-      {/* Short and Long Comments Count */}
-      <td className="py-2 px-4 text-center">
-        {longCount > 0 && `${longCount} Long`}
-        {longCount > 0 && shortCount > 0 && ", "}
-        {shortCount > 0 && `${shortCount} Short`}
-      </td>
+      {showWordCount !=0  && (
+        <td className="py-2 px-4 text-center">
+          {showWordCount >= 20 && `${longCount}`}
+          {showWordCount <= 10 && `${shortCount}`}
+        </td>
+      )}
+
+
 
       {/* Row Average */}
       <td className="py-2 px-4 text-center">{row.RowAvg.toFixed(2)}</td>

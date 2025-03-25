@@ -1,31 +1,14 @@
 import React, { useEffect, useState } from "react";
-import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
 import dummyDataRounds from "../../pages/ViewTeamGrades/Data/heatMapData.json";
 import dummyData from "../../pages/ViewTeamGrades/Data/dummyData.json";
-import { calculateAverages } from "../../pages/ViewTeamGrades/utils";
 import "../../pages/ViewTeamGrades/grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
 import Filters from "./Filters";
 import ShowReviews from "./ShowReviews";
 import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json";
-import ToolTip from "components/ToolTip";
-import { Button } from "react-bootstrap";
-
-interface Review {
-  name: string;
-  score: number;
-  comment?: string;
-}
-
-interface RoundData {
-  questionNumber: string;
-  questionText: string;
-  reviews: Review[];
-  RowAvg: number;
-  maxScore: number;
-}
+import ReviewTableContent from "./ReviewTableContent";
 
 interface ReviewTableProps {
   currentUser?: { id: string };
@@ -63,122 +46,6 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
   const selectRound = (r: number) => setRoundSelected(r);
   const toggleShowQuestion = () => setShowToggleQuestion(!showToggleQuestion);
   const handleRoundChange = (roundIndex: number) => setCurrentRound(roundIndex);
-
-  const renderTable = (roundData: RoundData[], roundIndex: number) => {
-    const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
-      roundData,
-      sortOrderRow
-    );
-
-    let displayData = [...sortedData];
-
-    if (sortByTotalScore !== "none") {
-      displayData.sort((a, b) => {
-        const totalA = a.reviews.reduce((sum, r) => sum + r.score, 0);
-        const totalB = b.reviews.reduce((sum, r) => sum + r.score, 0);
-        return sortByTotalScore === "asc" ? totalA - totalB : totalB - totalA;
-      });
-    }
-
-    return (
-      <div className="flex flex-col mb-6" key={roundIndex}>
-        <div className="flex items-center justify-between mb-2 space-x-4">
-          <h4 className="text-xl font-semibold">
-            Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
-          </h4>
-          <div className="flex items-center gap-4">
-            <a
-              href="#"
-              onClick={toggleShowQuestion}
-              className="text-blue-500 underline cursor-pointer px-2"
-            >
-              {showToggleQuestion ? "Hide Questions" : "Show Questions"}
-            </a>
-            <a href="#" className="text-blue-500 underline cursor-pointer px-2">
-              Hide Tags
-            </a>
-            <span className="text-blue-500 underline cursor-pointer px-2">
-              Color Legend{" "}
-              <ToolTip
-                id="colorLegend"
-                info="Colors are scaled from poor to excellent: red, orange, yellow, light-green, dark-green"
-                placement="right"
-              />
-            </span>
-            <span className="text-blue-500 underline cursor-pointer px-2">
-              Interaction Legend{" "}
-              <ToolTip
-                id="interactionLegend"
-                info="This legend explains the interaction patterns between reviewers and reviewees."
-                placement="right"
-              />
-            </span>
-          </div>
-        </div>
-
-        <table className="tbl_heat">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="py-2 px-4 text-center" style={{ width: "70px" }}>
-                Question No.
-              </th>
-              {showToggleQuestion && (
-                <th className="py-2 px-4 text-center" style={{ width: "150px" }}>
-                  Question
-                </th>
-              )}
-              {roundData[0]?.reviews?.map((review, index) => (
-                <th key={index} className="py-2 px-4 text-center" style={{ width: "70px" }}>
-                  {currentUser?.id === project?.student?.id
-                    ? `Review ${index + 1}`
-                    : review.name}
-                </th>
-              ))}
-              <th className="py-2 px-4 text-center" style={{ width: "90px" }}>
-                Word Count
-              </th>
-              <th className="py-2 px-4" style={{ width: "70px" }} onClick={toggleSortOrderRow}>
-                Average
-                {sortOrderRow === "none" && <span> ▲▼</span>}
-                {sortOrderRow === "asc" && <span> ▲</span>}
-                {sortOrderRow === "desc" && <span> ▼</span>}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayData.map((row, index) => (
-              <ReviewTableRow key={index} row={row} showToggleQuestion={showToggleQuestion} />
-            ))}
-            <tr className="no-bg">
-              <td className="py-2 px-4">Avg</td>
-              {showToggleQuestion && <td></td>}
-              {columnAverages.map((avg, index) => (
-                <td key={index} className="py-2 px-4 text-center">
-                  {avg.toFixed(2)}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="mt-2 mb-2">
-          <Button
-            onClick={toggleSortByTotalScore}
-            style={{ backgroundColor: "#3F51B5", color: "white", fontWeight: "bold" }}
-          >
-            Sort by Total Review Score ({sortByTotalScore === "none" ? "Off" : sortByTotalScore})
-          </Button>
-        </div>
-
-        <div className="mt-2">
-          <h5>
-            Average peer review score:{" "}
-            <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
-          </h5>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="p-4">
@@ -228,10 +95,39 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
       <br />
 
       <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
+      
 
+      {/* Render Round(s) */}
       {currentRound === -1
-        ? dummyDataRounds.map((roundData, index) => renderTable(roundData, index))
-        : renderTable(dummyDataRounds[currentRound], currentRound)}
+        ? dummyDataRounds.map((roundData, index) => (
+            <ReviewTableContent
+              key={index}
+              roundData={roundData}
+              roundIndex={index}
+              currentUser={currentUser}
+              project={project}
+              sortOrderRow={sortOrderRow}
+              toggleSortOrderRow={toggleSortOrderRow}
+              sortByTotalScore={sortByTotalScore}
+              toggleSortByTotalScore={toggleSortByTotalScore}
+              showToggleQuestion={showToggleQuestion}
+              toggleShowQuestion={toggleShowQuestion}
+            />
+          ))
+        : (
+            <ReviewTableContent
+              roundData={dummyDataRounds[currentRound]}
+              roundIndex={currentRound}
+              currentUser={currentUser}
+              project={project}
+              sortOrderRow={sortOrderRow}
+              toggleSortOrderRow={toggleSortOrderRow}
+              sortByTotalScore={sortByTotalScore}
+              toggleSortByTotalScore={toggleSortByTotalScore}
+              showToggleQuestion={showToggleQuestion}
+              toggleShowQuestion={toggleShowQuestion}
+            />
+          )}
 
       <Filters
         toggleShowReviews={toggleShowReviews}
