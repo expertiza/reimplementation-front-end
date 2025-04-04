@@ -1,3 +1,4 @@
+import axiosClient from "../../utils/axios_client";
 import * as Yup from "yup";
 import { IEditor } from "../../utils/interfaces";
 import { QuestionnaireFormValues } from "./QuestionnaireUtils";
@@ -89,9 +90,40 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   });
 
   
-  // FIXME: Implement HTTP method to submit form values
-  const handleSubmit = async (values: QuestionnaireFormWithItems) => {
-    console.log("Submit:", values);
+  // FIXME: See note below
+  // const handleSubmit = async (values: QuestionnaireFormWithItems) => {
+  //   console.log("Submit:", values);
+  //   console.log("Submit:", values.items);
+  // };
+
+
+  // FIXME: This only works with slight changes to the backend.
+  // Added to the Questionnaire model "accepts_nested_attributes_for :items, allow_destroy: true"
+  // allows the items belonging to a questionnaire to be saved at the same time. This also
+  // requires updating the questionnaire_params in questionnaire_controller.rb to include item_attributes.
+  // Including this method without theses changes will result in a failure to submit the form.
+  // Comment out this version of handleSubmit, and include the implementation above to simply print
+  // the form values to the browser console.
+  const handleSubmit = async (values: any) => {
+    const endpoint = mode === "create"
+      ? "/questionnaires"   // creating questionnaires
+      : `/questionnaires/edit/${values.id}`;  // updating questionnaires
+
+    try {
+      const response = await axiosClient[mode === "create" ? "post" : "put"](endpoint, values,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Server Response:", response.data);
+
+      // Navigate back to questionnaire management dashboard
+      navigate(`/questionnaires`)
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
 
 
