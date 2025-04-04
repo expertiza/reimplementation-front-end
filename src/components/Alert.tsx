@@ -7,7 +7,7 @@ import { alertActions } from "store/slices/alertSlice";
  * @author Ankur Mundra on May, 2023
  */
 
-interface IAlertProps {
+export interface IAlertProps {
   variant: string;
   title?: string;
   message: string;

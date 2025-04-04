@@ -23,7 +23,8 @@ import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+// import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+import Questionnaire from "pages/Questionnaires/Question";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
@@ -40,6 +41,14 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+
+
+// FIXME: Project 4 Additions
+import QuestionnaireEditor from "pages/Questionnaires/QuestionnaireEditor";
+import { loadQuestionnaire } from "pages/Questionnaires/QuestionnaireUtils";
+
+
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -289,7 +298,29 @@ function App() {
           ],
         },
         { path: "*", element: <NotFound /> },
+
+        // FIXME: REMOVE
         { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
+
+
+        // FIxME: Project 4 E2538
+        {
+          path: "questionnaires",
+          element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+          children: [
+            {
+              path: "new",
+              element: <QuestionnaireEditor mode="create" />,
+              loader: loadQuestionnaire,
+            },
+            {
+              path: "edit/:id",
+              element: <QuestionnaireEditor mode="update" />,
+              loader: loadQuestionnaire,
+            },
+          ],
+        },
       ],
     },
   ]);
