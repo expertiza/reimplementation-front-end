@@ -294,6 +294,7 @@ function App() {
             {
               path: "questionnaire",
               element: <Questionnaire />,
+              loader: loadQuestionnaire,
             },
           ],
         },

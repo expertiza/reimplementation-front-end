@@ -46,8 +46,8 @@ export interface QuestionnaireFormValues {
   private:boolean;
   min_question_score: number;
   max_question_score: number;
-  instructor_id: number;
-  instructor: IInstructor;
+  instructor_id?: number;
+  instructor?: IInstructor;
 }
 
 export interface QuestionnaireResponse {
@@ -70,8 +70,8 @@ export interface QuestionnaireRequest {
   min_question_score: number;
   max_question_score: number;
   
-  instructor_id: number;
-  instructor: IInstructor;
+  instructor_id?: number;
+  instructor?: IInstructor;
 }
 
 export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] {
