@@ -1,7 +1,32 @@
 import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
-export const QuestionnaireTypes = [
+// export const QuestionnaireTypes = [
+//   "Metareview",
+//   "Author Feedback",
+//   "Teammate Review",
+//   "Survey",
+//   "Assignment Survey",
+//   "Global Survey",
+//   "Course Survey",
+//   "Bookmark Rating",
+//   "Quiz",
+// ];
+
+
+export type QuestionnaireType =
+  | "Metareview"
+  | "Author Feedback"
+  | "Teammate Review"
+  | "Survey"
+  | "Assignment Survey"
+  | "Global Survey"
+  | "Course Survey"
+  | "Bookmark Rating"
+  | "Quiz";
+
+
+export const QuestionnaireTypes: QuestionnaireType[] = [
   "Metareview",
   "Author Feedback",
   "Teammate Review",
@@ -13,6 +38,7 @@ export const QuestionnaireTypes = [
   "Quiz",
 ];
 
+
 export interface QuestionnaireFormValues {
   id?: number;
   name: string;
@@ -20,8 +46,8 @@ export interface QuestionnaireFormValues {
   private:boolean;
   min_question_score: number;
   max_question_score: number;
-  instructor_id: number;
-  instructor: IInstructor;
+  instructor_id?: number;
+  instructor?: IInstructor;
 }
 
 export interface QuestionnaireResponse {
@@ -44,8 +70,8 @@ export interface QuestionnaireRequest {
   min_question_score: number;
   max_question_score: number;
   
-  instructor_id: number;
-  instructor: IInstructor;
+  instructor_id?: number;
+  instructor?: IInstructor;
 }
 
 export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] {
@@ -57,6 +83,7 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
     )
   );
 }
+
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   const questionnaire: QuestionnaireRequest = {

@@ -6,6 +6,7 @@ import { BsFileText } from "react-icons/bs";
 import { QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
+import QuestionnaireTypeTable from "./QuestionnaireTypes";
 
 
 // FIXME: This is just a table of questionnaires and their corresponding details.
@@ -64,6 +65,9 @@ const Questionnaires = () => {
                 <span className="me-1">Create</span><BsFileText />
               </Button>
             </Col>
+          </Row>
+          <Row>
+              <QuestionnaireTypeTable />
           </Row>
           <Row>
             <Table

@@ -294,13 +294,16 @@ function App() {
             {
               path: "questionnaire",
               element: <Questionnaire />,
+              loader: loadQuestionnaire,
             },
           ],
         },
         { path: "*", element: <NotFound /> },
 
         // FIXME: REMOVE
-        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
+        { path: "questionnaire",
+          element: <Questionnaire /> ,
+          loader: loadQuestionnaire,}, // Added the Questionnaire route
 
 
         // FIxME: Project 4 E2538
