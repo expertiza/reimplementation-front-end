@@ -1,12 +1,13 @@
 import * as Yup from "yup";
-import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
 import { QuestionnaireFormValues } from "./QuestionnaireUtils";
 import React, { useEffect, useState } from "react";
 import { Outlet, useLoaderData, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import useAPI from "hooks/useAPI";
-import { Formik, Field, Form } from "formik";
+import { Formik, Field, Form, FieldArray } from "formik";
 import { Button, Container, Row, Col, Modal } from 'react-bootstrap';
+import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
+
 
 interface IAlertProps {
   variant: string;
@@ -14,6 +15,17 @@ interface IAlertProps {
   message: string;
 }
 
+interface QuestionnaireFormWithItems extends QuestionnaireFormValues {
+  items: {
+    txt: string;
+    question_type: string;
+    weight: number;
+    break_before: boolean;
+    alternatives?: string;
+    min_label?: string;
+    max_label?: string;
+  }[];
+}
 
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const [alert, setAlert] = useState<IAlertProps | null>(null);
@@ -27,29 +39,71 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   // Can view the decoded type in browser console
   console.log("Type:", type);
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    questionnaire_type: Yup.string().required("Type is required"),
-    min_question_score: Yup.number().required("Minimum score is required"),
-    max_question_score: Yup.number()
-      .moreThan(Yup.ref("min_question_score"), "Max score must be greater than min score")
-      .required("Maximum score is required"),
+  const itemFields = Yup.object().shape({
+    txt: Yup.string().required("Question text is required"),
+    question_type: Yup.string().required("Question type is required"),
+    weight: Yup.number()
+      .required("Weight is required")
+      .positive("Weight must be a positive number"),
+
+    alternatives: Yup.string().when("question_type", ([questionType], schema) => {
+      if (questionType === "dropdown" || questionType === "multiple_choice") {
+        return schema
+          .required("Options are required")
+          .test(
+            "min-2-options",
+            "Enter at least two options, separated by commas.",
+            (value) => {
+              if (!value) return false;
+              const options = value
+                .split(",")
+                .map((opt) => opt.trim())
+                .filter((opt) => opt !== "");
+              return options.length >= 2;
+            }
+          );
+      }
+      return schema.notRequired();
+    }),
+
+    min_label: Yup.string().when("question_type", ([question_type], schema) => {
+      return question_type === "scale"
+        ? schema.required("Minimum label is required")
+        : schema.notRequired();
+    }),
+
+    max_label: Yup.string().when("question_type", ([question_type], schema) => {
+      return question_type === "scale"
+        ? schema.required("Maximum label is required")
+        : schema.notRequired();
+    }),
   });
 
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    questionnaire_type: Yup.string().required("Questionnaire type is required"),
+    private: Yup.boolean(),
+    min_question_score: Yup.number().required("Minimum question score is required"),
+    max_question_score: Yup.number().required("Maximum question score is required"),
+    items: Yup.array().of(itemFields).min(1, "At least one question is required"),
+  });
+
+  
   // FIXME: Implement HTTP method to submit form values
-  const handleSubmit = async (values: QuestionnaireFormValues) => {
+  const handleSubmit = async (values: QuestionnaireFormWithItems) => {
     console.log("Submit:", values);
   };
 
 
-  // Define initial form values
-  const initialValues: QuestionnaireFormValues = {
+  // initial form values
+  const initialValues: QuestionnaireFormWithItems = {
     id: questionnaire?.id ?? undefined,
     name: questionnaire?.name ?? "",
     questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
     private: questionnaire?.private ?? false,
     min_question_score: questionnaire?.min_question_score ?? 0,
     max_question_score: questionnaire?.max_question_score ?? 10,
+    items: questionnaire?.items ?? [{ text: "" }],
   };
 
 
@@ -83,8 +137,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
                 />
                 {errors.name && touched.name && <div className="text-danger">{errors.name}</div>}
 
-                <br />
-                
+
                 <Field
                   name="questionnaire_type"
                   className="form-control"
@@ -136,6 +189,13 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
                 {errors.max_question_score && touched.max_question_score && (
                   <div className="text-danger">{errors.max_question_score}</div>
                 )}
+
+                <br />
+
+
+                {/* FIXME: Implement additional fields to add items to the questionnaire */}
+                <h5>Items</h5>
+                <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} />
 
                 <br />
                 <Button type="submit" variant="primary">
