@@ -1,0 +1,15 @@
+/* StudentTaskDetail.module.css */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 25px;
+}
+
+.header {
+  text-align: left;
+  padding: 20px 0;
+  font-size: x-large;
+  /* border-bottom: 2px solid #eee; */
+}
