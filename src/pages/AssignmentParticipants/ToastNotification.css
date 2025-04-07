@@ -1,0 +1,52 @@
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast-notification.slide-out {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.toast-notification .undo-button,
+.toast-notification .close-button {
+    background: none;
+    border: none;
+    color: #4a90e2;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.toast-notification .close-button {
+    font-size: 1.2rem;
+    margin-left: auto;
+}
+
+.toast-notification .undo-button:hover,
+.toast-notification .close-button:hover {
+    color: #2563eb;
+}
+
+/* Progress bar styling */
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 5px;
+    background-color: #4a90e2;
+    transition: width 0.05s linear;
+    /* Smooth shrinking effect */
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}

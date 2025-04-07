@@ -1,0 +1,28 @@
+.permissions-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: space-between;
+}
+
+.permission-switch {
+    min-width: 120px;
+}
+
+.modal-body .form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control {
+    height: 2.5rem;
+}
+
+.modal-footer button {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
