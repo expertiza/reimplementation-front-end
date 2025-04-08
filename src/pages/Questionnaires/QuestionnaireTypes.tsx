@@ -3,6 +3,7 @@ import Table from "components/Table/Table";
 import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
+import { IoIosAddCircle } from "react-icons/io";
 
 
 interface TableRow {
@@ -35,12 +36,44 @@ const QuestionnaireTypeTable: React.FC = () => {
         return (
 
           // FIXME: Use "+" button instead (search assets)
-          <button
+          // <button
+          //   onClick={() => onCreate(type)}
+          //   className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded"
+          // >
+          //   Create
+          // </button>
+          // <button
+          //   onClick={() => onCreate(type)}
+          //   className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded flex items-center justify-center"
+          // >
+          //   <IoIosAddCircle size={24} />
+          // </button>
+          // <IoIosAddCircle
+          //   onClick={() => onCreate(type)}
+          //   className="text-blue-500 hover:text-blue-600 cursor-pointer"
+          //   size={24}
+          // />
+          // <IoIosAddCircle
+          //   onClick={() => onCreate(type)}
+          //   className="text-blue-500 hover:text-blue-600 cursor-pointer transition-all"
+          //   size={24}
+          // />
+          <IoIosAddCircle
             onClick={() => onCreate(type)}
-            className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded"
-          >
-            Create
-          </button>
+            style={{
+              cursor: "pointer",
+              transition: "all 0.2s",
+              color: "#3b82f6", // Tailwind blue-500
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#2563eb"; // Tailwind blue-600
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#3b82f6"; // Tailwind blue-500
+            }}
+            size={24}
+          />
+
         );
       },
     },
