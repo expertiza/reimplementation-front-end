@@ -1,15 +1,184 @@
-/* StudentTaskDetail.module.css */
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 20px;
-  display: grid;
-  gap: 25px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  min-height: calc(100vh - 100px);
+}
+
+/* Header Section */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .header {
-  text-align: left;
-  padding: 20px 0;
-  font-size: x-large;
-  /* border-bottom: 2px solid #eee; */
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.programLink {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.programLink:hover {
+  text-decoration: underline;
+}
+
+.emailLink {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid #0066cc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.emailLink:hover {
+  background-color: #f0f7ff;
+}
+
+/* Task Links Section */
+.taskLinks {
+  margin-bottom: 30px;
+}
+
+.taskItem {
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.taskMainLink {
+  color: #28a745; /* Green for main links */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.taskMainLink:hover {
+  text-decoration: underline;
+}
+
+.taskDescription {
+  color: #333; /* Black for descriptions */
+}
+
+.alternativeView {
+  color: #28a745; /* Green for alternative view */
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.alternativeView:hover {
+  text-decoration: underline;
+}
+
+/* Timeline Section */
+.timelineContainer {
+  margin: 40px 0;
+}
+
+.timelineDates {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #555;
+}
+
+.timelineVisual {
+  position: relative;
+  height: 30px;
+  margin: 15px 0;
+}
+
+.timelineLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #dc3545;
+  transform: translateY(-50%);
+}
+
+.timelineDots {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  margin-top: 7px;
+}
+
+.timelineDeadlines {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.deadlineLink {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  font-size: 16px;
+}
+
+.deadlineLink:hover {
+  text-decoration: underline;
+}
+
+/* Footer Section */
+.footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footerLink {
+  color: #986633;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+.footerSeparator {
+  color: #ccc;
+  margin: 0 8px;
+}
+
+.backLink {
+  color: #0066cc;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.backLink:hover {
+  text-decoration: underline;
 }
