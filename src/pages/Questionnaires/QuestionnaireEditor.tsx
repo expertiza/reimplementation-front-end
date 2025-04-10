@@ -89,7 +89,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
   
   // FIXME: See note below
-  // const handleSubmit = async (values: QuestionnaireFormWithItems) => {
+  // const onSubmit = async (values: QuestionnaireFormWithItems) => {
   //   console.log("Submit:", values);
   //   console.log("Submit:", values.items);
   // };
@@ -100,9 +100,9 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   // allows the items belonging to a questionnaire to be saved at the same time. This also
   // requires updating the questionnaire_params in questionnaire_controller.rb to include item_attributes.
   // Including this method without theses changes will result in a failure to submit the form.
-  // Comment out this version of handleSubmit, and include the implementation above to simply print
+  // Comment out this version of onSubmit, and include the implementation above to simply print
   // the form values to the browser console.
-  const handleSubmit = async (values: any) => {
+  const onSubmit = async (values: any) => {
     const endpoint = mode === "create"
       ? "/questionnaires"   // creating questionnaires
       : `/questionnaires/edit/${values.id}`;  // updating questionnaires
@@ -151,7 +151,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
           <QuestionnaireForm
             initialValues={initialValues}
             // validationSchema={validationSchema}
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
           />
         </Modal.Body>
       </Modal>

@@ -6,8 +6,8 @@ import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
 import * as Yup from "yup";
 
 
-// const QuestionnaireForm = ({ initialValues, validationSchema, handleSubmit }: any) => {
-const QuestionnaireForm = ({ initialValues, handleSubmit }: any) => {
+// const QuestionnaireForm = ({ initialValues, validationSchema, onSubmit }: any) => {
+const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
 
   const itemFields = Yup.object().shape({
     txt: Yup.string().required("Question text is required"),
@@ -63,7 +63,7 @@ const QuestionnaireForm = ({ initialValues, handleSubmit }: any) => {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
     >
       {({ values, handleChange, errors, touched }) => (
         <Form>
