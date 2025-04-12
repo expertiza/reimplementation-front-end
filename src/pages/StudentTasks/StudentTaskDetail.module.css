@@ -1,17 +1,21 @@
 .container {
-  padding: 20px;
   font-family: Arial, sans-serif;
+  padding: 0.5rem 1.5rem;
+  display: block;
 }
 
 /* Header Section */
-.headerRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.header {
+  box-sizing: border-box;
 }
 
-.header {
-  font-size: 24px;
+.header h1 {
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 .flash_note {
@@ -54,8 +58,7 @@
 }
 
 .taskItem {
-  margin-bottom: 12px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -67,6 +70,7 @@
 
 .taskMainLink:hover {
   text-decoration: underline;
+  color: #986633;
 }
 
 .taskDescription {
@@ -81,6 +85,7 @@
 
 .alternativeView:hover {
   text-decoration: underline;
+  color: #986633;
 }
 
 /* Timeline Section */
@@ -161,6 +166,13 @@
   margin: 0 10px;
   color: #986633;
   text-decoration: none;
+  .to_right {
+    float: right;
+  }
+}
+
+.link_to_right {
+  float: right;
 }
 
 /* Footer link hover styling */

@@ -29,21 +29,26 @@ const StudentTaskDetail: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.headerRow}>
-        <h1 className={styles.header}>
+      <div className={styles.header}>
+        <h1>
           Submit or review work for{" "}
           <Link to={`/program/${id}`} className={styles.programLink}>
             {MockedStudentTaskDetails.assignment.name}
           </Link>
         </h1>
-        <Link to={`/program/${id}/email-reviewers`} className={styles.clickableLink}>
-          Send Email To Reviewers
-        </Link>
       </div>
 
       <div className={styles.flash_note}>
-        Next: Click the activity you wish to perform on the assignment titled: {MockedStudentTaskDetails.assignment.name}
+        Next: Click the activity you wish to perform on the assignment titled:{" "}
+        {MockedStudentTaskDetails.assignment.name}
       </div>
+
+      <Link
+        to={`/program/${id}/email-reviewers`}
+        className={`${styles.clickableLink} ${styles.link_to_right}`}
+      >
+        Send Email To Reviewers
+      </Link>
 
       <div className={styles.taskLinks}>
         <ul className={styles.taskList}>
@@ -102,9 +107,15 @@ const StudentTaskDetail: React.FC = () => {
           </div>
         </div>
         <div className={styles.timelineDeadlines}>
-          <Link to={`/program/${id}/submission`} className={styles.deadlineLink}>Submission deadline</Link>
-          <Link to={`/program/${id}/review`} className={styles.deadlineLink}>Review deadline</Link>
-          <Link to={`/program/${id}/peer-review`} className={styles.deadlineLink}>Peer Review deadline</Link>
+          <Link to={`/program/${id}/submission`} className={styles.deadlineLink}>
+            Submission deadline
+          </Link>
+          <Link to={`/program/${id}/review`} className={styles.deadlineLink}>
+            Review deadline
+          </Link>
+          <Link to={`/program/${id}/peer-review`} className={styles.deadlineLink}>
+            Peer Review deadline
+          </Link>
         </div>
       </div>
 
