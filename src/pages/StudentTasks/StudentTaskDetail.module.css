@@ -1,9 +1,6 @@
 .container {
   padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
   font-family: Arial, sans-serif;
-  min-height: calc(100vh - 100px);
 }
 
 /* Header Section */
@@ -11,14 +8,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
 }
 
 .header {
   font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin: 0;
+}
+
+.flash_note {
+  display: flex;
+  align-items: center;
+  color: green;
+  border: 2px solid #0a0;
+  background-color: #8f8;
+  padding: 5px 20px 5px;
+  margin-bottom: 15px;
 }
 
 .programLink {
@@ -47,6 +50,7 @@
 /* Task Links Section */
 .taskLinks {
   margin-bottom: 30px;
+  padding: 1rem;
 }
 
 .taskItem {
@@ -147,38 +151,20 @@
 
 /* Footer Section */
 .footer {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.footerContent {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
 }
 
-.footerLink {
+/* Footer link styling */
+.clickableLink {
+  margin: 0 10px;
   color: #986633;
   text-decoration: none;
-  font-size: 14px;
 }
 
-.footerLink:hover {
-  text-decoration: underline;
-}
-
-.footerSeparator {
-  color: #ccc;
-  margin: 0 8px;
-}
-
-.backLink {
-  color: #0066cc;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.backLink:hover {
+/* Footer link hover styling */
+.clickableLink:hover {
+  color: #000000;
   text-decoration: underline;
 }
