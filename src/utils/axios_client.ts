@@ -6,7 +6,7 @@ import { getAuthToken } from "./auth";
  */
 
 const axiosClient = axios.create({
-  baseURL: "http://152.7.178.127:3002/api/v1",
+  baseURL: process.env.REACT_APP_BASE_URL +  "/api/v1",
   timeout: 1000,
   headers: {
     "Content-Type": "application/json",
