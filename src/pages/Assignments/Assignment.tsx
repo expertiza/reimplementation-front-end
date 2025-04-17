@@ -1,4 +1,4 @@
-
+import dummyTopicData from "./Data/DummyTopics.json";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
