@@ -10,7 +10,7 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment } from "pages/Assignments/AssignmentUtil";
+import { loadAssignment, loadAssignmentTeams } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
@@ -82,7 +82,7 @@ function App() {
         {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
-          loader: loadAssignment,
+          loader: loadAssignmentTeams,
         },
         {
           path: "assignments/edit/:id/viewscores",

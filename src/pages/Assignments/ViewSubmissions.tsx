@@ -1,42 +1,27 @@
 import React, { useMemo } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
+import Table from "components/Table/Table";
 import { useLoaderData } from 'react-router-dom';
+import { ITeamRow, TeamSubmission } from './AssignmentUtil';
 
-interface ITeamSubmission {
-  id: number;
-  teamName: string;
-  teamMembers: { name: string, id: number }[];
-  historyLink: string;
-}
-
-const columnHelper = createColumnHelper<ITeamSubmission>();
+// Column helper to define typed table columns
+const columnHelper = createColumnHelper<ITeamRow>();
 
 const ViewSubmissions: React.FC = () => {
-  const assignment: any = useLoaderData();
+  // Fetch data loaded from route loader (assignment teams)
+  const assignment = useLoaderData() as TeamSubmission[];
 
-  const submissions = useMemo<ITeamSubmission[]>(() => [
-    {
-      id: 1,
-      teamName: 'Hornets',
-      teamMembers: [
-        { name: 'student9183', id: 9183 },
-        { name: 'student9173', id: 9173 }
-      ],
-      historyLink: '/history/1'
-    },
-    {
-      id: 2,
-      teamName: 'rubywolf',
-      teamMembers: [
-        { name: 'student9180', id: 9180 },
-        { name: 'student9164', id: 9164 }
-      ],
-      historyLink: '/history/2'
-    }
-  ], []);
+  // Transform the backend response to a table-friendly structure
+  const submissions = useMemo<ITeamRow[]>(() =>
+    assignment.map((team) => ({
+      id: team.id,
+      teamName: team.name,
+      teamMembers: team.members,
+      historyLink: `/history/${team.team_id}`,
+    }))
+  , [assignment]);
 
+  // Define the columns used in the table
   const columns = useMemo(() => [
     columnHelper.accessor('teamName', {
       header: 'Team Name',
@@ -50,8 +35,8 @@ const ViewSubmissions: React.FC = () => {
       header: 'Team Member(s)',
       cell: info => (
         <div>
-          {info.getValue().map((member, idx) => (
-            <div key={idx}>
+          {info.getValue().map((member) => (
+            <div key={member.id}>
               <a href={`/students/${member.id}`} style={{ color: '#b44' }}>
                 {member.name}
               </a>
@@ -61,38 +46,41 @@ const ViewSubmissions: React.FC = () => {
       ),
     }),
     columnHelper.display({
-    id: 'links',
-    header: 'Links',
-    cell: ({ row }) => (
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <a
-          href={`/assign_grade/${row.original.id}`}
-          style={{ color: '#b44', marginBottom: '4px' }}
-        >
-          Assign Grade
-        </a>
-        <a
-          href={row.original.historyLink}
-          style={{ color: '#b44' }}
-        >
-          History
-        </a>
-      </div>
-    ),
-  }),
+      id: 'links',
+      header: 'Links',
+      cell: ({ row }) => (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <a
+            href={`/assign_grade/${row.original.id}`}
+            style={{ color: '#b44', marginBottom: '4px' }}
+          >
+            Assign Grade
+          </a>
+          <a
+            href={row.original.historyLink}
+            style={{ color: '#b44' }}
+          >
+            History
+          </a>
+        </div>
+      ),
+    }),
   ], []);
 
   return (
     <div className="mt-4">
-      <h1 className="text-center">View Submissions - {assignment.name}</h1>
+      <h1 className="text-center">
+        View Submissions - {assignment[0]?.topic || 'Assignment'}
+      </h1>
 
       <hr />
 
+      {/* Render dynamic table of submissions */}
       <Table
         data={submissions}
         columns={columns}
         columnVisibility={{
-          id: false,
+          id: false, // Hide the 'id' column from UI
         }}
       />
     </div>

@@ -63,3 +63,38 @@ export async function loadAssignment({ params }: any) {
   return assignmentData;
 }
 
+// Middleware to fetch teams for assignment 
+export async function loadAssignmentTeams({ params }: any) {
+  let teamsData = [];
+
+  if (params.id) {
+    const response = await axiosClient.get(`/assignments/${params.id}/teams`);
+    teamsData = response.data;
+  }
+
+  return teamsData;
+}
+
+
+// Represents an individual member in a team
+export interface TeamMember {
+  id: number;
+  name: string;
+}
+
+// Represents each submission returned by the API
+export interface TeamSubmission {
+  id: number;
+  name: string; // Team name
+  team_id: number;
+  topic: string | null;
+  members: TeamMember[];
+}
+
+// Transformed data structure used for table rows
+export interface ITeamRow {
+  id: number;
+  teamName: string;
+  teamMembers: TeamMember[];
+  historyLink: string;
+}
