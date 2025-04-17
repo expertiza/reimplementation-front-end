@@ -68,7 +68,7 @@ function App() {
         {
           path: "assignments/edit/:id/assignreviewer",
           element: <AssignReviewer />,
-          loader: loadAssignment,
+       
         },
         {
           path: "assignments/edit/:id/viewsubmissions",
