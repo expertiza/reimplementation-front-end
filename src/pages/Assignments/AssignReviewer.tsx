@@ -1,91 +1,124 @@
-import React from "react";
-import dummyTopicData from "../ViewTeamGrades/Data/DummyTopics.json"; 
-import { Button } from "react-bootstrap";
-import { useLoaderData } from "react-router-dom";
+import React, { useState, useMemo } from 'react';
+import { Button, Container } from 'react-bootstrap';
+import { useLoaderData } from 'react-router-dom';
+import Table from "components/Table/Table";
+import { createColumnHelper } from "@tanstack/react-table";
+
+interface IReviewerAssignment {
+  topic: string;
+  contributor: string;
+  reviewers: string[]; // Allow multiple reviewers
+}
+const columnHelper = createColumnHelper<IReviewerAssignment>();
 
 const AssignReviewer: React.FC = () => {
   const assignment: any = useLoaderData();
+
+    // Dummy data for table
+  const [data, setData] = useState<IReviewerAssignment[]>([
+    { topic: 'Topic A', contributor: 'Alice', reviewers: ['Reviewer 1'] },
+    { topic: 'Topic B', contributor: 'Bob', reviewers: ['Reviewer 2', 'Reviewer 3'] },
+    { topic: 'Topic C', contributor: 'Charlie', reviewers: [] },
+  ]);
   
-  const handleAddReviewer = (topic: string) => {
-    alert(`Add reviewer for topic: ${topic}`);
+    const addReviewer = (topic: string) => {
+    setData(prevData =>
+      prevData.map(row =>
+        row.topic === topic && row.reviewers.length < 3
+          ? { ...row, reviewers: [...row.reviewers, `Reviewer ${row.reviewers.length + 1}`] }
+          : row
+      )
+    );
   };
 
-  const handleUnsubmit = (username: string) => {
-    alert(`Unsubmit for ${username}`);
+  const deleteReviewer = (topic: string, reviewer: string) => {
+    setData(prevData =>
+      prevData.map(row =>
+        row.topic === topic
+          ? { ...row, reviewers: row.reviewers.filter(r => r !== reviewer) }
+          : row
+      )
+    );
   };
 
-  const handleDelete = (username: string) => {
-    alert(`Delete reviewer: ${username}`);
+  const unsubmitReviewer = (topic: string, reviewer: string) => {
+    console.log(`Unsubmitted ${reviewer} for topic ${topic}`);
+    // Logic for unsubmitting a reviewer can be added here
   };
 
-  return (
-    <div className="container mt-4">
-      <h1>Assign Reviewer</h1>
-      <h3>Assignment: Final Project (and design doc)</h3>
-      <table className="table table-bordered mt-4">
-        <thead>
-          <tr>
-            <th>Topic selected</th>
-            <th>Contributors</th>
-            <th>Reviewed by</th>
-            <th>Add reviewer</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dummyTopicData.map((item, index) => (
-            <tr key={index}>
-              <td>{item.topic}</td>
-              <td>
-                {item.contributors.map((c, i) => (
-                  <div key={i}>
-                    {c.name} ({c.username})
-                  </div>
-                ))}
-              </td>
-              <td>
-                {item.reviewers.length > 0 ? (
-                  item.reviewers.map((r, i) => (
-                    <div key={i}>
-                      {r.name} ({r.status}){" "}
-                      {r.status === "Submitted" && (
-                        <>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            onClick={() => handleUnsubmit(r.username)}
-                          >
-                            Unsubmit
-                          </Button>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            onClick={() => handleDelete(r.username)}
-                          >
-                            Delete
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div>No reviewers</div>
-                )}
-              </td>
-              <td>
+  const columns = useMemo(() => [
+    columnHelper.accessor('topic', {
+      header: 'Topic Selected',
+      cell: info => info.getValue()
+         }),
+    
+    columnHelper.accessor('contributor', {
+      header: 'Contributor',
+      cell: info => info.getValue()
+    }),
+
+    columnHelper.accessor('reviewers', {
+      header: 'Reviewed By',
+      cell: info => {
+        const { reviewers } = info.row.original;
+        const topic = info.row.original.topic;
+
+        return (
+          <div style={{ textAlign: 'center' }}>
+            {/* Display Reviewers */}
+            {reviewers.map((reviewer, index) => (
+              <div key={index} style={{ marginBottom: '5px' }}>
+                {reviewer}
                 <Button
-                  variant="success"
+                  variant="outline-danger"
                   size="sm"
-                  onClick={() => handleAddReviewer(item.topic)}
+                  style={{ marginLeft: '10px' }}
+                  onClick={() => deleteReviewer(topic, reviewer)}
                 >
-                  Add reviewer
+                  Delete
                 </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  style={{ marginLeft: '5px' }}
+                  onClick={() => unsubmitReviewer(topic, reviewer)}
+                >
+                  Unsubmit
+                </Button>
+              </div>
+            ))}
 
-export default AssignReviewer;
+                        {/* Add Reviewer Button (Visible only if less than 3 reviewers) */}
+            {reviewers.length < 3 && (
+              <Button
+                variant="outline-success"
+                size="sm"
+                style={{ marginTop: '10px' }}
+                onClick={() => addReviewer(topic)}
+              >
+                Add Reviewer
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }),
+  ], [data]);
+
+   <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div style={{ width: '80%' }}>
+        <h1 className="text-center mb-4">Assign Reviewer - {assignment.name}</h1>
+        <Table
+          data={data}
+          columns={columns}
+          columnVisibility={{
+            id: false,
+          }}
+        />
+        <div className="text-right mt-3">
+          <Button variant="outline-success" onClick={() => console.log('Reviewers assigned')}>
+            Assign
+          </Button>
+          </div>
+      </div>
+     export default AssignReviewer;
