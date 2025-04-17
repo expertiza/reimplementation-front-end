@@ -288,7 +288,7 @@ function App() {
               ],
             },
             {
-              path: "editquestionnaire",
+              path: "edit-questionnaire",
               element: <EditQuestionnaire />,
             },
             {
