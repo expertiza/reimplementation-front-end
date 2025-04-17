@@ -84,7 +84,7 @@ const AssignReviewer: React.FC = () => {
         </Button>
       </td>
 
-        </tr>
+   </tr>
    ))}
    </tbody>
  </table>
