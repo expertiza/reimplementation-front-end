@@ -1,8 +1,11 @@
 import React from "react";
 import dummyTopicData from "../ViewTeamGrades/Data/DummyTopics.json"; 
 import { Button } from "react-bootstrap";
+import { useLoaderData } from "react-router-dom";
 
 const AssignReviewer: React.FC = () => {
+  const assignment: any = useLoaderData();
+  
   const handleAddReviewer = (topic: string) => {
     alert(`Add reviewer for topic: ${topic}`);
   };
