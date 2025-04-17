@@ -26,6 +26,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     has_badge:values.has_badge,
     staggered_deadline:values.staggered_deadline,
     is_calibrated:values.is_calibrated,
+    max_team_size: values.max_team_size,
     
   };
   console.log(assignment);
