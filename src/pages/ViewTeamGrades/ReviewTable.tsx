@@ -1,3 +1,4 @@
+import dummyTopicData from "../../../assets/DummyData.json";
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
@@ -213,6 +214,46 @@ const ReviewTable: React.FC = () => {
         Late Penalty: {dummyData.late_penalty}
         <br />
       </p>
+      <br />
+<h3 className="text-xl font-bold mb-2">Topic-Based Review Assignments</h3>
+<table className="tbl_heat mb-6">
+  <thead>
+    <tr>
+      <th className="py-2 px-4">Topic</th>
+      <th className="py-2 px-4">Contributors</th>
+      <th className="py-2 px-4">Reviewers</th>
+    </tr>
+  </thead>
+  <tbody>
+    {dummyTopicData.map((item, index) => (
+      <tr key={index}>
+        <td className="py-2 px-4">{item.topic}</td>
+        <td className="py-2 px-4">
+          {item.contributors.map((c, i) => (
+            <div key={i}>{c.name}</div>
+          ))}
+        </td>
+        <td className="py-2 px-4">
+          {item.reviewers.length > 0 ? (
+            item.reviewers.map((r, i) => (
+              <div key={i}>
+                {r.name} ({r.status}){" "}
+                {r.status === "Submitted" && (
+                  <>
+                    <button onClick={() => alert(`Unsubmit ${r.username}`)}>Unsubmit</button>{" "}
+                    <button onClick={() => alert(`Delete ${r.username}`)}>Delete</button>
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            <div>No reviewers</div>
+          )}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
       <Link to="/">Back</Link>
     </div>
