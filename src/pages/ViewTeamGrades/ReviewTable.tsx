@@ -1,4 +1,4 @@
-import dummyTopicData from "../../../assets/DummyData.json";
+import dummyTopicData from "./Data/DummyTopics.json";
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
