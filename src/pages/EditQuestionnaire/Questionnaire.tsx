@@ -120,6 +120,7 @@ const Questionnaire = () => {
       },
     ],
   };
+  const [name, setName] = useState("Default Name");
   const [minScore, setMinScore] = useState(0);
   const [maxScore, setMaxScore] = useState(5);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -130,7 +131,7 @@ const Questionnaire = () => {
 
   // Function to export questionnaire data
   const exportQuestionnaire = () => {
-    const dataToExport = JSON.stringify(questionnaireData);
+    const dataToExport = JSON.stringify(questionnaireData, null, 2); // Format JSON for readability
     const blob = new Blob([dataToExport], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -146,250 +147,97 @@ const Questionnaire = () => {
     setQuestionnaireData(importedData);
   };
 
+  // Function to handle saving the edited content
+  const handleSave = () => {
+    const updatedContent = {
+      name,
+      minScore,
+      maxScore,
+      isPrivate,
+    };
+    console.log("Updated Content:", updatedContent);
+    alert("Content saved successfully!");
+  };
 
   return (
-    <div>
-      <div className="container">
-        <h1 className="mt-4">{sample_questionnaire.title}</h1>
-        <div className="row m-2">
-          <div className="col-6">
-            Min item score:
+    <div
+      className="d-flex justify-content-center align-items-center vh-100"
+      style={{ backgroundColor: "#f8f9fa" }} // Optional background color
+    >
+      <div
+        className="p-4 rounded shadow"
+        style={{
+          backgroundColor: "white",
+          width: "400px", // Adjust width as needed
+        }}
+      >
+        <h1 className="text-center mb-4">Manage Content</h1>
+        <form>
+          <div className="form-group mb-3">
+            <label htmlFor="contentName">Name:</label>
             <input
+              type="text"
               className="form-control"
-              type="number"
-              value={minScore}
-              onChange={(e) => setMinScore(parseInt(e.target.value, 10))}
-              // Using parseInt to convert the input value to a number
-            ></input>
-          </div>
-        </div>
-        <div className="row m-2">
-          <div className="col-6">
-            Max item score:
-            <input
-              className="form-control"
-              type="number"
-              value={maxScore}
-              onChange={(e) => setMaxScore(parseInt(e.target.value, 10))}
-              // Using parseInt to convert the input value to a number
-            ></input>
-          </div>
-        </div>
-        <div className="row m-2">
-          <div className="col-6">
-            Is this Teammate review private:{' '} 
-            <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={() => setIsPrivate(!isPrivate)}
+              id="contentName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-          </div>
-        </div>
-        <div className="row m-2">
-          <div className="col-6">
-            <button
-              type="button"
-              style={{ borderColor: "black" }}
-              className="btn btn-light m-2"
-            >
-              Update questionnaire parameters
-            </button>
-          </div>
-        </div>
-        <hr />
-             
-        <div className="row m-2">
-          <div className="col-1">Seq</div>
-          <div className="col-3">Question</div>
-          <div className="col-1">Type</div>
-          <div className="col-1">Weight</div>
-          <div className="col-1">Text_area_size</div>
-          <div className="col-2">Max_label</div>
-          <div className="col-2">Min_label</div>
-          <div className="col-1">Action</div>
-        </div>
-        {sample_questionnaire.data.map((item) => {
-          return (
-            <div className="row m-2">
-              <div className="col-1" >
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black",width: "50px" }}
-                  type="text"
-                  value={item.seq}
-                  disabled
-                />
-              </div>
-              <div className="col-3">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.question}
-                ></input>
-              </div>
-              <div className="col-1">
-              <select
-                className="form-select"
-                style={{ borderColor: "black" }}
-                defaultValue = {item.type}
-              >
-                <option value="Criterion">Criterion</option>
-                <option value="Scale">Scale</option>
-                <option value="Cake">Cake</option>
-                <option value="Dropdown">Dropdown</option>
-                <option value="Checkbox">Checkbox</option>
-                <option value="TextArea">TextArea</option>
-                <option value="TextField">TextField</option>
-                <option value="UploadFile">UploadFile</option>
-                <option value="SectionHeader">SectionHeader</option>
-                <option value="TableHeader">TableHeader</option>
-                <option value="ColumnHeader">ColumnHeader</option>
-              </select>
-              </div>
-              <div className="col-1">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="number"
-                  placeholder="1"
-                  pattern="[0-9]*" // Only allow numeric values
-                  value={item.weight}
-                ></input>
-              </div>
-              <div className="col-1">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.text_area_size}
-                  defaultValue="80, 1"
-                ></input>
-              </div>
-              <div className="col-2">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.max_label}
-                ></input>
-              </div>
-              <div className="col-2">
-                <input
-                  className="form-control"
-                  style={{ borderColor: "black" }}
-                  type="text"
-                  value={item.min_label}
-                ></input>
-              </div>              
-              <div className="col-1">
-              <button
-                type="button"
-                className="btn btn-light"
-              >
-                Remove
-              </button>  
-              </div>
-            </div>
-          );
-        })}
-        <br /> 
-        <div className="row m-2">
-        <br /> 
-        <div className="col-1">
-            <input className="form-control" type="text" placeholder="1"></input>
-        </div>
-        <div className="col-1">
-        <p style={{ fontSize: "18px", paddingLeft: 0, paddingRight: 0 }}>
-          more
-        </p>
-        </div>
-        <div className="col-2">
-            <select className="form-select">
-            <option value="Criterion">Criterion</option>
-            <option value="Scale">Scale</option>
-            <option value="Cake">Cake</option>
-            <option value="Dropdown">Dropdown</option>
-            <option value="Checkbox">Checkbox</option>
-            <option value="TextArea">TextArea</option>
-            <option value="TextField">TextField</option>
-            <option value="UploadFile">UploadFile</option>
-            <option value="SectionHeader">SectionHeader</option>
-            <option value="TableHeader">TableHeader</option>
-            <option value="ColumnHeader">ColumnHeader</option>
-            </select>
-        </div>
-        <div className="col-1">
-        <p style={{ fontSize: "18px" }}>
-        question(s)
-        </p>
-        </div>
-        <div className="col-2">
-        <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
-            className="btn btn-primary"
-          >
-            Add Question
-          </button> 
-          </div>
-        </div>
-        <br /> 
-        <div className="row m-2">
-        <div className="col-2">
-          <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
-            className="btn btn-primary"
-          >
-            Save all questions
-          </button>
-        </div>
-        </div>
-        <div className="row m-2">
-        <div className="col-2">
-          <button
-            type="button"
-            style={{ borderColor: "black" }}
-            className="btn btn-light"
-          >
-            Edit/View Advice
-          </button>
-        </div>
-        </div>
-        <hr />
-        <div>
-          <div>
-            <a
-             
-              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
-              onClick={() => setShowImportModal(true)}
-            >
-              Import Questionnaire
-            </a>{" "}
-            |
-            <a
-             
-              style={{ color: "#b28b66", textDecoration: "none", cursor: "pointer" }}
-              onClick={() => setShowExportModal(true)}
-            >
-              Export Questionnaire
-            </a>
           </div>
 
-          {/* Render import and export modals conditionally */}
-          {showImportModal && (
-            <ImportModal
-              onClose={() => setShowImportModal(false)}
-              onImport={handleFileChange}
+          <div className="form-group mb-3">
+            <label htmlFor="minScore">Min Item Score:</label>
+            <input
+              type="number"
+              className="form-control"
+              id="minScore"
+              value={minScore}
+              onChange={(e) => setMinScore(parseInt(e.target.value, 10))}
             />
-          )}
-          {showExportModal && (
-            <ExportModal
-              onClose={() => setShowExportModal(false)}
-              onExport={exportQuestionnaire}
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="maxScore">Max Item Score:</label>
+            <input
+              type="number"
+              className="form-control"
+              id="maxScore"
+              value={maxScore}
+              onChange={(e) => setMaxScore(parseInt(e.target.value, 10))}
             />
-          )}
+          </div>
+
+          <div className="form-group mb-4">
+            <label htmlFor="isPrivate">Is This Review Private:</label>
+            <div>
+              <input
+                type="checkbox"
+                id="isPrivate"
+                checked={isPrivate}
+                onChange={() => setIsPrivate(!isPrivate)}
+              />{" "}
+              <label htmlFor="isPrivate">{isPrivate ? "Private" : "Public"}</label>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSave}
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+        <hr />
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-secondary mt-3"
+            onClick={exportQuestionnaire}
+          >
+            Export Data
+          </button>
         </div>
       </div>
     </div>
