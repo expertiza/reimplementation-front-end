@@ -12,6 +12,7 @@ export interface IAssignmentFormValues {
   has_badge:boolean;
   staggered_deadline:boolean;
   is_calibrated:boolean;
+  max_team_size: number; 
 }
 
 
