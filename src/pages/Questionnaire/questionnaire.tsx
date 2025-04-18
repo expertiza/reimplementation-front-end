@@ -1,29 +1,21 @@
 import React, { useState } from 'react';
 import './Questionnaire.css';
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
-import dummyData from './dummyData.json';
-import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
-import { BiCopy } from "react-icons/bi";
 import { BsPlusSquareFill } from "react-icons/bs";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios for making API requests
+import dummyData from './dummyData.json';
 
 function Questionnaire() {
   const [showOnlyMyItems, setShowOnlyMyItems] = useState(true);
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'default' | null>(null);
 
-  const questionnaireItems = dummyData; // Use dummy data for items
+  const [questionnaireItems, setQuestionnaireItems] = useState(dummyData); // Use dummy data for items
+  const navigate = useNavigate(); // Initialize navigation
 
-  const handleAddButtonClick = (index: number) => {
-    console.log(`Add button clicked for item at index ${index}`);
-    // Add your logic for handling the dropdown actions here
-  };
-
-  type QuestionnaireItem = {
-    name: string;
-    creationDate: string;
-    updatedDate: string;
+  const handleNavigateToEditPage = (itemName: string) => {
+    navigate(`/edit-questionnaire#${encodeURIComponent(itemName)}`);
   };
 
   const handleItemClick = (index: number) => {
@@ -34,19 +26,17 @@ function Questionnaire() {
     }
   };
 
-  const handleDelete = (item: QuestionnaireItem) => {
-    console.log(`Delete button clicked for item:`, item);
-    // Add your logic for deleting the item here
+  const handleDelete = (item: any) => {
+    const updatedItems = questionnaireItems.filter((q) => q.name !== item.name);
+    setQuestionnaireItems(updatedItems);
   };
 
-  const handleEdit = (item: QuestionnaireItem) => {
+  const handleEdit = (item: any) => {
     console.log(`Edit button clicked for item:`, item);
-    // Add your logic for editing the item here
   };
 
-  const handleShow = (item: QuestionnaireItem) => {
+  const handleShow = (item: any) => {
     console.log(`Show button clicked for item:`, item);
-    // Add your logic for showing the item here
   };
 
   const handleSortByName = () => {
@@ -57,21 +47,33 @@ function Questionnaire() {
     }
   };
 
+  const handleSaveChanges = async () => {
+    try {
+      const response = await axios.post('/api/save-dummy-data', { data: questionnaireItems });
+      if (response.status === 200) {
+        alert('Changes saved successfully!');
+      } else {
+        alert('Failed to save changes.');
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('An error occurred while saving changes.');
+    }
+  };
+
   const sortedQuestionnaireItems = [...questionnaireItems];
 
   if (sortOrder === 'asc') {
-    sortedQuestionnaireItems.sort();
+    sortedQuestionnaireItems.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortOrder === 'desc') {
-    sortedQuestionnaireItems.sort().reverse();
+    sortedQuestionnaireItems.sort((a, b) => b.name.localeCompare(a.name));
   }
 
   return (
     <div className="questionnaire-container">
       <h1>Questionnaire List</h1>
       <button onClick={() => console.log('Global Add Button Clicked')}>Add</button>
-
       <br />
-
       <label>
         <input
           type="checkbox"
@@ -80,7 +82,6 @@ function Questionnaire() {
         />
         Display my items only
       </label>
-
       <table className="questionnaire-table">
         <thead>
           <tr>
@@ -101,14 +102,8 @@ function Questionnaire() {
                     title={<BsPlusSquareFill />}
                     variant="outline-success"
                   >
-                    <Dropdown.Item onClick={() => console.log(`Adding field for ${item.name}`)}>
-                      Add Field
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => console.log(`Adding sub-item for ${item.name}`)}>
-                      Add Sub-Item
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => console.log(`Adding comment for ${item.name}`)}>
-                      Add Comment
+                    <Dropdown.Item onClick={() => handleNavigateToEditPage(item.name)}>
+                      Edit Questionnaire
                     </Dropdown.Item>
                   </DropdownButton>
                 </td>
@@ -135,23 +130,7 @@ function Questionnaire() {
                               className="ms-sm-2"
                               onClick={() => handleDelete(item)}
                             >
-                              <BsPersonXFill />
-                            </Button>
-                            <span className="icon-space"></span>
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <BsPencilFill />
-                            </Button>
-                            <span className="icon-space"></span>
-                            <Button
-                              variant="outline-warning"
-                              size="sm"
-                              onClick={() => handleShow(item)}
-                            >
-                              <BiCopy />
+                              Delete
                             </Button>
                           </td>
                         </tr>
