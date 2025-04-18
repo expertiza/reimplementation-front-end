@@ -88,7 +88,7 @@ const AssignReviewer: React.FC = () => {
               </div>
             ))}
 
-                        {/* Add Reviewer Button (Visible only if less than 3 reviewers) */}
+           {/* Add Reviewer Button (Visible only if less than 3 reviewers) */}
             {reviewers.length < 3 && (
               <Button
                 variant="outline-success"
@@ -121,4 +121,7 @@ const AssignReviewer: React.FC = () => {
           </Button>
           </div>
       </div>
+      </Container>
+  );
+};
      export default AssignReviewer;
