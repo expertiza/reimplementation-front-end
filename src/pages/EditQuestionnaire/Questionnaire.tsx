@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
+import axios from "axios";
 
 interface ImportedData {
   title: string;
@@ -148,15 +149,46 @@ const Questionnaire = () => {
   };
 
   // Function to handle saving the edited content
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedContent = {
       name,
       minScore,
       maxScore,
       isPrivate,
     };
-    console.log("Updated Content:", updatedContent);
-    alert("Content saved successfully!");
+  
+    try {
+      // Retrieve the token from the authentication state or a utility function
+      const token = localStorage.getItem("authToken"); // Assuming the token is stored in localStorage
+  
+      if (!token) {
+        throw new Error("Authentication token is missing. Please log in again.");
+      }
+  
+      // Make the POST request with the Authorization header
+      const response = await axios.post(
+        "http://localhost:3002/api/v1/questionnaires",
+        updatedContent,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the bearer token
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      // Handle successful save
+      console.log("Save successful:", response.data);
+      alert("Content saved successfully!");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific error
+        alert(`Failed to save content. ${error.response?.data?.message || error.message}`);
+      } else {
+        // Handle generic error
+        alert(`Failed to save content. ${String(error)}`);
+      }
+    }
   };
 
   return (
