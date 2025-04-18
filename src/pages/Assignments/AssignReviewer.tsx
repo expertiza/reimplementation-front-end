@@ -1,94 +1,140 @@
-import React, { useMemo } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
-// import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { Button, Container } from 'react-bootstrap';
 import { useLoaderData } from 'react-router-dom';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 
-interface IReviewer {
-  id: number;
-  name: string;
+interface ReviewerAssignment {
+  topic: string;
+  contributors: string[]; // contributors are just array of string
+  reviewers: { name: string, status: string }[];
 }
 
-const columnHelper = createColumnHelper<IReviewer>();
+const columnHelper = createColumnHelper<ReviewerAssignment>();
 
 const AssignReviewer: React.FC = () => {
   const assignment: any = useLoaderData();
-  // const navigate = useNavigate();
+  
+  const [data, setData] = useState<ReviewerAssignment[]>([
+    {
+      topic: "E2450. Refactor assignments_controller.rb",
+      contributors: ["Alice anna", "Bob sam"],
+      reviewers: [{ name: "User1", status: "Submitted" }]
+    },
+    {
+      topic: "E2451. Reimplement feedback_response_map.rb",
+      contributors: ["Bob sam", "Eve wesley"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    },
+    {
+      topic: "E2452. Refactor review_mapping_controller.rb",
+      contributors: ["Charlie boo"],
+      reviewers: []
+    },
+    {
+      topic: "E2458. User management and users table",
+      contributors: ["Harley jad", "Javed son", "Leo mee"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    },
+    {
+      topic: "E2467. UI for View Submissions",
+      contributors: ["Shadow box", "Bradon kin"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    }
+  ]);
 
-  // Dummy data for reviewers
-  const reviewers = useMemo(() => [
-    { id: 1, name: 'Reviewer 1' },
-    { id: 2, name: 'Reviewer 2' },
-    { id: 3, name: 'Reviewer 3' },
-    // ...other reviewers
-  ], []);
-
-  const columns = useMemo(() => [
-    columnHelper.display({
-      id: 'select',
-      header: () => 'Select',
-      cell: () => (
-        <input type="checkbox" style={{ marginLeft: 'auto', marginRight: 'auto', display: 'block' }} /> // Center the checkbox
+  const addReviewer = (topic: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic && row.reviewers.length < 3
+          ? { ...row, reviewers: [...row.reviewers, { name: `NewReviewer${row.reviewers.length + 1}`, status: "Pending" }] }
+          : row
       )
-    }),
-    columnHelper.accessor('name', {
-      header: () => 'Reviewer',
-      cell: info => info.getValue()
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: () => 'Action',
-      cell: () => (
-        <Button variant="outline-danger" size="sm">
-          Action
-        </Button>
-      )
-    })
-  ], []);
-
-  const handleAssignReviewers = () => {
-    console.log('Assigned reviewers');
-    // Logic to assign selected reviewers goes here
+    );
   };
 
-  // const handleClose = () => {
-  //   navigate(-1); // Go back to the previous page
-  // };
+  const deleteReviewer = (topic: string, reviewerName: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic
+          ? { ...row, reviewers: row.reviewers.filter(r => r.name !== reviewerName) }
+          : row
+      )
+    );
+  };
+
+  const unsubmitReviewer = (topic: string, reviewerName: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic
+          ? {
+              ...row,
+              reviewers: row.reviewers.map(r =>
+                r.name === reviewerName ? { ...r, status: "Pending" } : r
+              )
+            }
+          : row
+      )
+    );
+  };
+
+  const columns = useMemo(() => [
+    columnHelper.accessor("topic", {
+      id: 'select',
+      header: "Topic",
+      cell: info => info.getValue()
+    }),
+    columnHelper.accessor("contributors", {
+      header: "Contributors",
+      cell: info => info.getValue().join(", ")
+    }),
+    columnHelper.accessor("reviewers", {
+      id: 'actions',
+      header: "Reviewed By",
+      cell: info => {
+        const { reviewers, topic } = info.row.original;
+        return (
+          <div>
+            {reviewers.map((r, idx) => (
+              <div key={idx}>
+                {r.name} ({r.status}){" "}
+                <Button variant="outline-warning" size="sm" onClick={() => unsubmitReviewer(topic, r.name)}>Unsubmit</Button>{" "}
+                <Button variant="outline-danger" size="sm" onClick={() => deleteReviewer(topic, r.name)}>Delete</Button>
+              </div>
+            ))}
+            {reviewers.length < 3 && (
+              <Button variant="outline-success" size="sm" onClick={() => addReviewer(topic)} className="mt-2">
+                Add Reviewer
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }),
+  ], [data]);
 
   return (
-    <Container className="mt-4">
-      <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
-        This is a placeholder page and is still in progress.
+    <Container>
+      <h1 className="text-center my-4">Assign Reviewer - {assignment.name}</h1>
+      <Table
+        data={data}
+        columns={columns}
+        columnVisibility={{
+          id: false,
+        }}
+      />
+      <div className="text-end mt-3">
+        <Button variant="success" onClick={() => console.log("Save reviewers")}>Assign</Button>
       </div>
-      <Row className="mt-md-2 mb-md-2">
-        <Col className="text-center">
-          <h1>Assign Reviewer - {assignment.name}</h1>
-        </Col>
-        <hr />
-      </Row>
-      <Row>
-        <Col>
-          <Table
-            data={reviewers}
-            columns={columns}
-            columnVisibility={{
-              id: false,
-
-            }}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col className="text-right" md={{ span: 1, offset: 11 }}>
-          {/* <Button variant="outline-secondary" onClick={handleClose} style={{ marginRight: '10px' }}>
-            Close
-          </Button> */}
-          <Button variant="outline-success" onClick={handleAssignReviewers}>
-            Assign
-          </Button>
-        </Col>
-      </Row>
     </Container>
   );
 };
