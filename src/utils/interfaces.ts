@@ -86,7 +86,9 @@ export interface IAssignmentRequest {
   require_quiz:boolean,
   has_badge:boolean,
   staggered_deadline:boolean,
-  is_calibrated:boolean,
+  is_calibrated: boolean,
+  max_team_size: number;
+    
 }
 
 export interface ITAResponse {
@@ -164,10 +166,36 @@ export interface IAssignmentResponse {
   require_quiz:boolean;
   has_badge:boolean;
   staggered_deadline:boolean;
-  is_calibrated:boolean;
+    is_calibrated: boolean;
+    max_team_size: number;
   
 }
 
+export interface Topic {
+    topic_identifier: string;
+    topic_name: string;
+    is_waitlisted?: boolean;
+}
+export interface Contributor {
+    id: number;
+    name: string;
+    type: 'AssignmentTeam' | 'AssignmentParticipant ';
+    users: IUserRequest[];
+    reviewMappings: ReviewMapping[];
+
+}
+
+export interface ReviewMapping {
+    map_id: number;
+    reviewer: IUserRequest; // todo figure out if this should be UserRequest or response
+    review_status: 'Assigned' | 'Saved' | 'Submitted'; 
+    metareview_mappings: MetaReviewMapping[];
+}
+
+export interface MetaReviewMapping {
+    map_id: number;
+    reviewer: IUserRequest; // todo figure out if this should be UserRequest or response
+}
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {

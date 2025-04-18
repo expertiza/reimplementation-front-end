@@ -1,3 +1,4 @@
+import dummyTopicData from "./Data/DummyTopics.json";
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
@@ -213,6 +214,8 @@ const ReviewTable: React.FC = () => {
         Late Penalty: {dummyData.late_penalty}
         <br />
       </p>
+      <br />
+
 
       <Link to="/">Back</Link>
     </div>
