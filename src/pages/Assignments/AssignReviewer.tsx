@@ -1,3 +1,4 @@
+import dummyTopicData from "./Data/DummyTopics.json";
 import React, { useState, useMemo } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { useLoaderData } from 'react-router-dom';
