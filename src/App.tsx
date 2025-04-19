@@ -41,7 +41,7 @@ import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 import AssignGrade from "pages/Assignments/AssignGrade";
-import { loadAssignGradeData } from "pages/Assignments/AssignGrade";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -63,9 +63,8 @@ function App() {
         },
         
         {
-          path: "assign_grade/:id",
+          path: "assign_grade/:teamId",
           element: <ProtectedRoute element={<AssignGrade />} />,
-          loader: loadAssignGradeData,
         },
         
         {

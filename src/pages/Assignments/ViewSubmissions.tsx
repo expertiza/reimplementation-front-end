@@ -3,6 +3,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import { useLoaderData } from 'react-router-dom';
 import { ITeamRow, TeamSubmission } from './AssignmentUtil';
+import { Link } from 'react-router-dom';
 
 // Column helper to define typed table columns
 const columnHelper = createColumnHelper<ITeamRow>();
@@ -50,12 +51,14 @@ const ViewSubmissions: React.FC = () => {
       header: 'Links',
       cell: ({ row }) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <a
-            href={`/assign_grade/${row.original.id}`}
+          <Link
+            to={`/assign_grade/${row.original.id}`}
+            state={{ teamName: row.original.teamName }} 
             style={{ color: '#b44', marginBottom: '4px' }}
           >
             Assign Grade
-          </a>
+          </Link>
+
           <a
             href={row.original.historyLink}
             style={{ color: '#b44' }}

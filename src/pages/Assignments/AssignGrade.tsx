@@ -1,152 +1,121 @@
-import React from 'react';
-import { useLoaderData } from 'react-router-dom';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
-interface IPeerReview {
-  reviewerName: string;
-  score: number;
-  comment: string;
-}
+const AssignGrade = () => {
+  // Access route state (e.g., team name passed from previous page)
+  const location = useLocation();
 
-interface IAssignGradeData {
-  assignmentId: number;
-  assignmentName: string;
-  teamName: string;
-  submissionSummary: string;
-  peerReviews: IPeerReview[];
-}
+  // State for input values
+  const [grade, setGrade] = useState('');
+  const [comment, setComment] = useState('');
 
-export async function loadAssignGradeData({ params }: any): Promise<IAssignGradeData> {
-  return {
-    assignmentId: 1,
-    assignmentName: 'Program 1',
-    teamName: 'Team Hornets',
-    submissionSummary:
-      'This is a placeholder submission summary describing the tasks, code, or content the team has submitted for the assignment.',
-    peerReviews: [
-      {
-        reviewerName: 'student9183',
-        score: 93,
-        comment: 'Excellent work! Very thorough and well-documented.',
-      },
-      {
-        reviewerName: 'student9173',
-        score: 88,
-        comment: 'Good submission, but could use more detailed comments in the code.',
-      },
-    ],
-  };
-}
+  // UI state for feedback
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-const AssignGrade: React.FC = () => {
-  const data = useLoaderData() as IAssignGradeData;
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const [grade, setGrade] = React.useState('');
-  const [instructorComment, setInstructorComment] = React.useState('');
+    // Validate inputs
+    if (!grade.trim() || !comment.trim()) {
+      setError('Both grade and comment are required');
+      return;
+    }
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log('Submitting grade data:', {
-      assignmentId: data.assignmentId,
-      grade,
-      instructorComment,
-    });
-
-    alert('Grade submitted! (See the console for details.)');
+    // Clear error and simulate successful submission
+    setError('');
+    console.log('Grade:', grade, 'Comment:', comment);
+    setShowSuccess(true);
   };
 
-return (
-    <>
-        {/* Section 1: Header */}
-        <Container className="mt-4 mb-4 p-4 border rounded shadow-sm">
-            <Row>
-                <Col>
-                    <h1>Summary Report for assignment: {data.assignmentName}</h1>
-                    <p><strong>Team:</strong> {data.teamName}</p>
-                </Col>
-            </Row>
-        </Container>
+  return (
+    <div className="max-w-2xl mx-auto p-4">
+      {/* Success message */}
+      {showSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          Grade and comment for submission successfully saved.
+        </div>
+      )}
 
-        {/* Section 2: Submission Summary */}
-        <Container className="mb-4 p-4 border rounded shadow-sm">
-            <Row>
-                <Col>
-                    <h3>Submission Summary</h3>
-                    <p>{data.submissionSummary}</p>
-                </Col>
-            </Row>
-        </Container>
+      {/* Assignment title */}
+      <h1 className="text-left text-xl font-semibold mb-4">
+        Summary Report for assignment: Program 1
+      </h1>
 
-        {/* Section 3: Peer Review Scores */}
-        <Container className="mb-4 p-4 border rounded shadow-sm">
-            <Row>
-                <Col>
-                    <h3>Teammate Review</h3>
-                    {data.peerReviews && data.peerReviews.length > 0 ? (
-                        <table className="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Reviewer</th>
-                                    <th>Score</th>
-                                    <th>Comment</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.peerReviews.map((review, index) => (
-                                    <tr key={index}>
-                                        <td>{review.reviewerName}</td>
-                                        <td>{review.score}</td>
-                                        <td>{review.comment}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p>No peer reviews found for this assignment.</p>
-                    )}
-                </Col>
-            </Row>
-        </Container>
+      {/* Team name display */}
+      <div className="mb-4">
+        <span className="font-semibold">Team: </span>
+        {location.state?.teamName || 'Unknown Team'}
+      </div>
 
-        {/* Section 4: Grade & Comment Form */}
-        <Container className="mb-4 p-4 border rounded shadow-sm">
-            <Row>
-                <Col>
-                    <h3>Grade and Comment for Submission</h3>
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group controlId="gradeInput" className="mb-3">
-                            <Form.Label>Grade</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter numeric or letter grade"
-                                value={grade}
-                                onChange={(e) => setGrade(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
+      {/* Peer review score placeholder */}
+      <div className="mb-4">
+        <span className="font-semibold">Average peer review score: </span>
+        <span className="bg-green-50 text-green-600">N/A</span>
+      </div>
 
-                        <Form.Group controlId="commentInput" className="mb-3">
-                            <Form.Label>Comments</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                rows={4}
-                                placeholder="Add any comments for the team here"
-                                value={instructorComment}
-                                onChange={(e) => setInstructorComment(e.target.value)}
-                                required
-                            />
-                        </Form.Group>
+      {/* Placeholder for future submission view */}
+      <button className="mb-6 bg-white text-black border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded">
+        Show Submission
+      </button>
 
-                        <Button variant="primary" type="submit" disabled={!grade || !instructorComment}>
-                            Submit Grade
-                        </Button>
-                    </Form>
-                </Col>
-            </Row>
-        </Container>
-    </>
-);
+      {/* Warnings for missing review types */}
+      <div className="mb-6 space-y-3">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+          NO REVIEW OF AuthorFeedbackQuestionnaire TYPE EXISTS.
+        </div>
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+          NO REVIEW OF TeammateReviewQuestionnaire TYPE EXISTS.
+        </div>
+      </div>
+
+      {/* Section heading */}
+      <h3 className="text-left text-xl font-semibold mb-4">
+        Grade and Comment for Submission
+      </h3>
+
+      {/* Display validation errors */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      {/* Grade and comment form */}
+      <form onSubmit={handleSubmit}>
+        {/* Grade input */}
+        <div className="mb-4">
+          <label className="block font-semibold mb-1">Grade:</label>
+          <input
+            type="text"
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            value={grade}
+            onChange={(e) => setGrade(e.target.value)}
+          />
+        </div>
+
+        {/* Comment input */}
+        <div className="mb-6 mt-6">
+          <label className="block font-semibold mb-1">Comment:</label>
+          <textarea
+            rows={4}
+            className="w-full border border-gray-300 rounded px-3 py-2"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </div>
+
+        {/* Save button */}
+        <button
+          type="submit"
+          className="bg-white text-black border border-gray-300 px-4 py-2 rounded"
+        >
+          Save
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default AssignGrade;
