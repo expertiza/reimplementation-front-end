@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
-import dummyTopicData from '../ViewTeamGrades/Data/DummyTopics.json'; // import your topics
-import "../ViewTeamGrades/grades.scss"; // for table styles if needed
+import dummyTopicData from '../ViewTeamGrades/Data/DummyTopics.json'; 
 
 const AssignReviewer: React.FC = () => {
   const [data, setData] = useState(dummyTopicData);
