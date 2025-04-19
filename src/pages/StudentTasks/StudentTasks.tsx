@@ -7,6 +7,7 @@ import { CellContext } from "@tanstack/react-table"; // or the correct import fo
 import Table from "components/Table/Table";
 import { formatDate, capitalizeFirstWord } from "utils/dataFormatter";
 import axiosClient from "utils/axios_client";
+import ToolTip from "../../components/ToolTip";
 
 // Define the types for a single task and the associated course
 type Task = {
@@ -121,22 +122,14 @@ const StudentTasks: React.FC = () => {
         info.getValue() === "N/A" ? (
           "NA"
         ) : (
-          <img
-            src="assets/icons/info.png"
-            alt="Review Grade"
-            title={
-              typeof info.row.original.reviewGrade === "object"
-                ? info.row.original.reviewGrade || ""
-                : ""
-            }
-          />
+          <ToolTip id="info.row.original" info={info.row.original.reviewGrade || ""} />
         ),
     },
     ...(showBadges ? [{ accessorKey: "badges", header: "Badges" }] : []),
     {
       accessorKey: "stageDeadline",
       header: "Stage Deadline",
-      // comment: "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+      comment: "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
     },
     {
       accessorKey: "publishingRights",
@@ -148,12 +141,14 @@ const StudentTasks: React.FC = () => {
           onChange={() => togglePublishingRights(Number(info.row.original.id))}
         />
       ),
-      // comment: "Grant publishing rights",
+      comment: "Grant publishing rights",
     },
   ].map(({ header, ...rest }) => ({
     ...rest,
     header: capitalizeFirstWord(header as string),
   }));
+
+  console.log("hello date1", tasks);
 
   /**
    * Extracts related table records
