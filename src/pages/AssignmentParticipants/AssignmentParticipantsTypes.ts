@@ -26,6 +26,7 @@ export interface ParticipantPermissions {
 
 export interface Participant {
   id: number;
+  user_id: number;
   name: string;
   email: string;
   role: Role;

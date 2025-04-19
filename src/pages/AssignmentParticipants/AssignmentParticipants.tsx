@@ -11,6 +11,7 @@ import { AssignmentProperties, IsEnabled, Participant, ParticipantRole, Role } f
 import useAPI from 'hooks/useAPI';
 import { useParams } from 'react-router';
 import { IAssignmentParticipantResponse, IAssignmentResponse } from 'utils/interfaces';
+import { HttpMethod } from 'utils/httpMethods';
 
 interface AssignmentParticipantsProps {
   assignmentProps: AssignmentProperties;
@@ -22,9 +23,12 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const { data: participantsResponse, sendRequest: fetchParticipants } = useAPI();
   const { data: usersResponse, sendRequest: fetchUsers } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
-  const { data: deletedParticipant, sendRequest: deleteParticipant } = useAPI();
 
-  const [participants, setParticipants] = useState<Participant[]>(initialData);
+  const { sendRequest: addParticipant } = useAPI();
+  const { sendRequest: updateParticipant } = useAPI();
+  const { sendRequest: deleteParticipant } = useAPI();
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [newUserName, setNewUserName] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<ParticipantRole>(ParticipantRole.Participant);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -48,33 +52,45 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       fetchUsers({ url: "/users" });
       fetchAssignment({ url: `/assignments/${assignmentId}` });
     }
-  }, [fetchParticipants, modalShow]);
+  }, [
+    modalShow,
+    assignmentId,
+    fetchParticipants,
+    fetchUsers,
+    fetchAssignment,
+    addParticipant,
+    updateParticipant,
+    deleteParticipant,
+  ]);
 
-  const mergedData = useMemo(() => {
+  useEffect(() => {
     if (participantsResponse?.data && usersResponse?.data && assignmentResponse?.data) {
       const assignment = assignmentResponse.data as IAssignmentResponse;
       const participants = participantsResponse.data.map((participant: IAssignmentParticipantResponse) => {
         const user = usersResponse.data.find((u: any) => u.id === participant.user_id);
         return {
           id: participant.id,
+          user_id: user.id,
           name: user.full_name,
           email: user.email,
           role: user.role.name,
           parent: assignment.name,
           permissions: {
-            review: participant.can_review as boolean,
-            submit: participant.can_submit as boolean,
-            takeQuiz: participant.can_take_quiz as boolean,
-            mentor: participant.can_mentor as boolean,
+            review: participant.can_review ? IsEnabled.Yes : IsEnabled.No,
+            submit: participant.can_submit ? IsEnabled.Yes : IsEnabled.No,
+            takeQuiz: participant.can_take_quiz ? IsEnabled.Yes : IsEnabled.No,
+            mentor: participant.can_mentor ? IsEnabled.Yes : IsEnabled.No,
           },
           participantRole: participant.authorization || ParticipantRole.Participant,
         };
       });
-      console.log(participants);
-      return participants;
+      setParticipants(participants);
     }
-    return [];
-  }, [participantsResponse, usersResponse, assignmentResponse]);
+  }, [
+    participantsResponse,
+    usersResponse,
+    assignmentResponse,
+  ]);
 
   const filteredParticipants = participants
     .filter((participant) => {
@@ -112,19 +128,20 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       setLastDeletedParticipant(selectedParticipant);
       const updatedList = participants.filter((p) => p.id !== selectedParticipant.id);
       deleteParticipant({ url: `/participants/${selectedParticipant.id}`, method: 'DELETE' });
-      // TODO fix this to add back participant
-      showNotification("Participant removed. Undo to add them back at the end of the list.", () => setParticipants([...updatedList, selectedParticipant]));
       setModalShow({ edit: false, remove: false });
     }
   };
 
   const handleSave = (updatedParticipant: Participant) => {
-    const updatedList = participants.map((p) =>
-      p.id === updatedParticipant.id ? updatedParticipant : p
-    );
-    setParticipants(updatedList);
-    showNotification("Participant updated", () => setParticipants(participants));
-    setSelectedParticipant(null);
+    // const updatedList = participants.map((p) =>
+    //   p.id === updatedParticipant.id ? updatedParticipant : p
+    // );
+    // setParticipants(updatedList);
+    // setSelectedParticipant(null);
+    updateParticipant({
+      url: `/participants/${updatedParticipant.id}/${updatedParticipant.participantRole}`,
+      method: HttpMethod.PATCH,
+    });
   };
 
   const handleAddUser = () => {
@@ -141,24 +158,23 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     // Reset error if name is valid
     setError(null);
 
-    const newUser: Participant = {
-      id: participants.length + 1,
-      name: newUserName,
-      email: `${newUserName.toLowerCase().replace(/\s+/g, '_')}@mailinator.com`,
-      role: Role.Student, // Default role; can be dynamically set as needed
-      parent: "Instructor 6",
-      permissions: {
-        review: IsEnabled.Yes,
-        submit: IsEnabled.Yes,
-        takeQuiz: IsEnabled.Yes,
-        mentor: IsEnabled.No, // Default 'No' for mentor
-      },
-      participantRole: selectedRole,
-    };
+    const user = usersResponse?.data.find((u: any) => u.name === newUserName.trim()).id;
+    if (!user) {
+      setError('User not found.');
+      return;
+    }
 
-    setParticipants([...participants, newUser]);
+    addParticipant({
+      url: "/participants/participant",
+      method: 'POST',
+      data: {
+        user_id: user.id,
+        assignment_id: Number(assignmentId),
+        authorization: selectedRole,
+      }
+    });
+
     setNewUserName('');
-    showNotification("Participant added", () => setParticipants(participants));
   };
 
   const handleSort = (path: string) => {
