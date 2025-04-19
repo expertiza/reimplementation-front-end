@@ -33,7 +33,7 @@ const ContributorTable: React.FC<Props> = ({ contributors, hasSignupSheet, assig
                             <td>
                                 {contributor.users.map(user => (
                                     <div key={user.id}>
-                                        {user.fullName} ({user.name})
+                                        {user.full_name} ({user.name})
                                     </div>
                                 ))}
                                 <div className="text-right">
@@ -53,9 +53,9 @@ const ContributorTable: React.FC<Props> = ({ contributors, hasSignupSheet, assig
                                         return (
                                             <tr key={map.map_id} className={bg2}>
                                                 <td className="w-1/2">
-                                                    {map.reviewer.name} ({map.reviewer.fullName})
+                                                    {map.reviewer.name} ({map.reviewer.full_name})
                                                     <div className="text-right">
-                                                        Review Status: {map.responseStatus}
+                                                        Review Status: {map.review_status}
                                                         <br />
                                                         <a href="#" className="delete-reviewer-btn" data-id={map.map_id}>delete</a><br />
                                                         <a href={`/metareview_mapping/select_metareviewer/${map.map_id}`}>add metareviewer</a><br />
@@ -64,12 +64,12 @@ const ContributorTable: React.FC<Props> = ({ contributors, hasSignupSheet, assig
                                                 </td>
                                                 <td className="w-1/2">
                                                     <table className="w-full">
-                                                        {map.metareviewMappings.map((rmap, k) => {
+                                                        {map.metareview_mappings.map((rmap, k) => {
                                                             const bg3 = k % 2 === 0 ? 'bg-white' : 'bg-gray-300';
                                                             return (
                                                                 <tr key={rmap.map_id} className={bg3}>
                                                                     <td>
-                                                                        {rmap.reviewer.name} ({rmap.reviewer.fullName})
+                                                                        {rmap.reviewer.name} ({rmap.reviewer.full_name})
                                                                         <div className="text-right">
                                                                             <a href={`/metareview_mapping/delete_metareviewer/${rmap.map_id}`}>delete</a>
                                                                         </div>
