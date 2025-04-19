@@ -61,10 +61,6 @@ function App() {
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
         {
-          path: "participants",
-          element: <AssignmentParticipants assignmentProps={{ hasQuiz: false, hasMentor: false }} />,
-        },
-        {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
           loader: loadAssignment,
@@ -149,19 +145,7 @@ function App() {
         },
         {
           path: "assignments/edit/:assignmentId/participants",
-          element: <Participants type="student_tasks" id={1} />,
-          children: [
-            {
-              path: "new",
-              element: <ParticipantEditor mode="create" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
-            },
-            {
-              path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
-            },
-          ],
+          element: <AssignmentParticipants assignmentProps={{ hasQuiz: true, hasMentor: true }} />,
         },
         {
           path: "student_tasks/edit/:assignmentId/participants",

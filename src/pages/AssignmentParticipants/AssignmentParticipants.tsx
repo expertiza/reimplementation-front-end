@@ -1,13 +1,16 @@
 import participantsData from './participants.json';
 import './AssignmentParticipants.css';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EditParticipantModal from './EditParticipantModal';
 import ConfirmRemoveModal from './ConfirmRemoveModal';
 import ToastNotification from './ToastNotification';
 import ParticipantTable from './ParticipantsTable';
 import { getNestedValue, participantRoleInfo, assignmentColSpan as numColumns } from './AssignmentParticipantsUtil';
 import { AssignmentProperties, IsEnabled, Participant, ParticipantRole, Role } from './AssignmentParticipantsTypes';
+import useAPI from 'hooks/useAPI';
+import { useParams } from 'react-router';
+import { IAssignmentParticipantResponse, IAssignmentResponse } from 'utils/interfaces';
 
 interface AssignmentParticipantsProps {
   assignmentProps: AssignmentProperties;
@@ -16,6 +19,11 @@ interface AssignmentParticipantsProps {
 const initialData = participantsData as Participant[];
 
 function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps) {
+  const { data: participantsResponse, sendRequest: fetchParticipants } = useAPI();
+  const { data: usersResponse, sendRequest: fetchUsers } = useAPI();
+  const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
+  const { data: deletedParticipant, sendRequest: deleteParticipant } = useAPI();
+
   const [participants, setParticipants] = useState<Participant[]>(initialData);
   const [newUserName, setNewUserName] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<ParticipantRole>(ParticipantRole.Participant);
@@ -31,6 +39,42 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const showNotification = (message: string, onUndo: () => void) => {
     setToast({ message, onUndo });
   };
+
+  const { assignmentId } = useParams();
+
+  useEffect(() => {
+    if (!modalShow.edit || !modalShow.remove) {
+      fetchParticipants({ url: `/participants/assignment/${assignmentId}` });
+      fetchUsers({ url: "/users" });
+      fetchAssignment({ url: `/assignments/${assignmentId}` });
+    }
+  }, [fetchParticipants, modalShow]);
+
+  const mergedData = useMemo(() => {
+    if (participantsResponse?.data && usersResponse?.data && assignmentResponse?.data) {
+      const assignment = assignmentResponse.data as IAssignmentResponse;
+      const participants = participantsResponse.data.map((participant: IAssignmentParticipantResponse) => {
+        const user = usersResponse.data.find((u: any) => u.id === participant.user_id);
+        return {
+          id: participant.id,
+          name: user.full_name,
+          email: user.email,
+          role: user.role.name,
+          parent: assignment.name,
+          permissions: {
+            review: participant.can_review as boolean,
+            submit: participant.can_submit as boolean,
+            takeQuiz: participant.can_take_quiz as boolean,
+            mentor: participant.can_mentor as boolean,
+          },
+          participantRole: participant.authorization || ParticipantRole.Participant,
+        };
+      });
+      console.log(participants);
+      return participants;
+    }
+    return [];
+  }, [participantsResponse, usersResponse, assignmentResponse]);
 
   const filteredParticipants = participants
     .filter((participant) => {
@@ -67,7 +111,8 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     if (selectedParticipant) {
       setLastDeletedParticipant(selectedParticipant);
       const updatedList = participants.filter((p) => p.id !== selectedParticipant.id);
-      setParticipants(updatedList);
+      deleteParticipant({ url: `/participants/${selectedParticipant.id}`, method: 'DELETE' });
+      // TODO fix this to add back participant
       showNotification("Participant removed. Undo to add them back at the end of the list.", () => setParticipants([...updatedList, selectedParticipant]));
       setModalShow({ edit: false, remove: false });
     }
