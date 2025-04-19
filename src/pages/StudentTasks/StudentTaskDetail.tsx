@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import styles from "./StudentTaskDetail.module.css";
+import axiosClient from "utils/axios_client";
 
 // TODO: Mock_Data
 const MockedStudentTaskDetails = {
@@ -28,6 +29,39 @@ const StudentTaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { stages, current_stage } = MockedStudentTaskDetails;
 
+  const [tasks, setTasks] = useState<any>(null);
+  useEffect(() => {
+    const fetchStudentTasks = async () => {
+      try {
+        const response = await axiosClient.get(`/student_tasks/list`);
+        setTasks(response.data);
+        console.log("hello", response.data);
+      } catch (error) {
+        console.error("Error fetching student tasks:", error);
+      }
+    };
+ 
+ 
+    fetchStudentTasks();
+  }, []);
+ 
+ 
+  const [assignments, setAssignmetns] = useState<any>(null);
+  useEffect(() => {
+    const fetchStudentTasks = async () => {
+      try {
+        const response = await axiosClient.get(`/assignments`);
+        setTasks(response.data);
+        console.log("hello assignment", response.data);
+      } catch (error) {
+        console.error("Error fetching student tasks:", error);
+      }
+    };
+ 
+ 
+    fetchStudentTasks();
+  }, []);
+ 
 
   return (
     <div className={styles.container}>
