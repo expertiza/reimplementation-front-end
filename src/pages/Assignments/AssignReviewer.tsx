@@ -171,18 +171,25 @@ const AssignReviewer: React.FC = () => {
 
   return (
     <Container>
-  <h1 className="text-center mt-5 mb-4">
-    Assign Reviewer - {assignment.name}
-  </h1>
+    <div className="px-4">
+    <div className="mt-5 mb-4">
+      <h1 className="mb-2">Participants</h1> {/* <- spacing added here */}
+      <h1 className="mb-5">Assignment: {assignment.name}</h1>
+    </div>
 
-  <div className="mt-4">
-    <Table
-      data={data}
-      columns={columns}
-      columnVisibility={{ id: false }}
-    />
-  </div>
-</Container>
+      <div style={{ marginTop: "50px" }}>
+        <Table
+          data={data}
+          columns={columns}
+          columnVisibility={{ id: false }}
+          showGlobalFilter={false}
+          tableClassName="tan-bg-table"
+        />
+      </div>
+    </div>
+
+  </Container>
+
   );
 };
 

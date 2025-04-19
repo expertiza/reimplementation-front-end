@@ -29,6 +29,7 @@ interface TableProps {
   showPagination?: boolean;
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
+  tableClassName?: string;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
 }
 
@@ -41,6 +42,7 @@ const Table: React.FC<TableProps> = ({
   onSelectionChange,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
+  tableClassName = "tan-bg-table"
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
@@ -162,7 +164,7 @@ const Table: React.FC<TableProps> = ({
       <Container>
         <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm">
+            <BTable className={tableClassName} striped hover responsive size="sm">
               <thead className="table-secondary">
                 {getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
