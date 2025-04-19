@@ -2,115 +2,155 @@ import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
 
 const AssignGrade = () => {
-  // Access route state (e.g., team name passed from previous page)
   const location = useLocation();
-
-  // State for input values
   const [grade, setGrade] = useState('');
   const [comment, setComment] = useState('');
-
-  // UI state for feedback
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate inputs
     if (!grade.trim() || !comment.trim()) {
       setError('Both grade and comment are required');
       return;
     }
 
-    // Clear error and simulate successful submission
     setError('');
     console.log('Grade:', grade, 'Comment:', comment);
     setShowSuccess(true);
   };
 
+  const styles = {
+    container: {
+      maxWidth: '700px',
+      margin: '2rem auto',
+      padding: '2rem',
+      backgroundColor: '#fff',
+      borderRadius: '10px',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+      fontFamily: 'Arial, sans-serif',
+    },
+    heading: {
+      fontSize: '1.8rem',
+      fontWeight: 'bold',
+      marginBottom: '1rem',
+    },
+    label: {
+      fontWeight: 'bold',
+      display: 'block',
+      marginBottom: '0.5rem',
+    },
+    input: {
+      width: '100%',
+      padding: '0.6rem',
+      border: '1px solid #ccc',
+      borderRadius: '5px',
+      marginBottom: '1rem',
+    },
+    textarea: {
+      width: '100%',
+      padding: '0.6rem',
+      border: '1px solid #ccc',
+      borderRadius: '5px',
+      marginBottom: '1rem',
+    },
+    button: {
+      padding: '0.6rem 1.2rem',
+      border: '1px solid #888',
+      backgroundColor: '#f0f0f0',
+      borderRadius: '5px',
+      cursor: 'pointer',
+    },
+    message: {
+      marginBottom: '1rem',
+      padding: '0.75rem',
+      borderRadius: '6px',
+    },
+    success: {
+      backgroundColor: '#d1fae5',
+      color: '#065f46',
+      border: '1px solid #10b981',
+    },
+    error: {
+      backgroundColor: '#fee2e2',
+      color: '#b91c1c',
+      border: '1px solid #ef4444',
+    },
+    warning: {
+      backgroundColor: '#fef3c7',
+      color: '#92400e',
+      border: '1px solid #f59e0b',
+      marginBottom: '0.5rem',
+    },
+    badge: {
+      backgroundColor: '#d1fae5',
+      color: '#065f46',
+      padding: '0.2rem 0.5rem',
+      borderRadius: '6px',
+      fontSize: '0.9rem',
+    },
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      {/* Success message */}
+    <div style={styles.container}>
       {showSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div style={{ ...styles.message, ...styles.success }}>
           Grade and comment for submission successfully saved.
         </div>
       )}
 
-      {/* Assignment title */}
-      <h1 className="text-left text-xl font-semibold mb-4">
+      <h1 style={styles.heading}>
         Summary Report for assignment: Program 1
       </h1>
 
-      {/* Team name display */}
-      <div className="mb-4">
-        <span className="font-semibold">Team: </span>
+      <div style={{ marginBottom: '1rem' }}>
+        <span style={styles.label}>Team:</span>
         {location.state?.teamName || 'Unknown Team'}
       </div>
 
-      {/* Peer review score placeholder */}
-      <div className="mb-4">
-        <span className="font-semibold">Average peer review score: </span>
-        <span className="bg-green-50 text-green-600">N/A</span>
+      <div style={{ marginBottom: '1rem' }}>
+        <span style={styles.label}>Average peer review score:</span>
+        <span style={styles.badge}>N/A</span>
       </div>
 
-      {/* Placeholder for future submission view */}
-      <button className="mb-6 bg-white text-black border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded">
-        Show Submission
-      </button>
+      <button style={styles.button}>Show Submission</button>
 
-      {/* Warnings for missing review types */}
-      <div className="mb-6 space-y-3">
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+      <div style={{ margin: '1rem 0' }}>
+        <div style={styles.warning}>
           NO REVIEW OF AuthorFeedbackQuestionnaire TYPE EXISTS.
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+        <div style={styles.warning}>
           NO REVIEW OF TeammateReviewQuestionnaire TYPE EXISTS.
         </div>
       </div>
 
-      {/* Section heading */}
-      <h3 className="text-left text-xl font-semibold mb-4">
+      <h3 style={{ ...styles.label, fontSize: '1.2rem' }}>
         Grade and Comment for Submission
       </h3>
 
-      {/* Display validation errors */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <div style={{ ...styles.message, ...styles.error }}>{error}</div>
       )}
 
-      {/* Grade and comment form */}
       <form onSubmit={handleSubmit}>
-        {/* Grade input */}
-        <div className="mb-4">
-          <label className="block font-semibold mb-1">Grade:</label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
-          />
-        </div>
+        <label style={styles.label}>Grade:</label>
+        <input
+          type="text"
+          style={styles.input}
+          value={grade}
+          onChange={(e) => setGrade(e.target.value)}
+        />
 
-        {/* Comment input */}
-        <div className="mb-6 mt-6">
-          <label className="block font-semibold mb-1">Comment:</label>
-          <textarea
-            rows={4}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-        </div>
+        <label style={styles.label}>Comment:</label>
+        <textarea
+          rows={4}
+          style={styles.textarea}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
 
-        {/* Save button */}
-        <button
-          type="submit"
-          className="bg-white text-black border border-gray-300 px-4 py-2 rounded"
-        >
+        <button type="submit" style={styles.button}>
           Save
         </button>
       </form>
