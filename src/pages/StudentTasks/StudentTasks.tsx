@@ -15,7 +15,7 @@ type Task = {
   course: string;
   topic: string;
   currentStage: string;
-  reviewGrade: string | { comment: string };
+  reviewGrade: string;
   badges: string | boolean;
   stageDeadline: string;
   publishingRights: boolean;
@@ -23,25 +23,19 @@ type Task = {
 
 // Main functional component for Student Tasks
 const StudentTasks: React.FC = () => {
-  // State and hooks initialization
-  const participantTasks = testData.participantTasks;
-  const currentUserId = testData.current_user_id;
   // Store the studentTaskData
   const [studentTasksData, setStudentTasksData] = useState<any>([]);
   // State to hold tasks
   const [tasks, setTasks] = useState<Task[]>([]);
-  const taskRevisions = testData.revisions;
+  // Team test data
   const studentsTeamedWith = testData.studentsTeamedWith;
 
-  console.log("hello example Duteis", taskRevisions);
-
+  // Fetch student tasks from the backend when the component mounts
   useEffect(() => {
     const fetchStudentTasks = async () => {
       try {
         const response = await axiosClient.get(`/student_tasks/list`);
         setStudentTasksData(response.data);
-        // console.log("hello mocked", tasks);
-        console.log("hello real", response.data);
       } catch (error) {
         console.error("Error fetching student tasks:", error);
       }
@@ -50,11 +44,14 @@ const StudentTasks: React.FC = () => {
     fetchStudentTasks();
   }, []);
 
+  // Parse and update tasks whenever studentTasksData changes
   useEffect(() => {
     setTasks(parseStudentTasks(studentTasksData));
-    console.log("hello convert", tasks, extractAssignments(tasks));
   }, [studentTasksData]);
 
+  /**
+   * Converts a raw list of student task data into a structured array of Task objects
+   */
   function parseStudentTasks(rawList: any[]): Task[] {
     return rawList.map((item) => {
       const participant = item.participant || {};
@@ -69,14 +66,13 @@ const StudentTasks: React.FC = () => {
         badges: item.badges ?? false, // Adjust if you have badges logic elsewhere
         stageDeadline: item.stage_deadline ?? participant.stage_deadline ?? "",
         publishingRights: participant.permission_granted ?? false,
+        deadlines: item.deadlines, // Additional fields for StudentTaskDetails
       };
     });
   }
 
   /**
    * Extracts assignment names and due dates from student task data.
-   * @param {Array} tasks - Array of student task objects.
-   * @returns {Array} Simplified array with name and dueDate fields.
    */
   function extractAssignments(tasks: any[]) {
     return tasks.map((task) => ({
@@ -85,7 +81,9 @@ const StudentTasks: React.FC = () => {
     }));
   }
 
-  // Callback to toggle publishing rights
+  /**
+   * Handle toggle publishing rights checkbox
+   */
   const togglePublishingRights = useCallback((id: number) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
@@ -94,26 +92,24 @@ const StudentTasks: React.FC = () => {
     );
   }, []);
 
-  type RowData = {
-    assignment: string;
-    course: string;
-    topic: string;
-    currentStage: string;
-    reviewGrade: { comment?: string } | "N/A";
-    badges?: string;
-    stageDeadline: string;
-    publishingRights: boolean;
-    id: string;
-  };
-
   const showBadges = tasks.some((task) => task.badges);
+
+  /**
+   * Extracts table columns
+   */
   const filteredColumns = [
     {
       accessorKey: "assignment",
       header: "Assignment",
-      cell: (info: CellContext<RowData, string>) => (
-        <Link to={`/student_task_detail/${info.row.original.id}`}>{info.getValue()}</Link>
-      ),
+      cell: (info: CellContext<Task, string>) => {
+        const id = info.row.original.id;
+        const matchedTask = tasks.find((task) => task.id === id);
+        return (
+          <Link to={`/student_task_detail/${id}`} state={{ task: matchedTask }}>
+            {info.getValue()}
+          </Link>
+        );
+      },
     },
     { accessorKey: "course", header: "Course" },
     { accessorKey: "topic", header: "Topic" },
@@ -121,7 +117,7 @@ const StudentTasks: React.FC = () => {
     {
       accessorKey: "reviewGrade",
       header: "Review Grade",
-      cell: (info: CellContext<RowData, RowData["reviewGrade"]>) =>
+      cell: (info: CellContext<Task, Task["reviewGrade"]>) =>
         info.getValue() === "N/A" ? (
           "NA"
         ) : (
@@ -130,7 +126,7 @@ const StudentTasks: React.FC = () => {
             alt="Review Grade"
             title={
               typeof info.row.original.reviewGrade === "object"
-                ? info.row.original.reviewGrade.comment || ""
+                ? info.row.original.reviewGrade || ""
                 : ""
             }
           />
@@ -145,7 +141,7 @@ const StudentTasks: React.FC = () => {
     {
       accessorKey: "publishingRights",
       header: "Publishing Rights",
-      cell: (info: CellContext<RowData, boolean>) => (
+      cell: (info: CellContext<Task, boolean>) => (
         <input
           type="checkbox"
           checked={info.getValue()}
@@ -157,14 +153,15 @@ const StudentTasks: React.FC = () => {
   ].map(({ header, ...rest }) => ({
     ...rest,
     header: capitalizeFirstWord(header as string),
-  })); // TODO: Format header data, this should be handled by the common Table.
+  }));
 
+  /**
+   * Extracts related table records
+   */
   const filteredAssignments = tasks.map((task) => ({
-    id: task.id,
-    assignment: task.assignment,
-    course: task.course,
-    topic: capitalizeFirstWord(task.topic) || "-", // TODO: capitalizeFirstWord should be handle wihtin the common Table
-    currentStage: task.currentStage || "Pending",
+    ...task,
+    topic: capitalizeFirstWord(task.topic) || "-",
+    course: capitalizeFirstWord(task.course),
     reviewGrade: task.reviewGrade || "N/A",
     badges: task.badges || "",
     stageDeadline: formatDate(task.stageDeadline) || "No deadline",
@@ -177,7 +174,10 @@ const StudentTasks: React.FC = () => {
       <h1 className="assignments-title">Assignments</h1>
       <div className={styles.pageLayout}>
         <aside className={styles.sidebar}>
-          <StudentTasksBox revisions={taskRevisions} studentsTeamedWith={studentsTeamedWith} />
+          <StudentTasksBox
+            revisions={extractAssignments(tasks)}
+            studentsTeamedWith={studentsTeamedWith}
+          />
         </aside>
 
         {/* Table section */}

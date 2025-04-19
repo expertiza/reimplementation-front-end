@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import styles from "./StudentTaskDetail.module.css";
 import axiosClient from "utils/axios_client";
 
@@ -25,9 +25,13 @@ const MockedStudentTaskDetails = {
   permission_granted: true,
 };
 
-const StudentTaskDetail: React.FC = () => {
+const StudentTaskDetail: React.FC = (props) => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const stateData = location.state;
   const { stages, current_stage } = MockedStudentTaskDetails;
+
+  console.log('hello props', stateData);
 
   const [tasks, setTasks] = useState<any>(null);
   useEffect(() => {
