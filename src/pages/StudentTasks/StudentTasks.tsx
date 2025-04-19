@@ -148,8 +148,6 @@ const StudentTasks: React.FC = () => {
     header: capitalizeFirstWord(header as string),
   }));
 
-  console.log("hello date1", tasks);
-
   /**
    * Extracts related table records
    */
