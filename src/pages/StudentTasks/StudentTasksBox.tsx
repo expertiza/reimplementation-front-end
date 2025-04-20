@@ -1,10 +1,6 @@
 import React from 'react';
 import styles from './StudentTasksBox.module.css';
 
- type DueTask = {
-
-  };
-
   type Revision = {
         name: string;
         dueDate: string;
@@ -17,12 +13,11 @@ import styles from './StudentTasksBox.module.css';
 
   // interface for Student task box data
   interface StudentTasksBoxProps {
-    dueTasks: DueTask[];
     revisions: Revision[];
     studentsTeamedWith: StudentsTeamedWith;
   }
   
-  const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ dueTasks, revisions, studentsTeamedWith }) => {
+  const StudentTasksBox: React.FC<StudentTasksBoxProps> = ({ revisions, studentsTeamedWith }) => {
 
     let totalStudents = 0;
     for (const semester in studentsTeamedWith) {

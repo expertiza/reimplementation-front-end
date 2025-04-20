@@ -19,6 +19,7 @@ import GlobalFilter from "./GlobalFilter";
 import Pagination from "./Pagination";
 import RowSelectCheckBox from "./RowSelectCheckBox";
 import { FaSearch } from "react-icons/fa";
+import ToolTip from "components/ToolTip";
 
 interface TableProps {
   data: Record<string, any>[];
@@ -205,13 +206,7 @@ const Table: React.FC<TableProps> = ({
                                 }}
                               >
                                 {flexRender(header.column.columnDef.header, header.getContext())}
-                                {comment && (
-                                  <img
-                                    src="assets/icons/info.png"
-                                    alt="Review Grade"
-                                    title={comment}
-                                  />
-                                )}
+                                {comment && <ToolTip id="" info={comment} />}
                                 {{
                                   asc: " 🔼",
                                   desc: " 🔽",
