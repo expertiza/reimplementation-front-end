@@ -90,18 +90,27 @@ const AssignReviewer: React.FC = () => {
     );
   };
 
+  const getRowBackground = (index: number): string =>
+    index % 2 === 0 ? "#e8e8d2" : "#ffffff";
+
   const columns = useMemo(() => [
     columnHelper.accessor("topic", {
       id: 'select',
       header: "Topic Selected",
-      cell: info => info.getValue()
+      cell: info => {
+        return (
+          <div>
+            {info.getValue()}
+          </div>
+        );
+      }
     }),
     columnHelper.accessor("contributors", {
       header: "Contributors",
       cell: info => {
         const { contributors, topic, reviewers } = info.row.original;
         const hasPending = reviewers.some(r => r.status === "Pending");
-    
+        const index = info.row.index;
         return (
           <div>
             {contributors.map((c, idx) => (
@@ -203,14 +212,21 @@ const AssignReviewer: React.FC = () => {
   
 
   return (
-    <div style={{ paddingLeft: 15, paddingRight: 0 }}>
-  <div className="mt-5 mb-4">
+    <div style={{ paddingLeft: 30, paddingRight: 15 }}>
+  <div style={{ marginLeft: "auto" }} className="mt-5 mb-4 ml-auto">
     <h1 className="mb-2">Participants</h1>
     <h1 className="mb-5">Assignment: {assignment.name}</h1>
   </div>
 
-  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
-    <div>
+  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%", margin: 0 }}>
+    <div style={{
+        margin: 0,
+        padding: 0,
+        flex: "1 1 auto", // ensure it fills available space
+        width: "100%",    // prevent weird shrinking
+        "--bs-table-striped-bg": "255, 0, 0, 1.0",
+        "--bs-emphasis-color-rgb": "rgba(255, 0, 0, 1.0)"
+      } as React.CSSProperties}>
       <Table
       data={data}
       columns={columns}
@@ -219,7 +235,7 @@ const AssignReviewer: React.FC = () => {
       showColumnFilter={false}
       showPagination={false}
       tableClassName="tan-bg-table"
-    />
+    /> 
     </div>
     
   </div>
