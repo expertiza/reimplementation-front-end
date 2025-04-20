@@ -61,7 +61,7 @@ function App() {
           element: <ProtectedRoute element={<EditQuestionnaire />} />,
         },
         {
-          path: "manage-questionnaire",
+          path: "questionnaire",
           element: <ProtectedRoute element={<ManageQuestionnaire />} />,
         },
         {
@@ -292,14 +292,14 @@ function App() {
               element: <EditQuestionnaire />,
             },
             {
-              path: "manage-questionnaire",
+              path: "questionnaire",
               element: <ManageQuestionnaire />,
             },
           ],
         },
         { path: "*", element: <NotFound /> },
         { path: "edit-questionnaire", element: <EditQuestionnaire /> }, // Added the Questionnaire route
-        { path: "manage-questionnaire", element: <ManageQuestionnaire /> }, // Added the Questionnaire route
+        { path: "questionnaire", element: <ManageQuestionnaire /> }, // Added the Questionnaire route
       ],
     },
   ]);

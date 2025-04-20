@@ -50,8 +50,23 @@ const Questionnaire = () => {
   const [questionnaireId, setQuestionnaireId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Fetch all questionnaires and find the one matching the name
-    const fetchQuestionnaireId = async () => {
+    const hash = window.location.hash.substring(1); // Remove the '#' symbol
+    if (hash) {
+      const decodedHash = decodeURIComponent(hash); // Decode URL-encoded characters like %20 to spaces
+      setName(decodedHash);
+    } else {
+      console.warn("No name found in the URL hash");
+    }
+  }, []); // Runs only once on mount
+
+  // Fetch questionnaire data after the name is set
+  useEffect(() => {
+    if (name === "Default Name") {
+      // Skip fetching if the name is still the default
+      return;
+    }
+
+    const fetchQuestionnaireData = async () => {
       try {
         const response = await axios.get(
           "http://localhost:3002/api/v1/questionnaires",
@@ -64,7 +79,7 @@ const Questionnaire = () => {
 
         const questionnaires = response.data;
         const matchedQuestionnaire = questionnaires.find(
-          (item: any) => item.name === name
+          (item: any) => item.name === name // Match the questionnaire by name
         );
 
         if (matchedQuestionnaire) {
@@ -74,6 +89,7 @@ const Questionnaire = () => {
           setIsPrivate(matchedQuestionnaire.private || false);
           setQuestionnaireData(matchedQuestionnaire.data || sample_questionnaire.data);
         } else {
+          setQuestionnaireId(0);
           console.warn("No matching questionnaire found for the name:", name);
         }
       } catch (error) {
@@ -81,8 +97,8 @@ const Questionnaire = () => {
       }
     };
 
-    fetchQuestionnaireId();
-  }, [name]); // Refetch whenever the name changes
+    fetchQuestionnaireData();
+  }, [name]); // Runs whenever `name` changes
 
   const exportQuestionnaire = () => {
     const dataToExport = JSON.stringify(questionnaireData, null, 2);
@@ -159,7 +175,7 @@ const Questionnaire = () => {
               className="form-control"
               id="contentName"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)} // Allow editing of the name
             />
           </div>
 
