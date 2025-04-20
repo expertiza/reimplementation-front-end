@@ -7,6 +7,7 @@ export enum Role {
   Student = "Student",
   Instructor = "Instructor",
   Admin = "Admin",
+  //TeachingAssistant = "Teaching Assistant", //to be added after merging the teaching assistant feature
 }
 
 export enum ParticipantRole {
