@@ -89,27 +89,16 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
               ))}
             </Form.Control>
           </Form.Group>
-
-          <div className="permissions-container">
-            {Object.keys(permissionLabels).map((key) => (
-              <Form.Check
-                key={key}
-                type="switch"
-                id={`${key}-switch`}
-                label={permissionLabels[key as keyof ParticipantPermissions]}
-                checked={updatedParticipant.permissions[key as keyof ParticipantPermissions] === 'yes'}
-                onChange={() => handlePermissionsToggle(key as keyof ParticipantPermissions)}
-                className="permission-switch"
-              />
-            ))}
-          </div>
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={() => onSave(updatedParticipant)}>
+        <Button variant="primary" onClick={() => {
+          onSave(updatedParticipant);
+          onHide();
+          }}>
           Save Changes
         </Button>
       </Modal.Footer>
