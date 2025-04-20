@@ -1,14 +1,26 @@
 import dummyTopicData from "./Data/DummyTopics.json";
 import React, { useState, useMemo } from 'react';
-import { Button, Container } from 'react-bootstrap';
 import { useLoaderData } from 'react-router-dom';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
+
+type Reviewer = {
+  name: string;
+  username: string;
+  status: string;
+};
 
 interface ReviewerAssignment {
   topic: string;
   contributors: {name: string, username: string}[]; 
   reviewers: { name: string, username: string, status: string }[];
+}
+
+interface ReviewerCardProps {
+  reviewer: Reviewer;
+  onUnsubmit: () => void;
+  onDelete: () => void;
+  index: number;
 }
 
 const columnHelper = createColumnHelper<ReviewerAssignment>();
@@ -18,6 +30,7 @@ const assignment: any = useLoaderData();
   
 const [data, setData] = useState<ReviewerAssignment[]>(dummyTopicData);
 
+//Add a reviewer within the contributors row
 const addReviewer = (topic: string) => {
   setData(prev =>
     prev.map(row =>
@@ -30,6 +43,7 @@ const addReviewer = (topic: string) => {
   );
 };
 
+//Delete a reviewer from their card
 const deleteReviewer = (topic: string, reviewerName: string) => {
   setData(prev =>
     prev.map(row =>
@@ -40,6 +54,48 @@ const deleteReviewer = (topic: string, reviewerName: string) => {
   );
 };
 
+//Create a full card object for each reviewer, this makes the column creation simpler
+const ReviewerCard: React.FC<ReviewerCardProps> = ({ reviewer, onUnsubmit, onDelete, index }) => {
+  return (
+    <div
+      style={{
+        backgroundColor: index % 2 === 0 ? "#e8e8ba" : "#fafad2",
+        padding: "6px 8px",
+        marginBottom: "6px",
+        borderRadius: "4px",
+      }}
+    >
+      <div>{reviewer.name} ({reviewer.status})</div>
+      <div>
+        <a
+          href="#"
+          style={{ textDecoration: "underline", cursor: "pointer" }}
+          onClick={(e) => {
+            e.preventDefault();
+            onUnsubmit();
+          }}
+        >
+          Unsubmit
+        </a>
+      </div>
+      <div>
+        <a
+          href="#"
+          style={{ textDecoration: "underline", cursor: "pointer" }}
+          onClick={(e) => {
+            e.preventDefault();
+            onDelete();
+          }}
+        >
+          Delete
+        </a>
+      </div>
+    </div>
+  );
+};
+
+
+//Unsubmit a given review within its card
 const unsubmitReviewer = (topic: string, reviewerName: string) => {
   setData(prev =>
     prev.map(row =>
@@ -121,85 +177,56 @@ const columns = useMemo(() => [
       );
     }
   }),
-      
+  
+  // Create the reviewers column and associated buttons
   columnHelper.accessor("reviewers", {
     id: 'actions',
     header: "Reviewed By",
     cell: info => {
       const { reviewers, topic } = info.row.original;
       return (
-        <div>
+        <>
           {reviewers.map((r, idx) => (
-            <div
-              key={idx}
-              style={{
-                backgroundColor: idx % 2 === 0 ? "#e8e8ba" : "#fafad2", // alternating colors
-                padding: "6px 8px",
-                marginBottom: "6px",
-                borderRadius: "4px"
-              }}
-            >
-              <div>{r.name} ({r.status})</div>
-              <div>
-                <a
-                  href="#"
-                  style={{textDecoration: "underline", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    unsubmitReviewer(topic, r.name);
-                  }}
-                >
-                  Unsubmit
-                </a>
-              </div>
-              <div>
-                <a
-                  href="#"
-                  style={{textDecoration: "underline", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    deleteReviewer(topic, r.name);
-                  }}
-                >
-                  Delete
-                </a>
-              </div>
-            </div>
+            <ReviewerCard
+              key={r.name}
+              reviewer={r}
+              index={idx}
+              onUnsubmit={() => unsubmitReviewer(topic, r.name)}
+              onDelete={() => deleteReviewer(topic, r.name)}
+            />
           ))}
-        </div>
+        </>
       );
     }
-  }),        
+  }),
+         
 ], [data]);
   
-
   return (
     <div style={{ paddingLeft: 30, paddingRight: 15 }}>
-  <div style={{ marginLeft: "auto" }} className="mt-5 mb-4 ml-auto">
-    <h1 className="mb-4">Participants</h1>
-    <h1 className="mb-5">Assignment: {assignment.name}</h1>
-  </div>
+      <div style={{ marginLeft: "auto" }} className="mt-5 mb-4 ml-auto">
+        <h1 className="mb-4">Participants</h1>
+        <h1 className="mb-5">Assignment: {assignment.name}</h1>
+      </div>
 
-  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%", margin: 0 }}>
-    <div style={{
-        margin: 0,
-        padding: 0,
-        flex: "1 1 auto", // ensure it fills available space
-        width: "100%",    // prevent weird shrinking
-      }}>
-      <Table
-      data={data}
-      columns={columns}
-      columnVisibility={{ id: false }}
-      showGlobalFilter={false}
-      showColumnFilter={false}
-      showPagination={false}
-      tableClassName="tan-bg-table"
-    /> 
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%", margin: 0 }}>
+        <div style={{
+            margin: 0,
+            padding: 0,
+            flex: "1 1 auto", // ensure it fills available space
+            width: "100%",    // prevent weird shrinking
+          }}>
+          <Table
+            data={data}
+            columns={columns}
+            columnVisibility={{ id: false }}
+            showGlobalFilter={false}
+            showColumnFilter={false}
+            showPagination={false}
+          /> 
+        </div>
+      </div>
     </div>
-    
-  </div>
-</div>
   );
 };
 
