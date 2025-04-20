@@ -97,9 +97,10 @@
 .timelineDates {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
   font-size: 16px;
   color: #555;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .timelineVisual {
@@ -113,8 +114,10 @@
   top: 50%;
   left: 0;
   right: 0;
-  height: 3px;
   background-color: #dc3545;
+  transform: translateY(-50%);
+  height: 2px;
+  width: 100%;
   transform: translateY(-50%);
 }
 
@@ -129,8 +132,8 @@
 }
 
 .dot {
-  width: 16px;
-  height: 16px;
+  width: 25px;
+  height: 25px;
   background-color: #dc3545;
   border-radius: 50%;
   margin-top: 7px;
@@ -181,3 +184,4 @@
   color: #000000;
   text-decoration: underline;
 }
+
