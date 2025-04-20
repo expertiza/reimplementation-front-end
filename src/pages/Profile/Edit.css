@@ -14,7 +14,7 @@
 }
 
 /* Styles for form field labels */
-.form-field label {
+.form-field label { 
   flex-basis: 22%;
   color: #333;
   font-size: 14px;
@@ -119,5 +119,6 @@
 }
 
 .tan-bg-table {
-  background-color: #fdf6e3; /* or any tan shade */
+  background-color: #e8e8d2;
+  width: 100%;
 }

@@ -101,16 +101,18 @@ const AssignReviewer: React.FC = () => {
       cell: info => {
         const { contributors, topic, reviewers } = info.row.original;
         const hasPending = reviewers.some(r => r.status === "Pending");
-  
+    
         return (
           <div>
-            {contributors.join(", ")}
-  
+            {contributors.map((c, idx) => (
+              <div key={idx}>{c}</div>
+            ))}
+    
             {reviewers.length < 3 && (
               <div className="mt-2">
                 <a
                   href="#"
-                  style={{ color: "green", textDecoration: "underline", cursor: "pointer" }}
+                  style={{textDecoration: "underline", cursor: "pointer" }}
                   onClick={(e) => {
                     e.preventDefault();
                     addReviewer(topic);
@@ -120,12 +122,12 @@ const AssignReviewer: React.FC = () => {
                 </a>
               </div>
             )}
-  
+    
             {hasPending && (
               <div className="mt-2">
                 <a
                   href="#"
-                  style={{ color: "red", textDecoration: "underline", cursor: "pointer" }}
+                  style={{textDecoration: "underline", cursor: "pointer" }}
                   onClick={(e) => {
                     e.preventDefault();
                     setData(prev =>
@@ -140,7 +142,7 @@ const AssignReviewer: React.FC = () => {
                     );
                   }}
                 >
-                  Delete Outstanding Reviewers
+                  Delete Outstanding Reviews
                 </a>
               </div>
             )}
@@ -148,6 +150,7 @@ const AssignReviewer: React.FC = () => {
         );
       }
     }),
+        
     columnHelper.accessor("reviewers", {
       id: 'actions',
       header: "Reviewed By",
@@ -156,35 +159,46 @@ const AssignReviewer: React.FC = () => {
         return (
           <div>
             {reviewers.map((r, idx) => (
-              <div key={idx}>
-                {r.name} ({r.status}){" "}
-                <a
-                  href="#"
-                  style={{ color: "orange", textDecoration: "underline", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    unsubmitReviewer(topic, r.name);
-                  }}
-                >
-                  Unsubmit
-                </a>{" "}
-                |{" "}
-                <a
-                  href="#"
-                  style={{ color: "red", textDecoration: "underline", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    deleteReviewer(topic, r.name);
-                  }}
-                >
-                  Delete
-                </a>
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: idx % 2 === 0 ? "#e8e8ba" : "#fafad2", // alternating colors
+                  padding: "6px 8px",
+                  marginBottom: "6px",
+                  borderRadius: "4px"
+                }}
+              >
+                <div>{r.name} ({r.status})</div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      unsubmitReviewer(topic, r.name);
+                    }}
+                  >
+                    Unsubmit
+                  </a>
+                </div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      deleteReviewer(topic, r.name);
+                    }}
+                  >
+                    Delete
+                  </a>
+                </div>
               </div>
             ))}
           </div>
         );
       }
-    }),
+    }),        
   ], [data]);
   
 
@@ -204,7 +218,7 @@ const AssignReviewer: React.FC = () => {
       showGlobalFilter={false}
       showColumnFilter={false}
       showPagination={false}
-      tableClassName="w-100 tan-bg-table"
+      tableClassName="tan-bg-table"
     />
     </div>
     
