@@ -165,8 +165,9 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 
     // Reset error if name is valid
     setError(null);
-
-    const user = usersResponse?.data.find((u: any) => u.name === newUserName.trim()).id;
+    
+    const user = usersResponse?.data.find((u: any) => u.name === newUserName.trim());
+    
     if (!user) {
       setError('User not found.');
       return;
