@@ -186,12 +186,6 @@ const StudentTaskDetail: React.FC = () => {
           {/* Dates */}
           <div
             className={styles.timelineDates}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px',
-            }}
           >
             {deadlines.map((deadline: Deadline) => (
               <span
@@ -241,11 +235,7 @@ const StudentTaskDetail: React.FC = () => {
         className={styles.timelineLine} 
         style={{
           ...gradientStyle,
-          height: '2px',
-          width: '100%',
-          position: 'absolute',
-          top: '50%',
-          transform: 'translateY(-50%)'
+          
         }}
       ></div>
     );
@@ -273,8 +263,8 @@ const StudentTaskDetail: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '20px',
-          height: '20px',
+          width: '25px',
+          height: '25px',
           borderRadius: '50%',
           backgroundColor: new Date(deadline.date) > new Date() ? 'white' : undefined,
           border: new Date(deadline.date) > new Date() ? '1px solid #E2E2E2' : undefined
@@ -340,7 +330,7 @@ const StudentTaskDetail: React.FC = () => {
       </div>
       
       {/* Footer section */}
-      {/* Footer section */}
+   
       <div>
         <Link to="/student_tasks" className={styles.clickableLink}>
           Back
