@@ -25,7 +25,8 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
 
   const { sendRequest: addParticipant } = useAPI();
-  const { sendRequest: updateParticipant } = useAPI();
+  const { sendRequest: updateParticipant } = useAPI();  
+  const { sendRequest: updateUser } = useAPI();  
   const { sendRequest: deleteParticipant } = useAPI();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -41,7 +42,6 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const [lastDeletedParticipant, setLastDeletedParticipant] = useState<Participant | null>(null);
 
   const { assignmentId } = useParams();
-  console.log(assignmentId);
 
   useEffect(() => {
     if (!modalShow.edit || !modalShow.remove) {
@@ -57,6 +57,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     fetchAssignment,
     addParticipant,
     updateParticipant,
+    updateUser,
     deleteParticipant,
   ]);
 
@@ -139,6 +140,16 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       url: `/participants/${updatedParticipant.id}/${updatedParticipant.participantRole}`,
       method: HttpMethod.PATCH,
     });
+    updateUser({
+      url: `/users/${updatedParticipant.user_id}`,
+      method: HttpMethod.PATCH,
+      data: {
+        user: {
+          full_name: updatedParticipant.name,
+          email: updatedParticipant.email,
+        }
+      },
+    })
   };
 
   const handleAddUser = () => {

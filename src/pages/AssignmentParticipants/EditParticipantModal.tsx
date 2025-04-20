@@ -27,16 +27,6 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
     setUpdatedParticipant({ ...updatedParticipant, [field]: value });
   };
 
-  // const handlePermissionsToggle = (field: keyof ParticipantPermissions) => {
-  //   setUpdatedParticipant({
-  //     ...updatedParticipant,
-  //     permissions: {
-  //       ...updatedParticipant.permissions,
-  //       [field]: updatedParticipant.permissions[field] === 'yes' ? 'no' : 'yes',
-  //     },
-  //   });
-  // };
-
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
