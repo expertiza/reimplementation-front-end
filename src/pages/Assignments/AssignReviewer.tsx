@@ -93,42 +93,41 @@ const AssignReviewer: React.FC = () => {
   const columns = useMemo(() => [
     columnHelper.accessor("topic", {
       id: 'select',
-      header: "Topic",
+      header: "Topic Selected",
       cell: info => info.getValue()
     }),
     columnHelper.accessor("contributors", {
       header: "Contributors",
       cell: info => {
         const { contributors, topic, reviewers } = info.row.original;
-    
-        // Helper to check if there are any pending reviewers
         const hasPending = reviewers.some(r => r.status === "Pending");
-    
+  
         return (
           <div>
             {contributors.join(", ")}
-    
-            {/* Add Reviewer Button */}
+  
             {reviewers.length < 3 && (
               <div className="mt-2">
-                <Button
-                  variant="outline-success"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => addReviewer(topic)}
+                <a
+                  href="#"
+                  style={{ color: "green", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    addReviewer(topic);
+                  }}
                 >
                   Add Reviewer
-                </Button>
+                </a>
               </div>
             )}
-    
-            {/* Delete All Pending Reviews Button */}
+  
             {hasPending && (
               <div className="mt-2">
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => {
+                <a
+                  href="#"
+                  style={{ color: "red", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setData(prev =>
                       prev.map(row =>
                         row.topic === topic
@@ -141,8 +140,8 @@ const AssignReviewer: React.FC = () => {
                     );
                   }}
                 >
-                  Delete Outstanding Reviews
-                </Button>
+                  Delete Outstanding Reviewers
+                </a>
               </div>
             )}
           </div>
@@ -159,8 +158,27 @@ const AssignReviewer: React.FC = () => {
             {reviewers.map((r, idx) => (
               <div key={idx}>
                 {r.name} ({r.status}){" "}
-                <Button variant="outline-warning" size="sm" onClick={() => unsubmitReviewer(topic, r.name)}>Unsubmit</Button>{" "}
-                <Button variant="outline-danger" size="sm" onClick={() => deleteReviewer(topic, r.name)}>Delete</Button>
+                <a
+                  href="#"
+                  style={{ color: "orange", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    unsubmitReviewer(topic, r.name);
+                  }}
+                >
+                  Unsubmit
+                </a>{" "}
+                |{" "}
+                <a
+                  href="#"
+                  style={{ color: "red", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    deleteReviewer(topic, r.name);
+                  }}
+                >
+                  Delete
+                </a>
               </div>
             ))}
           </div>
@@ -168,28 +186,30 @@ const AssignReviewer: React.FC = () => {
       }
     }),
   ], [data]);
+  
 
   return (
-    <Container>
-    <div className="px-4">
-    <div className="mt-5 mb-4">
-      <h1 className="mb-2">Participants</h1> {/* <- spacing added here */}
-      <h1 className="mb-5">Assignment: {assignment.name}</h1>
+    <div style={{ paddingLeft: 15, paddingRight: 0 }}>
+  <div className="mt-5 mb-4">
+    <h1 className="mb-2">Participants</h1>
+    <h1 className="mb-5">Assignment: {assignment.name}</h1>
+  </div>
+
+  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+    <div>
+      <Table
+      data={data}
+      columns={columns}
+      columnVisibility={{ id: false }}
+      showGlobalFilter={false}
+      showColumnFilter={false}
+      showPagination={false}
+      tableClassName="w-100 tan-bg-table"
+    />
     </div>
-
-      <div style={{ marginTop: "50px" }}>
-        <Table
-          data={data}
-          columns={columns}
-          columnVisibility={{ id: false }}
-          showGlobalFilter={false}
-          tableClassName="tan-bg-table"
-        />
-      </div>
-    </div>
-
-  </Container>
-
+    
+  </div>
+</div>
   );
 };
 
