@@ -40,10 +40,6 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const [error, setError] = useState<string | null>(null); // Error message state
   const [lastDeletedParticipant, setLastDeletedParticipant] = useState<Participant | null>(null);
 
-  const showNotification = (message: string, onUndo: () => void) => {
-    setToast({ message, onUndo });
-  };
-
   const { assignmentId } = useParams();
   console.log(assignmentId);
 

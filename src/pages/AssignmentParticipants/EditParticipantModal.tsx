@@ -23,20 +23,19 @@ const permissionLabels = {
 
 function EditParticipantModal({ participant, show, onHide, onSave }: EditParticipantModalProps) {
   const [updatedParticipant, setUpdatedParticipant] = useState<Participant>(participant);
-
   const handleChange = (field: keyof Participant, value: any) => {
     setUpdatedParticipant({ ...updatedParticipant, [field]: value });
   };
 
-  const handlePermissionsToggle = (field: keyof ParticipantPermissions) => {
-    setUpdatedParticipant({
-      ...updatedParticipant,
-      permissions: {
-        ...updatedParticipant.permissions,
-        [field]: updatedParticipant.permissions[field] === 'yes' ? 'no' : 'yes',
-      },
-    });
-  };
+  // const handlePermissionsToggle = (field: keyof ParticipantPermissions) => {
+  //   setUpdatedParticipant({
+  //     ...updatedParticipant,
+  //     permissions: {
+  //       ...updatedParticipant.permissions,
+  //       [field]: updatedParticipant.permissions[field] === 'yes' ? 'no' : 'yes',
+  //     },
+  //   });
+  // };
 
   return (
     <Modal show={show} onHide={onHide} centered>
