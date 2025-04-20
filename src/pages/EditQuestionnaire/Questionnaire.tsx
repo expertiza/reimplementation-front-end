@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
 import axios from "axios";
+import { getAuthToken } from "../../utils/auth";
 
 interface ImportedData {
   title: string;
@@ -45,19 +46,43 @@ const Questionnaire = () => {
   const [minScore, setMinScore] = useState(0);
   const [maxScore, setMaxScore] = useState(5);
   const [isPrivate, setIsPrivate] = useState(false);
-
   const [questionnaireData, setQuestionnaireData] = useState(sample_questionnaire);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
+  const [questionnaireId, setQuestionnaireId] = useState<number | null>(null);
 
-  // Use the hash fragment to populate the name
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const hashValue = decodeURIComponent(hash.substring(1)); // Remove the leading '#' and decode
-      setName(hashValue || "Default Name");
-    }
-  }, []);
+    // Fetch all questionnaires and find the one matching the name
+    const fetchQuestionnaireId = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3002/api/v1/questionnaires",
+          {
+            headers: {
+              Authorization: `Bearer ${getAuthToken()}`, // Retrieve the authentication token
+            },
+          }
+        );
+
+        const questionnaires = response.data;
+        const matchedQuestionnaire = questionnaires.find(
+          (item: any) => item.name === name
+        );
+
+        if (matchedQuestionnaire) {
+          setQuestionnaireId(matchedQuestionnaire.id);
+          setMinScore(matchedQuestionnaire.min_question_score || 0);
+          setMaxScore(matchedQuestionnaire.max_question_score || 5);
+          setIsPrivate(matchedQuestionnaire.private || false);
+          setQuestionnaireData(matchedQuestionnaire.data || sample_questionnaire.data);
+        } else {
+          console.warn("No matching questionnaire found for the name:", name);
+        }
+      } catch (error) {
+        console.error("Error fetching questionnaires:", error);
+      }
+    };
+
+    fetchQuestionnaireId();
+  }, [name]); // Refetch whenever the name changes
 
   const exportQuestionnaire = () => {
     const dataToExport = JSON.stringify(questionnaireData, null, 2);
@@ -75,23 +100,24 @@ const Questionnaire = () => {
     setQuestionnaireData(importedData);
   };
 
-  const handleSave = async () => {
+  const handleUpdate = async () => {
+    if (!questionnaireId) {
+      alert("Questionnaire ID not found. Please try again.");
+      return;
+    }
+
     const updatedContent = {
       name,
-      minScore,
-      maxScore,
-      isPrivate,
+      min_question_score: minScore,
+      max_question_score: maxScore,
+      private: isPrivate,
+      data: questionnaireData,
     };
 
     try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        throw new Error("Authentication token is missing. Please log in again.");
-      }
-
-      const response = await axios.post(
-        "http://localhost:3002/api/v1/questionnaires",
+      const token = getAuthToken();
+      const response = await axios.put(
+        `http://localhost:3002/api/v1/questionnaires/${questionnaireId}`,
         updatedContent,
         {
           headers: {
@@ -101,13 +127,13 @@ const Questionnaire = () => {
         }
       );
 
-      console.log("Save successful:", response.data);
-      alert("Content saved successfully!");
+      console.log("Update successful:", response.data);
+      alert("Questionnaire updated successfully!");
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        alert(`Failed to save content. ${error.response?.data?.message || error.message}`);
+        alert(`Failed to update questionnaire. ${error.response?.data?.message || error.message}`);
       } else {
-        alert(`Failed to save content. ${String(error)}`);
+        alert(`Failed to update questionnaire. ${String(error)}`);
       }
     }
   };
@@ -124,17 +150,17 @@ const Questionnaire = () => {
           width: "400px",
         }}
       >
-        <h1 className="text-center mb-4">Manage Content</h1>
+        <h1 className="text-center mb-4">Edit Questionnaire</h1>
         <form>
           <div className="form-group mb-3">
             <label htmlFor="contentName">Name:</label>
-            <div
-              id="contentName"
+            <input
+              type="text"
               className="form-control"
-              style={{ backgroundColor: "#e9ecef", cursor: "not-allowed" }}
-            >
-              {name}
-            </div>
+              id="contentName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
 
           <div className="form-group mb-3">
@@ -176,9 +202,9 @@ const Questionnaire = () => {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={handleSave}
+              onClick={handleUpdate}
             >
-              Save Changes
+              Update Questionnaire
             </button>
           </div>
         </form>

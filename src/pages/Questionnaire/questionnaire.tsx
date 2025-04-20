@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Questionnaire.css';
-import { Button, Dropdown, DropdownButton } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios for making API requests
@@ -29,14 +29,6 @@ function Questionnaire() {
   const handleDelete = (item: any) => {
     const updatedItems = questionnaireItems.filter((q) => q.name !== item.name);
     setQuestionnaireItems(updatedItems);
-  };
-
-  const handleEdit = (item: any) => {
-    console.log(`Edit button clicked for item:`, item);
-  };
-
-  const handleShow = (item: any) => {
-    console.log(`Show button clicked for item:`, item);
   };
 
   const handleSortByName = () => {
@@ -97,15 +89,13 @@ function Questionnaire() {
               <tr>
                 <td onClick={() => handleItemClick(index)}>{item.name}</td>
                 <td>
-                  <DropdownButton
-                    id={`dropdown-${index}`}
-                    title={<BsPlusSquareFill />}
+                  <Button
                     variant="outline-success"
+                    size="sm"
+                    onClick={() => handleNavigateToEditPage(item.name)}
                   >
-                    <Dropdown.Item onClick={() => handleNavigateToEditPage(item.name)}>
-                      Edit Questionnaire
-                    </Dropdown.Item>
-                  </DropdownButton>
+                    <BsPlusSquareFill />
+                  </Button>
                 </td>
               </tr>
               {expandedItem === index && (
