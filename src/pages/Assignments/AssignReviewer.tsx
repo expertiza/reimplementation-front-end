@@ -1,95 +1,229 @@
-import React, { useMemo } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
-// import { useNavigate } from 'react-router-dom';
+import dummyTopicData from "./Data/DummyTopics.json";
+import React, { useState, useMemo } from 'react';
+import { Button, Container } from 'react-bootstrap';
 import { useLoaderData } from 'react-router-dom';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 
-interface IReviewer {
-  id: number;
-  name: string;
+interface ReviewerAssignment {
+  topic: string;
+  contributors: string[]; // contributors are just array of string
+  reviewers: { name: string, status: string }[];
 }
 
-const columnHelper = createColumnHelper<IReviewer>();
+const columnHelper = createColumnHelper<ReviewerAssignment>();
 
 const AssignReviewer: React.FC = () => {
   const assignment: any = useLoaderData();
-  // const navigate = useNavigate();
+  
+  const [data, setData] = useState<ReviewerAssignment[]>([
+    {
+      topic: "E2450. Refactor assignments_controller.rb",
+      contributors: ["Alice anna", "Bob sam"],
+      reviewers: [{ name: "User1", status: "Submitted" }]
+    },
+    {
+      topic: "E2451. Reimplement feedback_response_map.rb",
+      contributors: ["Bob sam", "Eve wesley"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    },
+    {
+      topic: "E2452. Refactor review_mapping_controller.rb",
+      contributors: ["Charlie boo"],
+      reviewers: []
+    },
+    {
+      topic: "E2458. User management and users table",
+      contributors: ["Harley jad", "Javed son", "Leo mee"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    },
+    {
+      topic: "E2467. UI for View Submissions",
+      contributors: ["Shadow box", "Bradon kin"],
+      reviewers: [
+        { name: "user2", status: "Pending" },
+        { name: "user3", status: "Submitted" }
+      ]
+    }
+  ]);
 
-  // Dummy data for reviewers
-  const reviewers = useMemo(() => [
-    { id: 1, name: 'Reviewer 1' },
-    { id: 2, name: 'Reviewer 2' },
-    { id: 3, name: 'Reviewer 3' },
-    // ...other reviewers
-  ], []);
-
-  const columns = useMemo(() => [
-    columnHelper.display({
-      id: 'select',
-      header: () => 'Select',
-      cell: () => (
-        <input type="checkbox" style={{ marginLeft: 'auto', marginRight: 'auto', display: 'block' }} /> // Center the checkbox
+  const addReviewer = (topic: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic && row.reviewers.length < 3
+          ? { ...row, reviewers: [...row.reviewers, { name: `NewReviewer${row.reviewers.length + 1}`,
+            username: `new_user${row.reviewers.length + 1}`,
+             status: "Pending" }] }
+          : row
       )
-    }),
-    columnHelper.accessor('name', {
-      header: () => 'Reviewer',
-      cell: info => info.getValue()
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: () => 'Action',
-      cell: () => (
-        <Button variant="outline-danger" size="sm">
-          Action
-        </Button>
-      )
-    })
-  ], []);
-
-  const handleAssignReviewers = () => {
-    console.log('Assigned reviewers');
-    // Logic to assign selected reviewers goes here
+    );
   };
 
-  // const handleClose = () => {
-  //   navigate(-1); // Go back to the previous page
-  // };
+  const deleteReviewer = (topic: string, reviewerName: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic
+          ? { ...row, reviewers: row.reviewers.filter(r => r.name !== reviewerName) }
+          : row
+      )
+    );
+  };
+
+  const unsubmitReviewer = (topic: string, reviewerName: string) => {
+    setData(prev =>
+      prev.map(row =>
+        row.topic === topic
+          ? {
+              ...row,
+              reviewers: row.reviewers.map(r =>
+                r.name === reviewerName ? { ...r, status: "Pending" } : r
+              )
+            }
+          : row
+      )
+    );
+  };
+
+  const columns = useMemo(() => [
+    columnHelper.accessor("topic", {
+      id: 'select',
+      header: "Topic Selected",
+      cell: info => info.getValue()
+    }),
+    columnHelper.accessor("contributors", {
+      header: "Contributors",
+      cell: info => {
+        const { contributors, topic, reviewers } = info.row.original;
+        const hasPending = reviewers.some(r => r.status === "Pending");
+    
+        return (
+          <div>
+            {contributors.map((c, idx) => (
+              <div key={idx}>{c}</div>
+            ))}
+    
+            {reviewers.length < 3 && (
+              <div className="mt-2">
+                <a
+                  href="#"
+                  style={{textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    addReviewer(topic);
+                  }}
+                >
+                  Add Reviewer
+                </a>
+              </div>
+            )}
+    
+            {hasPending && (
+              <div className="mt-2">
+                <a
+                  href="#"
+                  style={{textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setData(prev =>
+                      prev.map(row =>
+                        row.topic === topic
+                          ? {
+                              ...row,
+                              reviewers: row.reviewers.filter(r => r.status !== "Pending")
+                            }
+                          : row
+                      )
+                    );
+                  }}
+                >
+                  Delete Outstanding Reviews
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      }
+    }),
+        
+    columnHelper.accessor("reviewers", {
+      id: 'actions',
+      header: "Reviewed By",
+      cell: info => {
+        const { reviewers, topic } = info.row.original;
+        return (
+          <div>
+            {reviewers.map((r, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: idx % 2 === 0 ? "#e8e8ba" : "#fafad2", // alternating colors
+                  padding: "6px 8px",
+                  marginBottom: "6px",
+                  borderRadius: "4px"
+                }}
+              >
+                <div>{r.name} ({r.status})</div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      unsubmitReviewer(topic, r.name);
+                    }}
+                  >
+                    Unsubmit
+                  </a>
+                </div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      deleteReviewer(topic, r.name);
+                    }}
+                  >
+                    Delete
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }),        
+  ], [data]);
+  
 
   return (
-    <Container className="mt-4">
-      <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
-        This is a placeholder page and is still in progress.
-      </div>
-      <Row className="mt-md-2 mb-md-2">
-        <Col className="text-center">
-          <h1>Assign Reviewer - {assignment.name}</h1>
-        </Col>
-        <hr />
-      </Row>
-      <Row>
-        <Col>
-          <Table
-            data={reviewers}
-            columns={columns}
-            columnVisibility={{
-              id: false,
+    <div style={{ paddingLeft: 15, paddingRight: 0 }}>
+  <div className="mt-5 mb-4">
+    <h1 className="mb-2">Participants</h1>
+    <h1 className="mb-5">Assignment: {assignment.name}</h1>
+  </div>
 
-            }}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col className="text-right" md={{ span: 1, offset: 11 }}>
-          {/* <Button variant="outline-secondary" onClick={handleClose} style={{ marginRight: '10px' }}>
-            Close
-          </Button> */}
-          <Button variant="outline-success" onClick={handleAssignReviewers}>
-            Assign
-          </Button>
-        </Col>
-      </Row>
-    </Container>
+  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+    <div>
+      <Table
+      data={data}
+      columns={columns}
+      columnVisibility={{ id: false }}
+      showGlobalFilter={false}
+      showColumnFilter={false}
+      showPagination={false}
+      tableClassName="tan-bg-table"
+    />
+    </div>
+    
+  </div>
+</div>
   );
 };
 
