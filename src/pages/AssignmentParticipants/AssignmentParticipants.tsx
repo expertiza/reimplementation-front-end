@@ -9,7 +9,7 @@ import ParticipantTable from './ParticipantsTable';
 import { getNestedValue, participantRoleInfo, assignmentColSpan as numColumns } from './AssignmentParticipantsUtil';
 import { AssignmentProperties, IsEnabled, Participant, ParticipantRole, Role } from './AssignmentParticipantsTypes';
 import useAPI from 'hooks/useAPI';
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 import { IAssignmentParticipantResponse, IAssignmentResponse } from 'utils/interfaces';
 import { HttpMethod } from 'utils/httpMethods';
 
@@ -45,6 +45,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   };
 
   const { assignmentId } = useParams();
+  console.log(assignmentId);
 
   useEffect(() => {
     if (!modalShow.edit || !modalShow.remove) {
