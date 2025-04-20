@@ -203,10 +203,10 @@ const columns = useMemo(() => [
 ], [data]);
   
   return (
-    <div style={{ paddingLeft: 30, paddingRight: 15 }}>
-      <div style={{ marginLeft: "auto" }} className="mt-5 mb-4 ml-auto">
-        <h1 className="mb-4">Participants</h1>
-        <h1 className="mb-5">Assignment: {assignment.name}</h1>
+    <div style={{ paddingLeft: 15, paddingRight: 15 }}>
+      <div style={{ marginLeft: "0" }} className="mt-5 mb-4 ml-auto">
+        <h2 className="mb-4" style={{ textAlign: "left" }}>Participants</h2>
+        <h3 className="mb-5">Assignment: {assignment.name}</h3>
       </div>
 
       <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%", margin: 0 }}>
@@ -222,7 +222,7 @@ const columns = useMemo(() => [
             columnVisibility={{ id: false }}
             showGlobalFilter={false}
             showColumnFilter={false}
-            showPagination={false}
+            showPagination={data.length >= 10}
           /> 
         </div>
       </div>
