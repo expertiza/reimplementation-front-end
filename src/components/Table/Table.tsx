@@ -31,6 +31,7 @@ interface TableProps {
   columnVisibility?: Record<string, boolean>;
   tableClassName?: string;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
+  style?: React.CSSProperties;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -42,7 +43,8 @@ const Table: React.FC<TableProps> = ({
   onSelectionChange,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
-  tableClassName = "tan-bg-table"
+  tableClassName = "tan-bg-table",
+  style
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
