@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { Form, Button, Container } from 'react-bootstrap';
-import { useReviewerContext } from "@/context/ReviewerContext";
+import { useReviewerContext } from ".../context/ReviewerContext";
  
 
 const AddReviewer: React.FC = () => {
