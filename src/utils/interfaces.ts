@@ -187,17 +187,16 @@ export interface Contributor {
 
 export interface ReviewMapping {
     map_id: number;
-    reviewer: IUserRequest; // todo figure out if this should be UserRequest or response
+    reviewer: IUserRequest; 
     review_status: 'Assigned' | 'Saved' | 'Submitted'; 
     metareview_mappings: MetaReviewMapping[];
 }
 
 export interface MetaReviewMapping {
     map_id: number;
-    reviewer: IUserRequest; // todo figure out if this should be UserRequest or response
+    reviewer: IUserRequest; 
 }
 
-// Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
   const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
   // Transform response as needed

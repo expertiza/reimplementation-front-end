@@ -1,9 +1,10 @@
 import dummyTopicData from "./Data/DummyTopics.json";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { Button, Container } from 'react-bootstrap';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useNavigate, Outlet, useParams } from 'react-router-dom';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
+import { useReviewerContext } from 'context/ReviewerContext'; 
 
 interface ReviewerAssignment {
   topic: string;
@@ -14,9 +15,19 @@ interface ReviewerAssignment {
 const columnHelper = createColumnHelper<ReviewerAssignment>();
 
 const AssignReviewer: React.FC = () => {
-  const assignment: any = useLoaderData();
+    //const assignment: any = useLoaderData();
+    const navigate = useNavigate(); 
+    const { id } = useParams(); //gets assignment id 
+
+    const handleAddReviewer = () => {
+        addReviewer(topic); 
+        navigate(`/assignments/edit/${id}/add-reviewer?topic=${encodeURIComponent(topic)}`);
+    };
   
-  const [data, setData] = useState<ReviewerAssignment[]>([
+  /*const [data, setData] = useState<ReviewerAssignment[]>*/
+  const { topics, addReviewerToTopic } = useReviewerContext(); 
+  const data = topics; /*([
+
     {
       topic: "E2450. Refactor assignments_controller.rb",
       contributors: ["Alice anna", "Bob sam"],
@@ -51,9 +62,12 @@ const AssignReviewer: React.FC = () => {
         { name: "user3", status: "Submitted" }
       ]
     }
-  ]);
+  ]); */
 
   const addReviewer = (topic: string) => {
+      const topicData = topics.find(t => t.topic === topic);
+        const reviewerCount = topicData ? topicData.reviewers.length : 0;
+      /*
     setData(prev =>
       prev.map(row =>
         row.topic === topic && row.reviewers.length < 3
@@ -62,8 +76,13 @@ const AssignReviewer: React.FC = () => {
              status: "Pending" }] }
           : row
       )
-    );
-  };
+    ); */
+    addReviewerToTopic(topic, {
+        name: `NewReviewer${reviewerCount + 1}`,
+        username: `new_user${reviewerCount + 1}`,
+        status: "Pending"
+    });
+    };
 
   const deleteReviewer = (topic: string, reviewerName: string) => {
     setData(prev =>
@@ -115,7 +134,7 @@ const AssignReviewer: React.FC = () => {
                   style={{textDecoration: "underline", cursor: "pointer" }}
                   onClick={(e) => {
                     e.preventDefault();
-                    addReviewer(topic);
+                    handleAddReviewer(topic);
                   }}
                 >
                   Add Reviewer
@@ -200,13 +219,13 @@ const AssignReviewer: React.FC = () => {
       }
     }),        
   ], [data]);
-  
+
 
   return (
     <div style={{ paddingLeft: 15, paddingRight: 0 }}>
   <div className="mt-5 mb-4">
     <h1 className="mb-2">Participants</h1>
-    <h1 className="mb-5">Assignment: {assignment.name}</h1>
+              <h1 className="mb-5">Assignment: {assignment.name}</h1>
   </div>
 
   <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
@@ -222,7 +241,9 @@ const AssignReviewer: React.FC = () => {
     />
     </div>
     
-  </div>
+          </div>
+          {/*Add outlet for nested route*/}
+          <Outlet />
 </div>
   );
 };
