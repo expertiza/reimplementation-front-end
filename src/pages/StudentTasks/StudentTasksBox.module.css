@@ -1,0 +1,120 @@
+/* Stripes for odd rows in a table within .student-tasks */
+.student-tasks .table-striped>tbody>tr:nth-of-type(odd)>td,
+.student-tasks .table-striped>tbody>tr:nth-of-type(odd)>th {
+  background-color: #ffffff;
+  --bs-table-bg-type: none
+}
+
+/* Stripes for even rows in a table within .student-tasks */
+.student-tasks .table-striped>tbody>tr:nth-of-type(even)>td,
+.student-tasks .table-striped>tbody>tr:nth-of-type(even)>th {
+  background-color: #f2f2f2;
+  --bs-table-bg-type: none;
+}
+
+/* Styling for task boxes */
+.taskbox {
+    padding: 5px;
+    margin-bottom: 39px;
+    border: 1px dashed #999999;
+    float: left;
+    font-size: 12px;
+    background: none repeat scroll 0pt 0pt #fafaea;
+    width: 100%;
+}
+
+/* Styling for the task number indicator */
+.tasknum {
+    color: #FFFFFF;
+    background-color: #B73204;
+}
+
+/* Styling for the revision number indicator */
+.revnum {
+    color: #FFFFFF;
+    background-color: #999999;
+}
+
+/* Styling for notification links */
+.notification a {
+    color:#0066CC
+}
+
+/* Layout for the page containing the student tasks */
+.pageLayout {
+    display: flex;
+    margin: 16px;
+}
+
+/* Fixed-width sidebar styling */
+.sidebar {
+    width: 200px; /* Width of the sidebar */
+    margin-right: 20px; /* Spacing between sidebar and main content */
+}
+
+/* Main content area that grows to fill the space */
+.mainContent {
+    flex-grow: 1;
+    overflow: hidden; /* In case the content is too wide */
+}
+
+/* Styling for the page header */
+.header {
+    margin-bottom: 20px; /* Space below the header */
+}
+
+/* Full-width table styling */
+.tasksTable {
+    width: 100%; /* Full width of the main content area */
+    /* Add more styling for your table */
+}
+
+/* Margin styling for sections */
+.section {
+    margin-bottom: 20px; /* Space between sections */
+}
+
+/* Header styling within sections */
+.section-header {
+    font-size: 18px; /* Larger font size for visibility */
+    font-weight: bold; /* Bold text for section headers */
+    color: #333; /* Darker text for better readability */
+    margin-bottom: 10px; /* Space below section header */
+}
+
+/* Styling for individual items within a section */
+.section-item {
+    margin-left: 20px; /* Indent for items in the list */
+    margin-bottom: 5px; /* Space between items */
+    color: #555; /* Slightly lighter text for items */
+}
+
+/* Standard badge styling */
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0;
+    padding: 1;
+    background-color: #a52a2a;
+    color: white;
+}
+
+/* Grey badge variant */
+.greyBadge{
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0;
+    background-color: rgb(159, 156, 156);
+    color: white;
+}
