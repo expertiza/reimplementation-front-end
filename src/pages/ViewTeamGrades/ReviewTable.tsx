@@ -57,17 +57,26 @@ const ReviewTable: React.FC = () => {
     setShowToggleQuestion(!showToggleQuestion);
   };
 
-  const generateFakeRoundData = () => {
-    return data.questions.map((q: any) => ({
-      questionNumber: q.id,
-      questionText: q.txt,
-      reviews: [
-        { score: 4, comment: "Good answer" },
-        { score: 5, comment: "Excellent work" },
-      ],
-      RowAvg: 4.5,
-      maxScore: 5,
-    }));
+  const generateRoundData = () => {
+    const participantId = "1"; // Assuming participant 1
+    const reviewerComments = data.summary?.[participantId] || {}; // question -> comments array
+    const avgScoresByCriterion = data.avg_scores_by_criterion?.[participantId] || {}; // question -> avg score
+  
+    return data.questions.map((q: any) => {
+      const comments = reviewerComments[q.txt] || [];
+      const avgScore = avgScoresByCriterion[q.txt] ?? 0; 
+  
+      return {
+        questionNumber: q.id,
+        questionText: q.txt,
+        reviews: comments.map((comment: string) => ({
+          score: avgScore / 100, 
+          comment: comment,
+        })),
+        RowAvg: avgScore / 100,
+        maxScore: 5,
+      };
+    });
   };
 
   const getReviewScoreCount = () => {
@@ -167,8 +176,8 @@ const ReviewTable: React.FC = () => {
 
       {/* Render tables */}
       {currentRound === -1
-        ? [0].map((_, index) => renderTable(generateFakeRoundData(), index))
-        : renderTable(generateFakeRoundData(), currentRound)}
+        ? [0].map((_, index) => renderTable(generateRoundData(), index))
+        : renderTable(generateRoundData(), currentRound)}
 
       <div>
         <Filters
