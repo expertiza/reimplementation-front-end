@@ -1,29 +1,45 @@
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
-import dummyDataRounds from "./Data/heatMapData.json";
-import dummyData from "./Data/dummyData.json";
-import { calculateAverages, getColorClass } from "./utils";
+import { calculateAverages } from "./utils";
 import "./grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
 import Filters from "./Filters";
-import ShowReviews from "./ShowReviews"; //importing show reviews component
-import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
+import ShowReviews from "./ShowReviews"; 
+import mockData from "mock/api_output_3.json"; // Replace later with real fetch
+import mockData1 from "mock/api_output_2.json" // Replace later with real fetch
+import mockData2 from "mock/api_output_1.json" // Replace later with real fetch
 
 const ReviewTable: React.FC = () => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
-  const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");
+  const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");  
   const [showToggleQuestion, setShowToggleQuestion] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<string[]>([]);
-  const [showReviews, setShowReviews] = useState(false);
-  const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
   const [roundSelected, setRoundSelected] = useState(-1);
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    setTeamMembers(dummyData.members);
+    setTimeout(() => {
+      const apiData = mockData; // Replace with real API fetch later
+      const apiData1 = mockData1; // Replace with real API fetch later
+      const apiData2 = mockData2; // Replace with real API fetch later
+
+      setData({
+        questions: apiData.questions?.review1 || [],
+        summary: apiData.summary || {},
+        avg_scores_by_round: apiData.avg_scores_by_round || {},
+        avg_scores_by_criterion: apiData.avg_scores_by_criterion || {},
+        review_score_count: apiData2.review_score_count || 0,
+        participant: apiData1.participant || {},
+        assignment: apiData.assignment || {},
+        roundsOfReviews: apiData.assignment?.rounds_of_reviews || 1,
+      });
+    }, 1000); // Simulate delay
   }, []);
+
+  if (!data) {
+    return <div>Loading...</div>;
+  }
 
   const toggleSortOrderRow = () => {
     setSortOrderRow((prevSortOrder) => {
@@ -31,19 +47,6 @@ const ReviewTable: React.FC = () => {
       if (prevSortOrder === "desc") return "none";
       return "asc";
     });
-  };
-
-  const toggleShowReviews = () => {
-    setShowReviews((prev) => !prev);
-  };
-
-  const selectRound = (r: number) => {
-    setRoundSelected((prev) => r);
-  };
-
-  // Function to toggle the visibility of ShowAuthorFeedback component
-  const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback((prev) => !prev);
   };
 
   const handleRoundChange = (roundIndex: number) => {
@@ -54,7 +57,27 @@ const ReviewTable: React.FC = () => {
     setShowToggleQuestion(!showToggleQuestion);
   };
 
-  const renderTable = (roundData: any, roundIndex: number) => {
+  const generateFakeRoundData = () => {
+    return data.questions.map((q: any) => ({
+      questionNumber: q.id,
+      questionText: q.txt,
+      reviews: [
+        { score: 4, comment: "Good answer" },
+        { score: 5, comment: "Excellent work" },
+      ],
+      RowAvg: 4.5,
+      maxScore: 5,
+    }));
+  };
+
+  const getReviewScoreCount = () => {
+    if (data?.summary && data.summary["1"]) {
+      return Object.keys(data.summary["1"]).length;
+    }
+    return 0;
+  };
+
+  const renderTable = (roundData: any[], roundIndex: number) => {
     const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
       roundData,
       sortOrderRow
@@ -63,7 +86,7 @@ const ReviewTable: React.FC = () => {
     return (
       <div key={roundIndex} className="table-container mb-6">
         <h4 className="text-xl font-semibold">
-          Review (Round: {roundIndex + 1} of {dummyDataRounds.length})
+          Review (Round: {roundIndex + 1})
         </h4>
         <table className="tbl_heat">
           <thead>
@@ -77,9 +100,7 @@ const ReviewTable: React.FC = () => {
                 </th>
               )}
               {Array.from({ length: roundData[0].reviews.length }, (_, i) => (
-                <th key={i} className="py-2 px-4 text-center" style={{ width: "70px" }}>{`Review ${
-                  i + 1
-                }`}</th>
+                <th key={i} className="py-2 px-4 text-center">{`Review ${i + 1}`}</th>
               ))}
               <th className="py-2 px-4" style={{ width: "70px" }} onClick={toggleSortOrderRow}>
                 Average
@@ -94,9 +115,7 @@ const ReviewTable: React.FC = () => {
               <ReviewTableRow key={index} row={row} showToggleQuestion={showToggleQuestion} />
             ))}
             <tr className="no-bg">
-              <td className="py-2 px-4" style={{ width: "70px" }}>
-                Avg
-              </td>
+              <td className="py-2 px-4">Avg</td>
               {showToggleQuestion && <td></td>}
               {columnAverages.map((avg, index) => (
                 <td key={index} className="py-2 px-4 text-center">
@@ -118,52 +137,22 @@ const ReviewTable: React.FC = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-2">Summary Report: Program 2</h2>
-      <h5 className="text-xl font-semibold mb-1">Team: {dummyData.team}</h5>
-      <span className="ml-4">
-        Team members:{" "}
-        {teamMembers.map((member, index) => (
-          <span key={index}>
-            {member}
-            {index !== teamMembers.length - 1 && ", "}
-          </span>
-        ))}
-      </span>
-      <div className="mt-2">
-        <h5>Submission Links</h5>
-        <ul>
-          <li>
-            <a
-              href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents
-            </a>
-          </li>
-          <li>
-            <a href="http://152.7.177.44:8080/" target="_blank" rel="noopener noreferrer">
-              http://152.7.177.44:8080/
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.ncsu.edu/Program-2-Ruby-on-Rails/WolfEvents/raw/main/README.md"
-              download="README.md"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              README.md
-            </a>
-          </li>
-        </ul>
-      </div>
+      <h2 className="text-2xl font-bold mb-2">Summary Report: {data.assignment?.name || "Assignment"}</h2>
 
-      <Statistics />
+      <Statistics 
+        avg_scores_by_round={data.avg_scores_by_round}
+        avg_scores_by_criterion={data.avg_scores_by_criterion}
+        review_score_count={getReviewScoreCount()}
+        summary={data.summary}
+      />
 
       <br />
 
-      <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
+      <RoundSelector
+        currentRound={currentRound}
+        handleRoundChange={handleRoundChange}
+        roundsOfReviews={data.roundsOfReviews}
+      />
 
       <div className="toggle-container">
         <input
@@ -176,43 +165,37 @@ const ReviewTable: React.FC = () => {
         <label htmlFor="toggleQuestion"> &nbsp;Toggle Question List</label>
       </div>
 
-      {/* Conditionally render tables based on currentRound */}
+      {/* Render tables */}
       {currentRound === -1
-        ? dummyDataRounds.map((roundData, index) => renderTable(roundData, index)) // Render a table for each round if "All Rounds" is selected
-        : renderTable(dummyDataRounds[currentRound], currentRound)}
+        ? [0].map((_, index) => renderTable(generateFakeRoundData(), index))
+        : renderTable(generateFakeRoundData(), currentRound)}
 
       <div>
         <Filters
-          toggleShowReviews={toggleShowReviews}
-          toggleAuthorFeedback={toggleAuthorFeedback}
-          selectRound={selectRound}
+          toggleShowReviews={() => {}}
+          toggleAuthorFeedback={() => {}}
+          selectRound={setRoundSelected}
         />
       </div>
 
       <div>
-        {showReviews && (
-          <div>
-            <h2>Reviews</h2>
-            <ShowReviews data={dummyDataRounds} roundSelected={roundSelected} />
-          </div>
-        )}
-        {ShowAuthorFeedback && (
-          <div>
-            <h2>Author Feedback</h2>
-            <ShowReviews data={dummyauthorfeedback} roundSelected={roundSelected} />
-          </div>
-        )}
+        <ShowReviews
+          questions={data.questions}
+          summary={data.summary}
+          roundSelected={roundSelected}
+        />
       </div>
 
-      <p className="mt-4">
+      <div className="mt-4">
         <h3>Grade and comment for submission</h3>
-        Grade: {dummyData.grade}
-        <br />
-        Comment: {dummyData.comment}
-        <br />
-        Late Penalty: {dummyData.late_penalty}
-        <br />
-      </p>
+        <p>
+          Grade: {data.participant?.grade ?? "N/A"}
+          <br />
+          Comment: No Comment Available
+          <br />
+          Late Penalty: No Late Penalty
+        </p>
+      </div>
 
       <Link to="/">Back</Link>
     </div>
