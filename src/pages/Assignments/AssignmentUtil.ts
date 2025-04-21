@@ -25,7 +25,7 @@ export interface TeamSubmission {
   id: number;
   name: string; // Team name
   team_id: number;
-  topic: string | null;
+  topic: string ;
   members: TeamMember[];
 }
 
@@ -34,6 +34,7 @@ export interface ITeamRow {
   id: number; // Assignment ID
   team_id: number;
   teamName: string;
+  topicName :string,
   teamMembers: { id: number; name: string }[];
   historyLink: string;
 }

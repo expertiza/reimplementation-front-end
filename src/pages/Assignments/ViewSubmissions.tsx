@@ -20,6 +20,7 @@ const ViewSubmissions: React.FC = () => {
     assignment.map((team) => ({
       id: id ? parseInt(id, 10) : team.id, // ensure id is a number
       team_id: team.team_id,
+      topicName: team.topic,
       teamName: team.name,
       teamMembers: team.members,
       historyLink: `/history/${team.team_id}`,
@@ -28,6 +29,12 @@ const ViewSubmissions: React.FC = () => {
 
   // Define the columns used in the table
   const columns = useMemo(() => [
+    columnHelper.accessor('topicName', {
+      header: 'Topic Name',
+      cell: info => (
+        <span>{info.getValue()}</span>
+      ),
+    }),
     columnHelper.accessor('teamName', {
       header: 'Team Name',
       cell: info => (
@@ -62,17 +69,14 @@ const ViewSubmissions: React.FC = () => {
           >
             Assign Grade
           </Link>
-
-          <a
-            href={row.original.historyLink}
-            style={{ color: '#b44' }}
-          >
+          <a href={row.original.historyLink} style={{ color: '#b44' }}>
             History
           </a>
         </div>
       ),
     }),
   ], []);
+  
 
   return (
     <div className="mt-4">
