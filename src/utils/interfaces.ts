@@ -188,7 +188,7 @@ export interface Contributor {
 export interface ReviewMapping {
     map_id: number;
     reviewer: IUserRequest; 
-    review_status: 'Assigned' | 'Saved' | 'Submitted'; 
+    review_status: 'Pending' | 'Saved' | 'Submitted'; //updated to "Pending" from "Assigned" for clarity
     metareview_mappings: MetaReviewMapping[];
 }
 
@@ -196,6 +196,13 @@ export interface MetaReviewMapping {
     map_id: number;
     reviewer: IUserRequest; 
 }
+
+//relate topic to contributors and reviewers
+export interface TopicWithReviewers extends Topic {
+    reviewers: ReviewMapping[];
+    contributors: Contributor[];
+}
+
 
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
   const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
