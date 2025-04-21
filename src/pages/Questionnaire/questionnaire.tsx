@@ -124,22 +124,7 @@ function Questionnaire() {
 
   return (
     <div className="questionnaire-container">
-      <h1>Questionnaire List</h1>
-      <div className="add-section">
-        <input
-          type="text"
-          placeholder="Enter questionnaire name"
-          value={newQuestionnaireName}
-          onChange={(e) => setNewQuestionnaireName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Enter questionnaire type"
-          value={newQuestionnaireType}
-          onChange={(e) => setNewQuestionnaireType(e.target.value)}
-        />
-        <button onClick={handleAdd}>Add</button>
-      </div>
+      <h1>Manage Content</h1>
       <br />
       <table className="questionnaire-table">
         <thead>
@@ -201,6 +186,15 @@ function Questionnaire() {
           ))}
         </tbody>
       </table>
+      <Button
+      variant="outline-primary"
+      size="lg"
+      onClick={() => handleNavigateToEditPage("_")}
+      className="ms-2"
+      style={{ marginTop: "20px" }}
+      >
+        Add Item to a New Type
+      </Button>
     </div>
   );
 }
