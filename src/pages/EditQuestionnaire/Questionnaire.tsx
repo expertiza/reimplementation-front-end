@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
 import axios from "axios";
@@ -43,6 +44,7 @@ const Questionnaire = () => {
   };
 
   const [name, setName] = useState("Default Name");
+  const [questionnaireType, setQuestionnaireType] = useState(""); // New state for questionnaire type
   const [minScore, setMinScore] = useState(0);
   const [maxScore, setMaxScore] = useState(5);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -53,16 +55,22 @@ const Questionnaire = () => {
     const hash = window.location.hash.substring(1); // Remove the '#' symbol
     if (hash) {
       const decodedHash = decodeURIComponent(hash); // Decode URL-encoded characters like %20 to spaces
-      setName(decodedHash);
+
+      if (decodedHash.startsWith("_")) {
+        // If the token starts with '_', set the questionnaire type directly and skip fetching
+        setQuestionnaireType(decodedHash.substring(1)); // Remove the leading '_'
+      } else {
+        setName(decodedHash);
+      }
     } else {
       console.warn("No name found in the URL hash");
     }
   }, []); // Runs only once on mount
 
-  // Fetch questionnaire data after the name is set
+  // Fetch questionnaire data after the name is set (only if the name does not start with '_')
   useEffect(() => {
-    if (name === "Default Name") {
-      // Skip fetching if the name is still the default
+    if (name === "Default Name" || questionnaireType) {
+      // Skip fetching if the name is still the default or questionnaireType is already set
       return;
     }
 
@@ -84,6 +92,7 @@ const Questionnaire = () => {
 
         if (matchedQuestionnaire) {
           setQuestionnaireId(matchedQuestionnaire.id);
+          setQuestionnaireType(matchedQuestionnaire.questionnaire_type || ""); // Set questionnaire type
           setMinScore(matchedQuestionnaire.min_question_score || 0);
           setMaxScore(matchedQuestionnaire.max_question_score || 5);
           setIsPrivate(matchedQuestionnaire.private || false);
@@ -98,7 +107,7 @@ const Questionnaire = () => {
     };
 
     fetchQuestionnaireData();
-  }, [name]); // Runs whenever `name` changes
+  }, [name, questionnaireType]); // Runs whenever `name` or `questionnaireType` changes
 
   const exportQuestionnaire = () => {
     const dataToExport = JSON.stringify(questionnaireData, null, 2);
@@ -124,6 +133,7 @@ const Questionnaire = () => {
 
     const updatedContent = {
       name,
+      questionnaire_type: questionnaireType, // Include questionnaire type in the update
       min_question_score: minScore,
       max_question_score: maxScore,
       private: isPrivate,
@@ -154,6 +164,44 @@ const Questionnaire = () => {
     }
   };
 
+  const handleAddToQuestionnaire = async () => {
+    const updatedContent = {
+      name,
+      questionnaire_type: questionnaireType, // Include questionnaire type in the update
+      min_question_score: minScore,
+      max_question_score: maxScore,
+      private: isPrivate,
+      data: questionnaireData,
+      instructor_id: 1,
+    };
+
+    try {
+      const token = getAuthToken();
+      const response = await axios.post(
+        `http://localhost:3002/api/v1/questionnaires`, // Use POST for creating a new entry
+        updatedContent, // Payload for the new entry
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Entry creation successful:", response.data);
+      alert("New questionnaire entry created successfully!");
+
+      // Update the local state with the server response
+      setQuestionnaireData(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        alert(`Failed to create questionnaire. ${error.response?.data?.message || error.message}`);
+      } else {
+        alert(`Failed to create questionnaire. ${String(error)}`);
+      }
+    }
+  };
+
   return (
     <div
       className="d-flex justify-content-center align-items-center vh-100"
@@ -167,6 +215,11 @@ const Questionnaire = () => {
         }}
       >
         <h1 className="text-center mb-4">Edit Questionnaire</h1>
+        <div className="text-center mt-4">
+          <Link to="/questionnaire" className="btn btn-link">
+            Back to Manage Questionnaire Page
+          </Link>
+        </div>
         <form>
           <div className="form-group mb-3">
             <label htmlFor="contentName">Name:</label>
@@ -176,6 +229,16 @@ const Questionnaire = () => {
               id="contentName"
               value={name}
               onChange={(e) => setName(e.target.value)} // Allow editing of the name
+            />
+          </div>
+          <div className="form-group mb-3">
+            <label htmlFor="questionnaireType">Questionnaire Type:</label>
+            <input
+              type="text"
+              className="form-control"
+              id="questionnaireType"
+              value={questionnaireType}
+              onChange={(e) => setQuestionnaireType(e.target.value)} // Allow editing of the questionnaire type
             />
           </div>
 
@@ -217,10 +280,17 @@ const Questionnaire = () => {
           <div className="text-center">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary me-3"
               onClick={handleUpdate}
             >
               Update Questionnaire
+            </button>
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={handleAddToQuestionnaire}
+            >
+              Add to Questionnaire
             </button>
           </div>
         </form>
