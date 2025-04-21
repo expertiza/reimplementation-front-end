@@ -14,6 +14,30 @@ export interface IAssignmentFormValues {
   is_calibrated:boolean;
 }
 
+// Represents an individual member in a team
+export interface TeamMember {
+  id: number;
+  name: string;
+}
+
+// Represents each submission returned by the API
+export interface TeamSubmission {
+  id: number;
+  name: string; // Team name
+  team_id: number;
+  topic: string | null;
+  members: TeamMember[];
+}
+
+// Transformed data structure used for table rows
+export interface ITeamRow {
+  id: number; // Assignment ID
+  team_id: number;
+  teamName: string;
+  teamMembers: { id: number; name: string }[];
+  historyLink: string;
+}
+
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   const assignment: IAssignmentRequest = {
@@ -75,26 +99,32 @@ export async function loadAssignmentTeams({ params }: any) {
   return teamsData;
 }
 
+export async function loadAssignmentAndTeamReviews({ params }: any) {
+  const assignmentId = params.id;
+  const teamId = params.team;
 
-// Represents an individual member in a team
-export interface TeamMember {
-  id: number;
-  name: string;
-}
+  let assignmentData = null;
+  let reviewData = {};
 
-// Represents each submission returned by the API
-export interface TeamSubmission {
-  id: number;
-  name: string; // Team name
-  team_id: number;
-  topic: string | null;
-  members: TeamMember[];
-}
+  try {
+    if (assignmentId && teamId) {
+      // Fetch assignment details
+      const assignmentRes = await axiosClient.get(`/assignments/${assignmentId}`);
+      assignmentData = assignmentRes.data;
 
-// Transformed data structure used for table rows
-export interface ITeamRow {
-  id: number;
-  teamName: string;
-  teamMembers: TeamMember[];
-  historyLink: string;
+      // Fetch filtered reviews for the assignment and team
+      const reviewRes = await axiosClient.get(`/assignments/${assignmentId}/reviews`, {
+        params: { team_id: teamId },
+      });
+      reviewData = reviewRes.data;
+    }
+  } catch (error) {
+    console.error('Failed to load assignment or reviews:', error);
+  }
+
+  return {
+    assignment: assignmentData,
+    reviews: reviewData,
+    teamId,
+  };
 }

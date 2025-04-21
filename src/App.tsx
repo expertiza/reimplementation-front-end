@@ -10,7 +10,7 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment, loadAssignmentTeams } from "pages/Assignments/AssignmentUtil";
+import { loadAssignment, loadAssignmentAndTeamReviews, loadAssignmentTeams } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
@@ -61,12 +61,6 @@ function App() {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
-        
-        {
-          path: "assign_grade/:teamId",
-          element: <ProtectedRoute element={<AssignGrade />} />,
-        },
-        
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
@@ -87,6 +81,11 @@ function App() {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
           loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/teams/:team/assign_grade",
+          element: <ProtectedRoute element={<AssignGrade />} />,
+          loader: loadAssignmentAndTeamReviews,
         },
         {
           path: "assignments/edit/:id/viewreports",

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { createColumnHelper } from "@tanstack/react-table";
 import Table from "components/Table/Table";
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useParams } from 'react-router-dom';
 import { ITeamRow, TeamSubmission } from './AssignmentUtil';
 import { Link } from 'react-router-dom';
 
@@ -10,17 +10,21 @@ const columnHelper = createColumnHelper<ITeamRow>();
 
 const ViewSubmissions: React.FC = () => {
   // Fetch data loaded from route loader (assignment teams)
+
+  const { id } = useParams(); // assignment ID
+
   const assignment = useLoaderData() as TeamSubmission[];
 
   // Transform the backend response to a table-friendly structure
   const submissions = useMemo<ITeamRow[]>(() =>
     assignment.map((team) => ({
-      id: team.id,
+      id: id ? parseInt(id, 10) : team.id, // ensure id is a number
+      team_id: team.team_id,
       teamName: team.name,
       teamMembers: team.members,
       historyLink: `/history/${team.team_id}`,
     }))
-  , [assignment]);
+    , [assignment]);
 
   // Define the columns used in the table
   const columns = useMemo(() => [
@@ -52,8 +56,8 @@ const ViewSubmissions: React.FC = () => {
       cell: ({ row }) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Link
-            to={`/assign_grade/${row.original.id}`}
-            state={{ teamName: row.original.teamName }} 
+            to={`/assignments/edit/${row.original.id}/teams/${row.original.team_id}/assign_grade`}
+            state={{ teamName: row.original.teamName }}
             style={{ color: '#b44', marginBottom: '4px' }}
           >
             Assign Grade
