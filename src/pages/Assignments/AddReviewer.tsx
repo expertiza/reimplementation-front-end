@@ -54,7 +54,7 @@ const AddReviewer: React.FC = () => {
 
   return (
     <Container style={{ maxWidth: 600, paddingTop: 30 }}>
-      <h1 className="mb-4">Add Reviewer</h1>
+      <h2 className="mb-4">Add Reviewer</h2>
       <h4 className="mb-3">Contributor: {contributorName}</h4>
       <h4 className="mb-4">Assignment: {assignmentName}</h4>
       <Form onSubmit={handleSubmit}>

@@ -201,29 +201,30 @@ const AssignReviewer: React.FC = () => {
 
 
   return (
-    <div style={{ paddingLeft: 15, paddingRight: 0 }}>
-  <div className="mt-5 mb-4">
-    <h1 className="mb-2">Participants</h1>
-              <h1 className="mb-5">Assignment: {assignment.name}</h1>
-  </div>
+    <div style={{ paddingLeft: 15, paddingRight: 15 }}>
+      <div style={{ marginLeft: "0" }} className="mt-5 mb-4 ml-auto">
+        <h2 className="mb-4" style={{ textAlign: "left" }}>Participants</h2>
+        <h3 className="mb-5">Assignment: {assignment.name}</h3>
+      </div>
 
-  <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
-    <div>
-      <Table
-      data={data}
-      columns={columns}
-      columnVisibility={{ id: false }}
-      showGlobalFilter={false}
-      showColumnFilter={false}
-      showPagination={false}
-      tableClassName="tan-bg-table"
-    />
+      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-start", width: "100%", margin: 0 }}>
+        <div style={{
+            margin: 0,
+            padding: 0,
+            flex: "1 1 auto", // ensure it fills available space
+            width: "100%",    // prevent weird shrinking
+          }}>
+          <Table
+            data={data}
+            columns={columns}
+            columnVisibility={{ id: false }}
+            showGlobalFilter={false}
+            showColumnFilter={false}
+            showPagination={data.length >= 10}
+          /> 
+        </div>
+      </div>
     </div>
-    
-          </div>
-          {/*Add outlet for nested route*/}
-          <Outlet />
-</div>
   );
 };
 

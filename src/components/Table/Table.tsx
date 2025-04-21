@@ -32,6 +32,7 @@ interface TableProps {
   tableClassName?: string;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
   style?: React.CSSProperties;
+  getRowStyle?: (index: number) => React.CSSProperties;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -44,7 +45,7 @@ const Table: React.FC<TableProps> = ({
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
   tableClassName = "tan-bg-table",
-  style
+  getRowStyle,
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
@@ -150,7 +151,7 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <>
-      <Container>
+      <Container fluid style={{marginLeft: 0}}>
         <Row className="mb-md-2">
           <Col md={{ span: 12 }}>
             {isGlobalFilterVisible && (
@@ -163,7 +164,7 @@ const Table: React.FC<TableProps> = ({
           </span>{" "}
         </Row>
       </Container>
-      <Container>
+      <Container fluid style={{marginLeft: 0}}>
         <Row>
           <Col md={tableSize}>
             <BTable className={tableClassName} striped hover responsive size="sm">
@@ -201,9 +202,9 @@ const Table: React.FC<TableProps> = ({
                 ))}
               </thead>
               <tbody>
-                {getRowModel().rows.map((row) => {
+                {getRowModel().rows.map((row, index) => {
                   return (
-                    <tr key={row.id}>
+                    <tr key={row.id} style={getRowStyle?.(index)}>
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td key={cell.id}>
