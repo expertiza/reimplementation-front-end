@@ -38,7 +38,7 @@ const ViewSubmissions: React.FC = () => {
     columnHelper.accessor('teamName', {
       header: 'Team Name',
       cell: info => (
-        <div style={{ color: 'brown', fontWeight: 'bold' }}>
+        <div style={{ color: '#3399ff', fontWeight: 'normal' }}>
           {info.getValue()}
         </div>
       ),
@@ -49,7 +49,7 @@ const ViewSubmissions: React.FC = () => {
         <div>
           {info.getValue().map((member) => (
             <div key={member.id}>
-              <a href={`/students/${member.id}`} style={{ color: '#b44' }}>
+              <a href={`/students/${member.id}`} style={{ color: '#a67c52', textDecoration: 'none' }}>
                 {member.name}
               </a>
             </div>
@@ -65,11 +65,11 @@ const ViewSubmissions: React.FC = () => {
           <Link
             to={`/assignments/edit/${row.original.id}/teams/${row.original.team_id}/assign_grade`}
             state={{ teamName: row.original.teamName }}
-            style={{ color: '#b44', marginBottom: '4px' }}
+            style={{ color: '#a67c52', marginBottom: '4px' }}
           >
             Assign Grade
           </Link>
-          <a href={row.original.historyLink} style={{ color: '#b44' }}>
+          <a href={row.original.historyLink} style={{ color: '#a67c52' }}>
             History
           </a>
         </div>
