@@ -6,11 +6,11 @@ import type { TopicWithReviewers } from "../../utils/interfaces";
 
 const AddReviewer: React.FC = () => {
     //state to track input username
-    const [username, setUsername] = useState(''); 
+  const [username, setUsername] = useState(''); 
 
-    // hook to retrieve URL params
-    const [searchParams] = useSearchParams(); 
-    const { id } = useParams();
+  // hook to retrieve URL params
+  const [searchParams] = useSearchParams(); 
+  const { id } = useParams();
 
     // Extract relevant query parameters from the URL
   const contributorName = searchParams.get('contributor');
@@ -36,7 +36,7 @@ const AddReviewer: React.FC = () => {
       addReviewerToTopic(topicIdentifier, {
           map_id: reviewerCount + 1,
           reviewer: {
-          name: `Reviewer${reviewerCount + 1}`,
+          name: username,
           full_name: username,
           email: '',
           role_id: 0,
@@ -47,16 +47,16 @@ const AddReviewer: React.FC = () => {
 });
 
     //redirect back after updating, TODO check that this URL is correct
-      //navigate(`/assignments/edit/${id}/assignreviewer`);
-      navigate(`/assignments/edit/${id}/assignreviewer/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}&contributor=${contributorName}&assignment=${assignmentName}`);
+      navigate(`/assignments/edit/${id}/assignreviewer`);
+      //navigate(`/assignments/edit/${id}/assignreviewer/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}&contributor=${contributorName}&assignment=${assignmentName}`);
 
   };
 
   return (
-    <Container style={{ maxWidth: 600, paddingTop: 30 }}>
-      <h2 className="mb-4">Add Reviewer</h2>
-      <h4 className="mb-3">Contributor: {contributorName}</h4>
-      <h4 className="mb-4">Assignment: {assignmentName}</h4>
+    <Container style={{ maxWidth: 800, paddingTop: 30, marginLeft: "auto" ,flexDirection: "column",}}>
+      <h2 style={{ textAlign: "left" }} className="mb-4">Add Reviewer</h2>
+      <h4 className="mb-3">Contributor: {contributorId}</h4>
+      <h4 className="mb-4">Assignment: {topicIdentifier} </h4> 
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="usernameInput" className="mb-3">
           <Form.Label>Enter a user login:</Form.Label>
