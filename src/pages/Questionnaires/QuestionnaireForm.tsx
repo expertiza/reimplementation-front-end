@@ -125,7 +125,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
 
           <br />
 
-          {/* FIXME: Implement additional fields to add items to the questionnaire */}
+          {/* Allows users to input a variable number of questions / items */}
           <h5>Items</h5>
           <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} />
 

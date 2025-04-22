@@ -146,7 +146,6 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <>
-      <Container>
         <Row className="mb-md-2">
           <Col md={{ span: 12 }}>
             {isGlobalFilterVisible && (
@@ -158,11 +157,9 @@ const Table: React.FC<TableProps> = ({
             {isGlobalFilterVisible ? " Hide" : " Show"}
           </span>{" "}
         </Row>
-      </Container>
-      <Container>
         <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm">
+            <BTable striped hover responsive size="sm" >
               <thead className="table-secondary">
                 {getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -226,7 +223,6 @@ const Table: React.FC<TableProps> = ({
             )}
           </Col>
         </Row>
-      </Container>
     </>
   );
 };

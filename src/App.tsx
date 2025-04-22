@@ -23,8 +23,7 @@ import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import Home from "pages/Home";
-// import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
-import Questionnaire from "pages/Questionnaires/Question";
+import Questionnaire from "pages/Questionnaires/Questionnaires";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
@@ -43,7 +42,7 @@ import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
 
 
-// FIXME: Project 4 Additions
+// E2538 Additions
 import QuestionnaireEditor from "pages/Questionnaires/QuestionnaireEditor";
 import { loadQuestionnaire } from "pages/Questionnaires/QuestionnaireUtils";
 
@@ -299,11 +298,6 @@ function App() {
           ],
         },
         { path: "*", element: <NotFound /> },
-
-        // FIXME: REMOVE
-        { path: "questionnaire",
-          element: <Questionnaire /> ,
-          loader: loadQuestionnaire,}, // Added the Questionnaire route
 
 
         // FIxME: Project 4 E2538

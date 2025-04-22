@@ -1,29 +1,30 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Container, Modal, Row } from "react-bootstrap";
+import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom";
+import React, { useCallback, useMemo, useState } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
 import { BsFileText } from "react-icons/bs";
-import { QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
+import { QuestionnaireResponse } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import QuestionnaireTypeTable from "./QuestionnaireTypes";
 
 
-// FIXME: This is just a table of questionnaires and their corresponding details.
+//  This is just a table of questionnaires and their corresponding details.
 //  The reimplemenentation back end doesn't appear to have a predefined list of questionnaire types.
 //  getQuestionnaireTypes in QuestionnaireUtils.tsx can be used to extract unique types from the
 //  list of all questionnaires. Alternatively, a constant list of types is included in the current
 //  Expertiza questionnaire model that can be used as a guide to define a constant list allowed types.
+//  Because using getQuestionnaireTypes will only extract the type from existing questionnaires,
+//. types with no instantiations would be missing using this method.
 
 
 const Questionnaires = () => {
   const navigate = useNavigate();
+  const [showTypeModal, setShowTypeModal] = useState(false);
 
   // loader option
   const quest :any = useLoaderData();
   console.log(quest);
-
-  const questionnaireTypes = getQuestionnaireTypes(quest);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -47,6 +48,7 @@ const Questionnaires = () => {
     [onDeleteHandle, onEditHandle]
   );
 
+  const handleClose = () => setShowTypeModal(false);
 
   return (
     <>
@@ -61,13 +63,22 @@ const Questionnaires = () => {
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-info" onClick={() => navigate("new")} className="d-flex align-items-center">
+              <Button variant="outline-info" onClick={() => setShowTypeModal(true) } className="d-flex align-items-center">
                 <span className="me-1">Create</span><BsFileText />
               </Button>
             </Col>
           </Row>
           <Row>
-              <QuestionnaireTypeTable />
+            {showTypeModal && (
+              <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
+                <Modal.Header closeButton>
+                  <Modal.Title>Select Questionnaire Type</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <QuestionnaireTypeTable />
+                </Modal.Body>
+              </Modal>
+            )}
           </Row>
           <Row>
             <Table

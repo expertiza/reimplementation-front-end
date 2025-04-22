@@ -1,7 +1,7 @@
 import axiosClient from "../../utils/axios_client";
 import * as Yup from "yup";
 import { IEditor } from "../../utils/interfaces";
-import { QuestionnaireFormValues } from "./QuestionnaireUtils";
+import { QuestionnaireFormValues , transformQuestionnaireRequest } from "./QuestionnaireUtils";
 import React, { useState } from "react";
 import { useLoaderData, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Modal } from 'react-bootstrap';
@@ -14,17 +14,6 @@ interface IAlertProps {
   message: string;
 }
 
-interface QuestionnaireFormWithItems extends QuestionnaireFormValues {
-  items: {
-    txt: string;
-    question_type: string;
-    weight: number;
-    break_before: boolean;
-    alternatives?: string;
-    min_label?: string;
-    max_label?: string;
-  }[];
-}
 
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const [alert, setAlert] = useState<IAlertProps | null>(null);
@@ -38,9 +27,10 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   // Can view the decoded type in browser console
   console.log("Type:", type);
 
+  console.log(questionnaire);
 
   // FIXME: See note below
-  // const onSubmit = async (values: QuestionnaireFormWithItems) => {
+  // const onSubmit = async (values: QuestionnaireFormValues) => {
   //   console.log("Submit:", values);
   //   console.log("Submit:", values.items);
   // };
@@ -54,22 +44,27 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   // Comment out this version of onSubmit, and include the implementation above to simply print
   // the form values to the browser console.
   const onSubmit = async (values: any) => {
+    console.log("hello");
+    console.log(values.items);
+    // transform the values before submitting
+    const transformedValues = transformQuestionnaireRequest(values);
+
+    // determine the endpoint based on whether we're creating or updating
     const endpoint = mode === "create"
       ? "/questionnaires"   // creating questionnaires
-      : `/questionnaires/edit/${values.id}`;  // updating questionnaires
+      : `/questionnaires/${values.id}`;  // updating questionnaires
 
     try {
-      const response = await axiosClient[mode === "create" ? "post" : "put"](endpoint, values,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // submit the transformed values to the API
+      const response = await axiosClient[mode === "create" ? "post" : "put"](endpoint, transformedValues, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("Server Response:", response.data);
 
-      // Navigate back to questionnaire management dashboard
-      navigate(`/questionnaires`)
+      // navigate back to the questionnaire management dashboard
+      navigate(`/questionnaires`);
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -77,14 +72,24 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
 
   // initial form values
-  const initialValues: QuestionnaireFormWithItems = {
+  const initialValues: QuestionnaireFormValues = {
     id: questionnaire?.id ?? undefined,
     name: questionnaire?.name ?? "",
     questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
     private: questionnaire?.private ?? false,
     min_question_score: questionnaire?.min_question_score ?? 0,
     max_question_score: questionnaire?.max_question_score ?? 10,
-    items: questionnaire?.items ?? [{ text: "" }],
+    items: questionnaire?.items ?? [    {
+      txt: "",
+      weight: 1,
+      question_type: "",
+      break_before: 1,
+      alternatives: "",
+      min_label: 0,
+      max_label: 10,
+      seq: 1,
+      },
+    ],
   };
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/questionnaires");
@@ -101,7 +106,6 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
       <Modal.Body>
           <QuestionnaireForm
             initialValues={initialValues}
-            // validationSchema={validationSchema}
             onSubmit={onSubmit}
           />
         </Modal.Body>

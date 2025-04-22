@@ -1,19 +1,6 @@
 import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
-// export const QuestionnaireTypes = [
-//   "Metareview",
-//   "Author Feedback",
-//   "Teammate Review",
-//   "Survey",
-//   "Assignment Survey",
-//   "Global Survey",
-//   "Course Survey",
-//   "Bookmark Rating",
-//   "Quiz",
-// ];
-
-
 export type QuestionnaireType =
   | "Metareview"
   | "Author Feedback"
@@ -39,6 +26,22 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
 ];
 
 
+export interface IItem {
+  id?: number;
+  txt: string;
+  weight: number;
+  seq: number;
+  question_type: string;
+  size: number;
+  alternatives: string;
+  min_label: number;
+  max_label: number;
+  break_before: number;
+  questionnaire_id?: number;
+  _destroy?: boolean;
+}
+
+
 export interface QuestionnaireFormValues {
   id?: number;
   name: string;
@@ -48,6 +51,7 @@ export interface QuestionnaireFormValues {
   max_question_score: number;
   instructor_id?: number;
   instructor?: IInstructor;
+  items?: IItem[];
 }
 
 export interface QuestionnaireResponse {
@@ -57,9 +61,9 @@ export interface QuestionnaireResponse {
   questionnaire_type:string;
   min_question_score: number;
   max_question_score: number;
-
   instructor_id: number;
   instructor: IInstructor;
+  items?: IItem[];
 }
 
 export interface QuestionnaireRequest {
@@ -69,9 +73,9 @@ export interface QuestionnaireRequest {
   questionnaire_type:string;
   min_question_score: number;
   max_question_score: number;
-  
   instructor_id?: number;
   instructor?: IInstructor;
+  items_attributes: IItem[];
 }
 
 export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] {
@@ -88,15 +92,15 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   const questionnaire: QuestionnaireRequest = {
     name: values.name,
-
     questionnaire_type:values.questionnaire_type,
     private:values.private,
     min_question_score: values.min_question_score,
     max_question_score:values.max_question_score,
     instructor_id:values.instructor_id,
     instructor:values.instructor,
+    items_attributes:values.items ? values.items : [],
   };
-  console.log(questionnaire);
+  console.log("Transformed Questionnaire Request:", questionnaire);
   return JSON.stringify(questionnaire);
 };
 
@@ -111,6 +115,7 @@ export const transformQuestionnaireResponse = (questionnaireResponse: string) =>
     max_question_score:questionnaire.max_question_score,
     instructor_id:questionnaire.instructor_id,
     instructor:questionnaire.instructor,
+    items:questionnaire.items,
   };
   return questionnaireValues;
 };

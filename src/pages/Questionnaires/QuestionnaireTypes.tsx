@@ -15,7 +15,7 @@ const QuestionnaireTypeTable: React.FC = () => {
   const navigate = useNavigate();
 
   const onCreate = (type: QuestionnaireType) => {
-    // FIXME: Navigate to the Questionnaire's new form
+    // Navigate to the Questionnaire's new form
     navigate(`/questionnaires/new?type=${encodeURIComponent(type)}`);
   };
 
@@ -34,53 +34,26 @@ const QuestionnaireTypeTable: React.FC = () => {
       cell: ({ row }) => {
         const type = row.original.type;
         return (
-
-          // FIXME: Use "+" button instead (search assets)
-          // <button
-          //   onClick={() => onCreate(type)}
-          //   className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded"
-          // >
-          //   Create
-          // </button>
-          // <button
-          //   onClick={() => onCreate(type)}
-          //   className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded flex items-center justify-center"
-          // >
-          //   <IoIosAddCircle size={24} />
-          // </button>
-          // <IoIosAddCircle
-          //   onClick={() => onCreate(type)}
-          //   className="text-blue-500 hover:text-blue-600 cursor-pointer"
-          //   size={24}
-          // />
-          // <IoIosAddCircle
-          //   onClick={() => onCreate(type)}
-          //   className="text-blue-500 hover:text-blue-600 cursor-pointer transition-all"
-          //   size={24}
-          // />
           <IoIosAddCircle
             onClick={() => onCreate(type)}
             style={{
               cursor: "pointer",
               transition: "all 0.2s",
-              color: "#3b82f6", // Tailwind blue-500
+              color: "#3b82f6",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#2563eb"; // Tailwind blue-600
+              e.currentTarget.style.color = "#2563eb";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#3b82f6"; // Tailwind blue-500
+              e.currentTarget.style.color = "#3b82f6";
             }}
             size={24}
           />
-
         );
       },
     },
   ];
 
-
-  // FIXME: Change the width of the table to span the container
   return (
     <Table
       data={data}

@@ -36,9 +36,6 @@ export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("instructor.email", {
     header: "Instructor Email",
   }),
-
-
-
   columnHelper.display({
     id: "actions",
     header: "Actions",

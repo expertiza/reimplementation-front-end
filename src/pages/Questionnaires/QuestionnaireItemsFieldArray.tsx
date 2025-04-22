@@ -22,10 +22,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                 <IoIosRemoveCircleOutline
                   size={22}
                   className="text-danger cursor-pointer"
-                  onClick={() => remove(index)}
+                  onClick={() => { values.items[index]._destroy = true; remove(index)}}
                   title="Remove question"
                 />
               </div>
+
+              <Field type="hidden" name={`items[${index}].seq`} />
+              <Field type="hidden" name={`items[${index}].break_before`} />
+
 
               <Field
                 name={`items[${index}].txt`}
@@ -121,13 +125,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   />
                 </>
               )}
-
-
-
-
             </div>
-
-
           ))}
 
           <div className="d-flex align-items-center gap-2">
@@ -139,10 +137,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   txt: "",
                   weight: 1,
                   question_type: "",
-                  break_before: false,
+                  break_before: 1,
                   alternatives: "",
-                  min_label: "",
-                  max_label: ""
+                  min_label: 0,
+                  max_label: 10,
+                  seq: values.items.length + 1,
                 })
               }
               title="Add question"
