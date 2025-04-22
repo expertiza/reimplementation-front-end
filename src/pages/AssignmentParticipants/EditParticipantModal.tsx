@@ -41,7 +41,7 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Edit Participant</Modal.Title>
+        <Modal.Title>Edit participant</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
@@ -76,7 +76,7 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
             </Form.Control>
           </Form.Group>
           <Form.Group controlId="formParticipantRole" className="mb-3">
-            <Form.Label>Participant Role</Form.Label>
+            <Form.Label>Participant role</Form.Label>
             <Form.Control
               as="select"
               value={updatedParticipant.participantRole}
@@ -106,11 +106,11 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button className = "btn btn-md" variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={() => onSave(updatedParticipant)}>
-          Save Changes
+        <Button className = "btn btn-md" variant="danger" onClick={() => onSave(updatedParticipant)}>
+          Save changes
         </Button>
       </Modal.Footer>
     </Modal>

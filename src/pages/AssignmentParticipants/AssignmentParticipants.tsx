@@ -1,13 +1,14 @@
 import participantsData from './participants.json';
 import './AssignmentParticipants.css';
-
-import { useState } from 'react';
 import EditParticipantModal from './EditParticipantModal';
 import ConfirmRemoveModal from './ConfirmRemoveModal';
 import ToastNotification from './ToastNotification';
 import ParticipantTable from './ParticipantsTable';
 import { getNestedValue, participantRoleInfo, assignmentColSpan as numColumns } from './AssignmentParticipantsUtil';
 import { AssignmentProperties, IsEnabled, Participant, ParticipantRole, Role } from './AssignmentParticipantsTypes';
+import { useState } from 'react';
+import { Form, Button } from 'react-bootstrap';
+
 
 interface AssignmentParticipantsProps {
   assignmentProps: AssignmentProperties;
@@ -129,9 +130,8 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   return (
     <div className="assignment-participants-container">
       <h1 className="assignment-participants-header">Assignment Participants: Program 1</h1>
-
       {/* Add User Section */}
-      <label className="section-label">Add New Participant</label>
+      <label className="section-label">Add new participant</label>
       {error && <div className="error-message">{error}</div>}
       <div className="add-user-section">
         <div className="user-permissions">
@@ -142,7 +142,13 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
           />
-          <button className="add-user-button" onClick={handleAddUser}>Add User</button>
+          <Button className ="btn btn-md"
+  variant="danger"
+  onClick={handleAddUser}
+  style={{ height: '42px' }}
+>
+  Add user
+</Button>
         </div>
 
         {/* Radio Group for Role Selection */}
@@ -156,7 +162,14 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
                 onChange={() => setSelectedRole(role as ParticipantRole)}
               />
               {role}
-              <span className="info-icon" title={participantRoleInfo(role)}>i</span>
+              <img
+      src={`${process.env.PUBLIC_URL}assets/images/info.png`}
+      alt="Info"
+      title={participantRoleInfo(role)}
+      width="16"
+      height="16"
+      className="ms-2"
+    />
             </label>
           ))}
         </div>
@@ -201,7 +214,15 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 }
 
 export function permissionIcon(permission: IsEnabled) {
-  return permission === IsEnabled.Yes ? <i className="fas fa-check-circle permission-yes" /> : <i className="fas fa-times-circle permission-no" />;
+  return permission === IsEnabled.Yes ? <img
+  src={`${process.env.PUBLIC_URL}/assets/images/Check-icon.png`}
+  width="20"
+  height="20"
+/> : <img
+      src={`${process.env.PUBLIC_URL}/assets/images/Uncheck-icon.png`}
+      width="20"
+      height="20"
+    />;
 }
 
 export default AssignmentParticipants;

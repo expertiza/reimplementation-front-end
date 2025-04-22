@@ -59,16 +59,18 @@
     white-space: nowrap;
 }
 
-.assignment-participants-table td.permission-column {
-    text-align: center;
-}
-
-.permission-column i {
-    font-size: 1.25rem;
-    z-index: 1;
-    position: relative;
-    top: 0;
-}
+/* To target the actual <div class="permission-column"> wrapper */
+.permission-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  
+  .permission-column > img {
+    display: block;
+    margin: 0;
+  }
 
 .assignment-participants-table tr:nth-child(even) {
     background-color: #f9fafb;
