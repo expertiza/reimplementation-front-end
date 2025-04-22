@@ -55,25 +55,25 @@ const Questionnaire = () => {
     const hash = window.location.hash.substring(1); // Remove the '#' symbol
     if (hash) {
       const decodedHash = decodeURIComponent(hash); // Decode URL-encoded characters like %20 to spaces
-
+  
       if (decodedHash.startsWith("_")) {
         // If the token starts with '_', set the questionnaire type directly and skip fetching
         setQuestionnaireType(decodedHash.substring(1)); // Remove the leading '_'
       } else {
-        setName(decodedHash);
+        const parsedId = Number(decodedHash); // Convert the hash to a number
+        if (!isNaN(parsedId)) {
+          setQuestionnaireId(parsedId); // Set the questionnaire ID if it's a valid number
+        } else {
+          console.warn("Invalid questionnaire ID in the URL hash:", decodedHash);
+        }
       }
     } else {
-      console.warn("No name found in the URL hash");
+      console.warn("No hash value found in the URL");
     }
   }, []); // Runs only once on mount
 
-  // Fetch questionnaire data after the name is set (only if the name does not start with '_')
+  // Fetch questionnaire data after the id is set (only if the string does not start with '_')
   useEffect(() => {
-    if (name === "Default Name" || questionnaireType) {
-      // Skip fetching if the name is still the default or questionnaireType is already set
-      return;
-    }
-
     const fetchQuestionnaireData = async () => {
       try {
         const response = await axios.get(
@@ -87,19 +87,18 @@ const Questionnaire = () => {
 
         const questionnaires = response.data;
         const matchedQuestionnaire = questionnaires.find(
-          (item: any) => item.name === name // Match the questionnaire by name
+          (item: any) => item.id === questionnaireId // Match the questionnaire by name
         );
 
         if (matchedQuestionnaire) {
-          setQuestionnaireId(matchedQuestionnaire.id);
+          setName(matchedQuestionnaire.name || ""); // Set name
           setQuestionnaireType(matchedQuestionnaire.questionnaire_type || ""); // Set questionnaire type
           setMinScore(matchedQuestionnaire.min_question_score || 0);
           setMaxScore(matchedQuestionnaire.max_question_score || 5);
           setIsPrivate(matchedQuestionnaire.private || false);
           setQuestionnaireData(matchedQuestionnaire.data || sample_questionnaire.data);
         } else {
-          setQuestionnaireId(0);
-          console.warn("No matching questionnaire found for the name:", name);
+          console.warn("No matching questionnaire found for the id:", questionnaireId);
         }
       } catch (error) {
         console.error("Error fetching questionnaires:", error);
@@ -107,7 +106,7 @@ const Questionnaire = () => {
     };
 
     fetchQuestionnaireData();
-  }, [name, questionnaireType]); // Runs whenever `name` or `questionnaireType` changes
+  }, [questionnaireId]); // Runs whenever `name` or `questionnaireType` changes
 
   const exportQuestionnaire = () => {
     const dataToExport = JSON.stringify(questionnaireData, null, 2);

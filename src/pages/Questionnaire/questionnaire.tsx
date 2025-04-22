@@ -73,7 +73,7 @@ function Questionnaire() {
     fetchQuestionnaireItems(); // Fetch items when the component mounts
   }, []);
 
-  const handleCopyitem = async (name: string) => {
+  const handleCopyitem = async (id: number) => {
     try {
       // Fetch the questionnaire data for the given name
       const response = await axios.get(
@@ -87,11 +87,11 @@ function Questionnaire() {
   
       const questionnaires = response.data;
       const matchedQuestionnaire = questionnaires.find(
-        (item: any) => item.name === name // Match the questionnaire by name
+        (item: any) => item.id === id // Match the questionnaire by name
       );
   
       if (!matchedQuestionnaire) {
-        console.warn("No matching questionnaire found for the name:", name);
+        console.warn("No matching questionnaire found for the id:", id);
         return;
       }
   
@@ -429,7 +429,7 @@ function Questionnaire() {
                           }}
                         >
                           <button
-                            onClick={() => handleNavigateToEditPage(item.name)}
+                            onClick={() => handleNavigateToEditPage(item.id)}
                             style={{
                               background: "none",
                               border: "none",
@@ -459,7 +459,7 @@ function Questionnaire() {
                             />
                           </button>
                           <button
-                            onClick={() => handleCopyitem(item.name)}
+                            onClick={() => handleCopyitem(item.id)}
                             style={{
                               background: "none",
                               border: "none",
