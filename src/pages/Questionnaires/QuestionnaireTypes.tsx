@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 import Table from "components/Table/Table";
 import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { IoIosAddCircle } from "react-icons/io";
 

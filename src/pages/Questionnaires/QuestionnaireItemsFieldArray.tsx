@@ -1,14 +1,12 @@
 import React from "react";
 import { Field, FieldArray, FieldArrayRenderProps, ErrorMessage } from "formik";
 import { IoIosRemoveCircleOutline, IoIosAddCircleOutline } from "react-icons/io";
-import * as Yup from "yup";
 
 interface Props {
   values: any;
   errors: any;
   touched: any;
 }
-
 
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched }) => {
   return (

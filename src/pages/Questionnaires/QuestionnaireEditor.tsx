@@ -1,22 +1,13 @@
 import axiosClient from "../../utils/axios_client";
-import * as Yup from "yup";
 import { IEditor } from "../../utils/interfaces";
 import { QuestionnaireFormValues , transformQuestionnaireRequest } from "./QuestionnaireUtils";
-import React, { useState } from "react";
+import React from "react";
 import { useLoaderData, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Modal } from 'react-bootstrap';
 import QuestionnaireForm from "./QuestionnaireForm";
 
 
-interface IAlertProps {
-  variant: string;
-  title?: string;
-  message: string;
-}
-
-
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
-  const [alert, setAlert] = useState<IAlertProps | null>(null);
   const token = localStorage.getItem("token");
   const questionnaire :any = useLoaderData();
   const [searchParams] = useSearchParams();
@@ -27,7 +18,6 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   // Can view the decoded type in browser console
   console.log("Type:", type);
 
-  console.log(questionnaire);
 
   // FIXME: See note below
   // const onSubmit = async (values: QuestionnaireFormValues) => {
