@@ -482,15 +482,6 @@ function Questionnaire() {
           ))}
         </tbody>
       </table>
-      <Button
-        variant="outline-primary"
-        size="lg"
-        onClick={() => handleNavigateToEditPage("_")}
-        className="ms-2"
-        style={{ marginTop: "20px" }}
-      >
-        Add Item to a New Type
-      </Button>
     </div>
   );
 }
