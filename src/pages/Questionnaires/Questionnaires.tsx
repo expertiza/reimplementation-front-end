@@ -1,6 +1,6 @@
 import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
 import { BsFileText } from "react-icons/bs";
 import { QuestionnaireResponse } from "./QuestionnaireUtils";
@@ -20,11 +20,16 @@ import QuestionnaireTypeTable from "./QuestionnaireTypes";
 
 const Questionnaires = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showTypeModal, setShowTypeModal] = useState(false);
 
   // loader option
   const quest :any = useLoaderData();
   console.log(quest);
+
+  useEffect(() => {
+    setShowTypeModal(false);
+  }, [location]);
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
