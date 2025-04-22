@@ -62,7 +62,7 @@ function App() {
         },
         {
           path: "participants",
-          element: <AssignmentParticipants assignmentProps={{ hasQuiz: false, hasMentor: false }} />,
+          element: <AssignmentParticipants assignmentProps={{ hasQuiz: true, hasMentor: true }} />,
         },
         {
           path: "assignments/edit/:id/createteams",
