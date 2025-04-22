@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, ReactNode } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ReviewMapping, TopicWithReviewers } from '../utils/interfaces';
 import dummyTopicData from '../pages/Assignments/Data/DummyTopics.json';
 
@@ -39,9 +39,18 @@ const transformDummyData = (): TopicWithReviewers[] => {
     }));
 };
 
-// pull initial context from DummyTopics.json file
+const LOCAL_STORAGE_KEY = 'reviewerData'; 
+
+// pull initial context from local storage and then DummyTopics.json file
 export const ReviewerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [topics, setTopics] = useState<TopicWithReviewers[]>(transformDummyData());
+    const [topics, setTopics] = useState<TopicWithReviewers[]>(() => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : transformDummyData();
+    }); 
+
+    useEffect(() => {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(topics));
+    }, [topics]);
 
   // Add reviewer to a specific topic
     function addReviewerToTopic(topicIdentifier: string, reviewer: ReviewMapping) {

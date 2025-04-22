@@ -16,7 +16,7 @@ const AddReviewer: React.FC = () => {
   const contributorName = searchParams.get('contributor');
   const assignmentName = searchParams.get('assignment');
   const contributorId = searchParams.get('contributor_id');
-  const topicIdentifier = searchParams.get('topic'); // TODO double check that this is obtained correctly
+  const topicIdentifier = searchParams.get('topic'); 
 
   const navigate = useNavigate();
 
@@ -46,17 +46,19 @@ const AddReviewer: React.FC = () => {
           metareview_mappings: []
 });
 
-    //redirect back after updating, TODO check that this URL is correct
+    //redirect back after updating
       navigate(`/assignments/edit/${id}/assignreviewer`);
-      //navigate(`/assignments/edit/${id}/assignreviewer/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}&contributor=${contributorName}&assignment=${assignmentName}`);
+      
 
   };
 
   return (
-    <Container style={{ maxWidth: 800, paddingTop: 30, marginLeft: "auto" ,flexDirection: "column",}}>
-      <h2 style={{ textAlign: "left" }} className="mb-4">Add Reviewer</h2>
-      <h4 className="mb-3">Contributor: {contributorId}</h4>
-      <h4 className="mb-4">Assignment: {topicIdentifier} </h4> 
+      <Container style={{ maxWidth: 800, paddingTop: 30, marginLeft: "auto", flexDirection: "column", }}>
+          <div className="mt-5 mb-4">
+            <h2 className="mb-4" style={{ textAlign: "left" }}>Add Reviewer</h2>
+            <h3 className="mb-2">Contributor: {contributorName}</h3>
+              <h4 className="mb-4">Assignment: {assignmentName} </h4> 
+            </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="usernameInput" className="mb-3">
           <Form.Label>Enter a user login:</Form.Label>

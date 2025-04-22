@@ -1,5 +1,4 @@
-import dummyTopicData from "./Data/DummyTopics.json";
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { useLoaderData, useNavigate, Outlet, useParams } from 'react-router-dom';
 import Table from "components/Table/Table";
@@ -30,7 +29,7 @@ const AssignReviewer: React.FC = () => {
         const topic = topics.find(t => t.topic_identifier === topicIdentifier);
         if (!topic) return;
         addReviewer(topicIdentifier); // adds new reviewer
-        navigate(`/assignments/edit/${id}/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}`); //TODO determine if this is correct URL for redirect
+        navigate(`/assignments/edit/${id}/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}`); 
     };
 
     // Adds a new placeholder reviewer to the selected topic via context function

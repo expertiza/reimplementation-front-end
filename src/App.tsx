@@ -42,6 +42,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import { ReviewerProvider } from './context/ReviewerContext';
 
 function App() {
   const router = createBrowserRouter([
@@ -71,9 +72,7 @@ function App() {
         {
           path: "assignments/edit/:id/assignreviewer",
           element: (  
-              <ReviewerContextWrapper>
               <AssignReviewer />
-              </ReviewerContextWrapper>
           ), 
             loader: loadAssignment,
         },
@@ -81,9 +80,7 @@ function App() {
         {
             path:"assignments/edit/:id/add-reviewer",
             element: (
-                <ReviewerContextWrapper>
                 <AddReviewer />
-                </ReviewerContextWrapper>
             ),
         },
 
@@ -311,7 +308,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+    return (
+        <ReviewerProvider>
+            <RouterProvider router={router} />
+        </ReviewerProvider>
+    );
 }
 
 export default App;
