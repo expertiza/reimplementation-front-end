@@ -36,29 +36,7 @@ const AssignReviewer: React.FC = () => {
     const addReviewer = (topicIdentifier: string) => {
         const topicData = topics.find(t => t.topic_identifier === topicIdentifier); 
         const reviewerCount = topicData ? topicData.reviewers.length : 0;
-      /*
-    setData(prev =>
-      prev.map(row =>
-        row.topic === topic && row.reviewers.length < 3
-          ? { ...row, reviewers: [...row.reviewers, { name: `NewReviewer${row.reviewers.length + 1}`,
-            username: `new_user${row.reviewers.length + 1}`,
-             status: "Pending" }] }
-          : row
-      )
-    ); */
-    // maps to topic and reviewers 
-        addReviewerToTopic(topicIdentifier, {
-            map_id: reviewerCount + 1,
-            reviewer: {
-                name: `NewReviewer${reviewerCount + 1}`,
-                full_name: `NewReviewer${reviewerCount + 1}`, //TODO check this displays username appropriately
-                email: "",
-                role_id: 0,
-                institution_id: 0
-            },
-            review_status: "Pending",
-            metareview_mappings: []
-    });
+    
     };
     // Deletes a reviewer by name from a specific topic (locally only ATM) 
   const deleteReviewer = (topicIdentifier: string, reviewerName: string) => {

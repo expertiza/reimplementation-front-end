@@ -57,7 +57,7 @@ const AddReviewer: React.FC = () => {
           <div className="mt-5 mb-4">
             <h2 className="mb-4" style={{ textAlign: "left" }}>Add Reviewer</h2>
             <h3 className="mb-2">Contributor: {contributorName}</h3>
-              <h4 className="mb-4">Assignment: {assignmentName} </h4> 
+              <h3 className="mb-4">Assignment: {assignmentName} </h3> 
             </div>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="usernameInput" className="mb-3">
