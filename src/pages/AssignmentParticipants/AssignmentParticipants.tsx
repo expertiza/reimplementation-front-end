@@ -92,15 +92,16 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     assignmentResponse,
   ]);
 
-  const filteredParticipants = participants
-    .filter((participant) => {
+  const filteredParticipants = useMemo(() => {
+    const filtered = participants.filter((participant) => {
       return (
         (selectedFilterRole === 'All' || participant.role === selectedFilterRole) &&
         (participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           participant.email.toLowerCase().includes(searchTerm.toLowerCase()))
       );
-    })
-    .sort((a, b) => {
+    });
+    
+    return filtered.sort((a, b) => {
       if (!sortConfig) return 0;
 
       const { key, direction } = sortConfig;
@@ -112,6 +113,9 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       if (aValue > bValue) return direction === 'asc' ? 1 : -1;
       return 0;
     });
+  }, [
+    participants
+  ]);
 
   const openEditModal = (participant: Participant) => {
     setSelectedParticipant(participant);
