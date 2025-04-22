@@ -1,207 +1,185 @@
-import dummyTopicData from "./Data/DummyTopics.json";
 import React, { useState, useMemo } from 'react';
-import { useLoaderData } from 'react-router-dom';
+import { Button, Container } from 'react-bootstrap';
+import { useLoaderData, useNavigate, Outlet, useParams } from 'react-router-dom';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
+import { useReviewerContext } from 'context/ReviewerContext'; 
+import { Contributor, TopicWithReviewers } from '../../utils/interfaces'; 
 
-type Reviewer = {
-  name: string;
-  username: string;
-  status: string;
-};
 
-interface ReviewerAssignment {
-  topic: string;
-  contributors: {name: string, username: string}[]; 
-  reviewers: { name: string, username: string, status: string }[];
-}
+const columnHelper = createColumnHelper<TopicWithReviewers>();
 
-interface ReviewerCardProps {
-  reviewer: Reviewer;
-  onUnsubmit: () => void;
-  onDelete: () => void;
-  index: number;
-}
-
-const columnHelper = createColumnHelper<ReviewerAssignment>();
-
+//  Main component to manage reviewers for topics
 const AssignReviewer: React.FC = () => {
-const assignment: any = useLoaderData();
-  
-const [data, setData] = useState<ReviewerAssignment[]>(dummyTopicData);
+    const assignment: any = useLoaderData(); // load assignment metadata
+    const navigate = useNavigate(); 
+    const { id } = useParams(); // get assignment ID from URL 
 
-//Add a reviewer within the contributors row
-const addReviewer = (topic: string) => {
-  setData(prev =>
-    prev.map(row =>
-      row.topic === topic && row.reviewers.length < 3
-        ? { ...row, reviewers: [...row.reviewers, { name: `NewReviewer${row.reviewers.length + 1}`,
-          username: `new_user${row.reviewers.length + 1}`,
-            status: "Pending" }] }
-        : row
-    )
-  );
-};
+    const { topics, addReviewerToTopic } = useReviewerContext(); // global state
+    const [data, setData] = useState<TopicWithReviewers[]>(topics) // local data 
 
-//Delete a reviewer from their card
-const deleteReviewer = (topic: string, reviewerName: string) => {
-  setData(prev =>
-    prev.map(row =>
-      row.topic === topic
-        ? { ...row, reviewers: row.reviewers.filter(r => r.name !== reviewerName) }
-        : row
-    )
-  );
-};
-
-//Create a full card object for each reviewer, this makes the column creation simpler
-const ReviewerCard: React.FC<ReviewerCardProps> = ({ reviewer, onUnsubmit, onDelete, index }) => {
-  return (
-    <div
-      style={{
-        backgroundColor: index % 2 === 0 ? "#e8e8ba" : "#fafad2",
-        padding: "6px 8px",
-        marginBottom: "6px",
-        borderRadius: "4px",
-      }}
-    >
-      <div>{reviewer.name} ({reviewer.status})</div>
-      <div>
-        <a
-          href="#"
-          style={{ textDecoration: "underline", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            onUnsubmit();
-          }}
-        >
-          Unsubmit
-        </a>
-      </div>
-      <div>
-        <a
-          href="#"
-          style={{ textDecoration: "underline", cursor: "pointer" }}
-          onClick={(e) => {
-            e.preventDefault();
-            onDelete();
-          }}
-        >
-          Delete
-        </a>
-      </div>
-    </div>
-  );
-};
+    // sync local with global
+    React.useEffect(() => {
+        setData(topics);
+    }, [topics]);
 
 
-//Unsubmit a given review within its card
-const unsubmitReviewer = (topic: string, reviewerName: string) => {
-  setData(prev =>
-    prev.map(row =>
-      row.topic === topic
-        ? {
-            ...row,
-            reviewers: row.reviewers.map(r =>
-              r.name === reviewerName ? { ...r, status: "Pending" } : r
-            )
-          }
-        : row
-    )
-  );
-};
+    // Handler for Add Reviewer link -- finds topic, adds placeholder reviewer, and navigates to nested route
+    const handleAddReviewer = (topicIdentifier: string) => {
+        const topic = topics.find(t => t.topic_identifier === topicIdentifier);
+        if (!topic) return;
+        addReviewer(topicIdentifier); // adds new reviewer
+        navigate(`/assignments/edit/${id}/add-reviewer?topic=${encodeURIComponent(topicIdentifier)}`); 
+    };
 
-const columns = useMemo(() => [
-  columnHelper.accessor("topic", {
-    id: 'select',
-    header: "Topic Selected",
-    cell: info => {
-      return (
-        <div>
-          {info.getValue()}
-        </div>
+    // Adds a new placeholder reviewer to the selected topic via context function
+    const addReviewer = (topicIdentifier: string) => {
+        const topicData = topics.find(t => t.topic_identifier === topicIdentifier); 
+        const reviewerCount = topicData ? topicData.reviewers.length : 0;
+    
+    };
+    // Deletes a reviewer by name from a specific topic (locally only ATM) 
+  const deleteReviewer = (topicIdentifier: string, reviewerName: string) => {
+    setData(prev =>
+        prev.map(row =>
+            row.topic_identifier === topicIdentifier
+          ? { ...row, reviewers: row.reviewers.filter(r => r.reviewer.name !== reviewerName) }
+          : row
+      )
+    );
+  };
+    // Resets review status of a reviewer back to "Pending" (simulated unsubmission) (locally only ATM)
+    const unsubmitReviewer = (topic: string, reviewerName: string) => {
+      setData(prev =>
+        prev.map(row =>
+          row.topic_identifier === topic
+            ? {
+                ...row,
+                reviewers: row.reviewers.map(r =>
+                  r.reviewer.name === reviewerName
+                    ? { ...r, review_status: "Pending" }
+                    : r
+                )
+              }
+            : row
+        )
       );
-    }
-  }),
-  columnHelper.accessor("contributors", {
-    header: "Contributors",
-    cell: info => {
-      const { contributors, topic, reviewers } = info.row.original;
-      const hasPending = reviewers.some(r => r.status === "Pending");
-      const index = info.row.index;
-      return (
-        <div>
-          {contributors.map((c, idx) => (
-            <div key={idx}>{c.name} ({c.username})</div>
-          ))}
-  
-          {reviewers.length < 3 && (
-            <div className="mt-2">
-              <a
-                href="#"
-                style={{textDecoration: "underline", cursor: "pointer" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  addReviewer(topic);
+    };
+    
+    // Define the structure and behavior of table columns
+  const columns = useMemo(() => [
+    columnHelper.accessor("topic_name", { //TODO determine if this should be topic name or identifier
+      id: 'select',
+      header: "Topic Selected",
+      cell: info => info.getValue()
+    }),
+      columnHelper.display({
+          id: "contributors",
+          header: "Contributors",
+          cell: info => {
+              const { topic_identifier, reviewers, contributors } = info.row.original;
+              const hasPending = reviewers.some(r => r.review_status === "Pending");
+    
+        return (
+            <div>
+                {contributors.map((c: Contributor, idx: number) => (
+              <div key={idx}>{c.name}</div>
+            ))}
+    
+            {reviewers.length < 3 && (
+              <div className="mt-2">
+                <a
+                  href="#"
+                  style={{textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                      handleAddReviewer(topic_identifier);
+                  }}
+                >
+                  Add Reviewer
+                </a>
+              </div>
+            )}
+    
+            {hasPending && (
+              <div className="mt-2">
+                <a
+                  href="#"
+                  style={{textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setData(prev =>
+                        prev.map(row =>
+                            row.topic_identifier === topic_identifier
+                          ? {
+                                    ...row,
+                                    reviewers: row.reviewers.filter(r => r.review_status !== "Pending")
+                            }
+                          : row
+                      )
+                    );
+                  }}
+                >
+                  Delete Outstanding Reviews
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      }
+    }),
+        
+    columnHelper.accessor("reviewers", {
+      id: 'actions',
+      header: "Reviewed By",
+        cell: info => {
+            const { reviewers, topic_identifier } = info.row.original;
+        return (
+          <div>
+            {reviewers.map((r, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: idx % 2 === 0 ? "#e8e8ba" : "#fafad2", // alternating colors
+                  padding: "6px 8px",
+                  marginBottom: "6px",
+                  borderRadius: "4px"
                 }}
               >
-                Add Reviewer
-              </a>
-            </div>
-          )}
-  
-          {hasPending && (
-            <div className="mt-2">
-              <a
-                href="#"
-                style={{textDecoration: "underline", cursor: "pointer" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setData(prev =>
-                    prev.map(row =>
-                      row.topic === topic
-                        ? {
-                            ...row,
-                            reviewers: row.reviewers.filter(r => r.status !== "Pending")
-                          }
-                        : row
-                    )
-                  );
-                }}
-              >
-                Delete Outstanding Reviews
-              </a>
-            </div>
-          )}
-        </div>
-      );
-    }
-  }),
-  
-  // Create the reviewers column and associated buttons
-  columnHelper.accessor("reviewers", {
-    id: 'actions',
-    header: "Reviewed By",
-    cell: info => {
-      const { reviewers, topic } = info.row.original;
-      return (
-        <>
-          {reviewers.map((r, idx) => (
-            <ReviewerCard
-              key={r.name}
-              reviewer={r}
-              index={idx}
-              onUnsubmit={() => unsubmitReviewer(topic, r.name)}
-              onDelete={() => deleteReviewer(topic, r.name)}
-            />
-          ))}
-        </>
-      );
-    }
-  }),
-         
-], [data]);
-  
+                <div>{r.reviewer.name} ({r.review_status})</div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        unsubmitReviewer(topic_identifier, r.reviewer.name);
+                    }}
+                  >
+                    Unsubmit
+                  </a>
+                </div>
+                <div>
+                  <a
+                    href="#"
+                    style={{textDecoration: "underline", cursor: "pointer" }}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        deleteReviewer(topic_identifier, r.reviewer.name);
+                    }}
+                  >
+                    Delete
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }),        
+  ], [data]);
+
+
   return (
     <div style={{ paddingLeft: 15, paddingRight: 15 }}>
       <div style={{ marginLeft: "0" }} className="mt-5 mb-4 ml-auto">
