@@ -1,5 +1,6 @@
 import { useLocation, useLoaderData } from 'react-router-dom';
 import { useState } from 'react';
+import ReviewTable from '../../components/HeatGrid/ReviewTable'; // HeatGrid import
 
 interface Reviewer {
   id: number;
@@ -55,35 +56,9 @@ const AssignGrade = () => {
     console.log('Grade submitted:', grade, 'Comment:', comment);
   };
 
-  const ReviewTable = ({ title, data }: { title: string; data: ReviewData[] }) => (
-    <div style={{ margin: '2rem 0' }}>
-      <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h4>
-      {data.length === 0 ? (
-        <div style={{ fontStyle: 'italic', color: '#999' }}>No reviews available</div>
-      ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', backgroundColor: '#f8f9fa', padding: '1rem' }}>
-            <div style={{ flex: 1, fontWeight: 600 }}>Reviewer</div>
-            <div style={{ flex: 3, fontWeight: 600 }}>Comments</div>
-            <div style={{ flex: 1, fontWeight: 600 }}>Score</div>
-            <div style={{ flex: 1, fontWeight: 600 }}>Date</div>
-          </div>
-          {data.map((review, i) => (
-            <div key={i} style={{ display: 'flex', padding: '1rem', borderBottom: '1px solid #eee' }}>
-              <div style={{ flex: 1 }}>{review.reviewer.name}</div>
-              <div style={{ flex: 3 }}>{review.comments}</div>
-              <div style={{ flex: 1 }}>{review.score}/5</div>
-              <div style={{ flex: 1 }}>{review.date}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div style={{
-      maxWidth: '700px',
+      maxWidth: '1000px',
       margin: '2rem auto',
       padding: '2rem',
       backgroundColor: '#fff',
@@ -108,8 +83,8 @@ const AssignGrade = () => {
         Show Submission
       </button>
 
-      <ReviewTable title="Author Feedback Reviews" data={reviews.author_feedback_reviews} />
-      <ReviewTable title="Teammate Reviews" data={reviews.teammate_reviews} />
+      {/* HeatGrid Summary Report */}
+      <ReviewTable />
 
       <h3>Grade and Comment for Submission</h3>
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}

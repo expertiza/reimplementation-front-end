@@ -49,9 +49,9 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-2">Summary Report: Program 2</h2>
-      <h5 className="text-xl font-semibold mb-1">Team: {dummyData.team}</h5>
-      <span className="ml-4">
+      {/* <h2 className="text-2xl font-bold mb-2">Summary Report: Program 2</h2>
+      <h5 className="text-xl font-semibold mb-1">Team: {dummyData.team}</h5> */}
+      {/* <span className="ml-4">
         Team members:{" "}
         {teamMembers.map((member, index) => (
           <span key={index}>
@@ -89,7 +89,7 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
             </a>
           </li>
         </ul>
-      </div>
+      </div> */}
 
       <Statistics />
       <br />
@@ -135,21 +135,21 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
         selectRound={selectRound}
       />
 
-      {showReviews && (
+      {/* {showReviews && (
         <div>
           <h2>Reviews</h2>
           <ShowReviews data={dummyDataRounds} roundSelected={roundSelected} />
         </div>
-      )}
+      )} */}
 
-      {ShowAuthorFeedback && (
+      {/* {ShowAuthorFeedback && (
         <div>
           <h2>Author Feedback</h2>
           <ShowReviews data={dummyauthorfeedback} roundSelected={roundSelected} />
         </div>
-      )}
+      )} */}
 
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <h3>Grade and comment for submission</h3>
         Grade: {dummyData.grade}
         <br />
@@ -157,7 +157,7 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
         <br />
         Late Penalty: {dummyData.late_penalty}
         <br />
-      </div>
+      </div> */}
 
       <Link to="/">Back</Link>
     </div>
