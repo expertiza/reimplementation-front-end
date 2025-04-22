@@ -72,20 +72,23 @@ const AssignReviewer: React.FC = () => {
     );
   };
     // Resets review status of a reviewer back to "Pending" (simulated unsubmission) (locally only ATM)
-  const unsubmitReviewer = (topic: string, reviewerName: string) => {
-    setData(prev =>
+    const unsubmitReviewer = (topic: string, reviewerName: string) => {
+      setData(prev =>
         prev.map(row =>
-            row.topic_identifier === topic
-          ? {
-              ...row,
-              reviewers: row.reviewers.map(r =>
-                r.reviewer.name === reviewerName ? { ...r, status: "Pending" } : r
-              )
-            }
-          : row
-      )
-    );
-  };
+          row.topic_identifier === topic
+            ? {
+                ...row,
+                reviewers: row.reviewers.map(r =>
+                  r.reviewer.name === reviewerName
+                    ? { ...r, review_status: "Pending" }
+                    : r
+                )
+              }
+            : row
+        )
+      );
+    };
+    
     // Define the structure and behavior of table columns
   const columns = useMemo(() => [
     columnHelper.accessor("topic_name", { //TODO determine if this should be topic name or identifier
