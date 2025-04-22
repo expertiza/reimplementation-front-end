@@ -3,10 +3,8 @@ import { AssignmentProperties, Participant } from "./AssignmentParticipantsTypes
 import { classForRole, classForStatus, iconForRole } from "./AssignmentParticipantsUtil";
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import './ParticipantsTable.css';
-import { Icon } from "components/Icon/Icon";
-import EditIcon from 'assets/edit_icon.png';
-import DeleteIcon from 'assets/delete_icon.png';
-
+import { OverlayTrigger, Tooltip, Button } from 'react-bootstrap';
+import Table from 'components/Table/Table';
 
 interface ParticipantTableProps {
   participants: Participant[];
@@ -27,7 +25,6 @@ function ParticipantTable({
   numColumns,
   sortConfig,
 }: ParticipantTableProps) {
-
   const sortIcon = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) {
       return <FaSort />;
@@ -35,125 +32,111 @@ function ParticipantTable({
     return sortConfig.direction === 'asc' ? <FaSortUp /> : <FaSortDown />;
   };
 
+  const columns = [
+    { accessorKey: 'id', header: () => <>ID {sortIcon('id')}</> },
+    { accessorKey: 'name', header: () => <>Name {sortIcon('name')}</> },
+    { accessorKey: 'email', header: () => <>Email address {sortIcon('email')}</> },
+    {
+      accessorKey: 'role',
+      header: () => <>Role {sortIcon('role')}</>,
+      cell: ({ row }: { row: any }) => (
+        <div className={classForRole(row.original.role)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+          {iconForRole(row.original.role)}
+          <span>{row.original.role}</span>
+        </div>
+      ),
+    },
+    { accessorKey: 'parent', header: () => <>Parent {sortIcon('parent')}</> },
+    {
+      accessorKey: 'permissions.review',
+      header: () => <>Review {sortIcon('permissions.review')}</>,
+      cell: ({ row }: { row: any }) => (
+        <div className={`permission-column ${classForStatus(row.original.permissions.review)}`}>
+          {permissionIcon(row.original.permissions.review)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'permissions.submit',
+      header: () => <>Submit {sortIcon('permissions.submit')}</>,
+      cell: ({ row }: { row: any }) => (
+        <div className={`permission-column ${classForStatus(row.original.permissions.submit)}`}>
+          {permissionIcon(row.original.permissions.submit)}
+        </div>
+      ),
+    },
+    assignmentProps.hasQuiz && {
+      accessorKey: 'permissions.takeQuiz',
+      header: () => <>Take quiz {sortIcon('permissions.takeQuiz')}</>,
+      cell: ({ row }: { row: any }) => (
+        <div className={`permission-column ${classForStatus(row.original.permissions.takeQuiz)}`}>
+          {permissionIcon(row.original.permissions.takeQuiz)}
+        </div>
+      ),
+    },
+    assignmentProps.hasMentor && {
+      accessorKey: 'permissions.mentor',
+      header: () => <>Mentor {sortIcon('permissions.mentor')}</>,
+      cell: ({ row }: { row: any }) => (
+        <div className={`permission-column ${classForStatus(row.original.permissions.mentor)}`}>
+          {permissionIcon(row.original.permissions.mentor)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'actions',
+      header: 'Actions',
+      cell: ({ row }: { row: any }) => (
+        <div className="actions-column d-flex gap-2">
+          <OverlayTrigger overlay={<Tooltip>Edit participant</Tooltip>} placement="top">
+            <Button
+              onClick={() => openEditModal(row.original)}
+              className="bg-transparent border-0 p-0"
+              style={{ cursor: 'pointer' }}
+              aria-label="Edit Participant"
+            >
+              <img
+                src={`${process.env.PUBLIC_URL}/assets/images/edit-icon-24.png`}
+                alt="Edit"
+                width="20"
+                height="20"
+              />
+            </Button>
+          </OverlayTrigger>
+  
+          <OverlayTrigger overlay={<Tooltip>Delete participant</Tooltip>} placement="top">
+            <Button
+              onClick={() => openRemoveModal(row.original)}
+              className="bg-transparent border-0 p-0"
+              style={{ cursor: 'pointer' }}
+              aria-label="Delete Participant"
+            >
+              <img
+                src={`${process.env.PUBLIC_URL}/assets/images/delete-icon-24.png`}
+                alt="Delete"
+                width="20"
+                height="20"
+              />
+            </Button>
+          </OverlayTrigger>
+        </div>
+      ),
+    },
+  ].filter(Boolean) as any;
+
   return (
-    <div className="assignment-participants-table-container">
-      <table className="assignment-participants-table">
-        <thead>
-          <tr>
-            <th
-              onClick={() => onSort('id')}
-              className={sortConfig?.key === 'id' ? 'sorted' : ''}
-            >
-              ID {sortIcon('id')}
-            </th>
-            <th
-              onClick={() => onSort('name')}
-              className={sortConfig?.key === 'name' ? 'sorted' : ''}
-            >
-              Name {sortIcon('name')}
-            </th>
-            <th
-              onClick={() => onSort('email')}
-              className={sortConfig?.key === 'email' ? 'sorted' : ''}
-            >
-              Email Address {sortIcon('email')}
-            </th>
-            <th
-              onClick={() => onSort('role')}
-              className={sortConfig?.key === 'role' ? 'sorted' : ''}
-            >
-              Role {sortIcon('role')}
-            </th>
-            <th
-              onClick={() => onSort('parent')}
-              className={sortConfig?.key === 'parent' ? 'sorted' : ''}
-            >
-              Parent {sortIcon('parent')}
-            </th>
-            <th
-              className={sortConfig?.key === 'permissions.review' ? 'sorted' : ''}
-              onClick={() => onSort('permissions.review')}
-            >
-              Review {sortIcon('permissions.review')}
-            </th>
-            <th
-              onClick={() => onSort('permissions.submit')}
-              className={sortConfig?.key === 'permissions.submit' ? 'sorted' : ''}
-            >
-              Submit {sortIcon('permissions.submit')}
-            </th>
-            {assignmentProps.hasQuiz && (
-              <th
-                onClick={() => onSort('permissions.takeQuiz')}
-                className={sortConfig?.key === 'permissions.takeQuiz' ? 'sorted' : ''}
-              >
-                Take Quiz {sortIcon('permissions.takeQuiz')}
-              </th>
-            )}
-            {assignmentProps.hasMentor && (
-              <th
-                onClick={() => onSort('permissions.mentor')}
-                className={sortConfig?.key === 'permissions.mentor' ? 'sorted' : ''}
-              >
-                Mentor {sortIcon('permissions.mentor')}
-              </th>
-            )}
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {participants.length > 0 ? (
-            participants.map((participant) => (
-              <tr key={participant.id}>
-                <td>{participant.id}</td>
-                <td>{participant.name}</td>
-                <td>{participant.email}</td>
-                <td className={classForRole(participant.role)} style={{ paddingLeft: '1rem' }}>
-                  {iconForRole(participant.role)}
-                  <span style={{
-                    display: 'inline-block',
-                    marginLeft: '1rem',
-                    verticalAlign: 'middle',
-                  }}>
-                    {participant.role}
-                  </span>
-                </td>
-                <td>{participant.parent}</td>
-                <td className={`permission-column ${classForStatus(participant.permissions.review)}`}>
-                  {permissionIcon(participant.permissions.review)}
-                </td>
-                <td className={`permission-column ${classForStatus(participant.permissions.submit)}`}>
-                  {permissionIcon(participant.permissions.submit)}
-                </td>
-                {assignmentProps.hasQuiz && (
-                  <td className={`permission-column ${classForStatus(participant.permissions.takeQuiz)}`}>
-                    {permissionIcon(participant.permissions.takeQuiz)}
-                  </td>
-                )}
-                {assignmentProps.hasMentor && (
-                  <td className={`permission-column ${classForStatus(participant.permissions.mentor)}`}>
-                    {permissionIcon(participant.permissions.mentor)}
-                  </td>
-                )}
-                <td className="actions-column">
-                  <button className="edit-user-button" onClick={() => openEditModal(participant)}>
-                    <Icon src={EditIcon} alt="Edit participant icon" size={14} />
-                  </button>
-                  <button className="remove-user-button" onClick={() => openRemoveModal(participant)}>
-                    <Icon src={DeleteIcon} alt="Delete participant icon" size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={numColumns} className="no-results-message">
-                No participants found matching the current search criteria.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div style={{ width: '100%' }}>
+      <div style={{ width: '100%', overflowX: 'auto' }}>
+        <div style={{ minWidth: '1200px' }}>
+          <Table
+            data={participants}
+            columns={columns}
+            showGlobalFilter={false}
+            showColumnFilter={false}
+            showPagination={participants.length >= 10}
+          />
+        </div>
+      </div>
     </div>
   );
 }
