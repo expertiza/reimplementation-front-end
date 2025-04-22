@@ -128,7 +128,7 @@ function ParticipantTable({
   return (
     <div style={{ width: '100%' }}>
       <div style={{ width: '100%', overflowX: 'auto' }}>
-        <div style={{ minWidth: '1200px' }}>
+        <div style={{ minWidth: '1200px', fontSize: '15px', lineHeight: '1.428em' }}>
           <Table
             data={participants}
             columns={columns}
