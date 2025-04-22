@@ -74,6 +74,8 @@ const ReviewTable: React.FC = () => {
           const resp3 = await response3.json();
     
           setData({
+            team: resp3.team,
+            team_information: resp3.users,
             questions: resp2.questions?.review || [],
             summary: resp2.summary || {},
             avg_scores_by_round: resp2.avg_scores_by_round || {},
@@ -151,7 +153,9 @@ const ReviewTable: React.FC = () => {
     );
 
     return (
+
       <div key={roundIndex} className="table-container mb-6">
+        
         <h4 className="text-xl font-semibold">
           Review (Round: {roundIndex + 1})
         </h4>
@@ -205,7 +209,29 @@ const ReviewTable: React.FC = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-2">Summary Report: {data.assignment?.name || "Assignment"}</h2>
+      <h5 className="text-xl font-semibold mb-1">Team: {data.team.name}</h5>
+      <span className="ml-4">
+      Team members:{" "}
+      {
+        // Declare an empty array to hold the team members
+        (() => {
+          const teamMembers = [];
+          for (let index = 0; index < data.team_information.length; index++) {
+            const member = data.team_information[index];
+            teamMembers.push(
+              <span key={index}>
+                {member.name} ({member.email}) {/* Display the user's name and email */}
+                {index !== data.team_information.length - 1 && ", "} {/* Add a comma if it's not the last member */}
+              </span>
+            );
+          }
+          return teamMembers;
+        })()
+      }
+    </span>
+      <br />
 
+      <br />
       <Statistics 
         avg_scores_by_round={data.avg_scores_by_round}
         avg_scores_by_criterion={data.avg_scores_by_criterion}
