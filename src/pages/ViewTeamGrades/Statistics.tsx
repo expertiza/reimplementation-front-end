@@ -28,17 +28,17 @@ const Statistics: React.FC<StatisticsProps> = ({
   };
 
   // Calculate total number of reviews for the first question
-  const totalReviewsForQuestion1 = Object.values(summary).reduce((sum, reviewee) => {
-    return sum + (reviewee["What is the main purpose of this feature?"]?.length || 0);
-  }, 0);
+  // const totalReviewsForQuestion1 = Object.values(summary).reduce((sum, reviewee) => {
+  //   return sum + (reviewee["What is the main purpose of this feature?"]?.length || 0);
+  // }, 0);
 
   return (
     <div className="table-container">
-      <h2>Review Statistics</h2>
+      {/* <h2>Review Statistics</h2> */}
 
-      <p>Total Reviews for Question 1: {totalReviewsForQuestion1}</p>
-      <p>Review Score Count: {review_score_count}</p>
-
+      {/* <p>Total Reviews for Question 1: {totalReviewsForQuestion1}</p> */}
+      {/* <p>Review Score Count: {review_score_count}</p> */}
+      <h5 className="font-semibold">Round Summary</h5>
       <table className="tbl_heat">
         <thead>
           <tr>

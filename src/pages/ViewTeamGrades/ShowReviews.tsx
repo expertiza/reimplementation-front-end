@@ -14,13 +14,12 @@ interface ShowReviewsProps {
 }
 
 const getBubbleColorHex = (score: number) => {
-  if (score >= 4.5) return "#2f855a"; // Dark green
-  if (score >= 3.5) return "#48bb78"; // Green
-  if (score >= 2.5) return "#ecc94b"; // Yellow
-  if (score >= 1.5) return "#ed8936"; // Orange
-  return "#f56565";                  // Red
+  if (score >= 4.5) return "c5"; // Dark green
+  if (score >= 3.5) return "c4"; // Green
+  if (score >= 2.5) return "c3"; // Yellow
+  if (score >= 1.5) return "c2"; // Orange
+  return "c1";                  // Red
 };
-
 
 
 const ShowReviews: React.FC<ShowReviewsProps> = ({
@@ -45,8 +44,7 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({
 
   if (!questions.length) return <div>No questions available.</div>;
 
-  const participantId = "1"; // assuming participant 1
-  const participantSummary = summary[participantId] || {};
+  const participantSummary = summary["1"] || {};
 
   return (
     <div>
@@ -68,12 +66,12 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({
               <div key={i} className="flex items-center space-x-4 mt-2">
                 {/* Bubble for score */}
                 <div
+                  className={`score-bubble ${getBubbleColorHex(reviewScores[question.txt] ?? 0)}`}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: getBubbleColorHex(typeof reviewScores[question.txt] == "number" ? reviewScores[question.txt] : 0),
-                    color: "white",
+                    color: "black",
                     padding: "6px 10px",
                     borderRadius: "50%",
                     fontWeight: "bold",
@@ -81,13 +79,12 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({
                     minWidth: "32px",
                     height: "32px",
                     textAlign: "center",
+                    marginRight: "10px",
                   }}
                 >
                   {reviewScores[question.txt] ?? "N/A"}
-                </div>
-
-                {/* Review comment */}
-                <div className="text-gray-700">{comment}</div>
+                </div >
+                <div style={{ display: "inline-flex", alignItems: "center", fontSize: "14px", color: "black" }} className="text-gray-700">{comment}</div>
               </div>
             ))}
           </div>

@@ -2,27 +2,36 @@ import React from "react";
 
 interface RoundSelectorProps {
   currentRound: number;
-  handleRoundChange: (round: number) => void;
-  roundsOfReviews: number;
+  handleRoundChange: (roundIndex: number) => void;
+  totalRounds: number; // The number of rounds to display
 }
 
-const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange, roundsOfReviews }) => {
-  const rounds = ["All Rounds", ...Array.from({ length: roundsOfReviews }, (_, i) => `Round ${i + 1}`)];
-
+// RoundSelector component to display buttons for selecting rounds
+const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange, totalRounds }) => {
   return (
     <div className="round-selector">
-      <h4 className="text-xl font-semibold">Select Round</h4>
-      <select
-        value={currentRound}
-        onChange={(e) => handleRoundChange(Number(e.target.value))}
-        className="border p-2 rounded"
-      >
-        {rounds.map((round, index) => (
-          <option key={index} value={index - 1}>
-            {round}
-          </option>
+      <div className="flex items-center">
+
+        {/* Button for All Rounds */}
+        <button
+          className={`round-button mr-4 ${currentRound === -1 ? "current" : ""}`}
+          onClick={() => handleRoundChange(-1)}
+        >
+          All Rounds
+        </button>
+
+        {/* Buttons for specific rounds */}
+        {Array.from({ length: totalRounds }).map((_, index) => (
+          <button
+            key={index}
+            className={`round-button mr-4 ${currentRound === index ? "current" : ""}`}
+            onClick={() => handleRoundChange(index)}
+          >
+            Round {index + 1}
+          </button>
         ))}
-      </select>
+
+      </div>
     </div>
   );
 };

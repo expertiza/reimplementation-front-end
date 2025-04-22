@@ -6,36 +6,95 @@ import "./grades.scss";
 import { Link } from "react-router-dom";
 import Statistics from "./Statistics";
 import Filters from "./Filters";
-import ShowReviews from "./ShowReviews"; 
-import mockData from "mock/api_output_3.json"; // Replace later with real fetch
-import mockData1 from "mock/api_output_2.json" // Replace later with real fetch
-import mockData2 from "mock/api_output_1.json" // Replace later with real fetch
+import ShowReviews from "./ShowReviews";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 const ReviewTable: React.FC = () => {
+  const auth = useSelector(
+    (state: RootState) => state.authentication,
+    (prev, next) => prev.isAuthenticated === next.isAuthenticated
+  );
   const [currentRound, setCurrentRound] = useState<number>(-1);
-  const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");  
+  const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");
   const [showToggleQuestion, setShowToggleQuestion] = useState(false);
   const [roundSelected, setRoundSelected] = useState(-1);
   const [data, setData] = useState<any>(null);
+  const [isActionAllowed, setIsActionAllowed] = useState<boolean>(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      const apiData = mockData; // Replace with real API fetch later
-      const apiData1 = mockData1; // Replace with real API fetch later
-      const apiData2 = mockData2; // Replace with real API fetch later
+    const fetchActionAllowed = async () => {
+      const token = localStorage.getItem("token");
+      var show_page = false;
+      if (!token) {
 
-      setData({
-        questions: apiData.questions?.review1 || [],
-        summary: apiData.summary || {},
-        avg_scores_by_round: apiData.avg_scores_by_round || {},
-        avg_scores_by_criterion: apiData.avg_scores_by_criterion || {},
-        review_score_count: apiData2.review_score_count || 0,
-        participant: apiData1.participant || {},
-        assignment: apiData.assignment || {},
-        roundsOfReviews: apiData.assignment?.rounds_of_reviews || 1,
-      });
-    }, 1000); // Simulate delay
+        return;
+      }
+
+      try {
+        console.log(auth.user)
+        if( auth.user.role=='Super Administrator'){
+          show_page = true
+        }else{
+          const response = await fetch("http://localhost:3002/api/v1/grades/action_allowed?requested_action=view_my_scores", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            },
+          });
+          const result = await response.json();
+          show_page = result['allowed']
+        }
+        
+        if (show_page === true) {
+          setIsActionAllowed(true);
+
+          const response1 = await fetch("http://localhost:3002/api/v1/grades/view_grading_report?id=1", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            },
+          });
+          const resp1 = await response1.json();
+
+          const response2 = await fetch("http://localhost:3002/api/v1/grades/view_my_scores?id=1", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            },
+          });
+          const resp2 = await response2.json();
+
+          const response3 = await fetch("http://localhost:3002/api/v1/grades/view_team?id=1", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            },
+          });
+          const resp3 = await response3.json();
+    
+          setData({
+            questions: resp2.questions?.review || [],
+            summary: resp2.summary || {},
+            avg_scores_by_round: resp2.avg_scores_by_round || {},
+            avg_scores_by_criterion: resp2.avg_scores_by_criterion || {},
+            review_score_count: resp1.review_score_count || 0,
+            participant: resp3.participant || {},
+            assignment: resp2.assignment || {},
+            roundsOfReviews: resp2.assignment?.rounds_of_reviews || 1,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching action_allowed API:", error);
+      }
+    };
+
+    fetchActionAllowed();
   }, []);
+
+  if (!isActionAllowed) {
+    return <div>Action not allowed. Please contact support.</div>;
+  }
 
   if (!data) {
     return <div>Loading...</div>;
@@ -58,9 +117,8 @@ const ReviewTable: React.FC = () => {
   };
 
   const generateRoundData = () => {
-    const participantId = "1"; // Assuming participant 1
-    const reviewerComments = data.summary?.[participantId] || {}; // question -> comments array
-    const avgScoresByCriterion = data.avg_scores_by_criterion?.[participantId] || {}; // question -> avg score
+    const reviewerComments = data.summary?.["1"] || {}; 
+    const avgScoresByCriterion = data.avg_scores_by_criterion?.["1"] || {}; 
   
     return data.questions.map((q: any) => {
       const comments = reviewerComments[q.txt] || [];
@@ -157,11 +215,7 @@ const ReviewTable: React.FC = () => {
 
       <br />
 
-      <RoundSelector
-        currentRound={currentRound}
-        handleRoundChange={handleRoundChange}
-        roundsOfReviews={data.roundsOfReviews}
-      />
+      <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} totalRounds={data.roundsOfReviews} />
 
       <div className="toggle-container">
         <input
@@ -184,6 +238,7 @@ const ReviewTable: React.FC = () => {
           toggleShowReviews={() => {}}
           toggleAuthorFeedback={() => {}}
           selectRound={setRoundSelected}
+          totalRounds = {data.roundsOfReviews}
         />
       </div>
 
