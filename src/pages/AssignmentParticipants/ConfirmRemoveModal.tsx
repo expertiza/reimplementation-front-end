@@ -17,10 +17,10 @@ function ConfirmRemoveModal({ show, onHide, onConfirm }: ConfirmRemoveModalProps
         Are you sure you want to remove this participant?
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button className= "btn btn-md" variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-        <Button variant="danger" onClick={onConfirm}>
+        <Button className= "btn btn-md" variant="danger" onClick={onConfirm}>
           Confirm
         </Button>
       </Modal.Footer>
