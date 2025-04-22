@@ -7,3 +7,4 @@ Unit testing for TS/front end projects is most applicable for logic-heavy compon
 - Ensure that all table columns — "Topic Selected," "Contributor," and "Reviewed By" — display accurate and consistent data for each assignment.
 - Verify that any modifications to reviewers (adding, deleting, or unassigning) are properly reflected in the user interface.
 - Confirm that unsubmitting a review does not remove the reviewer, only changes their status to (Pending).
+-Validate that the "Add Reviewer" button is not rendered once the maximum number of reviewers (3) has been reached for a topic.
