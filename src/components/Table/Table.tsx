@@ -154,7 +154,8 @@ const Table: React.FC<TableProps> = ({
             )}
           </Col>
           <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
-            
+            <FaSearch style={{ cursor: "pointer" }} />
+            {isGlobalFilterVisible ? " Hide" : " Show"}
           </span>{" "}
         </Row>
       </Container>

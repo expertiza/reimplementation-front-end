@@ -12,12 +12,13 @@ import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
-import { formatDate, mergeDataAndNamesAndInstructors } from "./CourseUtil";
+import { formatDate, mergeDataAndNames } from "./CourseUtil";
 
-import { ICourseResponse as ICourse } from "../../utils/interfaces";
+// Courses Component: Displays and manages courses, including CRUD operations.
 
 /**
- * Courses Component: Displays and manages courses, including CRUD operations.
+ * @author Atharva Thorve, on December, 2023
+ * @author Mrityunjay Joshi on December, 2023
  */
 
 const Courses = () => {
@@ -116,13 +117,22 @@ const Courses = () => {
     []
   );
 
+  const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+	return (
+	  <CourseAssignments
+		courseId={row.original.id}
+		courseName={row.original.name}
+	  />
+	);
+  }, []);
+
   const tableColumns = useMemo(
     () =>
       COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
-  const tableData = useMemo(
+  let tableData = useMemo(
     () => (isLoading || !CourseResponse?.data ? [] : CourseResponse.data),
     [CourseResponse?.data, isLoading]
   );
@@ -137,32 +147,13 @@ const Courses = () => {
     [InstructorResponse?.data, isLoading]
   );
 
-  const mergedTableData = useMemo(
-    () =>
-      mergeDataAndNamesAndInstructors(tableData, institutionData, instructorData).map(
-        (item: any) => ({
-          ...item,
-          created_at: formatDate(item.created_at),
-          updated_at: formatDate(item.updated_at),
-        })
-      ),
-    [tableData, institutionData, instructorData]
-  );
+  const formattedTableData = tableData.map((item: any) => ({
+    ...item,
+    created_at: formatDate(item.created_at),
+    updated_at: formatDate(item.updated_at),
+  }));
 
-  const loggedInUserRole = auth.user.role;
-
-  const visibleCourses = useMemo(() => {
-    if (
-      loggedInUserRole === ROLE.ADMIN.valueOf() ||
-      loggedInUserRole === ROLE.SUPER_ADMIN.valueOf()
-    ) {
-      return mergedTableData;
-    }
-    return mergedTableData.filter(
-      (CourseResponse: { instructor_id: number }) =>
-        CourseResponse.instructor_id === auth.user.id
-    );
-  }, [mergedTableData, loggedInUserRole]);
+  // Render the Courses component
 
   return (
     <>
@@ -215,6 +206,8 @@ const Courses = () => {
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
                 instructor: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
+              renderSubComponent={renderSubComponent}
+              getRowCanExpand={() => true}
             />
           </Row>
         </Container>
