@@ -13,7 +13,6 @@ const AssignGrade = () => {
   const [comment, setComment] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
-
   const authorReviewes = convertReviewDataToHeatMap(reviews.author_feedback_reviews);
   const teamReviews = convertReviewDataToHeatMap(reviews.teammate_reviews);
 
@@ -56,9 +55,14 @@ const AssignGrade = () => {
       </button>
 
       {/* HeatGrid Summary Report */}
-      <ReviewTable reviews={authorReviewes} />
+      {
+        authorReviewes.length !=0 && <ReviewTable reviews={authorReviewes} />
+      }
 
-      <ReviewTable reviews={teamReviews} />
+      {
+        teamReviews.length !=0 &&  <ReviewTable reviews={teamReviews} />
+      }
+
 
       <h3>Grade and Comment for Submission</h3>
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}

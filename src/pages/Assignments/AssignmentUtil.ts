@@ -154,7 +154,10 @@ export async function loadAssignmentAndTeamReviews({ params }: any) {
   const teamId = params.team;
 
   let assignmentData = null;
-  let reviewData = {};
+  let reviewData = {
+    author_feedback_reviews: [],
+    teammate_reviews: []
+  };
 
   try {
     if (assignmentId && teamId) {
@@ -181,33 +184,40 @@ export async function loadAssignmentAndTeamReviews({ params }: any) {
 
 
 export function convertReviewDataToHeatMap(reviews: ReviewData[]): HeatMapQuestion[] {
+  if (!reviews || reviews.length === 0) {
+    return []; // Return empty array for no reviews
+  }
+
   const questionMap: Record<string, HeatMapQuestion> = {};
   let questionCounter = 1;
 
   reviews.forEach((review) => {
     const { question, reviewer, score, comments } = review;
 
-    // If this question hasn't been added, create a new entry
+    // Skip if essential fields are missing
+    if (!question || !reviewer?.name) return;
+
+    // Initialize if question not in map
     if (!questionMap[question]) {
       questionMap[question] = {
         questionNumber: questionCounter.toString(),
         questionText: question,
         reviews: [],
-        RowAvg: 0,  // Default for now
-        maxScore: 5 // Assuming max score is 5 (can adjust if needed)
+        RowAvg: 0,  
+        maxScore: 5 
       };
       questionCounter++;
     }
 
-    // Add the reviewer's score and comment
+    // Push review data
     questionMap[question].reviews.push({
       name: reviewer.name,
-      score: typeof score === 'number' ? score : parseFloat(score),
-      comment: comments
+      score: typeof score === 'number' ? score : parseFloat(score as string) || 0,
+      comment: comments || '' // Default empty string for missing comments
     });
   });
 
-  // Optionally calculate RowAvg for each question
+  // Calculate RowAvg safely
   Object.values(questionMap).forEach((q) => {
     const totalScore = q.reviews.reduce((sum, r) => sum + (typeof r.score === 'number' ? r.score : 0), 0);
     q.RowAvg = q.reviews.length ? totalScore / q.reviews.length : 0;
