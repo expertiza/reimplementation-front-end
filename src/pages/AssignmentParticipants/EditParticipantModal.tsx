@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Participant, ParticipantPermissions, ParticipantRole, Role } from './AssignmentParticipantsTypes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -23,9 +23,14 @@ const permissionLabels = {
 
 function EditParticipantModal({ participant, show, onHide, onSave }: EditParticipantModalProps) {
   const [updatedParticipant, setUpdatedParticipant] = useState<Participant>(participant);
+
+  useEffect(() => {
+    setUpdatedParticipant(participant);
+  }, [participant]);
   const handleChange = (field: keyof Participant, value: any) => {
     setUpdatedParticipant({ ...updatedParticipant, [field]: value });
   };
+
 
   return (
     <Modal show={show} onHide={onHide} centered>
