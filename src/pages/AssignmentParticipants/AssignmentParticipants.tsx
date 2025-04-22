@@ -53,7 +53,6 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       fetchAssignment({ url: `/assignments/${assignmentId}` });
     }
   }, [
-    modalShow,
     assignmentId,
     addParticipantResponse,
     updateParticipantResponse,
