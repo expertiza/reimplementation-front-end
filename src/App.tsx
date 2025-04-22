@@ -23,7 +23,8 @@ import UserEditor from "./pages/Users/UserEditor";
 import Users from "./pages/Users/User";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
 import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
+import EditQuestionnaire from "pages/EditQuestionnaire/Questionnaire";
+import ManageQuestionnaire from "pages/Questionnaire/questionnaire";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
@@ -57,7 +58,11 @@ function App() {
         },
         {
           path: "edit-questionnaire",
-          element: <ProtectedRoute element={<Questionnaire />} />,
+          element: <ProtectedRoute element={<EditQuestionnaire />} />,
+        },
+        {
+          path: "questionnaire",
+          element: <ProtectedRoute element={<ManageQuestionnaire />} />,
         },
         {
           path: "assignments/edit/:id/createteams",
@@ -283,13 +288,18 @@ function App() {
               ],
             },
             {
+              path: "edit-questionnaire",
+              element: <EditQuestionnaire />,
+            },
+            {
               path: "questionnaire",
-              element: <Questionnaire />,
+              element: <ManageQuestionnaire />,
             },
           ],
         },
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
+        { path: "edit-questionnaire", element: <EditQuestionnaire /> }, // Added the Questionnaire route
+        { path: "questionnaire", element: <ManageQuestionnaire /> }, // Added the Questionnaire route
       ],
     },
   ]);
