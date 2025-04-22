@@ -149,7 +149,7 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project, reviews
         <br />
       </div> */}
 
-      <Link to="/">Back</Link>
+      {/* <Link to="/">Back</Link> */}
     </div>
   );
 };

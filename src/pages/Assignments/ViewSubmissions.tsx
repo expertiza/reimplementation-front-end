@@ -64,7 +64,10 @@ const ViewSubmissions: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Link
             to={`/assignments/edit/${row.original.id}/teams/${row.original.team_id}/assign_grade`}
-            state={{ teamName: row.original.teamName }}
+            state={{ teamName: row.original.teamName,
+                     topicName: row.original.topicName,
+                     teamMembers : row.original.teamMembers,
+             }}
             style={{ color: '#a67c52', marginBottom: '4px' }}
           >
             Assign Grade

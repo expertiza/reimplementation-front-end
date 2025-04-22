@@ -50,6 +50,13 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
 
     return (
         <div className="flex flex-col mb-6">
+            <div className="mt-2 mb-4">
+                <h5>
+                    Average peer review score:{" "}
+                    <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
+                </h5>
+            </div>
+
             <div className="flex items-center justify-between mb-2 space-x-4">
                 <h4 className="text-xl font-semibold">Review (Round: {roundIndex + 1})</h4>
                 <div className="d-flex gap-3 align-items-center my-3">
@@ -94,7 +101,6 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                         interaction legend <ToolTip id="interactionLegend" info="This legend explains the interaction patterns between reviewers and reviewees." placement="right" />
                     </span>
                 </div>
-
             </div>
 
             <table className="tbl_heat">
@@ -106,9 +112,7 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                         )}
                         {roundData[0]?.reviews?.map((review, index) => (
                             <th key={index} className="py-2 px-4 text-center" style={{ width: "70px" }}>
-                                {currentUser?.id === project?.student?.id
-                                    ? `Review ${index + 1}`
-                                    : review.name}
+                                {review.name}
                             </th>
                         ))}
                         {showWordComments != 0 && (
@@ -155,19 +159,12 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                 >
                     Sort by Total Review Score ({sortByTotalScore === "none" ? "Off" : sortByTotalScore})
                 </Button>
-                Teamates:
+                {/* Teamates:
                 {["Raj Patel", "Aditya Pai", "Parth Kulkarni"].map((teammate, index) => (
                     <span key={index}>
                         {teammate}
                     </span>
-                ))}
-
-            </div>
-            <div className="mt-2">
-                <h5>
-                    Average peer review score:{" "}
-                    <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
-                </h5>
+                ))} */}
             </div>
         </div>
     );
