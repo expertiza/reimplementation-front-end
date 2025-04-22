@@ -204,7 +204,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 
   return (
     <div className="assignment-participants-container">
-      <h1 className="assignment-participants-header">Assignment Participants: Program 1</h1>
+      <h1 className="assignment-participants-header">Assignment participants: program 1</h1>
       {/* Add User Section */}
       <label className="section-label">Add new participant</label>
       {error && <div className="error-message">{error}</div>}
