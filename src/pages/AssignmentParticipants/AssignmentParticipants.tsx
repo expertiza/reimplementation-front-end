@@ -182,12 +182,11 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 
     //API request to handle addition of users
     addParticipant({
-      url: "/participants/participant",
+      url: `/participants/${selectedRole}`,
       method: 'POST',
       data: {
         user_id: user.id,
         assignment_id: Number(assignmentId),
-        authorization: selectedRole,
       }
     });
 
