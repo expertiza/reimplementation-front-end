@@ -192,6 +192,7 @@ const ReviewTable: React.FC = () => {
           questions={data.questions}
           summary={data.summary}
           roundSelected={roundSelected}
+          avg_scores_by_criterion={data.avg_scores_by_criterion}
         />
       </div>
 
