@@ -32,6 +32,7 @@ function ParticipantTable({
     return sortConfig.direction === 'asc' ? <FaSortUp /> : <FaSortDown />;
   };
 
+  {/* Changed the table and icons according to the design standards */}
   const columns = [
     { accessorKey: 'id', header: () => <>ID {sortIcon('id')}</> },
     { accessorKey: 'name', header: () => <>Name {sortIcon('name')}</> },

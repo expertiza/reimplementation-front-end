@@ -7,6 +7,7 @@ interface ConfirmRemoveModalProps {
   onConfirm: () => void;
 }
 
+{/* Changed the buttons for Cancel and Confirm according to the design standards */}
 function ConfirmRemoveModal({ show, onHide, onConfirm }: ConfirmRemoveModalProps) {
   return (
     <Modal show={show} onHide={onHide} centered>

@@ -80,6 +80,7 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
           </Form.Group>
         </Form>
       </Modal.Body>
+      {/* Changed the buttons for Save and Cancel according to the design standards */}
       <Modal.Footer>
         <Button className = "btn btn-md" variant="secondary" onClick={onHide}>
           Cancel

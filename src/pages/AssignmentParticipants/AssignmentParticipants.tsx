@@ -217,13 +217,14 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
             value={newUserName}
             onChange={(e) => setNewUserName(e.target.value)}
           />
+          {/* Changed button color to red according to the design standards */}
           <Button className ="btn btn-md"
-  variant="danger"
-  onClick={handleAddUser}
-  style={{ height: '42px' }}
->
-  Add user
-</Button>
+            variant="danger"
+            onClick={handleAddUser}
+            style={{ height: '42px' }}
+          >
+            Add user
+          </Button>
         </div>
 
         {/* Radio Group for Role Selection */}
@@ -237,14 +238,15 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
                 onChange={() => setSelectedRole(role as ParticipantRole)}
               />
               {role}
+              {/* Changed the icon for info according to the design standards */}
               <img
-      src={`${process.env.PUBLIC_URL}assets/images/info.png`}
-      alt="Info"
-      title={participantRoleInfo(role)}
-      width="16"
-      height="16"
-      className="ms-2"
-    />
+                src={`${process.env.PUBLIC_URL}assets/images/info.png`}
+                alt="Info"
+                title={participantRoleInfo(role)}
+                width="16"
+                height="16"
+                className="ms-2"
+              />
             </label>
           ))}
         </div>
@@ -288,6 +290,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   );
 }
 
+{/* Changed the icons for check and uncheck according to the design standards */}
 export function permissionIcon(permission: IsEnabled) {
   return permission === IsEnabled.Yes ? <img
   src={`${process.env.PUBLIC_URL}/assets/images/Check-icon.png`}
