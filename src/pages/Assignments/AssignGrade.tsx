@@ -76,9 +76,10 @@ const AssignGrade = () => {
       </button>
 
       {/* Peer review section */}
-      <div style={{ margin: '1rem 0', fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'left' }}>
+      <h3 style={{ margin: '1rem 0', textAlign: 'left' }}>
         Peer Review
-      </div>
+      </h3>
+
       {authorReviewes.length !== 0 ? (
         <ReviewTable reviews={authorReviewes} />
       ) : (
@@ -104,10 +105,11 @@ const AssignGrade = () => {
 
       {/* Teammate review section */}
       {teamReviews.length !== 0 && (
-        <div style={{ margin: '1rem 0', fontSize: '1.2rem', fontWeight: 'bold', textAlign: 'left' }}>
+        <h3 style={{ margin: '1rem 0', textAlign: 'left' }}>
           Teammate Review
-        </div>
+        </h3>
       )}
+
       {teamReviews.length !== 0 ? (
         <ReviewTable reviews={teamReviews} />
       ) : (
