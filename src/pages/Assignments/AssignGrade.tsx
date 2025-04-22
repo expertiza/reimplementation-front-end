@@ -1,40 +1,9 @@
 import { useLocation, useLoaderData } from 'react-router-dom';
 import { useState } from 'react';
 import ReviewTable from '../../components/HeatGrid/ReviewTable'; // HeatGrid import
+import { convertReviewDataToHeatMap, LoaderOutput } from './AssignmentUtil';
 
-interface Reviewer {
-  id: number;
-  name: string;
-}
 
-interface Reviewee {
-  id: number;
-  name: string;
-}
-
-interface ReviewData {
-  reviewer: Reviewer;
-  reviewee: Reviewee;
-  comments: string;
-  score: number | string;
-  date: string;
-  team_based: boolean;
-}
-
-interface ReviewResponse {
-  author_feedback_reviews: ReviewData[];
-  teammate_reviews: ReviewData[];
-}
-
-interface Assignment {
-  id: number;
-  name: string;
-}
-
-interface LoaderOutput {
-  assignment: Assignment;
-  reviews: ReviewResponse;
-}
 
 const AssignGrade = () => {
   const location = useLocation();
@@ -44,6 +13,9 @@ const AssignGrade = () => {
   const [comment, setComment] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  const authorReviewes = convertReviewDataToHeatMap(reviews.author_feedback_reviews);
+  const teamReviews = convertReviewDataToHeatMap(reviews.teammate_reviews);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +56,9 @@ const AssignGrade = () => {
       </button>
 
       {/* HeatGrid Summary Report */}
-      <ReviewTable />
+      <ReviewTable reviews={authorReviewes} />
+
+      <ReviewTable reviews={teamReviews} />
 
       <h3>Grade and Comment for Submission</h3>
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}

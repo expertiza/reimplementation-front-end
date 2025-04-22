@@ -9,13 +9,16 @@ import Filters from "./Filters";
 import ShowReviews from "./ShowReviews";
 import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json";
 import ReviewTableContent from "./ReviewTableContent";
+import { HeatMapQuestion } from "pages/Assignments/AssignmentUtil";
 
 interface ReviewTableProps {
   currentUser?: { id: string };
   project?: { student: { id: string } };
+  reviews?: HeatMapQuestion[]
 }
 
-const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
+
+const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project, reviews }) => {
   const [currentRound, setCurrentRound] = useState<number>(-1);
   const [sortOrderRow, setSortOrderRow] = useState<"asc" | "desc" | "none">("none");
   const [sortByTotalScore, setSortByTotalScore] = useState<"asc" | "desc" | "none">("none");
@@ -91,49 +94,36 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ currentUser, project }) => {
         </ul>
       </div> */}
 
-      <Statistics />
+      {/* <Statistics /> */}
       <br />
 
-      <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} />
-      
+      {/* <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} /> */}
+
 
       {/* Render Round(s) */}
-      {currentRound === -1
-        ? dummyDataRounds.map((roundData, index) => (
-            <ReviewTableContent
-              key={index}
-              roundData={roundData}
-              roundIndex={index}
-              currentUser={currentUser}
-              project={project}
-              sortOrderRow={sortOrderRow}
-              toggleSortOrderRow={toggleSortOrderRow}
-              sortByTotalScore={sortByTotalScore}
-              toggleSortByTotalScore={toggleSortByTotalScore}
-              showToggleQuestion={showToggleQuestion}
-              toggleShowQuestion={toggleShowQuestion}
-            />
-          ))
-        : (
-            <ReviewTableContent
-              roundData={dummyDataRounds[currentRound]}
-              roundIndex={currentRound}
-              currentUser={currentUser}
-              project={project}
-              sortOrderRow={sortOrderRow}
-              toggleSortOrderRow={toggleSortOrderRow}
-              sortByTotalScore={sortByTotalScore}
-              toggleSortByTotalScore={toggleSortByTotalScore}
-              showToggleQuestion={showToggleQuestion}
-              toggleShowQuestion={toggleShowQuestion}
-            />
-          )}
 
-      <Filters
+      {
+        reviews && <ReviewTableContent
+          key={0}
+          roundData={reviews}
+          roundIndex={0}
+          currentUser={currentUser}
+          project={project}
+          sortOrderRow={sortOrderRow}
+          toggleSortOrderRow={toggleSortOrderRow}
+          sortByTotalScore={sortByTotalScore}
+          toggleSortByTotalScore={toggleSortByTotalScore}
+          showToggleQuestion={showToggleQuestion}
+          toggleShowQuestion={toggleShowQuestion}
+        />
+      }
+
+
+      {/* <Filters
         toggleShowReviews={toggleShowReviews}
         toggleAuthorFeedback={toggleAuthorFeedback}
         selectRound={selectRound}
-      />
+      /> */}
 
       {/* {showReviews && (
         <div>

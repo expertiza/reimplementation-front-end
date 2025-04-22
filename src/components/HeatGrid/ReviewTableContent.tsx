@@ -4,17 +4,12 @@ import { Button } from "react-bootstrap";
 import ToolTip from "components/ToolTip";
 import { calculateAverages } from "../../pages/ViewTeamGrades/utils";
 import { Review } from "./types";
+import { HeatMapQuestion } from "pages/Assignments/AssignmentUtil";
 
-interface RoundData {
-    questionNumber: string;
-    questionText: string;
-    reviews: Review[];
-    RowAvg: number;
-    maxScore: number;
-}
+
 
 interface ReviewTableContentProps {
-    roundData: RoundData[];
+    roundData: HeatMapQuestion[];
     roundIndex: number;
     currentUser?: { id: string };
     project?: { student: { id: string } };

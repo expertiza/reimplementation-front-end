@@ -39,6 +39,55 @@ export interface ITeamRow {
   historyLink: string;
 }
 
+export interface Reviewer {
+  id: number;
+  name: string;
+}
+
+export interface Reviewee {
+  id: number;
+  name: string;
+}
+
+export interface ReviewData {
+  reviewer: Reviewer;
+  reviewee: Reviewee;
+  comments: string;
+  score: number | string;
+  date: string;
+  team_based: boolean;
+  question: string;    // Added from your API response
+}
+
+export interface ReviewResponse {
+  author_feedback_reviews: ReviewData[];
+  teammate_reviews: ReviewData[];
+}
+
+export interface Assignment {
+  id: number;
+  name: string;
+}
+
+export interface LoaderOutput {
+  assignment: Assignment;
+  reviews: ReviewResponse;
+}
+
+export interface HeatMapReview {
+  name: string;
+  score: number;
+  comment: string;
+  
+}
+
+export interface HeatMapQuestion {
+  questionNumber: string;
+  questionText: string;
+  reviews: HeatMapReview[];
+  RowAvg: number;
+  maxScore: number;
+}
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   const assignment: IAssignmentRequest = {
@@ -128,4 +177,41 @@ export async function loadAssignmentAndTeamReviews({ params }: any) {
     reviews: reviewData,
     teamId,
   };
+}
+
+
+export function convertReviewDataToHeatMap(reviews: ReviewData[]): HeatMapQuestion[] {
+  const questionMap: Record<string, HeatMapQuestion> = {};
+  let questionCounter = 1;
+
+  reviews.forEach((review) => {
+    const { question, reviewer, score, comments } = review;
+
+    // If this question hasn't been added, create a new entry
+    if (!questionMap[question]) {
+      questionMap[question] = {
+        questionNumber: questionCounter.toString(),
+        questionText: question,
+        reviews: [],
+        RowAvg: 0,  // Default for now
+        maxScore: 5 // Assuming max score is 5 (can adjust if needed)
+      };
+      questionCounter++;
+    }
+
+    // Add the reviewer's score and comment
+    questionMap[question].reviews.push({
+      name: reviewer.name,
+      score: typeof score === 'number' ? score : parseFloat(score),
+      comment: comments
+    });
+  });
+
+  // Optionally calculate RowAvg for each question
+  Object.values(questionMap).forEach((q) => {
+    const totalScore = q.reviews.reduce((sum, r) => sum + (typeof r.score === 'number' ? r.score : 0), 0);
+    q.RowAvg = q.reviews.length ? totalScore / q.reviews.length : 0;
+  });
+
+  return Object.values(questionMap);
 }
