@@ -48,7 +48,7 @@ const AssignReviewer: React.FC = () => {
       )
     );
   };
-    // Resets review status of a reviewer back to "Pending" (simulated unsubmission) (locally only ATM)
+    // Resets review status of a reviewer back to "Pending" (simulated unsubmission) (
     const unsubmitReviewer = (topic: string, reviewerName: string) => {
       setData(prev =>
         prev.map(row =>
@@ -147,6 +147,7 @@ const AssignReviewer: React.FC = () => {
                 }}
               >
                 <div>{r.reviewer.name} ({r.review_status})</div>
+                {r.review_status !== "Pending" && (
                 <div>
                   <a
                     href="#"
@@ -159,6 +160,7 @@ const AssignReviewer: React.FC = () => {
                     Unsubmit
                   </a>
                 </div>
+                )}
                 <div>
                   <a
                     href="#"
