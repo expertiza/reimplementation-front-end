@@ -36,7 +36,7 @@ const ReviewTable: React.FC = () => {
         if( auth.user.role=='Super Administrator'){
           show_page = true
         }else{
-          const response = await fetch("http://0.0.0.0:3002/api/v1/grades/action_allowed?requested_action=view_my_scores", {
+          const response = await fetch("http://152.7.177.55:3002/api/v1/grades/action_allowed?requested_action=view_my_scores", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -49,7 +49,7 @@ const ReviewTable: React.FC = () => {
         if (show_page === true) {
           setIsActionAllowed(true);
 
-          const response1 = await fetch("http://0.0.0.0:3002/api/v1/grades/view_grading_report?id=1", {
+          const response1 = await fetch("http://152.7.177.55:3002/api/v1/grades/view_grading_report?id=1", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ const ReviewTable: React.FC = () => {
           });
           const resp1 = await response1.json();
 
-          const response2 = await fetch("http://0.0.0.0:3002/api/v1/grades/view_my_scores?id=1", {
+          const response2 = await fetch("http://152.7.177.55:3002/api/v1/grades/view_my_scores?id=1", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ const ReviewTable: React.FC = () => {
           });
           const resp2 = await response2.json();
 
-          const response3 = await fetch("http://0.0.0.0:3002/api/v1/grades/view_team?id=1", {
+          const response3 = await fetch("http://152.7.177.55:3002/api/v1/grades/view_team?id=1", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
