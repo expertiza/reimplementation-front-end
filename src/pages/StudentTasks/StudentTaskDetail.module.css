@@ -1,0 +1,187 @@
+.container {
+  font-family: Arial, sans-serif;
+  padding: 0.5rem 1.5rem;
+  display: block;
+}
+
+/* Header Section */
+.header {
+  box-sizing: border-box;
+}
+
+.header h1 {
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding-left: 0;
+}
+
+.flash_note {
+  display: flex;
+  align-items: center;
+  color: green;
+  border: 2px solid #0a0;
+  background-color: #8f8;
+  padding: 5px 20px 5px;
+  margin-bottom: 15px;
+}
+
+.programLink {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.programLink:hover {
+  text-decoration: underline;
+}
+
+.emailLink {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid #0066cc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.emailLink:hover {
+  background-color: #f0f7ff;
+}
+
+/* Task Links Section */
+.taskLinks {
+  margin-bottom: 30px;
+  padding: 1rem;
+}
+
+.taskItem {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.taskMainLink {
+  color: #28a745; /* Green for main links */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.taskMainLink:hover {
+  text-decoration: underline;
+  color: #986633;
+}
+
+.taskDescription {
+  color: #333; /* Black for descriptions */
+}
+
+.alternativeView {
+  color: #28a745; /* Green for alternative view */
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.alternativeView:hover {
+  text-decoration: underline;
+  color: #986633;
+}
+
+/* Timeline Section */
+.timelineContainer {
+  margin: 40px 0;
+}
+
+.timelineDates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: #555;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timelineVisual {
+  position: relative;
+  height: 30px;
+  margin: 15px 0;
+}
+
+.timelineLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  background-color: #dc3545;
+  transform: translateY(-50%);
+  height: 2px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.timelineDots {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.dot {
+  width: 25px;
+  height: 25px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  margin-top: 7px;
+}
+
+.timelineDeadlines {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.deadlineLink {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  font-size: 16px;
+}
+
+.deadlineLink:hover {
+  text-decoration: underline;
+}
+
+/* Footer Section */
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+/* Footer link styling */
+.clickableLink {
+  margin: 0 10px;
+  color: #986633;
+  text-decoration: none;
+  .to_right {
+    float: right;
+  }
+}
+
+.link_to_right {
+  float: right;
+}
+
+/* Footer link hover styling */
+.clickableLink:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+

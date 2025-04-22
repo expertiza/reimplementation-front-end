@@ -27,6 +27,8 @@ import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
 import Courses from "pages/Courses/Course";
 import CourseEditor from "pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
+import StudentTaskDetail from "pages/StudentTasks/StudentTaskDetail";
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
@@ -58,6 +60,22 @@ function App() {
         {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} leastPrivilegeRole={ROLE.STUDENT} />,
+          // children: [
+          //   {
+          //     path: ":id",
+          //     element: <StudentTaskDetail />,
+          //   },
+          // ],
+        },
+        {
+          path: "student_task_detail/:id",
+          element: (
+            <ProtectedRoute element={<StudentTaskDetail />} leastPrivilegeRole={ROLE.STUDENT} />
+          ),
         },
         {
           path: "assignments/edit/:id/createteams",
@@ -192,11 +210,11 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
