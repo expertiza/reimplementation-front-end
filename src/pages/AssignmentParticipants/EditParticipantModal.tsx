@@ -75,6 +75,7 @@ function EditParticipantModal({ participant, show, onHide, onSave }: EditPartici
                 <option key={role} value={role}>
                   {role}
                 </option>
+                //removed the sliders that allowed redundant and insecure changes to authorization
               ))}
             </Form.Control>
           </Form.Group>

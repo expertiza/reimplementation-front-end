@@ -45,6 +45,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 
   const { assignmentId } = useParams();
 
+  //API request to fetch data on reload
   useEffect(() => {
     if (!modalShow.edit || !modalShow.remove) {
       fetchParticipants({ url: `/participants/assignment/${assignmentId}` });
@@ -63,6 +64,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     deleteParticipant,
   ]);
 
+  //setting participants state
   useEffect(() => {
     if (participantsResponse?.data && usersResponse?.data && assignmentResponse?.data) {
       const assignment = assignmentResponse.data as IAssignmentResponse;
@@ -117,6 +119,8 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     participants
   ]);
 
+  //redundant states and handling of edit/delete to be refactored
+
   const openEditModal = (participant: Participant) => {
     setSelectedParticipant(participant);
     setModalShow({ edit: true, remove: false });
@@ -127,6 +131,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     setModalShow({ edit: false, remove: true });
   };
 
+  //API request to delete data
   const handleRemove = () => {
     if (selectedParticipant) {
       setLastDeletedParticipant(selectedParticipant);
@@ -136,12 +141,8 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
     }
   };
 
+  //API request handling edit for both participants and users
   const handleSave = (updatedParticipant: Participant) => {
-    // const updatedList = participants.map((p) =>
-    //   p.id === updatedParticipant.id ? updatedParticipant : p
-    // );
-    // setParticipants(updatedList);
-    // setSelectedParticipant(null);
     updateParticipant({
       url: `/participants/${updatedParticipant.id}/${updatedParticipant.participantRole}`,
       method: HttpMethod.PATCH,
@@ -179,6 +180,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
       return;
     }
 
+    //API request to handle addition of users
     addParticipant({
       url: "/participants/participant",
       method: 'POST',
