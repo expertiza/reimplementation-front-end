@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 import Table from "components/Table/Table";
 import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
+import { IoIosAddCircle } from "react-icons/io";
 
 
 interface TableRow {
@@ -14,7 +15,7 @@ const QuestionnaireTypeTable: React.FC = () => {
   const navigate = useNavigate();
 
   const onCreate = (type: QuestionnaireType) => {
-    // FIXME: Navigate to the Questionnaire's new form
+    // Navigate to the Questionnaire's new form
     navigate(`/questionnaires/new?type=${encodeURIComponent(type)}`);
   };
 
@@ -33,21 +34,26 @@ const QuestionnaireTypeTable: React.FC = () => {
       cell: ({ row }) => {
         const type = row.original.type;
         return (
-
-          // FIXME: Use "+" button instead (search assets)
-          <button
+          <IoIosAddCircle
             onClick={() => onCreate(type)}
-            className="bg-blue-500 hover:bg-blue-600 text-black px-3 py-1 rounded"
-          >
-            Create
-          </button>
+            style={{
+              cursor: "pointer",
+              transition: "all 0.2s",
+              color: "#3b82f6",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#2563eb";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#3b82f6";
+            }}
+            size={24}
+          />
         );
       },
     },
   ];
 
-
-  // FIXME: Change the width of the table to span the container
   return (
     <Table
       data={data}

@@ -4,12 +4,13 @@
     align-items: center;
     text-align: center;
     min-height: 100vh;
-    padding-top: 20px; /* Add padding to the top */
+    padding-top: 20px;
   }
+
   .questionnaire-table {
     border-collapse: collapse;
-    width: 70%; /* Adjust the width as needed */
-    margin-top: 20px; /* Add some spacing from the button and label */
+    width: 70%;
+    margin-top: 20px;
   }
   
   .questionnaire-table th, .questionnaire-table td {
@@ -29,6 +30,7 @@
   .questionnaire-table tr:hover {
     background-color: #ddd;
   }
+
   .centered-table {
     display: flex;
     justify-content: center;
@@ -36,4 +38,3 @@
     text-align: center;
     height: 100%;
   }
-  
