@@ -295,15 +295,6 @@ const Questionnaire = () => {
           </div>
         </form>
         <hr />
-        <div className="text-center">
-          <button
-            type="button"
-            className="btn btn-secondary mt-3"
-            onClick={exportQuestionnaire}
-          >
-            Export Data
-          </button>
-        </div>
       </div>
     </div>
   );

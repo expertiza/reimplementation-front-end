@@ -73,8 +73,9 @@ function Questionnaire() {
     fetchQuestionnaireItems(); // Fetch items when the component mounts
   }, []);
 
-  const fetchQuestionnaireData = async (name: string) => {
+  const handleCopyitem = async (name: string) => {
     try {
+      // Fetch the questionnaire data for the given name
       const response = await axios.get(
         "http://localhost:3002/api/v1/questionnaires",
         {
@@ -83,45 +84,33 @@ function Questionnaire() {
           },
         }
       );
-
+  
       const questionnaires = response.data;
       const matchedQuestionnaire = questionnaires.find(
         (item: any) => item.name === name // Match the questionnaire by name
       );
-
-      if (matchedQuestionnaire) {
-        setQuestionnaireName(matchedQuestionnaire.name);
-        setQuestionnaireId(matchedQuestionnaire.id);
-        setQuestionnaireType(matchedQuestionnaire.questionnaire_type || ""); // Set questionnaire type
-        setMinScore(matchedQuestionnaire.min_question_score || 0);
-        setMaxScore(matchedQuestionnaire.max_question_score || 5);
-        setIsPrivate(matchedQuestionnaire.private || false);
-        setQuestionnaireData(matchedQuestionnaire.data);
-      } else {
+  
+      if (!matchedQuestionnaire) {
         console.warn("No matching questionnaire found for the name:", name);
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching questionnaires:", error);
-    }
-  };
-
-  const handleCopyElement = async (name: string) => {
-    await fetchQuestionnaireData(name);
-    const updatedContent = {
-      name: questionnaireName,
-      questionnaire_type: questionnaireType, // Include questionnaire type in the update
-      min_question_score: minScore,
-      max_question_score: maxScore,
-      private: isPrivate,
-      data: questionnaireData,
-      instructor_id: 1,
-    };
-
-    try {
-      const token = getAuthToken();
-      const response = await axios.post(
-        `http://localhost:3002/api/v1/questionnaires`, // Use POST for creating a new entry
-        updatedContent, // Payload for the new entry
+  
+      // Construct updatedContent immediately after fetching data
+      const updatedContent = {
+        name: `${matchedQuestionnaire.name}`, // Append "Copy" to the name to avoid conflicts
+        questionnaire_type: matchedQuestionnaire.questionnaire_type || "",
+        min_question_score: matchedQuestionnaire.min_question_score || 0,
+        max_question_score: matchedQuestionnaire.max_question_score || 5,
+        private: matchedQuestionnaire.private || false,
+        data: matchedQuestionnaire.data,
+        instructor_id: 1,
+      };
+  
+      // Make the POST request to create a new questionnaire
+      const token = await getAuthToken();
+      const postResponse = await axios.post(
+        `http://localhost:3002/api/v1/questionnaires`,
+        updatedContent,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -129,12 +118,12 @@ function Questionnaire() {
           },
         }
       );
-
-      console.log("Entry creation successful:", response.data);
+  
+      console.log("Entry creation successful:", postResponse.data);
       alert("New questionnaire entry created successfully!");
-
-      // Update the local state with the server response
-      setQuestionnaireData(response.data);
+  
+      // Reload the questionnaire list
+      fetchQuestionnaireItems();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         alert(`Failed to create questionnaire. ${error.response?.data?.message || error.message}`);
@@ -142,7 +131,6 @@ function Questionnaire() {
         alert(`Failed to create questionnaire. ${String(error)}`);
       }
     }
-    fetchQuestionnaireItems();
   };
 
   useEffect(() => {
@@ -230,6 +218,32 @@ function Questionnaire() {
     return acc;
   }, {});
 
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Function to sort alphabetically by name
+  const sortGroupedByType = (groupedByType: any) => {
+    const sortedKeys = Object.keys(groupedByType).sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.localeCompare(b); // Ascending order
+      } else {
+        return b.localeCompare(a); // Descending order
+      }
+    });
+
+    // Return a new sorted object based on sorted keys
+    const sortedGroupedByType: any = {};
+    sortedKeys.forEach((key) => {
+      sortedGroupedByType[key] = groupedByType[key];
+    });
+
+    return sortedGroupedByType;
+  };
+
+  // Toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
   return (
     <div className="questionnaire-container">
       <h1>Manage Content</h1>
@@ -237,75 +251,229 @@ function Questionnaire() {
       <table className="questionnaire-table">
         <thead>
           <tr>
-            <th>Type</th>
+            <th>
+              Name{" "}
+              <Button
+                variant="link"
+                onClick={toggleSortOrder}
+                style={{
+                  textDecoration: "none",
+                  color: "black", // Set the arrow color to black
+                  border: "none", // Remove the border
+                  background: "none", // Ensure no background
+                  padding: "0", // Remove padding for a minimal look
+                  fontSize: "1.2rem", // Adjust font size for better visibility
+                  display: "inline", // Prevent block-level behavior
+                }}
+              >
+                {sortOrder === "asc" ? "↑" : "↓"}
+              </Button>
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {Object.keys(groupedByType).map((type, index) => (
+          {Object.keys(sortGroupedByType(groupedByType)).map((type, index) => (
             <React.Fragment key={index}>
               <tr>
                 <td onClick={() => handleToggleType(type)}>{type}</td>
                 <td>
                   <Button
-                    variant="outline-success"
-                    size="sm"
-                    onClick={() => handleToggleType(type)}
-                  >
-                    {expandedType === type ? "Hide" : "Show"}
-                  </Button>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
                     onClick={() => handleNavigateToEditPage("_" + type)}
                     className="ms-2"
+                    style={{
+                      backgroundColor: "#4678b2", // Solid blue background
+                      border: "none", // Removes border
+                      width: "30px", // Sets width of the circle
+                      height: "30px", // Sets height of the circle
+                      borderRadius: "50%", // Makes the button circular
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer", // Changes cursor to pointer
+                    }}
                   >
-                    <BsPlusSquareFill />
+                    <span
+                      style={{
+                        color: "white", // White color for the "+" symbol
+                        fontSize: "1.3rem", // Adjust size of the "+" symbol
+                        fontWeight: "bold", // Makes the "+" symbol bold
+                        lineHeight: "0.5", // Ensures consistent line height for the "+"
+                      }}
+                    >
+                      +
+                    </span>
                   </Button>
                 </td>
               </tr>
+              {expandedType === type && (
+                <tr>
+                  <td colSpan={2}>
+                    <div className="expanded-row">
+                      <div
+                        className="item-name"
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)", // 4 equal-width columns
+                          alignItems: "left",
+                          gap: "16px", // Optional: spacing between columns
+                        }}
+                      >
+                        {/* Column 1: Item Name */}
+                        <strong
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
+                        >
+                          {"Item Name"}
+                        </strong>
+
+                        {/* Column 2: Creation Date */}
+                        <strong
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
+                        >
+                          {"Creation Date"}
+                        </strong>
+
+                        {/* Column 3: Updated Date */}
+                        <strong
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
+                        >
+                          {"Updated Date"}
+                        </strong>
+
+                        {/* Column 4: Actions */}
+                        <strong
+                          style={{
+                            textAlign: "center", // Centers the text horizontally in the column
+                          }}
+                        >
+                          {"Actions"}
+                        </strong>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {expandedType === type &&
                 groupedByType[type].map((item: any) => (
                   <tr key={item.id} className="expanded-row">
                     <td colSpan={2}>
-                      <div className="item-name">
-                        <strong>{item.name}</strong>
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() => handleNavigateToEditPage(item.name)}
-                          className="ms-2"
+                      <div
+                        className="item-name"
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)", // 4 equal-width columns
+                          alignItems: "left",
+                          gap: "16px", // Optional: spacing between columns
+                        }}
+                      >
+                        {/* Column 1: Item Name */}
+                        <time
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
                         >
-                          <img 
-                            src={EditIcon} 
-                            alt="EditIcon" 
-                            style={{ width: "16px", height: "16px" }} 
-                          />
-                        </Button>
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() => handleCopyElement(item.name)}
-                          className="ms-2"
+                          {item.name}
+                        </time>
+
+                        {/* Column 2: Created At */}
+                        <time
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
                         >
-                          <img 
-                            src={CopyIcon} 
-                            alt="CopyIcon" 
-                            style={{ width: "16px", height: "16px" }} 
-                          />
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="ms-2"
+                          {new Date(item.created_at).toLocaleDateString("en-CA", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          })}
+                          <br />
+                          {new Date(item.created_at).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            timeZoneName: "short",
+                          })}
+                        </time>
+
+                        {/* Column 3: Updated At */}
+                        <time
+                          style={{
+                            textAlign: "left", // Centers the text horizontally in the column
+                          }}
                         >
-                          <img 
-                            src={DeleteIcon} 
-                            alt="Delete Icon" 
-                            style={{ width: "16px", height: "16px" }} 
-                          />
-                        </Button>
+                          {new Date(item.updated_at).toLocaleDateString("en-CA", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          })}
+                          <br />
+                          {new Date(item.updated_at).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            timeZoneName: "short",
+                          })}
+                        </time>
+
+                        {/* Column 4: Action Buttons */}
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center", // Centers the buttons horizontally
+                            gap: "8px", // Spacing between buttons
+                          }}
+                        >
+                          <button
+                            onClick={() => handleNavigateToEditPage(item.name)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              padding: "0",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <img
+                              src={EditIcon}
+                              alt="Edit Icon"
+                              style={{ width: "16px", height: "16px" }}
+                            />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              padding: "0",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <img
+                              src={DeleteIcon}
+                              alt="Delete Icon"
+                              style={{ width: "16px", height: "16px" }}
+                            />
+                          </button>
+                          <button
+                            onClick={() => handleCopyitem(item.name)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              padding: "0",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <img
+                              src={CopyIcon}
+                              alt="Copy Icon"
+                              style={{ width: "16px", height: "16px" }}
+                            />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
