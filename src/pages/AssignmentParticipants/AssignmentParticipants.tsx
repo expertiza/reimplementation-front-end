@@ -26,10 +26,10 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   const { data: usersResponse, sendRequest: fetchUsers } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
 
-  const { sendRequest: addParticipant } = useAPI();
-  const { sendRequest: updateParticipant } = useAPI();  
-  const { sendRequest: updateUser } = useAPI();  
-  const { sendRequest: deleteParticipant } = useAPI();
+  const { data: addParticipantResponse, sendRequest: addParticipant } = useAPI();
+  const { data: updateParticipantResponse, sendRequest: updateParticipant } = useAPI();  
+  const { data: updateUserResponse, sendRequest: updateUser } = useAPI();  
+  const { data: deleteParticipantResponse, sendRequest: deleteParticipant } = useAPI();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [newUserName, setNewUserName] = useState<string>('');
@@ -55,13 +55,10 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
   }, [
     modalShow,
     assignmentId,
-    fetchParticipants,
-    fetchUsers,
-    fetchAssignment,
-    addParticipant,
-    updateParticipant,
-    updateUser,
-    deleteParticipant,
+    addParticipantResponse,
+    updateParticipantResponse,
+    updateUserResponse,
+    deleteParticipantResponse,
   ]);
 
   //setting participants state
@@ -182,12 +179,11 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
 
     //API request to handle addition of users
     addParticipant({
-      url: "/participants/participant",
+      url: `/participants/${selectedRole}`,
       method: 'POST',
       data: {
         user_id: user.id,
         assignment_id: Number(assignmentId),
-        authorization: selectedRole,
       }
     });
 
