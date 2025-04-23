@@ -1,6 +1,9 @@
 # To Login into the application:
 
+UI Link : http://152.7.177.55:3000/login
+
 Username: u1 Password: password123
+
 Username: admin Password: password123
 
 
