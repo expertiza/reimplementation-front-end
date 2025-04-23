@@ -54,6 +54,16 @@ export interface IParticipantResponse {
   institution: { id: number | null; name: string | null };
 }
 
+export interface IAssignmentParticipantResponse {
+  id: number;
+  user_id: number;
+  can_mentor: boolean | null;
+  can_review: boolean | null;
+  can_submit: boolean | null;
+  can_take_quiz: boolean | null;
+  authorization: string | null;
+}
+
 export interface IUserRequest {
   name: string;
   email: string;

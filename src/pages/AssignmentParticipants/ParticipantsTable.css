@@ -1,0 +1,202 @@
+/* Table Section */
+.assignment-participants-table-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 70vh;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+}
+
+.assignment-participants-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.assignment-participants-table th {
+    cursor: pointer;
+    user-select: none;
+    position: sticky;
+    top: -1px;
+    background-color: #4b5563;
+    color: #ffffff;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.85rem;
+    border: 1px solid #d1d5db;
+    font-size: 0.875rem;
+    z-index: 10;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.assignment-participants-table th:first-child {
+    border-top-left-radius: 0.5rem;
+}
+
+.assignment-participants-table th:last-child {
+    border-top-right-radius: 0.5rem;
+}
+
+.assignment-participants-table th.sorted {
+    /* Highlight active sorted column */
+    background-color: #2563eb;
+}
+
+.assignment-participants-table th svg {
+    font-size: 0.75rem;
+    color: #ffffff;
+}
+
+.assignment-participants-table th:hover {
+    background-color: #059669;
+}
+
+.assignment-participants-table th,
+.assignment-participants-table td {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* To target the actual <div class="permission-column"> wrapper */
+.permission-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  
+  .permission-column > img {
+    display: block;
+    margin: 0;
+  }
+
+.assignment-participants-table tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.assignment-participants-table tr:hover {
+    background-color: #f3f4f6;
+}
+
+/* Status-based colors */
+.status-yes {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.status-no {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.no-results-message {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+    padding: 1rem;
+}
+
+
+/* Role-based colors */
+.role-student {
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.role-instructor {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.role-admin {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.remove-user-button {
+    color: #ef4444;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid transparent;
+    /* padding: 0.4em 0.8em; */
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.remove-user-button:hover {
+    color: #dc2626;
+    /* Darker shade for hover effect */
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    text-decoration: none;
+}
+
+.remove-user-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5);
+}
+
+
+.edit-user-button {
+    color: #1d4ed8;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid transparent;
+    /* padding: 0.4em 0.8em; */
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.edit-user-button:hover {
+    color: #1e40af;
+    /* Darker shade for hover effect */
+    background-color: rgba(29, 78, 216, 0.1);
+    border-color: #1d4ed8;
+    text-decoration: none;
+}
+
+.edit-user-button:focus {
+    outline: none;
+    /* Focus ring for accessibility */
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.5);
+}
+
+
+/* Checkbox Styling */
+.assignment-participants-table input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+    accent-color: #2563eb;
+    transition: transform 0.2s ease;
+}
+
+.assignment-participants-table input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+.actions-column {
+    display: flex;
+    justify-content: space-around;
+}
+
+
+@media (max-width: 768px) {
+    .assignment-participants-header {
+        font-size: 1.25rem;
+    }
+
+    .add-user-button {
+        width: 100%;
+    }
+
+    .assignment-participants-table th::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+    }
+}
