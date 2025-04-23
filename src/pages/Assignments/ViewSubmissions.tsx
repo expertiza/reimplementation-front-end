@@ -32,13 +32,27 @@ const ViewSubmissions: React.FC = () => {
   // Define the columns used in the table
   const columns = useMemo(() => [
     columnHelper.accessor('topicName', {
-      header: 'Topic Name',
-      cell: info => (
-        <span>{info.getValue()}</span>
+      header: () => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          Topic Name
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '10px', marginLeft: '2px' }}>
+            ▲
+            ▼
+          </div>
+        </div>
       ),
+      cell: info => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor('teamName', {
-      header: 'Team Name',
+      header: () => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          Team Name
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '10px', marginLeft: '2px' }}>
+            ▲
+            ▼
+          </div>
+        </div>
+      ),
       cell: info => (
         <div style={{ color: '#3399ff', fontWeight: 'normal' }}>
           {info.getValue()}
@@ -46,7 +60,15 @@ const ViewSubmissions: React.FC = () => {
       ),
     }),
     columnHelper.accessor('teamMembers', {
-      header: 'Team Member(s)',
+      header: () => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          Team Member(s)
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: '10px', marginLeft: '2px' }}>
+            ▲
+            ▼
+          </div>
+        </div>
+      ),
       cell: info => (
         <div>
           {info.getValue().map((member) => (
@@ -75,7 +97,7 @@ const ViewSubmissions: React.FC = () => {
     }),
     columnHelper.display({
       id: 'Grades',
-      header: 'Assign Grades',
+      header: 'Action',
       cell: ({ row }) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Link
