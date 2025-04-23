@@ -10,7 +10,7 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment } from "pages/Assignments/AssignmentUtil";
+import { loadAssignment, loadAssignmentAndTeamReviews, loadAssignmentTeams } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
@@ -30,7 +30,7 @@ import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUti
 import TA from "pages/TA/TA";
 import TAEditor from "pages/TA/TAEditor";
 import { loadTAs } from "pages/TA/TAUtil";
-import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
+import ReviewTable from "./components/HeatGrid/ReviewTable";
 import EditProfile from "pages/Profile/Edit";
 import Reviews from "pages/Reviews/reviews";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
@@ -40,6 +40,8 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import AssignGrade from "pages/Assignments/AssignGrade";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -73,12 +75,17 @@ function App() {
         {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
-          loader: loadAssignment,
+          loader: loadAssignmentTeams,
         },
         {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
           loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/teams/:team/assign_grade",
+          element: <ProtectedRoute element={<AssignGrade />} />,
+          loader: loadAssignmentAndTeamReviews,
         },
         {
           path: "assignments/edit/:id/viewreports",

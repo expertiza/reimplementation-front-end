@@ -1,10 +1,10 @@
 // Statistics.tsx
 import React, { useState, useEffect } from "react";
-import { calculateAverages } from "./utils";
-import "./grades.scss";
-import dummyDataRounds from "./Data/heatMapData.json"; // Importing dummy data for rounds
-import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
-import teammateData from "./Data/teammateData.json";
+import { calculateAverages } from "../../pages/ViewTeamGrades/utils";
+import "../../pages/ViewTeamGrades/grades.scss";
+import dummyDataRounds from "../../pages/ViewTeamGrades/Data/heatMapData.json"; // Importing dummy data for rounds
+import dummyauthorfeedback from "../../pages/ViewTeamGrades/Data/authorFeedback.json"; // Importing dummy data for author feedback
+import teammateData from "../../pages/ViewTeamGrades/Data/teammateData.json";
 
 //props for statistics component
 interface StatisticsProps {}

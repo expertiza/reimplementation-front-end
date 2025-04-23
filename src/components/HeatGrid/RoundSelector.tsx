@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import dummyDataRounds from "./Data/heatMapData.json";
-import teamData from "./Data/dummyData.json";
+import dummyDataRounds from "../../pages/ViewTeamGrades/Data/heatMapData.json";
+import teamData from "../../pages/ViewTeamGrades/Data/dummyData.json";
 
 interface RoundSelectorProps {
   currentRound: number;
