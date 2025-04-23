@@ -20,9 +20,11 @@ import { formatDate, mergeDataAndNames } from "./CourseUtil";
  * @author Atharva Thorve, on December, 2023
  * @author Mrityunjay Joshi on December, 2023
  */
+
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
+  const { data: InstructorResponse, sendRequest: fetchInstructors } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -31,7 +33,10 @@ const Courses = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // State for delete and copy confirmation modals
+  // State for course details modal
+  const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
+  const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: ICourseResponse;
@@ -42,38 +47,54 @@ const Courses = () => {
     data?: ICourseResponse;
   }>({ visible: false });
 
+  // Utility function to handle modals
+  const showModal = (
+    setModalState: React.Dispatch<React.SetStateAction<boolean>>,
+    setData?: (data: ICourse | null) => void,
+    data?: ICourse
+  ) => {
+    if (setData) {
+      setData(data || null);
+    }
+    setModalState(true);
+  };
+
+  const handleShowDetails = (course: ICourse) =>
+    showModal(setShowDetailsModal, setSelectedCourse, course);
+
   useEffect(() => {
-    // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
+    // Ensure the API fetch happens unless modals are active
     if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible) {
       fetchCourses({ url: `/courses` });
-      // ToDo: Remove this API call later after the above ToDo is completed
       fetchInstitutions({ url: `/institutions` });
+      fetchInstructors({ url: `/users` });
     }
   }, [
     fetchCourses,
     fetchInstitutions,
+    fetchInstructors,
     location,
     showDeleteConfirmation.visible,
     auth.user.id,
     showCopyConfirmation.visible,
   ]);
 
-  // Error alert for API errors
   useEffect(() => {
     if (error) {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
   }, [error, dispatch]);
 
-  // Callbacks for handling delete and copy confirmation modals
   const onDeleteCourseHandler = useCallback(
     () => setShowDeleteConfirmation({ visible: false }),
     []
   );
 
-  const onCopyCourseHandler = useCallback(() => setShowCopyConfirmation({ visible: false }), []);
+  const onCopyCourseHandler = useCallback(
+    () => setShowCopyConfirmation({ visible: false }),
+    []
+  );
 
-  // Callbacks for navigation and modal handling
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),
     [navigate]
@@ -91,12 +112,23 @@ const Courses = () => {
   );
 
   const onCopyHandle = useCallback(
-    (row: TRow<ICourseResponse>) => setShowCopyConfirmation({ visible: true, data: row.original }),
+    (row: TRow<ICourseResponse>) =>
+      setShowCopyConfirmation({ visible: true, data: row.original }),
     []
   );
 
+  const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+	return (
+	  <CourseAssignments
+		courseId={row.original.id}
+		courseName={row.original.name}
+	  />
+	);
+  }, []);
+
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
+    () =>
+      COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
@@ -110,7 +142,10 @@ const Courses = () => {
     [InstitutionResponse?.data, isLoading]
   );
 
-  tableData = mergeDataAndNames(tableData, institutionData);
+  const instructorData = useMemo(
+    () => (isLoading || !InstructorResponse?.data ? [] : InstructorResponse.data),
+    [InstructorResponse?.data, isLoading]
+  );
 
   const formattedTableData = tableData.map((item: any) => ({
     ...item,
@@ -125,37 +160,54 @@ const Courses = () => {
       <Outlet />
       <main>
         <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
+          <Row className="mt-4 mb-4">
             <Col className="text-center">
-              <h1>Manage Courses</h1>
+              <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>
+                {auth.user.role === ROLE.INSTRUCTOR.valueOf() ? (
+                  <>Instructed by: {auth.user.full_name}</>
+                ) : auth.user.role === ROLE.TA.valueOf() ? (
+                  <>Assisted by: {auth.user.full_name}</>
+                ) : (
+                  <>Manage Courses</>
+                )}
+              </h1>
             </Col>
-            <hr />
           </Row>
+
           <Row>
-            <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
+
+          <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
               <Button variant="outline-success" onClick={() => navigate("new")}>
                 <RiHealthBookLine />
               </Button>
             </Col>
-            {showDeleteConfirmation.visible && (
-              <DeleteCourse
-                courseData={showDeleteConfirmation.data!}
-                onClose={onDeleteCourseHandler}
-              />
-            )}
-            {showCopyConfirmation.visible && (
-              <CopyCourse courseData={showCopyConfirmation.data!} onClose={onCopyCourseHandler} />
-            )}
           </Row>
-          <Row>
+
+          {showDeleteConfirmation.visible && (
+            <DeleteCourse
+              courseData={showDeleteConfirmation.data!}
+              onClose={onDeleteCourseHandler}
+            />
+          )}
+          {showCopyConfirmation.visible && (
+            <CopyCourse
+              courseData={showCopyConfirmation.data!}
+              onClose={onCopyCourseHandler}
+            />
+          )}
+
+          <Row >
             <Table
               showGlobalFilter={false}
-              data={formattedTableData}
+              data={visibleCourses}
               columns={tableColumns}
               columnVisibility={{
                 id: false,
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                instructor: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
+              renderSubComponent={renderSubComponent}
+              getRowCanExpand={() => true}
             />
           </Row>
         </Container>
