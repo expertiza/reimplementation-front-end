@@ -40,7 +40,7 @@ const Table: React.FC<TableProps> = ({
   showPagination = true,
   onSelectionChange,
   columnVisibility = {},
-  tableSize = { span: 12, offset: 0 },
+  tableSize = { span: 12, offset: 0 }
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
