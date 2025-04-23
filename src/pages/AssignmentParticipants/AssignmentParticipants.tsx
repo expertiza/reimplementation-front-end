@@ -242,7 +242,7 @@ function AssignmentParticipants({ assignmentProps }: AssignmentParticipantsProps
               {role}
               {/* Changed the icon for info according to the design standards */}
               <img
-                src={`${process.env.PUBLIC_URL}assets/images/info.png`}
+                src={`${process.env.PUBLIC_URL}/assets/images/info.png`}
                 alt="Info"
                 title={participantRoleInfo(role)}
                 width="16"
