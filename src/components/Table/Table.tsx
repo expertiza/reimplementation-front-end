@@ -29,10 +29,7 @@ interface TableProps {
   showPagination?: boolean;
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
-  tableClassName?: string;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
-  style?: React.CSSProperties;
-  getRowStyle?: (index: number) => React.CSSProperties;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -43,9 +40,7 @@ const Table: React.FC<TableProps> = ({
   showPagination = true,
   onSelectionChange,
   columnVisibility = {},
-  tableSize = { span: 12, offset: 0 },
-  tableClassName = "tan-bg-table",
-  getRowStyle,
+  tableSize = { span: 12, offset: 0 }
 }) => {
   const colsPlusSelectable = useMemo(() => {
     const selectableColumn: any = {
@@ -151,7 +146,7 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <>
-      <Container fluid style={{marginLeft: 0}}>
+      <Container>
         <Row className="mb-md-2">
           <Col md={{ span: 12 }}>
             {isGlobalFilterVisible && (
@@ -164,10 +159,10 @@ const Table: React.FC<TableProps> = ({
           </span>{" "}
         </Row>
       </Container>
-      <Container fluid style={{marginLeft: 0}}>
+      <Container>
         <Row>
           <Col md={tableSize}>
-            <BTable className={tableClassName} striped hover responsive size="sm">
+            <BTable striped hover responsive size="sm">
               <thead className="table-secondary">
                 {getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -202,9 +197,9 @@ const Table: React.FC<TableProps> = ({
                 ))}
               </thead>
               <tbody>
-                {getRowModel().rows.map((row, index) => {
+                {getRowModel().rows.map((row) => {
                   return (
-                    <tr key={row.id} style={getRowStyle?.(index)}>
+                    <tr key={row.id}>
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td key={cell.id}>
