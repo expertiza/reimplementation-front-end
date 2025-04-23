@@ -66,7 +66,7 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                             checked={showWordComments == 10}
                             onChange={() => setshowWordComments((prev) => prev == 10 ? 0 : 10)}
                         />{" "}
-                        &gt; 10 Word Comments
+                        &gt; Detailed comments
                     </label>
                     <label>
                         <input
@@ -74,7 +74,7 @@ const ReviewTableContent: React.FC<ReviewTableContentProps> = ({
                             checked={showWordComments == 20}
                             onChange={() => setshowWordComments((prev) => prev == 20 ? 0 : 20)}
                         />{" "}
-                        &gt; 20 Word Comments
+                        &gt; Longer Descriptive Comments
                     </label>
                 </div>
                 <div className="flex items-center gap-4"> {/* USE gap-4 for EVEN Spacing */}
