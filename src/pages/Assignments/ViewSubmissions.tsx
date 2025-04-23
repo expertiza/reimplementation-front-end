@@ -24,6 +24,8 @@ const ViewSubmissions: React.FC = () => {
       teamName: team.name,
       teamMembers: team.members,
       historyLink: `/history/${team.team_id}`,
+      submissionLinks: team.links
+      || [] // Add submission links
     }))
     , [assignment]);
 
@@ -60,6 +62,20 @@ const ViewSubmissions: React.FC = () => {
     columnHelper.display({
       id: 'links',
       header: 'Links',
+      cell: ({ row }) => (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Render Submission Links */}
+          {row.original.submissionLinks.map((link: string, index: number) => (
+            <a key={index} href={link} target="_blank" rel="noopener noreferrer" style={{ color: '#a67c52', marginBottom: '4px' }}>
+              {link}
+            </a>
+          ))}
+        </div>
+      ),
+    }),
+    columnHelper.display({
+      id: 'Grades',
+      header: 'Assign Grades',
       cell: ({ row }) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Link

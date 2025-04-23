@@ -5,13 +5,13 @@ export interface IAssignmentFormValues {
   id?: number;
   name: string;
   directory_path: string;
-  spec_location:string;
-  private:boolean;
+  spec_location: string;
+  private: boolean;
   show_template_review: boolean;
-  require_quiz:boolean;
-  has_badge:boolean;
-  staggered_deadline:boolean;
-  is_calibrated:boolean;
+  require_quiz: boolean;
+  has_badge: boolean;
+  staggered_deadline: boolean;
+  is_calibrated: boolean;
 }
 
 // Represents an individual member in a team
@@ -25,8 +25,9 @@ export interface TeamSubmission {
   id: number;
   name: string; // Team name
   team_id: number;
-  topic: string ;
+  topic: string;
   members: TeamMember[];
+  links: string[]
 }
 
 // Transformed data structure used for table rows
@@ -34,9 +35,10 @@ export interface ITeamRow {
   id: number; // Assignment ID
   team_id: number;
   teamName: string;
-  topicName :string,
+  topicName: string,
   teamMembers: { id: number; name: string }[];
   historyLink: string;
+  submissionLinks: string[]
 }
 
 export interface Reviewer {
@@ -78,7 +80,7 @@ export interface HeatMapReview {
   name: string;
   score: number;
   comment: string;
-  
+
 }
 
 export interface HeatMapQuestion {
@@ -93,14 +95,14 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   const assignment: IAssignmentRequest = {
     name: values.name,
     directory_path: values.directory_path,
-    spec_location:values.spec_location,
-    private:values.private,
+    spec_location: values.spec_location,
+    private: values.private,
     show_template_review: values.show_template_review,
-    require_quiz:values.require_quiz,
-    has_badge:values.has_badge,
-    staggered_deadline:values.staggered_deadline,
-    is_calibrated:values.is_calibrated,
-    
+    require_quiz: values.require_quiz,
+    has_badge: values.has_badge,
+    staggered_deadline: values.staggered_deadline,
+    is_calibrated: values.is_calibrated,
+
   };
   console.log(assignment);
   return JSON.stringify(assignment);
@@ -112,14 +114,14 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     id: assignment.id,
     name: assignment.name,
     directory_path: assignment.directory_path,
-    spec_location:assignment.spec_location,
-    private:assignment.private,
+    spec_location: assignment.spec_location,
+    private: assignment.private,
     show_template_review: assignment.show_template_review,
-    require_quiz:assignment.require_quiz,
-    has_badge:assignment.has_badge,
-    staggered_deadline:assignment.staggered_deadline,
-    is_calibrated:assignment.is_calibrated,
-    
+    require_quiz: assignment.require_quiz,
+    has_badge: assignment.has_badge,
+    staggered_deadline: assignment.staggered_deadline,
+    is_calibrated: assignment.is_calibrated,
+
   };
   return assignmentValues;
 };
@@ -203,8 +205,8 @@ export function convertReviewDataToHeatMap(reviews: ReviewData[]): HeatMapQuesti
         questionNumber: questionCounter.toString(),
         questionText: question,
         reviews: [],
-        RowAvg: 0,  
-        maxScore: 5 
+        RowAvg: 0,
+        maxScore: 5
       };
       questionCounter++;
     }
