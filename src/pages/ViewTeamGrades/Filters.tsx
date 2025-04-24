@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import { useEffect } from "react";
 
 type FiltersProps = {
   toggleShowReviews: () => void;
   toggleAuthorFeedback: () => void;
   selectRound: (v: number) => void;
+  totalRounds: number; // Number of rounds to display
 };
 
 const Filters: React.FC<FiltersProps> = ({
   toggleShowReviews,
   toggleAuthorFeedback,
   selectRound,
+  totalRounds,
 }) => {
   const [showSecondDropdown, setShowSecondDropdown] = useState(true);
   const [firstDropdownSelection, setFirstDropdownSelection] = useState("Reviews"); // Default text for the first dropdown button
@@ -60,10 +61,10 @@ const Filters: React.FC<FiltersProps> = ({
       setSecondDropdownSelection((prev) => {
         if (eventKey === "All Rounds") {
           selectRound(-1);
-        } else if (eventKey === "Round 1") {
-          selectRound(1);
-        } else if (eventKey === "Round 2") {
-          selectRound(2);
+        } else {
+          // Convert "Round 1" to round index 0, "Round 2" to 1, and so on
+          const roundIndex = parseInt(eventKey.split(" ")[1]) - 1;
+          selectRound(roundIndex);
         }
         return eventKey;
       }); // Update the second button text with the selected option
@@ -109,15 +110,21 @@ const Filters: React.FC<FiltersProps> = ({
               {secondDropdownSelection}
             </Dropdown.Toggle>
             <Dropdown.Menu>
+              {/* Option for all rounds */}
               <Dropdown.Item eventKey="All Rounds" href="#/all-rounds">
                 All rounds
               </Dropdown.Item>
-              <Dropdown.Item eventKey="Round 1" href="#/round-1">
-                Round 1
-              </Dropdown.Item>
-              <Dropdown.Item eventKey="Round 2" href="#/round-2">
-                Round 2
-              </Dropdown.Item>
+
+              {/* Dynamically generate round options */}
+              {Array.from({ length: totalRounds }).map((_, index) => (
+                <Dropdown.Item
+                  key={index}
+                  eventKey={`Round ${index + 1}`}
+                  href={`#/round-${index + 1}`}
+                >
+                  Round {index + 1}
+                </Dropdown.Item>
+              ))}
             </Dropdown.Menu>
           </Dropdown>
         </div>

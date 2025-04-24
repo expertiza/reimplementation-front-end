@@ -1,121 +1,67 @@
-// Statistics.tsx
-import React, { useState, useEffect } from "react";
-import { calculateAverages } from "./utils";
-import "./grades.scss";
-import dummyDataRounds from "./Data/heatMapData.json"; // Importing dummy data for rounds
-import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
-import teammateData from "./Data/teammateData.json";
+import React from "react";
 
-//props for statistics component
-interface StatisticsProps {}
+interface StatisticsProps {
+  avg_scores_by_round: Record<string, number>;
+  avg_scores_by_criterion: Record<string, Record<string, number>>;
+  review_score_count: number;
+  summary: Record<string, Record<string, string[]>>;
+}
 
-//statistics component
-const Statistics: React.FC<StatisticsProps> = () => {
-  const [sortedData, setSortedData] = useState<any[]>([]);
-  useEffect(() => {
-    const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
-      dummyDataRounds[0],
-      "asc"
-    );
-    const rowAvgArray = sortedData.map((item) => item.RowAvg);
-    console.log(rowAvgArray);
-    setSortedData(sortedData.map((item) => item.RowAvg));
-  }, []);
-
-  const [statisticsVisible, setstatisticsVisible] = useState<boolean>(false);
-  const toggleStatisticsVisibility = () => {
-    setstatisticsVisible(!statisticsVisible);
-  };
-  const [showReviews, setShowReviews] = useState(false);
-  const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
-
-  const [roundSelected, setRoundSelected] = useState(-1);
-
-  const selectRound = (r: number) => {
-    setRoundSelected((prev) => r);
-  };
-
-  // Function to toggle the visibility of ShowReviews component
-  const toggleShowReviews = () => {
-    setShowReviews((prev) => !prev);
-  };
-
-  // Function to toggle the visibility of ShowAuthorFeedback component
-  const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback((prev) => !prev);
-  };
-
+const Statistics: React.FC<StatisticsProps> = ({
+  avg_scores_by_round,
+  avg_scores_by_criterion,
+  review_score_count,
+  summary,
+}) => {
   const headerCellStyle: React.CSSProperties = {
-    padding: "10px",
-    textAlign: "center",
+    padding: "8px",
+    backgroundColor: "#f2f2f2",
+    fontWeight: "bold",
+    border: "1px solid black",
   };
-
-  //calculation for total reviews recieved
-  let totalReviewsForQuestion1: number = 0;
-  dummyDataRounds.forEach((round) => {
-    round.forEach((question) => {
-      if (question.questionNumber === "1") {
-        totalReviewsForQuestion1 += question.reviews.length;
-      }
-    });
-  });
-  //calculation for total feedback recieved
-  let totalfeedbackForQuestion1: number = 0;
-  dummyauthorfeedback.forEach((round) => {
-    round.forEach((question) => {
-      if (question.questionNumber === "1") {
-        totalfeedbackForQuestion1 += question.reviews.length;
-      }
-    });
-  });
 
   const subHeaderCellStyle: React.CSSProperties = {
-    padding: "10px",
-    textAlign: "center",
+    padding: "8px",
+    backgroundColor: "#ffffff",
+    fontWeight: "normal",
+    border: "1px solid black",
   };
 
+  // Calculate total number of reviews for the first question
+  // const totalReviewsForQuestion1 = Object.values(summary).reduce((sum, reviewee) => {
+  //   return sum + (reviewee["What is the main purpose of this feature?"]?.length || 0);
+  // }, 0);
+
   return (
-    <div className="table-container mb-6">
+    <div className="table-container">
+      {/* <h2>Review Statistics</h2> */}
+
+      {/* <p>Total Reviews for Question 1: {totalReviewsForQuestion1}</p> */}
+      {/* <p>Review Score Count: {review_score_count}</p> */}
       <h5 className="font-semibold">Round Summary</h5>
       <table className="tbl_heat">
         <thead>
           <tr>
-            <th>Round</th>
-            <th>Submitted Work (Avg)</th>
-            <th>Author Feedback (Avg)</th>
-            <th>Teammate Review (Avg)</th>
-            <th>Final Score</th>
+            <th style={headerCellStyle}>Round</th>
+            <th style={headerCellStyle}>Submitted Work (Avg)</th>
+            <th style={headerCellStyle}>Author Feedback (Avg)</th>
+            <th style={headerCellStyle}>Teammate Review (Avg)</th>
+            <th style={headerCellStyle}>Final Score</th>
           </tr>
         </thead>
         <tbody>
-          {dummyDataRounds.map((roundData, index) => {
-            // Calculate averages for each category using data from utils or manually.
-            const submittedWorkAvg = calculateAverages(roundData, "asc").averagePeerReviewScore;
-            const authorFeedbackAvg =
-              dummyauthorfeedback[index]?.reduce((acc, item) => {
-                const questionScoreSum = item.reviews.reduce(
-                  (sum, review) => sum + review.score,
-                  0
-                );
-                return acc + questionScoreSum / item.reviews.length;
-              }, 0) / dummyauthorfeedback[index].length;
+        {Object.entries(avg_scores_by_round).map(([round, submittedAvg]) => {
+            const submittedWorkAvg = submittedAvg; // always a number
 
-            const teammateReviewAvg =
-              teammateData[index]?.reviews.reduce((acc, review) => acc + review.score, 0) /
-              teammateData[index]?.reviews.length;
-
-            const finalScore = (
-              (Number(submittedWorkAvg) + Number(authorFeedbackAvg) + Number(teammateReviewAvg)) /
-              3
-            ).toFixed(2); // Average of all three categories
+            const finalScore = submittedWorkAvg ?? "N/A"; // <-- this fixes the error
 
             return (
-              <tr key={index}>
-                <td>Round {index + 1}</td>
-                <td>{Number(submittedWorkAvg).toFixed(2)}</td>
-                <td>{authorFeedbackAvg?.toFixed(2) || "N/A"}</td>
-                <td>{teammateReviewAvg?.toFixed(2) || "N/A"}</td>
-                <td>{finalScore}</td>
+              <tr key={round}>
+                <td style={subHeaderCellStyle}>{`Round ${round}`}</td>
+                <td style={subHeaderCellStyle}>{submittedWorkAvg}</td>
+                <td style={subHeaderCellStyle}>N/A</td>
+                <td style={subHeaderCellStyle}>N/A</td>
+                <td style={subHeaderCellStyle}>{finalScore}</td>
               </tr>
             );
           })}
