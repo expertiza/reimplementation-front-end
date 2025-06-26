@@ -4,16 +4,12 @@ import { Col, Pagination as BPagination, Row } from "react-bootstrap";
 import Input from "../Input";
 import Select from "../Select";
 
-/**
- * @author Ankur Mundra on May, 2023
- */
-
 interface PaginationProps {
   nextPage: () => void;
   previousPage: () => void;
   canNextPage: () => boolean;
   canPreviousPage: () => boolean;
-  setPageIndex: (pageIndex: number) => void;
+  setPageIndex: (updater: number | ((pageIndex: number) => number)) => void;
   setPageSize: (pageSize: number) => void;
   getPageCount: () => number;
   getState: () => TableState;
@@ -30,6 +26,28 @@ const Pagination: React.FC<PaginationProps> = (props) => {
     getPageCount,
     getState,
   } = props;
+
+  const totalPages = getPageCount();
+  const isPaginationDisabled = totalPages <= 1;
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+    const pageSize =
+      selectedValue === `${Number.MAX_SAFE_INTEGER}`
+        ? Number.MAX_SAFE_INTEGER // Show all (effectively no pagination)
+        : Number(selectedValue);
+    
+    setPageSize(pageSize);
+
+    // Reset to the first page when "Show All" is selected
+    if (pageSize === Number.MAX_SAFE_INTEGER) {
+      setPageIndex(0);
+    }
+  };
+
+  // Handle case when "Show All" is selected and pagination is disabled
+  if (isPaginationDisabled && getState().pagination.pageSize !== Number.MAX_SAFE_INTEGER) return null;
+
   return (
     <Row className="justify-content-center">
       <Col xs="auto">
@@ -38,14 +56,11 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           <BPagination.Prev onClick={() => previousPage()} disabled={!canPreviousPage()} />
           <BPagination.Next onClick={() => nextPage()} disabled={!canNextPage()} />
           <BPagination.Last
-            onClick={() => setPageIndex(getPageCount() - 1)}
+            onClick={() => setPageIndex(totalPages - 1)}
             disabled={!canNextPage()}
           />
         </BPagination>
       </Col>
-      {/*<Col xs="auto">*/}
-      {/*  {`Page ${getState().pagination.pageIndex + 1} of ${getPageCount()}`}*/}
-      {/*</Col>*/}
       <Col xs="auto">
         <Input
           id="columnFilter"
@@ -53,7 +68,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           input={{
             type: "number",
             min: "1",
-            max: getPageCount(),
+            max: totalPages,
             defaultValue: getState().pagination.pageIndex + 1,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
               const page = e.target.value ? Number(e.target.value) - 1 : 0;
@@ -69,11 +84,11 @@ const Pagination: React.FC<PaginationProps> = (props) => {
             { label: "Show 10", value: "10" },
             { label: "Show 25", value: "25" },
             { label: "Show 50", value: "50" },
+            { label: "Show All", value: `${Number.MAX_SAFE_INTEGER}` }, // Add "Show All" with a large value
           ]}
           input={{
             value: getState().pagination.pageSize,
-            onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPageSize(Number(e.target.value)),
+            onChange: handlePageSizeChange, // Call the handlePageSizeChange function
           }}
         />
       </Col>
@@ -81,4 +96,10 @@ const Pagination: React.FC<PaginationProps> = (props) => {
   );
 };
 
-export default Pagination;
+const PaginationWrapper: React.FC<PaginationProps> = (props) => {
+  const totalPages = props.getPageCount();
+  if (totalPages <= 1 && props.getState().pagination.pageSize !== Number.MAX_SAFE_INTEGER) return null;
+  return <Pagination {...props} />;
+};
+
+export default PaginationWrapper;
