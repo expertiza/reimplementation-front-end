@@ -1,16 +1,16 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns";
-import { BsFileText } from "react-icons/bs";
-import DeleteAssignment from "./AssignmentDelete";
-import { IAssignmentResponse } from "../../utils/interfaces";
-import { RootState } from "../../store/store";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
-import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { BsFileText } from "react-icons/bs";
+import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { alertActions } from "store/slices/alertSlice";
+import { RootState } from "../../store/store";
+import { IAssignmentResponse } from "../../utils/interfaces";
+import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns";
+import DeleteAssignment from "./AssignmentDelete";
 
 
 const Assignments = () => {
@@ -30,6 +30,25 @@ const Assignments = () => {
     visible: boolean;
     data?: IAssignmentResponse;
   }>({ visible: false });
+
+  /**
+   * At this moment the backend has deviated substantially from what the frontend
+   * assignment creator provides. However, the backend also does not accept an instructor_id
+   * when creating an assignment which is a required field so there is no way to create an 
+   * assignment using the frontend. This function is a placeholder to generate fake assignments
+   * until the backend is updated to allow for the creation of assignments.
+   */
+  const generateFakeAssignments = useCallback(() => {
+    return Array.from({ length: 10 + Math.floor(Math.random() * 10) }, (_, idx) => ({
+      id: idx + 1000,
+      name: "Fake Assignment " + (idx + 1),
+      description: "This is a fake assignment",
+      course_id: idx + 999,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      courseName: "Fake Course " + (idx + 1),
+    }));
+  }, []);
 
 
   const fetchData = useCallback(async () => {
@@ -58,9 +77,11 @@ const Assignments = () => {
       const course = coursesResponse.data.find((c: any) => c.id === assignment.course_id);
       return { ...assignment, courseName: course ? course.name : 'Unknown' };
     });
+  
+    const fakeAssignments = generateFakeAssignments();
+    mergedData = mergedData.concat(fakeAssignments);
   }
-
-
+  
 
   // Error alert
   useEffect(() => {
@@ -118,7 +139,6 @@ const Assignments = () => {
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-
               }}
             />
           </Row>
