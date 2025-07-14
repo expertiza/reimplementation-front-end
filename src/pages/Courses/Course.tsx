@@ -23,6 +23,7 @@ import { formatDate, mergeDataAndNames } from "./CourseUtil";
 
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
+  const {data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -47,6 +48,7 @@ const Courses = () => {
     // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
     if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible) {
       fetchCourses({ url: `/courses` });
+      fetchAssignments({ url: `/assignments` })
       // ToDo: Remove this API call later after the above ToDo is completed
       fetchInstitutions({ url: `/institutions` });
     }
@@ -97,12 +99,12 @@ const Courses = () => {
   );
 
   const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
-	return (
-	  <CourseAssignments
-		courseId={row.original.id}
-		courseName={row.original.name}
-	  />
-	);
+  return (
+    <CourseAssignments
+    courseId={row.original.id}
+    courseName={row.original.name}
+    />
+  );
   }, []);
 
   const tableColumns = useMemo(
@@ -111,21 +113,9 @@ const Courses = () => {
   );
 
   let tableData = useMemo(
-  () => {
-    if (isLoading || !CourseResponse?.data) {
-      // Generate fake courses if no data
-      return Array.from({ length: 5 }, (_, idx) => ({
-        id: 1000 + idx,
-        name: `Course ${idx + 1} - Software Engineering`,
-        institution: { id: 1, name: "Test University" },
-        created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
-    }
-    return CourseResponse.data;
-  },
-  [CourseResponse?.data, isLoading]
-);
+    () => (isLoading || !CourseResponse?.data ? [] : CourseResponse.data),
+    [CourseResponse?.data, isLoading]
+  );
 
   const institutionData = useMemo(
     () => (isLoading || !InstitutionResponse?.data ? [] : InstitutionResponse.data),
@@ -187,3 +177,16 @@ const Courses = () => {
 };
 
 export default Courses;
+
+
+
+
+
+
+
+
+
+
+
+
+
