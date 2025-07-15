@@ -1,6 +1,8 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import React from 'react';
+import useAPI from "hooks/useAPI";
+import { useCallback, useEffect, useState } from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
 
 interface ActionHandler {
@@ -16,6 +18,9 @@ interface CourseAssignmentsProps {
 }
 
 const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName }) => {
+  const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
+  const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
+ 
   const actionHandlers: ActionHandler[] = [
     {
       icon: '/assets/icons/edit-temp.png',
@@ -99,17 +104,9 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     }
   ];
 
-  const generateFakeAssignments = () => {
-    const numAssignments = 3 + Math.floor(Math.random() * 3);
-    return Array.from({ length: numAssignments }, (_, idx) => ({
-      id: parseInt(`${courseId}${idx}`),
-      name: `Assignment ${idx + 1} for ${courseName}`,
-      courseName: courseName,
-      description: "This is a fake assignment",
-      created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
-  };
+  useEffect(() => {
+    fetchAssignments({ url: `/assignments` });
+  }, [fetchAssignments]);
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
     const baseColumns = getBaseAssignmentColumns(() => {}, () => {}).filter(col => 
@@ -117,34 +114,34 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     );
     
     const actionsColumn = {
-		id: 'actions',
-		header: 'Actions',
-		cell: ({ row }: { row: TRow<any> }) => (
-		  <div className="d-flex gap-1" style={{ minWidth: 'max-content' }}>
-			{actions.map((action, index) => (
-			  <button
-				key={index}
-				onClick={() => action.handler(row)}
-				className="btn btn-link p-0"
-				title={action.label}
-				style={{ lineHeight: 0 }}
-			  >
-				<img 
-				  src={action.icon} 
-				  alt={action.label} 
-				  width="21" 
-				  height="21"
-				/>
-			  </button>
-			))}
-		  </div>
-		)
-	  };
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }: { row: TRow<any> }) => (
+      <div className="d-flex gap-1" style={{ minWidth: 'max-content' }}>
+      {actions.map((action, index) => (
+        <button
+        key={index}
+        onClick={() => action.handler(row)}
+        className="btn btn-link p-0"
+        title={action.label}
+        style={{ lineHeight: 0 }}
+        >
+        <img 
+          src={action.icon} 
+          alt={action.label} 
+          width="21" 
+          height="21"
+        />
+        </button>
+      ))}
+      </div>
+    )
+    };
 
     return [...baseColumns, actionsColumn];
   };
 
-  const assignments = generateFakeAssignments();
+  const assignments = assignmentResponse?.data || [];
   const columns = getAssignmentColumns(actionHandlers);
 
   return (
