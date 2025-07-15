@@ -12,16 +12,18 @@ import { ICourseResponse, ROLE } from "../../utils/interfaces";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
+import CourseAssignments from "./CourseAssignments";
 import { formatDate, mergeDataAndNames } from "./CourseUtil";
-
-// Courses Component: Displays and manages courses, including CRUD operations.
 
 /**
  * @author Atharva Thorve, on December, 2023
  * @author Mrityunjay Joshi on December, 2023
+ * @author Mark Feng on December, 2024
  */
+
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
+  const {data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -46,6 +48,7 @@ const Courses = () => {
     // ToDo: Fix this API in backend so that it the institution name along with the id. Similar to how it is done in users.
     if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible) {
       fetchCourses({ url: `/courses` });
+      fetchAssignments({ url: `/assignments` })
       // ToDo: Remove this API call later after the above ToDo is completed
       fetchInstitutions({ url: `/institutions` });
     }
@@ -95,6 +98,15 @@ const Courses = () => {
     []
   );
 
+  const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+  return (
+    <CourseAssignments
+    courseId={row.original.id}
+    courseName={row.original.name}
+    />
+  );
+  }, []);
+
   const tableColumns = useMemo(
     () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
@@ -117,8 +129,6 @@ const Courses = () => {
     created_at: formatDate(item.created_at),
     updated_at: formatDate(item.updated_at),
   }));
-
-  // Render the Courses component
 
   return (
     <>
@@ -156,6 +166,8 @@ const Courses = () => {
                 id: false,
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
+              renderSubComponent={renderSubComponent}
+              getRowCanExpand={() => true}
             />
           </Row>
         </Container>
