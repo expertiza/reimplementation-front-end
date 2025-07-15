@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { getColorClass } from './utils'; // Importing utility functions
-import { ReviewData } from './App'; // Importing the ReviewData interface from App
+import React, { useState, useEffect } from "react";
+import { getColorClass } from "./utils"; // Importing utility functions
+import { ReviewData } from "./App"; // Importing the ReviewData interface from App
 
 // Props interface for ReviewTableRow component
 interface ReviewTableRowProps {
@@ -10,7 +10,6 @@ interface ReviewTableRowProps {
 
 // Functional component ReviewTableRow
 const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion }) => {
-
   return (
     <tr className={row.maxScore === 1 ? "no-bg" : ""}>
       {/* Question Number */}
@@ -24,10 +23,8 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{row.questionNumber}
         </div>
       </td>
-          {/* Toggle Question */}
-      {showToggleQuestion && (
-        <td className="text-center" >{row.questionText}</td>
-      )}
+      {/* Toggle Question */}
+      {showToggleQuestion && <td className="text-center">{row.questionText}</td>}
 
       {/* Review Cells */}
       {row.reviews.map((review, idx) => (
@@ -36,7 +33,11 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, showToggleQuestion
           className={`py-2 px-4 text-center ${getColorClass(review.score, row.maxScore)}`}
           data-question={review.comment}
         >
-          <span style={{ textDecoration: review.comment ? "underline" : "none" }}>{review.score}</span>
+          <span
+            style={{ textDecoration: review.comment ? "underline" : "none", fontWeight: "bold" }}
+          >
+            {review.score}
+          </span>
         </td>
       ))}
 
