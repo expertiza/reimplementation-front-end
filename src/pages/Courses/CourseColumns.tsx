@@ -33,6 +33,35 @@ export const courseColumns = (
     enableGlobalFilter: true,
   }),
 
+  columnHelper.accessor("institution.name", {
+    id: "institution",
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Institution
+      </span>
+    ),
+    cell: ({ row }) => {
+      const institution = row.original.institution;
+      return (
+        <div className="text-start py-2">
+          <span>
+            {institution && institution.name ? (
+              institution.name
+            ) : (
+              <Badge bg="danger">Unassigned</Badge>
+            )}
+          </span>
+        </div>
+      );
+    },
+    enableSorting: true,
+    enableColumnFilter: true,
+    enableGlobalFilter: true,
+  }),
+
   columnHelper.accessor("instructor.name", {
     id: "instructor",
     header: () => (
