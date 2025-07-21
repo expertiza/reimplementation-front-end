@@ -1,81 +1,214 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
-import { Button } from "react-bootstrap";
-import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
-import { MdContentCopy, MdDelete } from "react-icons/md";
+import { Button, Tooltip, OverlayTrigger, Badge } from "react-bootstrap";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
-/**
- * @author Atharva Thorve, on December, 2023
- * @author Mrityunjay Joshi on December, 2023
- */
 
-// Course Columns Configuration: Defines the columns for the courses table
 type Fn = (row: Row<ICourse>) => void;
+
 const columnHelper = createColumnHelper<ICourse>();
-export const courseColumns = (handleEdit: Fn, handleDelete: Fn, handleTA: Fn, handleCopy: Fn) => [
-  // Column for the course name
+
+export const courseColumns = (
+  handleEdit: Fn,
+  handleDelete: Fn,
+  handleTA: Fn,
+  handleCopy: Fn
+) => [
   columnHelper.accessor("name", {
     id: "name",
-    header: "Name",
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Course Name
+      </span>
+    ),
+    cell: (info) => (
+      <div className="text-start py-2">
+        <span style={{ color: "#000000" }}>{info.getValue()}</span>
+      </div>
+    ),
+    enableSorting: true,
+    enableColumnFilter: true,
+    enableGlobalFilter: true,
+  }),
+
+  columnHelper.accessor("institution.name", {
+    id: "institution",
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Institution
+      </span>
+    ),
+    cell: ({ row }) => {
+      const institution = row.original.institution;
+      return (
+        <div className="text-start py-2">
+          <span>
+            {institution && institution.name ? (
+              institution.name
+            ) : (
+              <Badge bg="danger">Unassigned</Badge>
+            )}
+          </span>
+        </div>
+      );
+    },
+    enableSorting: true,
+    enableColumnFilter: true,
+    enableGlobalFilter: true,
+  }),
+
+  columnHelper.accessor("instructor.name", {
+    id: "instructor",
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Instructor
+      </span>
+    ),
+    cell: ({ row }) => {
+      const instructor = row.original.instructor;
+      return (
+        <div className="text-start py-2">
+          <span>
+            {instructor && instructor.name ? (
+              instructor.name
+            ) : (
+              <Badge bg="danger">Unassigned</Badge>
+            )}
+          </span>
+        </div>
+      );
+    },
+    enableSorting: true,
+    enableColumnFilter: true,
+    enableGlobalFilter: true,
+  }),
+
+  columnHelper.accessor("created_at", {
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Creation Date
+      </span>
+    ),
+    cell: (info) => (
+      <div className="text-start py-2">
+        <span>
+          {new Date(info.getValue()).toLocaleDateString() || (
+            <Badge bg="secondary">N/A</Badge>
+          )}
+        </span>
+      </div>
+    ),
+    enableSorting: true,
+    enableColumnFilter: true,
+    enableGlobalFilter: true,
+  }),
+
+  columnHelper.accessor("updated_at", {
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Updated Date
+      </span>
+    ),
+    cell: (info) => (
+      <div className="text-start py-2">
+        <span>
+          {new Date(info.getValue()).toLocaleDateString() || (
+            <Badge bg="secondary">N/A</Badge>
+          )}
+        </span>
+      </div>
+    ),
     enableSorting: true,
     enableColumnFilter: true,
     enableGlobalFilter: false,
   }),
 
-  // Column for the institution name
-  columnHelper.accessor("institution.name", {
-    id: "institution",
-    header: "Institution",
-    enableSorting: true,
-    enableMultiSort: true,
-    enableGlobalFilter: false,
-  }),
-
-  // Column for the creation date
-  columnHelper.accessor("created_at", {
-    header: "Creation Date",
-    enableSorting: true,
-    enableColumnFilter: false,
-    enableGlobalFilter: false,
-  }),
-
-  // Column for the last updated date
-  columnHelper.accessor("updated_at", {
-    header: "Updated Date",
-    enableSorting: true,
-    enableColumnFilter: false,
-    enableGlobalFilter: false,
-  }),
-
-  // Actions column with edit, delete, TA, and copy buttons
   columnHelper.display({
     id: "actions",
-    header: "Actions",
+    header: () => (
+      <span
+        className="text-start fw-bold"
+        style={{ color: "#000000", fontSize: "1.17em" }}
+      >
+        Actions
+      </span>
+    ),
     cell: ({ row }) => (
-      <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
-        </Button>
-        <Button
-          variant="outline-danger"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleDelete(row)}
-        >
-          <MdDelete />
-        </Button>
-        <Button variant="outline-info" size="sm" className="ms-sm-2" onClick={() => handleTA(row)}>
-          <BsPersonXFill />
-        </Button>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleCopy(row)}
-        >
-          <MdContentCopy />
-        </Button>
-      </>
+      <div className="d-flex justify-content-start gap-2 py-2">
+        <OverlayTrigger overlay={<Tooltip>Edit Course</Tooltip>}>
+          <Button
+            variant="link"
+            onClick={() => handleEdit(row)}
+            aria-label="Edit Course"
+            className="p-0"
+          >
+            <img
+              src={process.env.PUBLIC_URL + "/assets/images/edit-icon-24.png"}
+              alt="Edit"
+              style={{ width: "25px", height: "20px" }}
+            />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger overlay={<Tooltip>Delete Course</Tooltip>}>
+          <Button
+            variant="link"
+            onClick={() => handleDelete(row)}
+            aria-label="Delete Course"
+            className="p-0"
+          >
+            <img
+              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              alt="Delete"
+              style={{ width: "25px", height: "20px" }}
+            />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger overlay={<Tooltip>Assign TA</Tooltip>}>
+          <Button
+            variant="link"
+            onClick={() => handleTA(row)}
+            aria-label="Assign TA"
+            className="p-0"
+          >
+            <img
+              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              alt="Assign TA"
+              style={{ width: "25px", height: "20px" }}
+            />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger overlay={<Tooltip>Copy Course</Tooltip>}>
+          <Button
+            variant="link"
+            onClick={() => handleCopy(row)}
+            aria-label="Copy Course"
+            className="p-0"
+          >
+            <img
+              src={"/assets/images/Copy-icon-24.png"}
+              alt="Copy"
+              style={{ width: "35px", height: "25px" }}
+            />
+          </Button>
+        </OverlayTrigger>
+      </div>
     ),
   }),
 ];

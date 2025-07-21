@@ -3,11 +3,11 @@ import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "hooks/useAPI";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
+import { alertActions } from "store/slices/alertSlice"; // Success message utility
 import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
 import { RootState } from "../../store/store";
@@ -15,17 +15,19 @@ import { IEditor, ROLE } from "../../utils/interfaces";
 import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transformCourseRequest } from "./CourseUtil";
 
 /**
- * @author Atharva Thorve, on December, 2023
- * @author Mrityunjay Joshi, on December, 2023
+ * @author Suraj Raghu Kumar, on Oct, 2024 
+ * @author Yuktasree Muppala on Oct, 2024
+ * @author Harvardhan Patil on Oct, 2024
  */
+ 
 
-// CourseEditor Component: Modal for creating or updating a course.
+// Initial form values
 const initialValues: ICourseFormValues = {
   name: "",
   directory: "",
   private: [],
-  institution_id: -1,
-  instructor_id: -1,
+  institution_id: 0,
+  instructor_id: 0,
   info: "",
 };
 
@@ -44,37 +46,89 @@ const validationSchema = Yup.object({
 });
 
 const CourseEditor: React.FC<IEditor> = ({ mode }) => {
-
-  // API hook for making requests
   const { data: courseResponse, error: courseError, sendRequest } = useAPI();
+  const { data: users, sendRequest: fetchusers } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
-  const { courseData, institutions, instructors }: any = useLoaderData();
+  const { courseData, institutions }: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  console.log(courseData)
+  interface IFormOption {
+    label: string;
+    value: string;
+  }
 
-  initialValues.institution_id = auth.user.institution_id;
+  const [filteredInstructors, setFilteredInstructors] = useState<IFormOption[]>([]);
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<number | null>(null);
 
-  // Close the modal if the course is updated successfully and navigate to the courses page
+  // Fetch all users or restrict based on the logged-in role
   useEffect(() => {
-    if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
-      dispatch(
-        alertActions.showAlert({
-          variant: "success",
-          message: `Course ${courseData.name} ${mode}d successfully!`,
-        })
-      );
-      navigate(location.state?.from ? location.state.from : "/courses");
+    if (auth.user.role === ROLE.INSTRUCTOR.valueOf()) {
+      setSelectedInstitutionId(auth.user.institution_id);
+      setFilteredInstructors([
+        { label: auth.user.name, value: String(auth.user.id) },
+      ]);
+    } else {
+      fetchusers({ url: "/users" });
     }
-  }, [dispatch, mode, navigate, courseData.name, courseResponse, location.state?.from]);
-
-  // Show the error message if the course is not updated successfully
+  }, [auth.user, fetchusers]);
+  
+  
+  // Filter instructors based on selected institution
   useEffect(() => {
-    courseError && dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
-  }, [courseError, dispatch]);
+
+    if (users) {
+      const instructorsList: IFormOption[] = [{ label: 'Select an Instructor', value: '' }];
+      
+      // Filter by instructors by institution
+      const onlyInstructors = users.data.filter((user: any) => 
+        (user.role.name === 'Instructor')&& (user.institution.id === selectedInstitutionId)); 
+      //console.log('Users:', users.data)
+      onlyInstructors.forEach((instructor: any) => {
+        instructorsList.push({ label: instructor.name, value: String(instructor.id) });
+      });
+      
+      setFilteredInstructors(instructorsList);
+
+    }
+  }, [users, selectedInstitutionId]); // Re-run this effect when users or selectedInstitutionId changes
+  
+
+  // Handle institution selection change
+const handleInstitutionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const institutionId = Number(event.target.value);
+  setSelectedInstitutionId(institutionId);
+};
+// Success handler for course submission
+const handleCourseSuccess = () => {
+  if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
+    dispatch(
+      alertActions.showAlert({
+        variant: "success",
+        message: `Course ${courseData.name} ${mode}d successfully!`,
+      })
+    );
+    navigate(location.state?.from ? location.state.from : "/courses");
+  }
+};
+// Error handler for course submission
+const handleCourseError = () => {
+  if (courseError) {
+    dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
+  }
+};
+// useEffect to monitor success response
+useEffect(() => {
+  handleCourseSuccess();
+}, [courseResponse]);
+// useEffect to monitor error response
+useEffect(() => {
+  handleCourseError();
+}, [courseError]);
 
   // Function to handle form submission
   const onSubmit = (values: ICourseFormValues, submitProps: FormikHelpers<ICourseFormValues>) => {
@@ -87,19 +141,22 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
     }
 
     // to be used to display message when course is created
+    
     courseData.name = values.name;
+    
     sendRequest({
       url: url,
       method: method,
       data: values,
       transformRequest: transformCourseRequest,
     });
+
     submitProps.setSubmitting(false);
   };
 
   // Function to close the modal
+  console.log(filteredInstructors)
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
-
   // Render the CourseEditor modal
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -108,14 +165,37 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
       </Modal.Header>
       <Modal.Body>
         {courseError && <p className="text-danger">{courseError}</p>}
+        
         <Formik
-          initialValues={mode === "update" ? courseData : initialValues}
+          
+          
+          initialValues={
+              mode === "update"
+                ? {
+                    ...courseData,
+                    institution_id: courseData.institution_id || initialValues.institution_id,
+                    instructor_id: courseData.instructor_id || initialValues.instructor_id,
+                  }
+                : {
+                    ...initialValues,
+                    institution_id:
+                      auth.user.role === ROLE.INSTRUCTOR.valueOf()
+                        ? auth.user.institution_id
+                        : initialValues.institution_id,
+                    instructor_id:
+                      auth.user.role === ROLE.INSTRUCTOR.valueOf()
+                        ? auth.user.id
+                        : initialValues.instructor_id,
+                  }
+            }
+            
           onSubmit={onSubmit}
           validationSchema={validationSchema}
-          validateOnChange={false}
+          validateOnChange={true}
           enableReinitialize={true}
         >
           {(formik) => {
+
             return (
               <Form>
                 <FormSelect
@@ -126,16 +206,28 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   inputGroupPrepend={
                     <InputGroup.Text id="course-inst-prep">Institution</InputGroup.Text>
                   }
+
+                  onChange={handleInstitutionChange} // Add onChange to handle institution selection
                 />
                 <FormSelect
-                  controlId="course-instructor"
-                  name="instructor_id"
-                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
-                  options={instructors}
-                  inputGroupPrepend={
-                    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
-                  }
-                />
+  controlId="course-instructor"
+  name="instructor_id"
+  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
+  options={
+    mode === "update" && courseData?.instructor_id && auth.user.role == ROLE.SUPER_ADMIN.valueOf()
+      ? [
+          { 
+            label: users?.data.find((user: any) => String(user.id) === String(courseData.instructor_id))?.name, 
+            value: String(courseData.instructor_id) 
+          },
+          ...filteredInstructors
+        ]
+      : filteredInstructors
+  }
+  inputGroupPrepend={
+    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
+  }
+/>
                 <FormInput
                   controlId="name"
                   label="Name"
@@ -176,5 +268,4 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
     </Modal>
   );
 };
-
 export default CourseEditor;
