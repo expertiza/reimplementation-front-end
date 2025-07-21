@@ -13,7 +13,7 @@ import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 import { formatDate, mergeDataAndNamesAndInstructors } from "./CourseUtil";
-
+import CourseAssignments from "./CourseAssignments";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
@@ -116,6 +116,15 @@ const Courses = () => {
     []
   );
 
+const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+	return (
+	  <CourseAssignments
+		courseId={row.original.id}
+		courseName={row.original.name}
+	  />
+	);
+  }, []);
+
   const tableColumns = useMemo(
     () =>
       COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
@@ -215,6 +224,8 @@ const Courses = () => {
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
                 instructor: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
               }}
+              renderSubComponent={renderSubComponent}
+              getRowCanExpand={() => true}
             />
           </Row>
         </Container>
