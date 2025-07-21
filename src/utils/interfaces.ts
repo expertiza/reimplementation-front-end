@@ -142,6 +142,11 @@ export interface IInstitutionResponse {
   name: string;
 }
 
+export interface IInstructorResponse {
+  id: number;
+  name: string;
+}
+
 export enum ROLE {
   SUPER_ADMIN = "Super Administrator",
   ADMIN = "Administrator",
