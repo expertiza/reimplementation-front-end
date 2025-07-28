@@ -148,14 +148,14 @@ export const formatDate = (dateString: string): string => {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
-// Function to merge course data with their respective institution and instructor data
+//For the course to be displayed, find the corresponding institution and instructor.
 export const mergeDataAndNamesAndInstructors = (data: ICourseResponse[], institutionNames: IInstitutionResponse[], instructorNames: IInstructorResponse[]): any => {
   return data.map((dataObj) => {
-    // Merge institution data
+    // Find institution data from institution id of course
     const matchingInstitution = institutionNames.find((nameObj) => nameObj.id === dataObj.institution_id);
     const institutionData = matchingInstitution ? { id: matchingInstitution.id, name: matchingInstitution.name } : {};
 
-    // Merge instructor data
+    // Find instructor data from instructor id of course
     const matchingInstructor = instructorNames.find((instructorObj) => instructorObj.id === dataObj.instructor_id);
     const instructorData = matchingInstructor ? { id: matchingInstructor.id, name: matchingInstructor.name } : {};
 

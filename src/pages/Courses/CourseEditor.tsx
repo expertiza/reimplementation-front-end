@@ -56,53 +56,12 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(courseData)
-  interface IFormOption {
-    label: string;
-    value: string;
-  }
 
-  const [filteredInstructors, setFilteredInstructors] = useState<IFormOption[]>([]);
-  const [selectedInstitutionId, setSelectedInstitutionId] = useState<number | null>(null);
-
-  // Fetch all users or restrict based on the logged-in role
-  useEffect(() => {
-    if (auth.user.role === ROLE.INSTRUCTOR.valueOf()) {
-      setSelectedInstitutionId(auth.user.institution_id);
-      setFilteredInstructors([
-        { label: auth.user.name, value: String(auth.user.id) },
-      ]);
-    } else {
+ useEffect(() => {
+    
       fetchusers({ url: "/users" });
-    }
+    
   }, [auth.user, fetchusers]);
-  
-  
-  // Filter instructors based on selected institution
-  useEffect(() => {
-
-    if (users) {
-      const instructorsList: IFormOption[] = [{ label: 'Select an Instructor', value: '' }];
-      
-      // Filter by instructors by institution
-      const onlyInstructors = users.data.filter((user: any) => 
-        (user.role.name === 'Instructor')&& (user.institution.id === selectedInstitutionId)); 
-      //console.log('Users:', users.data)
-      onlyInstructors.forEach((instructor: any) => {
-        instructorsList.push({ label: instructor.name, value: String(instructor.id) });
-      });
-      
-      setFilteredInstructors(instructorsList);
-
-    }
-  }, [users, selectedInstitutionId]); // Re-run this effect when users or selectedInstitutionId changes
-  
-
-  // Handle institution selection change
-const handleInstitutionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  const institutionId = Number(event.target.value);
-  setSelectedInstitutionId(institutionId);
-};
 // Success handler for course submission
 const handleCourseSuccess = () => {
   if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
@@ -141,7 +100,6 @@ useEffect(() => {
     }
 
     // to be used to display message when course is created
-    
     courseData.name = values.name;
     
     sendRequest({
@@ -155,7 +113,6 @@ useEffect(() => {
   };
 
   // Function to close the modal
-  console.log(filteredInstructors)
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
   // Render the CourseEditor modal
   return (
@@ -169,25 +126,14 @@ useEffect(() => {
         <Formik
           
           
-          initialValues={
-              mode === "update"
-                ? {
-                    ...courseData,
-                    institution_id: courseData.institution_id || initialValues.institution_id,
-                    instructor_id: courseData.instructor_id || initialValues.instructor_id,
-                  }
-                : {
-                    ...initialValues,
-                    institution_id:
-                      auth.user.role === ROLE.INSTRUCTOR.valueOf()
-                        ? auth.user.institution_id
-                        : initialValues.institution_id,
-                    instructor_id:
-                      auth.user.role === ROLE.INSTRUCTOR.valueOf()
-                        ? auth.user.id
-                        : initialValues.instructor_id,
-                  }
-            }
+         initialValues={{
+          ...courseData,
+          private: courseData.private || [], // Ensure array default
+          institution_id: courseData.institution_id 
+            ?? (auth.user?.institution_id ?? initialValues.institution_id),
+          instructor_id: courseData.instructor_id 
+            ?? (auth.user?.id ?? initialValues.instructor_id),
+        }}
             
           onSubmit={onSubmit}
           validationSchema={validationSchema}
@@ -201,33 +147,33 @@ useEffect(() => {
                 <FormSelect
                   controlId="course-institution"
                   name="institution_id"
-                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
-                  options={institutions}
+                  disabled={true}
+                  options={
+                    institutions.map((i: any) => ({
+                      label: i.label,
+                      value: String(i.value)
+                    }))
+                  }
                   inputGroupPrepend={
                     <InputGroup.Text id="course-inst-prep">Institution</InputGroup.Text>
                   }
-
-                  onChange={handleInstitutionChange} // Add onChange to handle institution selection
                 />
                 <FormSelect
-  controlId="course-instructor"
-  name="instructor_id"
-  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
-  options={
-    mode === "update" && courseData?.instructor_id && auth.user.role == ROLE.SUPER_ADMIN.valueOf()
-      ? [
-          { 
-            label: users?.data.find((user: any) => String(user.id) === String(courseData.instructor_id))?.name, 
-            value: String(courseData.instructor_id) 
-          },
-          ...filteredInstructors
-        ]
-      : filteredInstructors
-  }
-  inputGroupPrepend={
-    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
-  }
-/>
+                  controlId="course-instructor"
+                  name="instructor_id"
+                  disabled={true}
+                  options={
+                    users?.data
+                      ?.filter((user: any) => user.role.name === "Instructor")
+                      .map((user: any) => ({
+                        label: user.name,
+                        value: String(user.id),
+                      })) || []
+                  }
+                  inputGroupPrepend={
+                    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
+                  }
+                />
                 <FormInput
                   controlId="name"
                   label="Name"
