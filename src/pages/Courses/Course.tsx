@@ -217,4 +217,4 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
   );
 };
 
-export  { Courses };
+export default Courses;
