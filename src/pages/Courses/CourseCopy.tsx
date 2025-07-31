@@ -83,6 +83,4 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
     </Modal>
   );
 };
-
-
 export default CopyCourse;
