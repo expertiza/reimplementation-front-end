@@ -62,7 +62,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
       fetchusers({ url: "/users" });
     
   }, [auth.user, fetchusers]);
-// Success handler for course submission
+// Success handler for course editing and creating
 const handleCourseSuccess = () => {
   if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
     dispatch(
@@ -74,7 +74,7 @@ const handleCourseSuccess = () => {
     navigate(location.state?.from ? location.state.from : "/courses");
   }
 };
-// Error handler for course submission
+// Error handler for course editing and creating
 const handleCourseError = () => {
   if (courseError) {
     dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
