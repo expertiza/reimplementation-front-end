@@ -32,10 +32,6 @@ const Courses = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // State for course details modal
-  const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
-  const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
-
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: ICourseResponse;
@@ -46,21 +42,7 @@ const Courses = () => {
     data?: ICourseResponse;
   }>({ visible: false });
 
-  // Utility function to handle modals
-  const showModal = (
-    setModalState: React.Dispatch<React.SetStateAction<boolean>>,
-    setData?: (data: ICourse | null) => void,
-    data?: ICourse
-  ) => {
-    if (setData) {
-      setData(data || null);
-    }
-    setModalState(true);
-  };
-
-  const handleShowDetails = (course: ICourse) =>
-    showModal(setShowDetailsModal, setSelectedCourse, course);
-
+  
   useEffect(() => {
     // Ensure the API fetch happens unless modals are active
     if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible) {
@@ -191,7 +173,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
               </h1>
             </Col>
           </Row>
-          // Admin doenot have the option to create a course but he can create an assignment
+          {/* Admin doenot have the option to create a course but he can create an assignment */}
           {auth.user?.role === ROLE.INSTRUCTOR && (
             <Row>
               <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>

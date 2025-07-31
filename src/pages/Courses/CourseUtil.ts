@@ -167,3 +167,4 @@ export const mergeDataAndNamesAndInstructors = (data: ICourseResponse[], institu
     };
   });
 };
+
