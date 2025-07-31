@@ -159,5 +159,4 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     </div>
   );
 };
-
 export default CourseAssignments;

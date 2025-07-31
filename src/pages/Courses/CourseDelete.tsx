@@ -75,5 +75,4 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
     </Modal>
   );
 };
-
 export default DeleteCourse;
