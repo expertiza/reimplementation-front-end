@@ -40,6 +40,11 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import StudentTeams from "pages/Student Teams/student_teams";
+import StudentTeamView from "pages/Student Teams/student_teams";
+import NewTeammateAdvertisement from 'pages/Student Teams/NewTeammateAdvertisement';
+import TeammateReview from 'pages/Student Teams/TeammateReview';
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -105,6 +110,24 @@ function App() {
               loader: loadAssignment,
             },
           ],
+        },
+        {
+          path: "student_teams",
+          element: <ProtectedRoute element={<StudentTeams />} />,
+          children: [
+            {
+              path: "view",
+              element: <StudentTeamView />,
+            },
+          ],
+        },
+        {
+          path: "advertise_for_partner/new",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
         },
         {
           path: "users",
