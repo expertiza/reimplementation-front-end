@@ -1,0 +1,210 @@
+/* Base container styling */
+.container {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+/* Header 1 styling */
+h1 {
+  text-align: left;
+  padding-top: 5px;
+  padding-left: 15px;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.428571429;
+  color: #333333;
+}
+
+/* Table base styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+/* Table, th, and td shared border styling */
+table,
+th,
+td {
+  border: 1px solid #ddd;
+}
+
+/* Table header styling */
+th {
+  background-color: #f8f8f8;
+  color: #333;
+  text-align: left;
+  padding: 8px;
+}
+
+/* Table data cell styling */
+td {
+  padding: 8px;
+  text-align: left;
+}
+
+/* First child of th and td border styling */
+th:first-child,
+td:first-child {
+  border-left: none;
+}
+
+/* Last child of th and td border styling */
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+/* Table row striping for even rows */
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Badge info icon and publishing rights checkbox styling */
+.badge-info-icon,
+.publishing-rights-checkbox {
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+/* Checked state styling for publishing rights checkbox */
+.publishing-rights-checkbox:checked {
+  accent-color: #009688;
+}
+
+/* Table header row font styling */
+thead tr {
+  font-weight: bold;
+}
+
+/* Status indicator icons styling */
+.status-indicator {
+  color: #009688;
+  margin-left: 5px;
+}
+
+/* Disabled state styling for checkboxes */
+input[type="checkbox"][disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Information icon styling in table */
+.info-icon {
+  font-style: normal;
+  color: #017bff;
+  cursor: help;
+}
+
+/* Side information section styling */
+.side-info {
+  color: #333;
+  padding: 10px 0;
+}
+
+/* Number styling in side information section */
+.side-info .number {
+  font-weight: bold;
+  color: #d9534f; /* Red color for the number badge */
+}
+
+/* New styles for the links based on the uploaded image */
+table td {
+  padding: 8px; /* Padding specified in your screenshot */
+  max-width: 100px; /* Adjust the width as needed for your design */
+  white-space: normal;
+  padding: 8px;
+  line-height: 1.428571429;
+  vertical-align: top;
+  border-top: 1px solid #ddd;
+}
+
+/* Table data cell link styling */
+table td a {
+  color: #986633;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  padding: 0px 1px 2px;
+  display: block;
+  margin: 10px 0;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: box-shadow 0.2s ease-in-out, background-color 0.3s;
+}
+
+/* Table data cell link hover and focus styling */
+table td a:hover, table td a:focus {
+  color: #337ab7;
+  text-decoration: underline;
+}
+
+/* Page layout styling */
+.pageLayout {
+  display: flex;
+  margin: 16px;
+}
+
+/* Sidebar styling */
+.sidebar {
+  width: 250px;
+  margin-right: 20px;
+  padding-top: 20px;
+}
+
+/* Main content area styling */
+.mainContent {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* Header below pageLayout styling */
+.header {
+  margin-bottom: 20px;
+}
+
+/* Tasks table styling */
+.tasksTable {
+  width: 100%;
+}
+
+/* Page assignments styling */
+.assignments-page {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Title in assignments page styling */
+.assignments-title {
+  color: #333;
+  text-align: left;
+  padding: 20px;
+  font-size: 24px;
+}
+
+/* Footer section styling */
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+/* Footer link styling */
+.footerLink {
+  margin: 0 10px;
+  color: #986633;
+  text-decoration: none;
+}
+
+/* Footer link hover styling */
+.footerLink:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
+/* Center checkbox in table data cell styling */
+.centerCheckbox {
+  text-align: center;
+  vertical-align: middle;
+}
