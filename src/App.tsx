@@ -40,6 +40,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import ImpersonateUser from "pages/Impersonate/ImpersonateUser";
 function App() {
   const router = createBrowserRouter([
     {
@@ -287,6 +288,10 @@ function App() {
               element: <Questionnaire />,
             },
           ],
+        },
+        {
+          path: "impersonate",
+          element: <ProtectedRoute element={<ImpersonateUser />} />,
         },
         { path: "*", element: <NotFound /> },
         { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
