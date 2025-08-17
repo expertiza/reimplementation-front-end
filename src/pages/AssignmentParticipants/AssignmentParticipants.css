@@ -1,0 +1,268 @@
+/* Container and Header */
+.assignment-participants-container {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 1rem auto;
+}
+
+.assignment-participants-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 1.5rem;
+}
+
+.section-label {
+    display: block;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+/* Search Filter Section */
+.search-filter-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 500;
+    /* Same blue border as filter-select */
+    border: 5px solid #2563eb;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    height: auto;
+    box-sizing: border-box;
+    cursor: text;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    font-weight: 400;
+}
+
+.filter-select {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0 1rem;
+    height: 42px;
+    border: 1px solid #2563eb;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-select:hover {
+    /* Slightly darker shade for hover */
+    border-color: #1d4ed8;
+    /* Soft blue glow */
+    box-shadow: 0 0 5px rgba(29, 78, 216, 0.4);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #1d4ed8;
+    /* Blue focus ring */
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.3);
+}
+
+.filter-select option {
+    font-size: 1rem;
+    padding: 0.5rem;
+}
+
+/* Add User Section */
+.add-user-section {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.user-permissions {
+    display: flex;
+    gap: 1rem;
+}
+
+.permission-yes,
+.permission-no {
+    font-size: 1.5rem;
+    /* Increase icon size */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-input {
+    flex: 1;
+    min-width: 400px;
+    height: 42px;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.user-input::placeholder {
+    color: #aaa;
+    font-weight: 400;
+}
+
+.add-user-button {
+    color: #10b981;
+    min-width: 90px;
+    height: 42px;
+    /* Green tone for positive action */
+    font-weight: 600;
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.4em 0.8em;
+    border-radius: 4px;
+    border-color: #10d6a6;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.add-user-button:hover {
+    color: #059669;
+    /* Darker green shade for hover effect */
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+    text-decoration: none;
+}
+
+.add-user-button:focus {
+    /* Focus ring for accessibility */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4);
+}
+
+/* Role Radio Group Styling */
+.role-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.role-radio-option {
+    padding: 0 0.85rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #333333;
+}
+
+.role-radio-option input {
+    margin-right: 0.25rem;
+}
+
+/* Info Icon Styling */
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    background-color: #4a90e2;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease;
+    z-index: 20;
+}
+
+.info-icon:hover {
+    background-color: #357bd8;
+}
+
+.info-icon:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: -1.5rem;
+    left: auto;
+    right: 0;
+    background-color: #333;
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: normal;
+    transform: translateX(0);
+    z-index: 10;
+    word-wrap: break-word;
+}
+
+/* Role Select and Submit Button */
+.role-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.role-select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+
+    .add-user-section,
+    .user-permissions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .role-radio-group {
+        margin-top: 1rem;
+    }
+
+    .user-input {
+        margin-bottom: 0;
+        width: 100%;
+    }
+}
+
+.error-message {
+    color: #d9534f;
+    background-color: rgba(217, 83, 79, 0.1);
+    font-size: 0.875rem;
+    font-weight: bold;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #d9534f;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0px 4px 6px rgba(217, 83, 79, 0.1);
+}
+
+.error-message::before {
+    content: "⚠️";
+    font-size: 1rem;
+}
