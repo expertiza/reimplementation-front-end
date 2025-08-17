@@ -15,6 +15,7 @@ import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import NotFound from "./router/NotFound";
+import DueDate from "./pages/DueDate/dueDate";
 import Participants from "pages/Participants/Participant";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
@@ -123,6 +124,9 @@ function App() {
           ],
         },
         {
+          path: "duedate",
+          element: <ProtectedRoute element={<DueDate />} leastPrivilegeRole={ROLE.ADMIN} />,
+
           path: "student_tasks/participants",
           element: <Participants type="student_tasks" id={1} />,
           children: [
