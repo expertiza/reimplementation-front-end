@@ -1,95 +1,189 @@
-import React, { useMemo } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
-// import { useNavigate } from 'react-router-dom';
-import { useLoaderData } from 'react-router-dom';
-import Table from "components/Table/Table";
-import { createColumnHelper } from "@tanstack/react-table";
+import React, { useState } from "react";
+import './AssignReviewerStyle.css'; 
+import initialData from "./DummyData.json";
 
-interface IReviewer {
-  id: number;
+interface Reviewer {
   name: string;
+  username: string;
+  status: string;
 }
 
-const columnHelper = createColumnHelper<IReviewer>();
+interface IContributor {
+  name: string;
+  username: string;
+}
+
+interface RowData {
+  topic: string;
+  contributors: IContributor[];  
+  reviewers: Reviewer[];
+}
+
+//Initial data for the table
+const data: RowData[] = initialData as RowData[];
 
 const AssignReviewer: React.FC = () => {
-  const assignment: any = useLoaderData();
-  // const navigate = useNavigate();
+  // State variables for modal, selected topic, contributors, and inputs
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [selectedContributors, setSelectedContributors] = useState<string[]>([]);
+  const [reviewerName, setReviewerName] = useState<string>("");
+  const [reviewerUsername, setReviewerUsername] = useState<string>("");
+  const [tableData, setTableData] = useState<RowData[]>(data);
 
-  // Dummy data for reviewers
-  const reviewers = useMemo(() => [
-    { id: 1, name: 'Reviewer 1' },
-    { id: 2, name: 'Reviewer 2' },
-    { id: 3, name: 'Reviewer 3' },
-    // ...other reviewers
-  ], []);
+  // Opens a pop up window to assign a reviewer, populating topic and contributors
+  const openModal = (topic: string, contributors: IContributor[]) => {
+    const contributorDetails = contributors.map(
+      (contributor) => `${contributor.name} (${contributor.username})`
+    );
 
-  const columns = useMemo(() => [
-    columnHelper.display({
-      id: 'select',
-      header: () => 'Select',
-      cell: () => (
-        <input type="checkbox" style={{ marginLeft: 'auto', marginRight: 'auto', display: 'block' }} /> // Center the checkbox
-      )
-    }),
-    columnHelper.accessor('name', {
-      header: () => 'Reviewer',
-      cell: info => info.getValue()
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: () => 'Action',
-      cell: () => (
-        <Button variant="outline-danger" size="sm">
-          Action
-        </Button>
-      )
-    })
-  ], []);
-
-  const handleAssignReviewers = () => {
-    console.log('Assigned reviewers');
-    // Logic to assign selected reviewers goes here
+    setSelectedTopic(topic);
+    setSelectedContributors(contributorDetails);
+    setModalOpen(true);
   };
 
-  // const handleClose = () => {
-  //   navigate(-1); // Go back to the previous page
-  // };
+  // Closes the pop up window and clears the reviewer name and username
+  const closeModal = () => {
+    setModalOpen(false);
+    setReviewerName(""); 
+    setReviewerUsername("")
+  };
+
+  // Adds a new reviewer to the selected topic in the table
+  const handleAddReviewer = () => {
+    if (reviewerName.trim()) {
+      setTableData((prevData) =>
+        prevData.map((row) =>
+          row.topic === selectedTopic
+            ? {
+                ...row,
+                reviewers: [
+                  ...row.reviewers,
+                  { name: reviewerName, username: reviewerUsername, status: "Pending" },
+                ],
+              }
+            : row
+        )
+      );
+      closeModal();
+    }
+  };
+
+  // Changes a reviewer’s status to "Pending" when "Unsubmit" is clicked
+  const handleUnsubmit = (topic: string, reviewerName: string) => {
+    setTableData((prevData) =>
+      prevData.map((row) =>
+        row.topic === topic
+          ? {
+              ...row,
+              reviewers: row.reviewers.map((reviewer) =>
+                reviewer.name === reviewerName
+                  ? { ...reviewer, status: "Pending" }
+                  : reviewer
+              ),
+            }
+          : row
+      )
+    );
+  };
 
   return (
-    <Container className="mt-4">
-      <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
-        This is a placeholder page and is still in progress.
-      </div>
-      <Row className="mt-md-2 mb-md-2">
-        <Col className="text-center">
-          <h1>Assign Reviewer - {assignment.name}</h1>
-        </Col>
-        <hr />
-      </Row>
-      <Row>
-        <Col>
-          <Table
-            data={reviewers}
-            columns={columns}
-            columnVisibility={{
-              id: false,
+    <div className="assign-reviewer-container">
+      <h1>Assign Reviewer</h1>
+      <h3>Assignment: Final Project (and design doc)</h3>
+      <table className="assign-reviewer-table">
+        <thead>
+          <tr>
+            <th>Topic selected</th>
+            <th>Contributors</th>
+            <th>Reviewed by</th>
+            <th>Add reviewer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableData.map((row, index) => (
+            <tr key={index}>
+              <td>{row.topic}</td>
+              <td>
+              {/* Rendering contributors list */}
+              {row.contributors.map((contributor, idx) => (
+                <div key={idx}>
+                  {contributor.name} ({contributor.username})
+                </div>
+              ))}
+              </td>
+              <td>
+                {/* Rendering reviewers and their statuses */}
+                {row.reviewers.length > 0 ? (
+                  row.reviewers.map((reviewer, idx) => (
+                    <div key={idx}>
+                      {reviewer.name} ({reviewer.username}) - Review status: {reviewer.status}
+                      {reviewer.status === "Submitted" && (
+                        <span
+                          className="unsubmit-link"
+                          onClick={() => handleUnsubmit(row.topic, reviewer.name)}
+                        >
+                          {" ("}Unsubmit{")"}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <span>No reviewers assigned</span>
+                )}
+              </td>
+              <td>
+                {/* Button to add reviewer, triggers modal */}
+                <button
+                  /*Styling of this button will be updated in future */
+                  className="add-reviewer-button"
+                  onClick={() => openModal(row.topic, row.contributors)}
+                >
+                  Add reviewer
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-            }}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col className="text-right" md={{ span: 1, offset: 11 }}>
-          {/* <Button variant="outline-secondary" onClick={handleClose} style={{ marginRight: '10px' }}>
-            Close
-          </Button> */}
-          <Button variant="outline-success" onClick={handleAssignReviewers}>
-            Assign
-          </Button>
-        </Col>
-      </Row>
-    </Container>
+      {/* Modal for adding a reviewer */}
+      {modalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Add reviewer</h3>
+            <p>Topic: {selectedTopic}</p>
+            <p>Contributors: {selectedContributors.join(", ")}</p>
+            <input
+              type="text"
+              placeholder="Enter user login (unityId)"
+              value={reviewerName}
+              onChange={(e) => setReviewerName(e.target.value)}
+              className="input-field"
+            />
+            <input
+              type="text"
+              placeholder="Enter reviewer name"
+              value={reviewerUsername}
+              onChange={(e) => setReviewerUsername(e.target.value)}
+              className="input-field"
+            />
+            <button
+              onClick={handleAddReviewer}
+              className="submit-button"
+            >
+              Add reviewer
+            </button>
+            <button
+              onClick={closeModal}
+              className="cancel-button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
