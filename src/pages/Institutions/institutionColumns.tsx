@@ -4,10 +4,6 @@ import {BsPencilFill as Edit} from "react-icons/bs";
 import {Button} from "react-bootstrap";
 import {IInstitution} from "../../utils/interfaces";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
-
 type Fn = (row: Row<IInstitution>) => void;
 const columnHelper = createColumnHelper<IInstitution>();
 export const institutionColumns = (handleEdit: Fn, handleDelete: Fn) => [
@@ -15,11 +11,13 @@ export const institutionColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Id",
     enableSorting: false,
     enableColumnFilter: false,
+    minSize: 100,
   }),
 
   columnHelper.accessor("name", {
     header: "Name",
     enableSorting: true,
+    minSize: 300,
   }),
 
   columnHelper.display({
@@ -40,5 +38,6 @@ export const institutionColumns = (handleEdit: Fn, handleDelete: Fn) => [
         </Button>
       </>
     ),
+    minSize: 300,
   }),
 ];

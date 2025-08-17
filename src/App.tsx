@@ -6,6 +6,9 @@ import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import NotificationEditor from "./pages/Notifications/NotificationEditor"
+import Notifications from "./pages/Notifications/Notifications"
+import ViewNotifications from "./pages/Notifications/ViewNotifications";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
@@ -143,6 +146,10 @@ function App() {
           element: <ProtectedRoute element={<EditProfile />} />,
         },
         {
+          path: "view-notifications",
+          element: <ProtectedRoute element={<ViewNotifications />} />,
+        },
+        {
           path: "assignments/edit/:assignmentId/participants",
           element: <Participants type="student_tasks" id={1} />,
           children: [
@@ -227,6 +234,38 @@ function App() {
           ],
         },
         {
+          path: "notifications",
+          element: <Notifications />,
+          //loader: loadNotifications,
+          children: [
+            {
+              path: "new",
+              element: <NotificationEditor mode="create" />,
+            },
+            {
+              path: "edit/:id",
+              element: <NotificationEditor mode="update" />,
+              //loader: loadNotification,
+            },
+          ],
+        },
+        {
+          path: "institutions",
+          element: <Institutions />,
+          loader: loadInstitutions,
+          children: [
+            {
+              path: "new",
+              element: <InstitutionEditor mode="create" />,
+            },
+            {
+              path: "edit/:id",
+              element: <InstitutionEditor mode="update" />,
+              loader: loadInstitution,
+            },
+          ],
+        },
+        {
           path: "administrator",
           element: (
             <ProtectedRoute element={<AdministratorLayout />} leastPrivilegeRole={ROLE.ADMIN} />
@@ -250,22 +289,7 @@ function App() {
                 },
               ],
             },
-            {
-              path: "institutions",
-              element: <Institutions />,
-              loader: loadInstitutions,
-              children: [
-                {
-                  path: "new",
-                  element: <InstitutionEditor mode="create" />,
-                },
-                {
-                  path: "edit/:id",
-                  element: <InstitutionEditor mode="update" />,
-                  loader: loadInstitution,
-                },
-              ],
-            },
+            
             {
               path: ":user_type",
               element: <ManageUserTypes />,

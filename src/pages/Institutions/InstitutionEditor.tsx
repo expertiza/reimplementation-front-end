@@ -11,9 +11,6 @@ import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
 import { IEditor, IInstitution } from "../../utils/interfaces";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
 
 const initialValues: IInstitution = {
   name: "",
@@ -45,7 +42,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Institution ${mode}d successfully!`,
         })
       );
-      navigate("/administrator/institutions");
+      navigate("/institutions");
     }
   }, [dispatch, mode, navigate, institutionResponse]);
 
@@ -71,7 +68,7 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate("/administrator/institutions");
+  const handleClose = () => navigate("/institutions");
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
