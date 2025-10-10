@@ -1,89 +1,75 @@
-// overwrite theme variables
+@use "bootstrap/scss/bootstrap" with (
+  $primary:   #0d6efd,
+  $secondary: #000000,
+  $success:   #66ab57,
+  $info:      #0dcaf0,
+  $warning:   #ffc107,
+  $danger:    #dc3545,
+  $light:     #f8f9fa,
+  $dark:      #212529,
 
-// good-looking theme
-$primary: #a4a366;
-$secondary: #9ab6da;
-$dark: #386086;
-$light: #f2efee;
-$success: #66ab57;
-$info: #9ab6da;
-$warning: #e49b1f;
-$danger: #f00678;
-
-
-// test theme
-// scss-docs-start theme-color-variables
-$primary: #0d6efd;
-//$secondary: #6C757DFF;
-$secondary: #000000;
-$success: #66ab57;
-$info: #0dcaf0;
-$warning: #ffc107;
-$danger: #dc3545;
-$light: #f8f9fa;
-$dark: #212529;
-$wolf-red: #a90201;
-$smoke: #f5f5f5;
-$grey: #212529;
-$darkgrey: #2b2c2d;
-
-$theme-colors: (
-        "primary": $primary,
-        "secondary": $secondary,
-        "success": $success,
-        "info": $info,
-        "warning": $warning,
-        "danger": $danger,
-        "light": $light,
-        "dark": $dark,
-        "wolf-red": $wolf-red,
-        "smoke": $smoke,
-        "grey": $grey,
-        "darkgrey": $darkgrey
+  // Include your extended theme color map (literals, not refs)
+  $theme-colors: (
+    "primary":   #0d6efd,
+    "secondary": #000000,
+    "success":   #66ab57,
+    "info":      #0dcaf0,
+    "warning":   #ffc107,
+    "danger":    #dc3545,
+    "light":     #f8f9fa,
+    "dark":      #212529,
+    "wolf-red":  #a90201,
+    "smoke":     #f5f5f5,
+    "grey":      #212529,
+    "darkgrey":  #2b2c2d
+  )
 );
-// Custom styles for the action buttons in the Etc tab
+
+/* -------------------------------------------------------
+   Your custom styles (load AFTER Bootstrap)
+   ------------------------------------------------------- */
+
+/* Custom styles for the action buttons in the Etc tab */
 .assignment-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px; // This will create space between the buttons and the ETC tab line
-        justify-content: flex-start;
-        padding-top: 10px; // Add more space above the buttons if needed
-      }
-      
-      .custom-tab-button {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-        background-color: white;
-        text-decoration: none;
-        color: inherit;
-        font-size: 1rem;
-        cursor: pointer;
-        width: calc(100% / 3 - 10px); // Adjust the width depending on the number of buttons per row
-        height: 100px ;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      
-        .icon {
-          margin-bottom: 5px;
-          font-size: 1.5em;
-        }
-      
-        &:hover {
-          background-color: #f8f9fa;
-          border-color: #adb5bd;
-        }
-      }
-      
-      // Responsive adjustments
-      @media (max-width: 768px) {
-        .custom-tab-button {
-          width: calc(100% - 10px); // Full width on small screens
-          margin-bottom: 10px; // Space between stacked buttons
-        }
-      }
-// import bootstrap styles at the bottom!
-@import 'bootstrap/scss/bootstrap.scss';
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;               // spacing between buttons and the ETC tab line
+  justify-content: flex-start;
+  padding-top: 10px;       // extra space above if needed
+}
+
+.custom-tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  width: calc(100% / 3 - 10px);  // adjust per row count
+  height: 100px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  .icon {
+    margin-bottom: 5px;
+    font-size: 1.5em;
+  }
+
+  &:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-tab-button {
+    width: calc(100% - 10px); // full width on small screens
+    margin-bottom: 10px;      // spacing between stacked buttons
+  }
+}

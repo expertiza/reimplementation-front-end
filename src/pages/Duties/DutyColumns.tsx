@@ -96,7 +96,7 @@ columnHelper.accessor("created_at_fmt", {
                 disabled={!isOwner}
               >
                 <img
-                  src={process.env.PUBLIC_URL + "/assets/images/edit-icon-24.png"}
+                  src="/assets/images/edit-icon-24.png"
                   alt="Edit"
                   style={{ width: 25, height: 20, opacity: isOwner ? 1 : 0.4 }}
                 />
@@ -114,7 +114,7 @@ columnHelper.accessor("created_at_fmt", {
                 disabled={!isOwner}
               >
                 <img
-                  src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+                  src="/assets/images/delete-icon-24.png"
                   alt="Delete"
                   style={{ width: 25, height: 20, opacity: isOwner ? 1 : 0.4 }}
                 />

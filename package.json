@@ -8,18 +8,14 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@tanstack/react-table": "^8.9.1",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.29",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
     "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
     "ajv": "^8.17.1",
     "axios": "^1.4.0",
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "chart.js": "^4.1.1",
     "formik": "^2.2.9",
     "jquery": "^3.7.1",
@@ -33,19 +29,19 @@
     "react-icons": "^4.9.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.11.1",
-    "react-scripts": "^5.0.1",
     "recharts": "^2.0.0",
     "redux-persist": "^6.0.0",
-    "sass": "^1.62.1",
     "save": "^2.9.0",
     "web-vitals": "^2.1.4",
     "yup": "^1.4.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage"
   },
   "eslintConfig": {
     "extends": [
@@ -66,12 +62,23 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chart.js": "^2.9.41",
     "@types/jquery": "^3.5.29",
     "@types/jqueryui": "^1.12.21",
+    "@types/node": "^20.19.20",
     "@types/react-bootstrap": "^0.32.32",
     "@types/react-datepicker": "^4.10.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^26.1.0",
     "prettier": "^2.8.7",
-    "typescript": "^5.9.2"
+    "sass": "^1.93.2",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.6",
+    "vite-plugin-svgr": "^4.5.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }
