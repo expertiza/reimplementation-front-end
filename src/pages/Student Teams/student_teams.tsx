@@ -1,9 +1,10 @@
 import React, { FC, useState, useEffect, useCallback } from "react";
-import { Button, Form, Table, FormControl, Alert } from "react-bootstrap";
+import { Button, Form, Table, FormControl, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { StudentTeamsProps, TeamMember, Invitation, TeamDetails } from "../../utils/interfaces";
 import { useSearchParams } from "react-router-dom";
 import useAPI from "hooks/useAPI";
+import { Link } from "react-router-dom";
 
 const StudentTeamView: FC<StudentTeamsProps> = () => {
   // Styles object to maintain consistent styling across the component
@@ -138,11 +139,13 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const { error: fetchInviteError, data: sentInvitations, sendRequest: fetchSentInvitations } = useAPI();
   const { data: receivedInvitations, sendRequest: fetchReceivedInvitations } = useAPI();
   const { error: sendInviteError, data: sendInviteResponse, sendRequest: sendInvite } = useAPI();
-  const { data: retractInviteResponse, sendRequest: retractInvite } = useAPI();
+  const { error: retractInviteError, data: retractInviteResponse, sendRequest: retractInvite } = useAPI();
   const { error: updateInviteError, data: updateInviteResponse, sendRequest: updateInvite } = useAPI();
+  const { error: leaveTeamError, data: leaveTeamResponse, sendRequest: leaveTeam } = useAPI();
   const studentId = searchParams.get("student_id");
 
   const [teamName, setTeamName] = useState("");
+  const [assignmentDetails, setAssignmentDetails] = useState(null);
   // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
     setEditMode(!editMode);
@@ -167,18 +170,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     })
   };
 
-  // Function to send email invitations
-  // const sendEmailInvitation = (invitation: Invitation) => {
-  //   const emailSubject = `Invitation to join team ${teamName}`;
-  //   const emailBody = `Hello ${invitation.fullName},\n\nYou are invited to join the team "${teamName}" for our project. Please let us know your decision at your earliest convenience.\n\nBest regards,\n${teamName}`;
-  //   window.open(
-  //     `mailto:${invitation.email}?subject=${encodeURIComponent(
-  //       emailSubject
-  //     )}&body=${encodeURIComponent(emailBody)}`,
-  //     "_blank"
-  //   );
-  // };
-
   // Handle the process of inviting a new team member
   const handleInvite = () => {
     if (!userLogin.trim()) {
@@ -186,7 +177,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       setToastMessage(`Please enter a valid username.`)
       return;
     }
-    const isMember = team?.data.members.some((member: any) => member.user.username === userLogin.trim());
+    const isMember = team?.data.members.some((member: any) => member.username === userLogin.trim());
     if (isMember) {
       setShowAlert(true);
       setToastMessage(`${userLogin} is already part of your team.`)
@@ -195,11 +186,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     }
 
     const newInvitation: Invitation = {
-      assignment_id: team?.data.assignment_id,
+      assignment_id: team?.data.assignment.id,
       username: userLogin,
-      fullName: "Fetching...", // Placeholder until the real name is fetched
-      to_username: userLogin, // Construct the email, or fetch from server
-      // status: "Waiting for reply",
     };
 
     sendInvite({ url: '/invitations', method: 'POST', data: newInvitation })
@@ -210,16 +198,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const handleCreateAdClick = () => {
     if (studentId) {
       navigate(`/advertise_for_partner/new?student_id=${studentId}`);
-    } else {
-      // Handle the case where studentId is not available
-      console.error("Student ID is not available for navigation.");
-    }
-  };
-
-  // Review page navigation
-  const handleReview = () => {
-    if (studentId) {
-      navigate(`/response/new?student_id=${studentId}`);
     } else {
       // Handle the case where studentId is not available
       console.error("Student ID is not available for navigation.");
@@ -251,15 +229,18 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
           }
         })
         if (!updateInviteError) {
-          window.location.reload();
+          setTimeout(() => window.location.reload(), 3000);
         }
       }
     }
   };
 
   const handleLeaveTeam = () => {
-    if (window.confirm(`You are leaving team: ${team?.data.name}`)) {
-      navigate("/"); // Navigate to the home page after the user acknowledges the alert
+    if (window.confirm(`You are leaving team: ${team?.data.name}. Are you sure?`)) {
+      leaveTeam({
+        url: `/student_teams/leave?student_id=${studentId}`, method: 'PUT'
+      })
+      //navigate("/"); // Navigate to the home page after the user acknowledges the alert
     } // Display an alert to the user
   };
 
@@ -312,15 +293,23 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       updateToastMessage(retractInviteResponse)
     }
 
+    if (updateInviteResponse) {
+      updateToastMessage(updateInviteResponse)
+    }
 
-  }, [updateNameResponse, sendInviteResponse, retractInviteResponse]);
+    if (leaveTeamResponse) {
+      updateToastMessage(leaveTeamResponse)
+    }
+
+  }, [updateNameResponse, sendInviteResponse, retractInviteResponse, updateInviteResponse, leaveTeamResponse]);
 
 
   // Combine all hook errors into one derived variable
   const error =
-    fetchTeamError ||    
     fetchInviteError ||
+    retractInviteError ||
     sendInviteError ||
+    leaveTeamError ||
     updateInviteError ||
     null;
 
@@ -337,8 +326,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     return () => clearTimeout(timeout);
   }, [error]);
 
-
-
   if (error) {
     return (
       <div>
@@ -348,7 +335,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   }
 
   if (isLoading) {
-    return;
+    return <Spinner></Spinner>;
   }
 
   // Render the component UI
@@ -362,187 +349,194 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
         )}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px" }}>
-        <h2 style={styles.header}>Team</h2>
-        <div style={styles.teamNameSection}>
-          {/* <strong style={styles.teamLabel}>Team name : </strong> */}
-          {!editMode ? (
-            <h2>
-              {" "}
-              {teamName}{" "}
-            </h2>
-          ) : (
-            <Form onSubmit={handleNameChangeSubmit}>
-              <div style={styles.inviteInputGroup}>
-                <FormControl
-                  type="text"
-                  required
-                  value={teamName}
-                  style={styles.inviteInput}
-                  onChange={(e) => setTeamName(e.target.value)}
-                />
-                <Button variant="link" type="submit" style={styles.buttonLink} disabled={teamName.trim() === team?.data.name}>
-                  Save
-                </Button>
-                <Button variant="link" onClick={handleCancelUpdate} style={styles.buttonLink}>
-                  Cancel
-                </Button>
-              </div>
-            </Form>
-          )}
-        </div>
-        <h2> for {team?.data.assignment.name} </h2>
-        {!editMode && (<Button variant="link" onClick={handleEditNameToggle} style={styles.buttonLink}>
-          (Edit team name)
-        </Button>)} </div>
+      {team ?
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px" }}>
+            <h2 style={styles.header}>Team</h2>
+            <div style={styles.teamNameSection}>
+              {/* <strong style={styles.teamLabel}>Team name : </strong> */}
+              {!editMode ? (
+                <h2>
+                  {" "}
+                  {teamName}{" "}
+                </h2>
+              ) : (
+                <Form onSubmit={handleNameChangeSubmit}>
+                  <div style={styles.inviteInputGroup}>
+                    <FormControl
+                      type="text"
+                      required
+                      value={teamName}
+                      style={styles.inviteInput}
+                      onChange={(e) => setTeamName(e.target.value)}
+                    />
+                    <Button variant="link" type="submit" style={styles.buttonLink} disabled={teamName.trim() === team.data.name}>
+                      Save
+                    </Button>
+                    <Button variant="link" onClick={handleCancelUpdate} style={styles.buttonLink}>
+                      Cancel
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </div>
+            <h2> for {team.data.assignment.name} </h2>
+            {!editMode && (<Button variant="link" onClick={handleEditNameToggle} style={styles.buttonLink}>
+              (Edit team name)
+            </Button>)} </div>
 
-      <h3 style={styles.formLabel}>Team members</h3>
-      <Table striped bordered hover style={styles.table}>
-        <thead>
-          <tr style={styles.tableHeader}>
-            <th style={styles.tableCellHeader}>Username</th>
-            <th style={styles.tableCellHeader}>Name</th>
-            <th style={styles.tableCellHeader}>Email address</th>
-            <th style={styles.tableCellHeader}>Review action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {team &&
-            team.data.members.map((participant: any) => (
-              <tr key={participant.id}>
-                <td style={styles.tableCell}>{participant.username}</td>
-                <td style={styles.tableCell}>{participant.fullName}</td>
-                <td style={styles.tableCell}>{participant.email}</td>
-                <td style={styles.tableCell}>
-                  {participant.id !== Number(studentId) && <Button variant="link" style={styles.buttonLink} onClick={handleReview}>
-                    Review
-                  </Button>}
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </Table>
-
-      <Button variant="link" style={styles.leaveButtonLink} onClick={handleLeaveTeam}>
-        Leave team
-      </Button>
-
-      {sentInvitations?.data.length > 0 && (
-        <>
-          <h3 style={styles.formLabel}>Sent invitations</h3>
+          <h3 style={styles.formLabel}>Team members</h3>
           <Table striped bordered hover style={styles.table}>
             <thead>
-              <tr>
+              <tr style={styles.tableHeader}>
                 <th style={styles.tableCellHeader}>Username</th>
                 <th style={styles.tableCellHeader}>Name</th>
                 <th style={styles.tableCellHeader}>Email address</th>
-                <th style={styles.tableCellHeader}>Action</th>
+                <th style={styles.tableCellHeader}>Review action</th>
               </tr>
             </thead>
             <tbody>
-              {sentInvitations?.data &&
-                sentInvitations?.data?.map((invite: any) => (
-                  <tr key={invite.id}>
-                    <td style={styles.tableCell}>{invite.to_participant.user.name}</td>
-                    <td style={styles.tableCell}>{invite.to_participant.fullname}</td>
-                    <td style={styles.tableCell}>{invite.to_participant.user.email}</td>
+              {team &&
+                team.data.members.map((participant: any) => (
+                  <tr key={participant.id}>
+                    <td style={styles.tableCell}>{participant.username}</td>
+                    <td style={styles.tableCell}>{participant.fullName}</td>
+                    <td style={styles.tableCell}>{participant.email}</td>
                     <td style={styles.tableCell}>
-                      {invite.reply_status === 'W' ?
-                        <Button
-                          variant="link"
-                          size="sm"
-                          style={styles.buttonLink}
-                          onClick={() => handleRetract(invite.id)}
-                        >
-                          Retract
-                        </Button> :
-                        invite.reply_status === 'R' ? "Rejected" : "Accepted"}
+                      {participant.id !== Number(studentId) && <Link to="/" style={styles.buttonLink}>
+                        Review
+                      </Link>}
                     </td>
                   </tr>
                 ))}
             </tbody>
           </Table>
-        </>
-      )}
 
-      {receivedInvitations?.data.length > 0 && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3 style={styles.formLabel}>Received invitations</h3>
-          <Table striped bordered hover style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.tableCellHeader}>Team</th>
-                {/* <th style={styles.tableCellHeader}>Name</th>
+          <Button variant="link" style={styles.leaveButtonLink} onClick={handleLeaveTeam}>
+            Leave team
+          </Button>
+
+          {sentInvitations?.data.length > 0 && (
+            <>
+              <h3 style={styles.formLabel}>Sent invitations</h3>
+              <Table striped bordered hover style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.tableCellHeader}>Username</th>
+                    <th style={styles.tableCellHeader}>Name</th>
+                    <th style={styles.tableCellHeader}>Email address</th>
+                    <th style={styles.tableCellHeader}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sentInvitations?.data &&
+                    sentInvitations?.data?.map((invite: any) => (
+                      <tr key={invite.id}>
+                        <td style={styles.tableCell}>{invite.to_participant.user.name}</td>
+                        <td style={styles.tableCell}>{invite.to_participant.fullname}</td>
+                        <td style={styles.tableCell}>{invite.to_participant.user.email}</td>
+                        <td style={styles.tableCell}>
+                          {invite.reply_status === 'W' ?
+                            <Button
+                              variant="link"
+                              size="sm"
+                              style={styles.buttonLink}
+                              onClick={() => handleRetract(invite.id)}
+                            >
+                              Retract
+                            </Button> :
+                            invite.reply_status === 'R' ? "Rejected" : "Accepted"}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </>
+          )}
+
+          {receivedInvitations?.data.length > 0 && (
+            <div style={{ marginTop: "2rem" }}>
+              <h3 style={styles.formLabel}>Received invitations</h3>
+              <Table striped bordered hover style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.tableCellHeader}>Team</th>
+                    {/* <th style={styles.tableCellHeader}>Name</th>
                 <th style={styles.tableCellHeader}>Email address</th> */}
-                <th style={styles.tableCellHeader}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receivedInvitations?.data &&
-                receivedInvitations?.data.map((invite: any) => (
-                  <tr key={invite.id}>
-                    <td style={styles.tableCell}>{invite.from_team.name}</td>
-                    {/* <td style={styles.tableCell}>{invite.from_participant.fullName}</td>
-                    <td style={styles.tableCell}>{invite.from_participant.user.email}</td> */}
-                    <td style={styles.tableCell}>
-                      {invite.reply_status === 'W' ?
-                        <>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            style={styles.buttonLink}
-                            onClick={() => handleUpdateInvite(invite.id, "accept")}
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            style={styles.buttonLink}
-                            onClick={() => handleUpdateInvite(invite.id, "reject")}
-                          >
-                            Reject
-                          </Button>
-                        </> :
-
-                        invite.reply_status === 'R' ? "Rejected" : "Accepted"
-                      }
-                    </td>
+                    <th style={styles.tableCellHeader}>Action</th>
                   </tr>
-                ))}
-            </tbody>
-          </Table>
-        </div>
-      )}
+                </thead>
+                <tbody>
+                  {receivedInvitations?.data &&
+                    receivedInvitations?.data.map((invite: any) => (
+                      <tr key={invite.id}>
+                        <td style={styles.tableCell}>{invite.from_team.name}</td>
+                        {/* <td style={styles.tableCell}>{invite.from_participant.fullName}</td>
+                    <td style={styles.tableCell}>{invite.from_participant.user.email}</td> */}
+                        <td style={styles.tableCell}>
+                          {invite.reply_status === 'W' ?
+                            <>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                style={styles.buttonLink}
+                                onClick={() => handleUpdateInvite(invite.id, "accept")}
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                style={styles.buttonLink}
+                                onClick={() => handleUpdateInvite(invite.id, "reject")}
+                              >
+                                Reject
+                              </Button>
+                            </> :
 
-      <div style={styles.inviteSection}>
-        <h3 style={styles.formLabel}>Invite a teammate</h3>
-        {team?.data.team_size < team?.data.assignment.max_team_size ? <Form>
-          <div style={styles.inviteInputGroup}>
-            <p style={styles.inviteLabel}>Enter username: </p>
-            <FormControl
-              id="invite-user"
-              type="text"
-              style={styles.inviteInput}
-              className="mr-sm-2"
-              value={userLogin}
-              required
-              onChange={(e) => setUserLogin(e.target.value)}
-            />
-            <Button variant="outline-primary" onClick={handleInvite} style={styles.inviteButton}>
-              Invite
+                            invite.reply_status === 'R' ? "Rejected" : "Accepted"
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
+
+          <div style={styles.inviteSection}>
+            <h3 style={styles.formLabel}>Invite a teammate</h3>
+            {team.data.team_size < team?.data.assignment.max_team_size ? <Form>
+              <div style={styles.inviteInputGroup}>
+                <p style={styles.inviteLabel}>Enter username: </p>
+                <FormControl
+                  id="invite-user"
+                  type="text"
+                  style={styles.inviteInput}
+                  className="mr-sm-2"
+                  value={userLogin}
+                  required
+                  onChange={(e) => setUserLogin(e.target.value)}
+                />
+                <Button variant="outline-primary" onClick={handleInvite} style={styles.inviteButton}>
+                  Invite
+                </Button>
+              </div>
+            </Form> :
+              <h6>You cannot invite new members as there is no room on your team. </h6>}
+          </div>
+
+          <div style={styles.advertisementSection}>
+            <h3 style={styles.formLabel}>Advertise for teammates</h3>
+            <Button variant="link" onClick={handleCreateAdClick} style={styles.buttonLink}>
+              Create advertisement
             </Button>
           </div>
-        </Form> :
-          <h6>You cannot invite new members as there is no room on your team. </h6>}
-      </div>
-
-      <div style={styles.advertisementSection}>
-        <h3 style={styles.formLabel}>Advertise for teammates</h3>
-        <Button variant="link" onClick={handleCreateAdClick} style={styles.buttonLink}>
-          Create advertisement
-        </Button>
-      </div>
+        </div> :
+        (<div>
+          <h1>Team Information for </h1>
+          <h6>You no longer have a team!</h6>
+        </div>)}
     </div>
   );
 };
