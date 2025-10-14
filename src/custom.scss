@@ -8,7 +8,8 @@
   $light:     #f8f9fa,
   $dark:      #212529,
 
-  // Include your extended theme color map (literals, not refs)
+  // test theme
+// scss-docs-start theme-color-variables
   $theme-colors: (
     "primary":   #0d6efd,
     "secondary": #000000,
@@ -25,17 +26,13 @@
   )
 );
 
-/* -------------------------------------------------------
-   Your custom styles (load AFTER Bootstrap)
-   ------------------------------------------------------- */
-
 /* Custom styles for the action buttons in the Etc tab */
 .assignment-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;               // spacing between buttons and the ETC tab line
+  gap: 10px;               // This will create space between the buttons and the ETC tab line
   justify-content: flex-start;
-  padding-top: 10px;       // extra space above if needed
+  padding-top: 10px;       // Add more space above the buttons if needed
 }
 
 .custom-tab-button {
@@ -51,7 +48,7 @@
   color: inherit;
   font-size: 1rem;
   cursor: pointer;
-  width: calc(100% / 3 - 10px);  // adjust per row count
+  width: calc(100% / 3 - 10px);  // Adjust the width depending on the number of buttons per row
   height: 100px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
