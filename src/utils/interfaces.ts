@@ -191,10 +191,11 @@ export interface TeamDetails {
 }
 
 export interface Invitation {
+  assignment_id: number;
   username: string;
   fullName: string;
-  email: string;
-  status: string;
+  to_username: string;
+  status?: string;
 }
 
 

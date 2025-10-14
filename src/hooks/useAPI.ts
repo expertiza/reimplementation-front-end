@@ -38,7 +38,7 @@ const useAPI = () => {
           const errors = err.response.data;
           const messages = Object.entries(errors).flatMap(([field, messages]) => {
             if (Array.isArray(messages)) return messages.map((m) => `${field} ${m}`);
-            return `${field} ${messages}`;
+            return `${field}: ${messages}`;
           });
           errorMessage = messages.join(", ");
         } else if (err.request) {
@@ -51,8 +51,10 @@ const useAPI = () => {
         }
 
         if (errorMessage) setError(errorMessage);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    setIsLoading(false);
   }, []);
 
   return { data, setData, isLoading, error, sendRequest };
