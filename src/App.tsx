@@ -16,6 +16,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import NotFound from "./router/NotFound";
 import Participants from "pages/Participants/Participant";
+import ParticipantsDemo from "pages/Participants/ParticipantsDemo";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
 import RootLayout from "layout/Root";
@@ -192,11 +193,15 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
+        },
+        {
+          path: "demo/participants",
+          element: <ParticipantsDemo />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
