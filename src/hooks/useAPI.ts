@@ -29,6 +29,87 @@ const useAPI = () => {
 
     setIsLoading(true);
     setError("");
+
+    // Development mock handlers: allow working without a backend
+    if (process.env.NODE_ENV === "development") {
+      const url = (requestConfig.url || "").toString();
+      const method = (requestConfig.method || "get").toString().toLowerCase();
+
+      // Simple in-memory mock data
+      const mockAssignments = [
+        {
+          id: 1,
+          name: "Mock Assignment",
+          directory_path: "mock/path",
+          spec_location: "",
+          private: false,
+          show_template_review: false,
+          require_quiz: false,
+          has_badge: false,
+          staggered_deadline: false,
+          is_calibrated: false,
+          course_id: 1,
+        },
+      ];
+      const mockCourses = [{ id: 1, name: "Mock Course" }];
+
+      const makeResponse = (data: any, status = 200) => {
+        const resp: AxiosResponse = {
+          data: data,
+          status: status,
+          statusText: status === 200 ? "OK" : "Created",
+          headers: {},
+          config: requestConfig,
+        } as AxiosResponse;
+        return resp;
+      };
+
+      // Simulate network latency
+      setTimeout(() => {
+        try {
+          if (url === "/assignments" && method === "get") {
+            setData(makeResponse(mockAssignments));
+            setIsLoading(false);
+            return;
+          }
+
+          const assignmentIdMatch = url.match(/^\/assignments\/(\d+)/);
+          if (assignmentIdMatch && method === "get") {
+            const id = parseInt(assignmentIdMatch[1], 10);
+            const found = mockAssignments.find((a) => a.id === id) || mockAssignments[0];
+            setData(makeResponse(found));
+            setIsLoading(false);
+            return;
+          }
+
+          if (url === "/assignments" && (method === "post" || method === "put")) {
+            // create or update - echo back created assignment with id
+            let payload: any = requestConfig.data || {};
+            try {
+              if (typeof payload === "string") payload = JSON.parse(payload);
+            } catch (e) {
+              // ignore
+            }
+            const created = { id: Math.floor(Math.random() * 10000) + 2, ...payload };
+            setData(makeResponse(created, 201));
+            setIsLoading(false);
+            return;
+          }
+
+          if (url === "/courses" && method === "get") {
+            setData(makeResponse(mockCourses));
+            setIsLoading(false);
+            return;
+          }
+
+          // Default: fall through to real network call if not matched
+        } catch (err) {
+          setError((err as Error).message || "Mock error");
+          setIsLoading(false);
+        }
+      }, 200);
+    }
+
     let errorMessage = "";
 
     axios(requestConfig)
@@ -51,8 +132,8 @@ const useAPI = () => {
         }
 
         if (errorMessage) setError(errorMessage);
-      });
-    setIsLoading(false);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   return { data, setData, isLoading, error, sendRequest };

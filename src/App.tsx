@@ -40,6 +40,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import SubmissionHistoryView from "./pages/Submissions/SubmissionHistoryView";
 function App() {
   const router = createBrowserRouter([
     {
@@ -91,6 +92,10 @@ function App() {
           loader: loadAssignment,
         },
         {
+          path: "submissions/history/:id",
+          element: <SubmissionHistoryView />,
+        },
+        {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
           children: [
@@ -138,6 +143,8 @@ function App() {
             },
           ],
         },
+  // Legacy route redirect: keep supporting old student_tasks path
+  { path: "student_tasks", element: <Navigate to="/assignments" /> },
         {
           path: "profile",
           element: <ProtectedRoute element={<EditProfile />} />,

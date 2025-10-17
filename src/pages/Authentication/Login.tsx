@@ -5,6 +5,7 @@ import FormInput from "../../components/Form/FormInput";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { authenticationActions } from "../../store/slices/authenticationSlice";
+import { ILoggedInUser, ROLE } from "../../utils/interfaces";
 import { alertActions } from "../../store/slices/alertSlice";
 import { setAuthToken } from "../../utils/auth";
 import * as Yup from "yup";
@@ -54,6 +55,22 @@ const Login: React.FC = () => {
     submitProps.setSubmitting(false);
   };
 
+  // Development helper: mock sign-in without backend
+  const handleMockSignIn = (user: ILoggedInUser) => {
+    // Set a fake token and expiration in localStorage so utils/getAuthToken behave
+    const mockToken = "MOCK_DEV_TOKEN";
+    localStorage.setItem("token", mockToken);
+    localStorage.setItem("expiration", new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()); // 24h
+
+    dispatch(
+      authenticationActions.setAuthentication({
+        authToken: mockToken,
+        user: user,
+      })
+    );
+    navigate(location.state?.from ? location.state.from : "/");
+  };
+
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
       <Col xs={12} md={6} lg={4}>
@@ -92,6 +109,43 @@ const Login: React.FC = () => {
                 >
                   Login
                 </Button>
+                {process.env.NODE_ENV === "development" && (
+                  <div className="mt-2">
+                    <div className="text-center mb-1 small text-muted">Dev helpers</div>
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      className="mb-1"
+                      style={{ width: "100%" }}
+                      onClick={() =>
+                        handleMockSignIn({ id: 1, name: "admin", full_name: "Admin User", role: ROLE.SUPER_ADMIN as unknown as string, institution_id: 1 })
+                      }
+                    >
+                      Sign in as Super Admin (dev)
+                    </Button>
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      className="mb-1"
+                      style={{ width: "100%" }}
+                      onClick={() =>
+                        handleMockSignIn({ id: 2, name: "instructor", full_name: "Instructor User", role: ROLE.INSTRUCTOR as unknown as string, institution_id: 1 })
+                      }
+                    >
+                      Sign in as Instructor (dev)
+                    </Button>
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      style={{ width: "100%" }}
+                      onClick={() =>
+                        handleMockSignIn({ id: 3, name: "student", full_name: "Student User", role: ROLE.STUDENT as unknown as string, institution_id: 1 })
+                      }
+                    >
+                      Sign in as Student (dev)
+                    </Button>
+                  </div>
+                )}
               </Form>
             );
           }}
