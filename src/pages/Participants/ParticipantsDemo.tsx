@@ -19,7 +19,6 @@ import {
   BsUpload,
   BsArrowLeft,
   BsExclamationTriangle,
-  BsSearch,
 } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 
@@ -494,33 +493,20 @@ const ParticipantsDemo: React.FC = () => {
                           flex: "1 1 auto",
                         }}
                       >
-                        <div
-                          style={{
-                            position: "absolute",
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            pointerEvents: "none",
-                          }}
-                        >
-                          <BsSearch size={16} style={{ color: "#9aa5b1" }} />
-                        </div>
                         <Form.Control
                           type="text"
                           placeholder="Search participants..."
                           value={searchValue}
                           onChange={(e) => setSearchValue(e.target.value)}
                           style={{
-                            paddingLeft: "44px",
-                            fontSize: "0.9rem",
-                            borderRadius: "0.6rem",
-                            border: "1px solid #e2e8f0",
-                            height: "40px",
-                            boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04)",
+                            fontSize: "0.8125rem",
+                            padding: "0.5rem 1rem",
+                            fontWeight: 600,
+                            borderRadius: "0.5rem",
+                            border: "1px solid #cbd5e0",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                            height: "35px",
+                            marginBottom: 0,
                           }}
                         />
                       </div>
@@ -636,88 +622,225 @@ const ParticipantsDemo: React.FC = () => {
                   backgroundColor: "#ffffff",
                 }}
               >
-                <div className="table-responsive" style={{ padding: "1rem" }}>
-                  <BTable className="table table-sm table-striped table-hover align-middle">
+                <div className="table-responsive">
+                  <BTable 
+                    hover 
+                    style={{ 
+                      marginBottom: 0,
+                      fontSize: "0.875rem"
+                    }}
+                  >
                     <thead
-                      style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e5e7eb" }}
+                      style={{ 
+                        backgroundColor: "#f9fafb", 
+                        borderBottom: "2px solid #e5e7eb",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10
+                      }}
                     >
                       <tr>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Username</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Name</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Email</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Parent</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Actions</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Role</th>
-                        <th style={{ color: "#111827", fontWeight: 700 }}>Action</th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle",
+                          width: "80px"
+                        }}>
+                          Parent
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle"
+                        }}>
+                          Username
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle"
+                        }}>
+                          Name
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle"
+                        }}>
+                          Email
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle"
+                        }}>
+                          Actions
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          verticalAlign: "middle"
+                        }}>
+                          Role
+                        </th>
+                        <th style={{ 
+                          color: "#374151", 
+                          fontWeight: 600, 
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          padding: "1rem",
+                          borderBottom: "2px solid #e5e7eb",
+                          textAlign: "center",
+                          verticalAlign: "middle"
+                        }}>
+                          Remove
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredParticipants.map((p) => (
-                        <tr key={p.id}>
-                          <td>
+                      {filteredParticipants.map((p, index) => (
+                        <tr 
+                          key={p.id}
+                          style={{
+                            backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
+                            transition: "background-color 0.15s ease"
+                          }}
+                        >
+                          <td style={{ padding: "1rem", verticalAlign: "middle", width: "80px" }}>
+                            <span style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
+                              {p.parent?.name || "—"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <div
-                              style={{ fontWeight: 600, color: "#1a202c", fontSize: "0.875rem" }}
+                              style={{ 
+                                fontWeight: 600, 
+                                color: "#111827", 
+                                fontSize: "0.875rem" 
+                              }}
                             >
                               {p.name}
                             </div>
                           </td>
-                          <td>
+                          <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <div
-                              style={{ color: "#2d3748", fontSize: "0.875rem", fontWeight: 500 }}
+                              style={{ 
+                                color: "#111827", 
+                                fontSize: "0.875rem", 
+                                fontWeight: 500 
+                              }}
                             >
                               {prettyName(p.full_name ?? "")}
                             </div>
                             {p.handle?.trim() && (
                               <div
                                 style={{
-                                  color: "#a0aec0",
+                                  color: "#6b7280",
                                   fontSize: "0.75rem",
-                                  marginTop: "0.15rem",
+                                  marginTop: "0.25rem",
                                 }}
                               >
                                 @{p.handle}
                               </div>
                             )}
                           </td>
-                          <td>
-                            <span style={{ color: "#718096", fontSize: "0.8rem" }}>
+                          <td style={{ padding: "1rem", verticalAlign: "middle" }}>
+                            <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
                               {p.email ?? ""}
                             </span>
                           </td>
-                          <td>
-                            <span style={{ color: "#a0aec0", fontSize: "0.8rem" }}>
-                              {p.parent?.name || "—"}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                              <Badge bg="primary" className="rounded-pill px-3 py-1 fw-semibold">
+                          <td style={{ padding: "1rem", verticalAlign: "middle" }}>
+                            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "nowrap", alignItems: "center" }}>
+                              <Badge 
+                                bg="success"
+                                style={{
+                                  fontSize: "0.6875rem",
+                                  padding: "0.375rem 0.75rem",
+                                  fontWeight: 600,
+                                  borderRadius: "9999px",
+                                  textTransform: "capitalize",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
                                 Submit
                               </Badge>
-                              <Badge bg="primary" className="rounded-pill px-3 py-1 fw-semibold">
+                              <Badge 
+                                bg="info"
+                                style={{
+                                  fontSize: "0.6875rem",
+                                  padding: "0.375rem 0.75rem",
+                                  fontWeight: 600,
+                                  borderRadius: "9999px",
+                                  textTransform: "capitalize",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
                                 Review
                               </Badge>
                               {requireQuiz && (
-                                <Badge bg="primary" className="rounded-pill px-3 py-1 fw-semibold">
+                                <Badge 
+                                  bg="warning"
+                                  style={{
+                                    fontSize: "0.6875rem",
+                                    padding: "0.375rem 0.75rem",
+                                    fontWeight: 600,
+                                    borderRadius: "9999px",
+                                    textTransform: "capitalize",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                >
                                   Quiz
                                 </Badge>
                               )}
                             </div>
                           </td>
-                          <td style={{ minWidth: 140 }}>
+                          <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <Form.Select
                               size="sm"
                               aria-label="Participant Role"
                               value={p.role?.id}
                               onChange={(e) => onRoleChange(p.id, parseInt(e.target.value, 10))}
                               style={{
-                                fontSize: "0.8rem",
-                                padding: "0.35rem 0.6rem",
+                                fontSize: "0.8125rem",
+                                padding: "0.5rem 0.75rem",
                                 cursor: "pointer",
-                                border: "1px solid #cbd5e0",
-                                borderRadius: "0.375rem",
+                                border: "1px solid #d1d5db",
+                                borderRadius: "0.5rem",
                                 fontWeight: 500,
-                                color: "#2d3748",
+                                color: "#374151",
+                                minWidth: "140px",
+                                backgroundColor: "#ffffff"
                               }}
                             >
                               {ALL_ROLES.map((r) => (
@@ -727,16 +850,30 @@ const ParticipantsDemo: React.FC = () => {
                               ))}
                             </Form.Select>
                           </td>
-                          <td>
+                          <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
                             <Button
                               variant="outline-danger"
                               size="sm"
                               title="Remove participant"
                               onClick={() => onRemoveClick(p)}
                               style={{
-                                padding: "0.35rem 0.6rem",
+                                padding: "0.5rem 0.75rem",
                                 fontSize: "0.875rem",
-                                borderRadius: "0.375rem",
+                                borderRadius: "0.5rem",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                border: "1px solid #fecaca",
+                                color: "#ef4444",
+                                backgroundColor: "transparent"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#fef2f2";
+                                e.currentTarget.style.borderColor = "#fca5a5";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                                e.currentTarget.style.borderColor = "#fecaca";
                               }}
                             >
                               <BsTrash size={14} />
