@@ -19,6 +19,7 @@ import {
   BsUpload,
   BsArrowLeft,
   BsExclamationTriangle,
+  BsSearch,
 } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 
@@ -493,6 +494,20 @@ const ParticipantsDemo: React.FC = () => {
                           flex: "1 1 auto",
                         }}
                       >
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: "1rem",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            pointerEvents: "none",
+                            color: "#9ca3af",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <BsSearch size={14} />
+                        </div>
                         <Form.Control
                           type="text"
                           placeholder="Search participants..."
@@ -501,6 +516,7 @@ const ParticipantsDemo: React.FC = () => {
                           style={{
                             fontSize: "0.8125rem",
                             padding: "0.5rem 1rem",
+                            paddingLeft: "2.5rem",
                             fontWeight: 600,
                             borderRadius: "0.5rem",
                             border: "1px solid #cbd5e0",
