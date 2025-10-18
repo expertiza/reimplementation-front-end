@@ -98,7 +98,7 @@ const prettyName = (full: string) => {
 
 const ParticipantsDemo: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
-  const [requireQuiz] = useState<boolean>(false);
+  const [requireQuiz] = useState<boolean>(true);
   const [searchValue, setSearchValue] = useState<string>("");
   const [alert, setAlert] = useState<{
     variant: "success" | "info" | "danger";
@@ -727,7 +727,7 @@ const ParticipantsDemo: React.FC = () => {
                           borderBottom: "2px solid #e5e7eb",
                           verticalAlign: "middle"
                         }}>
-                          Role
+                          Participant Role
                         </th>
                         <th style={{ 
                           color: "#374151", 
@@ -740,7 +740,7 @@ const ParticipantsDemo: React.FC = () => {
                           textAlign: "center",
                           verticalAlign: "middle"
                         }}>
-                          Remove
+                          Action
                         </th>
                       </tr>
                     </thead>
@@ -779,17 +779,6 @@ const ParticipantsDemo: React.FC = () => {
                             >
                               {prettyName(p.full_name ?? "")}
                             </div>
-                            {p.handle?.trim() && (
-                              <div
-                                style={{
-                                  color: "#6b7280",
-                                  fontSize: "0.75rem",
-                                  marginTop: "0.25rem",
-                                }}
-                              >
-                                @{p.handle}
-                              </div>
-                            )}
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
