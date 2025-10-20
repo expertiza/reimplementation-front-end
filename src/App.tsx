@@ -17,6 +17,7 @@ import { ROLE } from "./utils/interfaces";
 import NotFound from "./router/NotFound";
 import Participants from "pages/Participants/Participant";
 import ParticipantsDemo from "pages/Participants/ParticipantsDemo";
+import ParticipantsAPI from "pages/Participants/ParticipantsAPI";
 import ParticipantEditor from "pages/Participants/ParticipantEditor";
 import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
 import RootLayout from "layout/Root";
@@ -198,6 +199,10 @@ function App() {
         {
           path: "demo/participants",
           element: <ParticipantsDemo />,
+        },
+        {
+          path: "participants",
+          element: <ProtectedRoute element={<ParticipantsAPI />} />,
         },
         {
           path: "email_the_author",

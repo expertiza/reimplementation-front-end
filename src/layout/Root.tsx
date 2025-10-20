@@ -1,4 +1,3 @@
-import AlertMessage from "components/Alert";
 import { FC, Fragment, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -13,10 +12,6 @@ import { getTokenDuration } from "../utils/auth";
 const RootLayout: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const alert = useSelector(
-    (state: RootState) => state.alert,
-    (prev, next) => prev.show === next.show
-  );
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -30,19 +25,9 @@ const RootLayout: FC = () => {
     }
   }, [auth.isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (alert.show) {
-      const timer = setTimeout(() => dispatch(alertActions.hideAlert()), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [alert.show, dispatch]);
-
   return (
     <Fragment>
       <Header />
-      {alert.show && (
-        <AlertMessage variant={alert.variant} message={alert.message} title={alert.title} />
-      )}
       <main>
         <Outlet />
       </main>
