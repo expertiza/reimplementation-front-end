@@ -3,10 +3,6 @@ import { Button } from "react-bootstrap";
 import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
-/**
- * @author Divit Kalathil on October, 2023
- */
-
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
 export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
