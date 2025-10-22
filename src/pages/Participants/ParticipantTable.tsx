@@ -321,8 +321,8 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                   }}
                 >
                   <Button
-                    variant="outline-danger"
-                    size="sm"
+                    className="btn btn-md"
+                    variant="danger"
                     title="Remove participant"
                     onClick={() => onRemoveClick(p)}
                     style={{
@@ -332,20 +332,14 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "1px solid #fecaca",
-                      color: "#ef4444",
-                      backgroundColor: "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#fef2f2";
-                      e.currentTarget.style.borderColor = "#fca5a5";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.borderColor = "#fecaca";
                     }}
                   >
-                    <img src={"/assets/images/delete-icon-24.png"} alt="Delete" width={14} height={14} />
+                    <img
+                      src="/assets/icons/delete-icon-24.png"
+                      alt="Delete"
+                      width={14}
+                      height={14}
+                    />
                   </Button>
                 </td>
               </tr>

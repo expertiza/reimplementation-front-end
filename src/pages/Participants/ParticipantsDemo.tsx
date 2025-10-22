@@ -13,14 +13,6 @@ import {
   Row as BRow,
   Table as BTable,
 } from "react-bootstrap";
-import {
-  BsTrash,
-  BsDownload,
-  BsUpload,
-  BsArrowLeft,
-  BsExclamationTriangle,
-  BsSearch,
-} from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 
 type Role = { id: number; name: string };
@@ -386,8 +378,8 @@ const ParticipantsDemo: React.FC = () => {
         header: "Action",
         cell: ({ row }: { row: Row<Participant> }) => (
           <Button
-            variant="outline-danger"
-            size="sm"
+            className="btn btn-md"
+            variant="danger"
             title="Remove participant"
             onClick={() => onRemoveClick(row.original)}
             style={{
@@ -399,7 +391,7 @@ const ParticipantsDemo: React.FC = () => {
               justifyContent: "center",
             }}
           >
-            <BsTrash size={14} />
+            <img src="/assets/icons/delete-icon-24.png" alt="Delete" width={14} height={14} />
           </Button>
         ),
         enableSorting: false,
@@ -420,7 +412,7 @@ const ParticipantsDemo: React.FC = () => {
         <Container fluid style={{ maxWidth: "1600px" }}>
           <BRow className="mb-3">
             <Col>
-              <h1
+              <h2
                 style={{
                   fontSize: "1.875rem",
                   fontWeight: 700,
@@ -429,7 +421,7 @@ const ParticipantsDemo: React.FC = () => {
                 }}
               >
                 Manage Participants
-              </h1>
+              </h2>
               <p style={{ color: "#718096", fontSize: "0.9rem", marginBottom: 0 }}>
                 View and manage assignment participants
               </p>
@@ -440,7 +432,7 @@ const ParticipantsDemo: React.FC = () => {
             <BRow className="mb-3">
               <Col>
                 <Alert
-                  variant={alert.variant}
+                  className={`flash_note alert alert-${alert.variant}`}
                   onClose={closeAlert}
                   dismissible
                   style={{
@@ -506,7 +498,12 @@ const ParticipantsDemo: React.FC = () => {
                             alignItems: "center",
                           }}
                         >
-                          <BsSearch size={14} />
+                          <img
+                            src="/assets/icons/view-publish-rights-24.png"
+                            alt="Search"
+                            width={14}
+                            height={14}
+                          />
                         </div>
                         <Form.Control
                           type="text"
@@ -527,8 +524,8 @@ const ParticipantsDemo: React.FC = () => {
                         />
                       </div>
                       <Button
+                        className="btn btn-md"
                         variant="primary"
-                        size="sm"
                         onClick={onCopyFromCourse}
                         style={{
                           fontSize: "0.8125rem",
@@ -541,12 +538,17 @@ const ParticipantsDemo: React.FC = () => {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         }}
                       >
-                        <BsDownload size={14} />
-                        Copy from Course
+                        <img
+                          src="/assets/icons/Copy-icon-24.png"
+                          alt="Copy"
+                          width={14}
+                          height={14}
+                        />
+                        Copy from course
                       </Button>
                       <Button
+                        className="btn btn-md"
                         variant="primary"
-                        size="sm"
                         onClick={onCopyToCourse}
                         style={{
                           fontSize: "0.8125rem",
@@ -559,12 +561,17 @@ const ParticipantsDemo: React.FC = () => {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                         }}
                       >
-                        <BsUpload size={14} />
-                        Copy to Course
+                        <img
+                          src="/assets/icons/Copy-icon-24.png"
+                          alt="Copy"
+                          width={14}
+                          height={14}
+                        />
+                        Copy to course
                       </Button>
                       <Button
+                        className="btn btn-md"
                         variant="outline-secondary"
-                        size="sm"
                         onClick={onImportClick}
                         style={{
                           fontSize: "0.8125rem",
@@ -576,12 +583,17 @@ const ParticipantsDemo: React.FC = () => {
                           borderRadius: "0.5rem",
                         }}
                       >
-                        <BsUpload size={14} />
+                        <img
+                          src="/assets/icons/Copy-icon-24.png"
+                          alt="Import"
+                          width={14}
+                          height={14}
+                        />
                         Import CSV
                       </Button>
                       <Button
+                        className="btn btn-md"
                         variant="outline-secondary"
-                        size="sm"
                         onClick={onExport}
                         style={{
                           fontSize: "0.8125rem",
@@ -593,13 +605,18 @@ const ParticipantsDemo: React.FC = () => {
                           borderRadius: "0.5rem",
                         }}
                       >
-                        <BsDownload size={14} />
+                        <img
+                          src="/assets/icons/Copy-icon-24.png"
+                          alt="Export"
+                          width={14}
+                          height={14}
+                        />
                         Export CSV
                       </Button>
                     </div>
                     <Button
-                      variant="outline-dark"
-                      size="sm"
+                      className="btn btn-md"
+                      variant="outline-secondary"
                       onClick={onBack}
                       style={{
                         fontSize: "0.8125rem",
@@ -611,7 +628,6 @@ const ParticipantsDemo: React.FC = () => {
                         borderRadius: "0.5rem",
                       }}
                     >
-                      <BsArrowLeft size={14} />
                       Back
                     </Button>
                   </div>
@@ -639,118 +655,132 @@ const ParticipantsDemo: React.FC = () => {
                 }}
               >
                 <div className="table-responsive">
-                  <BTable 
-                    hover 
-                    style={{ 
+                  <BTable
+                    hover
+                    style={{
                       marginBottom: 0,
-                      fontSize: "0.875rem"
+                      fontSize: "0.875rem",
                     }}
                   >
                     <thead
-                      style={{ 
-                        backgroundColor: "#f9fafb", 
+                      style={{
+                        backgroundColor: "#f9fafb",
                         borderBottom: "2px solid #e5e7eb",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10
+                        zIndex: 10,
                       }}
                     >
                       <tr>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle",
-                          width: "80px"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                            width: "80px",
+                          }}
+                        >
                           Parent
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Username
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Name
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Email
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Actions
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Participant Role
                         </th>
-                        <th style={{ 
-                          color: "#374151", 
-                          fontWeight: 600, 
-                          fontSize: "0.75rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          padding: "1rem",
-                          borderBottom: "2px solid #e5e7eb",
-                          textAlign: "center",
-                          verticalAlign: "middle"
-                        }}>
+                        <th
+                          style={{
+                            color: "#374151",
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            padding: "1rem",
+                            borderBottom: "2px solid #e5e7eb",
+                            textAlign: "center",
+                            verticalAlign: "middle",
+                          }}
+                        >
                           Action
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredParticipants.map((p, index) => (
-                        <tr 
+                        <tr
                           key={p.id}
                           style={{
                             backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
-                            transition: "background-color 0.15s ease"
+                            transition: "background-color 0.15s ease",
                           }}
                         >
                           <td style={{ padding: "1rem", verticalAlign: "middle", width: "80px" }}>
@@ -760,10 +790,10 @@ const ParticipantsDemo: React.FC = () => {
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <div
-                              style={{ 
-                                fontWeight: 600, 
-                                color: "#111827", 
-                                fontSize: "0.875rem" 
+                              style={{
+                                fontWeight: 600,
+                                color: "#111827",
+                                fontSize: "0.875rem",
                               }}
                             >
                               {p.name}
@@ -771,10 +801,10 @@ const ParticipantsDemo: React.FC = () => {
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                             <div
-                              style={{ 
-                                color: "#111827", 
-                                fontSize: "0.875rem", 
-                                fontWeight: 500 
+                              style={{
+                                color: "#111827",
+                                fontSize: "0.875rem",
+                                fontWeight: 500,
                               }}
                             >
                               {prettyName(p.full_name ?? "")}
@@ -786,8 +816,15 @@ const ParticipantsDemo: React.FC = () => {
                             </span>
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "nowrap", alignItems: "center" }}>
-                              <Badge 
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "0.5rem",
+                                flexWrap: "nowrap",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Badge
                                 bg="success"
                                 style={{
                                   fontSize: "0.6875rem",
@@ -795,12 +832,12 @@ const ParticipantsDemo: React.FC = () => {
                                   fontWeight: 600,
                                   borderRadius: "9999px",
                                   textTransform: "capitalize",
-                                  whiteSpace: "nowrap"
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 Submit
                               </Badge>
-                              <Badge 
+                              <Badge
                                 bg="info"
                                 style={{
                                   fontSize: "0.6875rem",
@@ -808,13 +845,13 @@ const ParticipantsDemo: React.FC = () => {
                                   fontWeight: 600,
                                   borderRadius: "9999px",
                                   textTransform: "capitalize",
-                                  whiteSpace: "nowrap"
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 Review
                               </Badge>
                               {requireQuiz && (
-                                <Badge 
+                                <Badge
                                   bg="warning"
                                   style={{
                                     fontSize: "0.6875rem",
@@ -822,7 +859,7 @@ const ParticipantsDemo: React.FC = () => {
                                     fontWeight: 600,
                                     borderRadius: "9999px",
                                     textTransform: "capitalize",
-                                    whiteSpace: "nowrap"
+                                    whiteSpace: "nowrap",
                                   }}
                                 >
                                   Quiz
@@ -845,7 +882,7 @@ const ParticipantsDemo: React.FC = () => {
                                 fontWeight: 500,
                                 color: "#374151",
                                 minWidth: "140px",
-                                backgroundColor: "#ffffff"
+                                backgroundColor: "#ffffff",
                               }}
                             >
                               {ALL_ROLES.map((r) => (
@@ -855,10 +892,16 @@ const ParticipantsDemo: React.FC = () => {
                               ))}
                             </Form.Select>
                           </td>
-                          <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
+                          <td
+                            style={{
+                              padding: "1rem",
+                              verticalAlign: "middle",
+                              textAlign: "center",
+                            }}
+                          >
                             <Button
-                              variant="outline-danger"
-                              size="sm"
+                              className="btn btn-md"
+                              variant="danger"
                               title="Remove participant"
                               onClick={() => onRemoveClick(p)}
                               style={{
@@ -868,20 +911,14 @@ const ParticipantsDemo: React.FC = () => {
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                border: "1px solid #fecaca",
-                                color: "#ef4444",
-                                backgroundColor: "transparent"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "#fef2f2";
-                                e.currentTarget.style.borderColor = "#fca5a5";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "transparent";
-                                e.currentTarget.style.borderColor = "#fecaca";
                               }}
                             >
-                              <BsTrash size={14} />
+                              <img
+                                src="/assets/icons/delete-icon-24.png"
+                                alt="Delete"
+                                width={14}
+                                height={14}
+                              />
                             </Button>
                           </td>
                         </tr>
@@ -921,8 +958,8 @@ const ParticipantsDemo: React.FC = () => {
               gap: "0.5rem",
             }}
           >
-            <BsExclamationTriangle size={24} />
-            Confirm Delete
+            <img src="/assets/icons/info.png" alt="Warning" width={24} height={24} />
+            Confirm delete
           </Modal.Title>
         </Modal.Header>
         <Modal.Body style={{ padding: "1.5rem", backgroundColor: "#fff5f5" }}>
@@ -938,6 +975,7 @@ const ParticipantsDemo: React.FC = () => {
           style={{ border: "none", padding: "1rem 1.5rem", backgroundColor: "#fff5f5" }}
         >
           <Button
+            className="btn btn-md"
             variant="outline-secondary"
             onClick={onCancelDelete}
             style={{
@@ -950,6 +988,7 @@ const ParticipantsDemo: React.FC = () => {
             Cancel
           </Button>
           <Button
+            className="btn btn-md"
             variant="danger"
             onClick={onConfirmDelete}
             style={{

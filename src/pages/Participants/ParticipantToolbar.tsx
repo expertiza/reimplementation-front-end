@@ -1,6 +1,5 @@
 import React from "react";
 import { Button, Card, Form } from "react-bootstrap";
-import { BsDownload, BsUpload, BsArrowLeft, BsSearch } from "react-icons/bs";
 
 interface ParticipantToolbarProps {
   searchValue: string;
@@ -73,7 +72,12 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                   alignItems: "center",
                 }}
               >
-                <BsSearch size={14} />
+                <img
+                  src="/assets/icons/view-publish-rights-24.png"
+                  alt="Search"
+                  width={14}
+                  height={14}
+                />
               </div>
               <Form.Control
                 type="text"
@@ -94,8 +98,8 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
               />
             </div>
             <Button
+              className="btn btn-md"
               variant="primary"
-              size="sm"
               onClick={onCopyFromCourse}
               style={{
                 fontSize: "0.8125rem",
@@ -108,12 +112,12 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
             >
-              <BsDownload size={14} />
-              Copy from Course
+              <img src="/assets/icons/Copy-icon-24.png" alt="Copy" width={14} height={14} />
+              Copy from course
             </Button>
             <Button
+              className="btn btn-md"
               variant="primary"
-              size="sm"
               onClick={onCopyToCourse}
               style={{
                 fontSize: "0.8125rem",
@@ -126,12 +130,12 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
             >
-              <BsUpload size={14} />
-              Copy to Course
+              <img src="/assets/icons/Copy-icon-24.png" alt="Copy" width={14} height={14} />
+              Copy to course
             </Button>
             <Button
+              className="btn btn-md"
               variant="outline-secondary"
-              size="sm"
               onClick={onImportClick}
               style={{
                 fontSize: "0.8125rem",
@@ -143,12 +147,12 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 borderRadius: "0.5rem",
               }}
             >
-              <BsUpload size={14} />
+              <img src="/assets/icons/Copy-icon-24.png" alt="Import" width={14} height={14} />
               Import CSV
             </Button>
             <Button
+              className="btn btn-md"
               variant="outline-secondary"
-              size="sm"
               onClick={onExport}
               style={{
                 fontSize: "0.8125rem",
@@ -160,13 +164,13 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 borderRadius: "0.5rem",
               }}
             >
-              <BsDownload size={14} />
+              <img src="/assets/icons/Copy-icon-24.png" alt="Export" width={14} height={14} />
               Export CSV
             </Button>
           </div>
           <Button
-            variant="outline-dark"
-            size="sm"
+            className="btn btn-md"
+            variant="outline-secondary"
             onClick={onBack}
             style={{
               fontSize: "0.8125rem",
@@ -178,7 +182,6 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
               borderRadius: "0.5rem",
             }}
           >
-            <BsArrowLeft size={14} />
             Back
           </Button>
         </div>

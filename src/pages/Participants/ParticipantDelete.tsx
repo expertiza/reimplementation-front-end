@@ -12,7 +12,11 @@ interface IDeleteParticipant {
 }
 
 const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onClose }) => {
-  const { data: deletedParticipant, error: participantError, sendRequest: deleteParticipant } = useAPI();
+  const {
+    data: deletedParticipant,
+    error: participantError,
+    sendRequest: deleteParticipant,
+  } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
@@ -20,11 +24,16 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
     deleteParticipant({ url: `/participants/${participantData.id}`, method: HttpMethod.DELETE });
 
   useEffect(() => {
-    if (participantError) dispatch(alertActions.showAlert({ variant: "danger", message: participantError }));
+    if (participantError)
+      dispatch(alertActions.showAlert({ variant: "danger", message: participantError }));
   }, [participantError, dispatch]);
 
   useEffect(() => {
-    if (deletedParticipant?.status && deletedParticipant?.status >= 200 && deletedParticipant?.status < 300) {
+    if (
+      deletedParticipant?.status &&
+      deletedParticipant?.status >= 200 &&
+      deletedParticipant?.status < 300
+    ) {
       setShow(false);
       dispatch(
         alertActions.showAlert({
@@ -52,10 +61,10 @@ const DeleteParticipant: React.FC<IDeleteParticipant> = ({ participantData, onCl
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="outline-secondary" onClick={closeHandler}>
+        <Button className="btn btn-md" variant="outline-secondary" onClick={closeHandler}>
           Cancel
         </Button>
-        <Button variant="outline-danger" onClick={deleteHandler}>
+        <Button className="btn btn-md" variant="danger" onClick={deleteHandler}>
           Delete
         </Button>
       </Modal.Footer>

@@ -1,6 +1,5 @@
 import React from "react";
 import { Button, Modal } from "react-bootstrap";
-import { BsExclamationTriangle } from "react-icons/bs";
 import { Participant } from "./participantTypes";
 
 interface DeleteConfirmationModalProps {
@@ -43,8 +42,8 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             gap: "0.5rem",
           }}
         >
-          <BsExclamationTriangle size={24} />
-          Confirm Delete
+          <img src="/assets/icons/info.png" alt="Warning" width="24" height="24" />
+          Confirm delete
         </Modal.Title>
       </Modal.Header>
       <Modal.Body style={{ padding: "1.5rem", backgroundColor: "#fff5f5" }}>
@@ -56,10 +55,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           This action cannot be undone.
         </p>
       </Modal.Body>
-      <Modal.Footer
-        style={{ border: "none", padding: "1rem 1.5rem", backgroundColor: "#fff5f5" }}
-      >
+      <Modal.Footer style={{ border: "none", padding: "1rem 1.5rem", backgroundColor: "#fff5f5" }}>
         <Button
+          className="btn btn-md"
           variant="outline-secondary"
           onClick={onCancel}
           style={{
@@ -72,6 +70,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           Cancel
         </Button>
         <Button
+          className="btn btn-md"
           variant="danger"
           onClick={onConfirm}
           style={{
