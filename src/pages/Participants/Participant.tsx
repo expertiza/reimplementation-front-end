@@ -87,7 +87,8 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
               <Button className="btn btn-md" variant="success" onClick={() => navigate("new")}>
-                <img src="/assets/icons/add-public-24.png" alt="Add" width="16" height="16" /> Add
+                <img src="/assets/icons/add-participant-24.png" alt="Add" width="16" height="16" />{" "}
+                Add
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (

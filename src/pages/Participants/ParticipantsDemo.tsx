@@ -391,7 +391,7 @@ const ParticipantsDemo: React.FC = () => {
               justifyContent: "center",
             }}
           >
-            <img src="/assets/icons/delete-icon-24.png" alt="Delete" width={14} height={14} />
+            <img src="/assets/images/delete-icon-24.png" alt="Delete" width={14} height={14} />
           </Button>
         ),
         enableSorting: false,
@@ -498,12 +498,7 @@ const ParticipantsDemo: React.FC = () => {
                             alignItems: "center",
                           }}
                         >
-                          <img
-                            src="/assets/icons/view-publish-rights-24.png"
-                            alt="Search"
-                            width={14}
-                            height={14}
-                          />
+                          <img src="/assets/images/paste.png" alt="Search" width={14} height={14} />
                         </div>
                         <Form.Control
                           type="text"
@@ -539,7 +534,7 @@ const ParticipantsDemo: React.FC = () => {
                         }}
                       >
                         <img
-                          src="/assets/icons/Copy-icon-24.png"
+                          src="/assets/images/Copy-icon-24.png"
                           alt="Copy"
                           width={14}
                           height={14}
@@ -562,7 +557,7 @@ const ParticipantsDemo: React.FC = () => {
                         }}
                       >
                         <img
-                          src="/assets/icons/Copy-icon-24.png"
+                          src="/assets/images/Copy-icon-24.png"
                           alt="Copy"
                           width={14}
                           height={14}
@@ -584,7 +579,7 @@ const ParticipantsDemo: React.FC = () => {
                         }}
                       >
                         <img
-                          src="/assets/icons/Copy-icon-24.png"
+                          src="/assets/images/Copy-icon-24.png"
                           alt="Import"
                           width={14}
                           height={14}
@@ -606,7 +601,7 @@ const ParticipantsDemo: React.FC = () => {
                         }}
                       >
                         <img
-                          src="/assets/icons/Copy-icon-24.png"
+                          src="/assets/icons/export-temp.png"
                           alt="Export"
                           width={14}
                           height={14}
@@ -914,7 +909,7 @@ const ParticipantsDemo: React.FC = () => {
                               }}
                             >
                               <img
-                                src="/assets/icons/delete-icon-24.png"
+                                src="/assets/images/delete-icon-24.png"
                                 alt="Delete"
                                 width={14}
                                 height={14}
@@ -958,7 +953,7 @@ const ParticipantsDemo: React.FC = () => {
               gap: "0.5rem",
             }}
           >
-            <img src="/assets/icons/info.png" alt="Warning" width={24} height={24} />
+            <img src="/assets/images/remove.png" alt="Warning" width={24} height={24} />
             Confirm delete
           </Modal.Title>
         </Modal.Header>

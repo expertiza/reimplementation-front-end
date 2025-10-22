@@ -42,7 +42,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
             gap: "0.5rem",
           }}
         >
-          <img src="/assets/icons/info.png" alt="Warning" width="24" height="24" />
+          <img src="/assets/images/remove.png" alt="Warning" width="24" height="24" />
           Confirm delete
         </Modal.Title>
       </Modal.Header>

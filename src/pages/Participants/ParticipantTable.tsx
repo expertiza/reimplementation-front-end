@@ -335,7 +335,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                     }}
                   >
                     <img
-                      src="/assets/icons/delete-icon-24.png"
+                      src="/assets/images/delete-icon-24.png"
                       alt="Delete"
                       width={14}
                       height={14}

@@ -72,12 +72,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                   alignItems: "center",
                 }}
               >
-                <img
-                  src="/assets/icons/view-publish-rights-24.png"
-                  alt="Search"
-                  width={14}
-                  height={14}
-                />
+                <img src="/assets/images/paste.png" alt="Search" width={14} height={14} />
               </div>
               <Form.Control
                 type="text"
@@ -112,7 +107,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
             >
-              <img src="/assets/icons/Copy-icon-24.png" alt="Copy" width={14} height={14} />
+              <img src="/assets/images/Copy-icon-24.png" alt="Copy" width={14} height={14} />
               Copy from course
             </Button>
             <Button
@@ -130,7 +125,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
             >
-              <img src="/assets/icons/Copy-icon-24.png" alt="Copy" width={14} height={14} />
+              <img src="/assets/images/Copy-icon-24.png" alt="Copy" width={14} height={14} />
               Copy to course
             </Button>
             <Button
@@ -147,7 +142,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 borderRadius: "0.5rem",
               }}
             >
-              <img src="/assets/icons/Copy-icon-24.png" alt="Import" width={14} height={14} />
+              <img src="/assets/images/Copy-icon-24.png" alt="Import" width={14} height={14} />
               Import CSV
             </Button>
             <Button
@@ -164,7 +159,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 borderRadius: "0.5rem",
               }}
             >
-              <img src="/assets/icons/Copy-icon-24.png" alt="Export" width={14} height={14} />
+              <img src="/assets/icons/export-temp.png" alt="Export" width={14} height={14} />
               Export CSV
             </Button>
           </div>
