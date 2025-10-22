@@ -1,6 +1,5 @@
 import React from "react";
 import { Badge, Button, Card, Form, Table as BTable } from "react-bootstrap";
-import { BsTrash } from "react-icons/bs";
 import { Participant, ALL_ROLES } from "./participantTypes";
 import { prettyName } from "./participantHelpers";
 
@@ -303,7 +302,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                       borderRadius: "0.5rem",
                       fontWeight: 500,
                       color: "#374151",
-                      minWidth: "140px",
+                      maxWidth: "110px",
                       backgroundColor: "#ffffff",
                     }}
                   >
@@ -346,7 +345,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                       e.currentTarget.style.borderColor = "#fecaca";
                     }}
                   >
-                    <BsTrash size={14} />
+                    <img src={"/assets/images/delete-icon-24.png"} alt="Delete" width={14} height={14} />
                   </Button>
                 </td>
               </tr>
