@@ -18,6 +18,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
   onRoleChange,
   onRemoveClick,
 }) => {
+  const hasHandles = participants.some((p) => p.handle);
   if (isLoading) {
     return (
       <Card
@@ -125,6 +126,22 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
               >
                 Name
               </th>
+              {hasHandles && (
+                <th
+                  style={{
+                    color: "#374151",
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    padding: "1rem",
+                    borderBottom: "2px solid #e5e7eb",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  Handles
+                </th>
+              )}
               <th
                 style={{
                   color: "#374151",
@@ -149,9 +166,40 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                   padding: "1rem",
                   borderBottom: "2px solid #e5e7eb",
                   verticalAlign: "middle",
+                  textAlign: "center",
                 }}
               >
-                Actions
+                Quiz
+              </th>
+              <th
+                style={{
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "1rem",
+                  borderBottom: "2px solid #e5e7eb",
+                  verticalAlign: "middle",
+                  textAlign: "center",
+                }}
+              >
+                Review
+              </th>
+              <th
+                style={{
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: "0.75rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "1rem",
+                  borderBottom: "2px solid #e5e7eb",
+                  verticalAlign: "middle",
+                  textAlign: "center",
+                }}
+              >
+                Submit
               </th>
               <th
                 style={{
@@ -210,83 +258,40 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                   </div>
                 </td>
                 <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <div>
-                    <div
-                      style={{
-                        color: "#111827",
-                        fontSize: "0.875rem",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {prettyName(p.full_name ?? "")}
-                    </div>
-                    {p.handle && (
-                      <div
-                        style={{
-                          color: "#a0aec0",
-                          fontSize: "0.75rem",
-                          marginTop: "0.15rem",
-                        }}
-                      >
-                        @{p.handle}
-                      </div>
-                    )}
+                  <div
+                    style={{
+                      color: "#111827",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {prettyName(p.full_name ?? "")}
                   </div>
                 </td>
+                {hasHandles && (
+                  <td style={{ padding: "1rem", verticalAlign: "middle" }}>
+                    <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+                      {p.handle || "—"}
+                    </span>
+                  </td>
+                )}
                 <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                   <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>{p.email ?? ""}</span>
                 </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.5rem",
-                      flexWrap: "nowrap",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Badge
-                      bg="success"
-                      style={{
-                        fontSize: "0.6875rem",
-                        padding: "0.375rem 0.75rem",
-                        fontWeight: 600,
-                        borderRadius: "9999px",
-                        textTransform: "capitalize",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Submit
-                    </Badge>
-                    <Badge
-                      bg="info"
-                      style={{
-                        fontSize: "0.6875rem",
-                        padding: "0.375rem 0.75rem",
-                        fontWeight: 600,
-                        borderRadius: "9999px",
-                        textTransform: "capitalize",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Review
-                    </Badge>
-                    {requireQuiz && (
-                      <Badge
-                        bg="warning"
-                        style={{
-                          fontSize: "0.6875rem",
-                          padding: "0.375rem 0.75rem",
-                          fontWeight: 600,
-                          borderRadius: "9999px",
-                          textTransform: "capitalize",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Quiz
-                      </Badge>
-                    )}
-                  </div>
+                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
+                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
+                    {requireQuiz ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
+                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
+                    Yes
+                  </span>
+                </td>
+                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
+                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
+                    Yes
+                  </span>
                 </td>
                 <td style={{ padding: "1rem", verticalAlign: "middle" }}>
                   <Form.Select
