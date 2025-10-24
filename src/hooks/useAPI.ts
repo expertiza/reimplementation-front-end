@@ -6,6 +6,7 @@ import { getAuthToken } from "../utils/auth";
  * @author Ankur Mundra on April, 2023
  */
 
+
 axios.defaults.baseURL = "http://localhost:3002";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.headers.post["Content-Type"] = "application/json";

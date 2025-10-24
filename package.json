@@ -2,6 +2,7 @@
   "name": "expertiza_frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:3002",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
@@ -72,6 +73,9 @@
     "@types/react-bootstrap": "^0.32.32",
     "@types/react-datepicker": "^4.10.0",
     "prettier": "^2.8.7",
+    "typescript": "^5.9.2"
+  },
+  "overrides": {
     "typescript": "^5.9.2"
   }
 }
