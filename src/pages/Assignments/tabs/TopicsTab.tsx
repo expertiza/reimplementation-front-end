@@ -1,4 +1,4 @@
-import { Col, Row, Form, Table as BootstrapTable } from "react-bootstrap";
+import { Col, Row, Form, Table as BootstrapTable, Button } from "react-bootstrap";
 import { BsInfoCircle, BsCheck, BsX, BsBookmark, BsPencil } from "react-icons/bs";
 
 interface TopicSettings {
@@ -152,6 +152,27 @@ const TopicsTab = ({ topicSettings, topicsData, onTopicSettingChange }: TopicsTa
             ))}
           </tbody>
         </BootstrapTable>
+
+        {/* --- NEWLY ADDED BUTTONS --- */}
+        <div className="d-flex gap-2 mt-3">
+          <Button variant="primary" onClick={() => { /* Handle New topic */ }}>
+            New topic
+          </Button>
+          <Button variant="secondary" onClick={() => { /* Handle Import topics */ }}>
+            Import topics
+          </Button>
+          <Button variant="danger" onClick={() => { /* Handle Delete selected */ }}>
+            Delete selected topics
+          </Button>
+          <Button variant="danger" onClick={() => { /* Handle Delete all */ }}>
+            Delete all topics
+          </Button>
+          <Button variant="secondary" onClick={() => { /* Handle Back */ }}>
+            Back
+          </Button>
+        </div>
+        {/* --- END OF NEWLY ADDED BUTTONS --- */}
+
       </Col>
     </Row>
   );
