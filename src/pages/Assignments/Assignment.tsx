@@ -1,16 +1,20 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { assignmentColumns as ASSIGNMENT_COLUMNS } from "./AssignmentColumns";
-import { BsFileText } from "react-icons/bs";
-import DeleteAssignment from "./AssignmentDelete";
 import { IAssignmentResponse } from "../../utils/interfaces";
 import { RootState } from "../../store/store";
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
+
+// Import tab components
+import GeneralTab from "./tabs/GeneralTab";
+import TopicsTab from "./tabs/TopicsTab";
+import RubricsTab from "./tabs/RubricsTab";
+import ReviewStrategyTab from "./tabs/ReviewStrategyTab";
+import DueDatesTab from "./tabs/DueDatesTab";
+import EtcTab from "./tabs/EtcTab";
 
 
 const Assignments = () => {
@@ -30,6 +34,50 @@ const Assignments = () => {
     visible: boolean;
     data?: IAssignmentResponse;
   }>({ visible: false });
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('general');
+
+  // Topic settings state
+  const [topicSettings, setTopicSettings] = useState({
+    allowTopicSuggestions: false,
+    enableBidding: false,
+    enableAuthorsReview: true,
+    allowReviewerChoice: true,
+    allowBookmarks: false,
+    allowBiddingForReviewers: false,
+  });
+
+  // Sample topics data
+  const topicsData = [
+    {
+      id: "E2550",
+      name: "Response hierarchy and responses_controller back end",
+      students: ["Student 10929", "Student 10913", "Student 10912"],
+      questionnaire: "--Default rubric--",
+      numSlots: 1,
+      availableSlots: 0,
+      waitlist: 0,
+    },
+    {
+      id: "E2551", 
+      name: "Reimplementing SubmittedContentController",
+      students: ["Student 10904", "Student 10922", "Student 10924"],
+      questionnaire: "--Default rubric--",
+      numSlots: 1,
+      availableSlots: 0,
+      waitlist: 0,
+    },
+    {
+      id: "E2552",
+      name: "ProjectTopic and SignedUpTeam",
+      students: ["Student 10905", "Student 10915"],
+      questionnaire: "--Default rubric--",
+      numSlots: 1,
+      availableSlots: 0,
+      waitlist: 0,
+    },
+  ];
 
 
   const fetchData = useCallback(async () => {
@@ -81,15 +129,58 @@ const Assignments = () => {
     []
   );
 
-  const tableColumns = useMemo(
-    () => ASSIGNMENT_COLUMNS(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
-  );
 
   const tableData = useMemo(
     () => (isLoading || !mergedData?.length ? [] : mergedData),
     [mergedData, isLoading]
   );
+
+  const handleTopicSettingChange = (setting: string, value: boolean) => {
+    setTopicSettings(prev => ({
+      ...prev,
+      [setting]: value
+    }));
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'general':
+        return (
+          <GeneralTab
+            tableData={tableData}
+            isLoading={isLoading}
+            showDeleteConfirmation={showDeleteConfirmation}
+            onDeleteAssignmentHandler={onDeleteAssignmentHandler}
+            onEditHandle={onEditHandle}
+            onDeleteHandle={onDeleteHandle}
+          />
+        );
+      
+      case 'topics':
+        return (
+          <TopicsTab
+            topicSettings={topicSettings}
+            topicsData={topicsData}
+            onTopicSettingChange={handleTopicSettingChange}
+          />
+        );
+      
+      case 'rubrics':
+        return <RubricsTab />;
+      
+      case 'review-strategy':
+        return <ReviewStrategyTab />;
+      
+      case 'due-dates':
+        return <DueDatesTab />;
+      
+      case 'etc':
+        return <EtcTab />;
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
@@ -98,66 +189,85 @@ const Assignments = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Editing Assignments: OSS project & documentation</h1>
+              <h1>Editing Assignment: OSS project & documentation</h1>
             </Col>
             <hr />
           </Row>
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-          <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav">
-              <li className="nav-item active">
-                <a className="nav-link" href="topicManagement">General<span className="sr-only"></span></a>
-              </li>
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Topics<span className="sr-only"></span></a>
-              </li>
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Rubrics<span className="sr-only"></span></a>
-              </li>
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Review stratergy<span className="sr-only"></span></a>
-              </li>
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Due dates<span className="sr-only"></span></a>
-              </li>
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Etc.<span className="sr-only"></span></a>
-              </li>
+          
+          <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <button
+              className="navbar-toggler"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarNav"
+              aria-controls="navbarNav"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav">
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'general' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('general'); }}
+                  >
+                    General<span className="sr-only"></span>
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'topics' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('topics'); }}
+                  >
+                    Topics<span className="sr-only"></span>
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'rubrics' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('rubrics'); }}
+                  >
+                    Rubrics<span className="sr-only"></span>
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'review-strategy' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('review-strategy'); }}
+                  >
+                    Review strategy<span className="sr-only"></span>
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'due-dates' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('due-dates'); }}
+                  >
+                    Due dates<span className="sr-only"></span>
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a 
+                    className={`nav-link ${activeTab === 'etc' ? 'active' : ''}`}
+                    href="#"
+                    onClick={(e) => { e.preventDefault(); setActiveTab('etc'); }}
+                  >
+                    Etc.<span className="sr-only"></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </nav>
 
-            </ul>
-          </div>
-        </nav>
-          <Row>
-            <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-info" onClick={() => navigate("new")} className="d-flex align-items-center">
-                <span className="me-1">Create</span><BsFileText />
-              </Button>
-            </Col>
-            {showDeleteConfirmation.visible && (
-              <DeleteAssignment assignmentData={showDeleteConfirmation.data!} onClose={onDeleteAssignmentHandler} />
-            )}
-          </Row>
-          <Row>
-            <Table
-              data={tableData}
-              columns={tableColumns}
-              columnVisibility={{
-                id: false,
-
-              }}
-            />
-          </Row>
+          {/* Tab Content */}
+          {renderTabContent()}
         </Container>
       </main>
     </>
