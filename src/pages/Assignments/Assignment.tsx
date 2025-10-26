@@ -98,7 +98,7 @@ const Assignments = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Assignments</h1>
+              <h1>Editing Assignments: OSS project & documentation</h1>
             </Col>
             <hr />
           </Row>
