@@ -42,8 +42,8 @@ const Assignments = () => {
   const [topicSettings, setTopicSettings] = useState({
     allowTopicSuggestions: false,
     enableBidding: false,
-    enableAuthorsReview: true,
-    allowReviewerChoice: true,
+    enableAuthorsReview: false,
+    allowReviewerChoice: false,
     allowBookmarks: false,
     allowBiddingForReviewers: false,
   });

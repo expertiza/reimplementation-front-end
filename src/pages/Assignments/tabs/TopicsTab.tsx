@@ -49,9 +49,7 @@ const TopicsTab = ({ topicSettings, topicsData, onTopicSettingChange }: TopicsTa
               label="Enable bidding for topics?"
               checked={topicSettings.enableBidding}
               onChange={(e) => onTopicSettingChange('enableBidding', e.target.checked)}
-            >
-              <BsInfoCircle className="ms-2" />
-            </Form.Check>
+            />
             
             <Form.Check
               type="checkbox"
@@ -59,9 +57,7 @@ const TopicsTab = ({ topicSettings, topicsData, onTopicSettingChange }: TopicsTa
               label="Enable authors to review others working on same topic?"
               checked={topicSettings.enableAuthorsReview}
               onChange={(e) => onTopicSettingChange('enableAuthorsReview', e.target.checked)}
-            >
-              <BsInfoCircle className="ms-2" />
-            </Form.Check>
+            />
             
             <Form.Check
               type="checkbox"
@@ -85,9 +81,7 @@ const TopicsTab = ({ topicSettings, topicsData, onTopicSettingChange }: TopicsTa
               label="Allow bidding for reviewers?"
               checked={topicSettings.allowBiddingForReviewers}
               onChange={(e) => onTopicSettingChange('allowBiddingForReviewers', e.target.checked)}
-            >
-              <BsInfoCircle className="ms-2" />
-            </Form.Check>
+            />
           </Form>
         </div>
 
