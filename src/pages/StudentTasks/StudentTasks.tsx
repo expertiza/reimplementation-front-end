@@ -1,6 +1,7 @@
-import React, { useEffect, useCallback, useMemo } from "react";
-import { Container, Table, Spinner, Alert } from "react-bootstrap";
+import React, { useEffect, useCallback, useMemo, useState } from "react";
+import { Container, Table, Spinner, Alert, Button } from "react-bootstrap";
 import { useParams } from "react-router-dom";
+import { BsBookmark, BsBookmarkFill, BsCheck, BsX } from "react-icons/bs";
 import useAPI from "../../hooks/useAPI";
 
 interface Topic {
@@ -8,12 +9,19 @@ interface Topic {
   name: string;
   availableSlots: number;
   waitlist: number;
+  isBookmarked?: boolean;
+  isSelected?: boolean;
+  isTaken?: boolean;
 }
 
 const StudentTasks: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId?: string }>();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
+  
+  // State for bookmarks and selections
+  const [bookmarkedTopics, setBookmarkedTopics] = useState<Set<string>>(new Set());
+  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
 
   // Fetch assignment data first to get the assignment ID
   const fetchAssignmentData = useCallback(() => {
@@ -83,9 +91,12 @@ const StudentTasks: React.FC = () => {
       id: topic.topic_identifier || topic.id?.toString() || 'unknown',
       name: topic.topic_name || 'Unnamed Topic',
       availableSlots: topic.available_slots || 0,
-      waitlist: topic.waitlisted_teams?.length || 0
+      waitlist: topic.waitlisted_teams?.length || 0,
+      isBookmarked: bookmarkedTopics.has(topic.topic_identifier || topic.id?.toString() || 'unknown'),
+      isSelected: selectedTopics.has(topic.topic_identifier || topic.id?.toString() || 'unknown'),
+      isTaken: (topic.available_slots || 0) <= 0
     }));
-  }, [topicsResponse, topicsError]);
+  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopics]);
 
   // Get assignment name for display
   const assignmentName = useMemo(() => {
@@ -100,9 +111,34 @@ const StudentTasks: React.FC = () => {
 
   // Get user's selected topics (this would need to be implemented based on user's selections)
   const userSelectedTopics: Topic[] = useMemo(() => {
-    // For now, return empty array - this would need to be fetched from user's topic selections
-    return [];
-  }, []);
+    return topics.filter(topic => topic.isSelected);
+  }, [topics]);
+
+  // Handle bookmark toggle
+  const handleBookmarkToggle = (topicId: string) => {
+    setBookmarkedTopics(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(topicId)) {
+        newSet.delete(topicId);
+      } else {
+        newSet.add(topicId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle topic selection toggle
+  const handleTopicSelect = (topicId: string) => {
+    setSelectedTopics(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(topicId)) {
+        newSet.delete(topicId);
+      } else {
+        newSet.add(topicId);
+      }
+      return newSet;
+    });
+  };
 
   // Show loading spinner while data is being fetched
   if (topicsLoading) {
@@ -170,6 +206,8 @@ const StudentTasks: React.FC = () => {
                 <th>Topic name(s)</th>
                 <th>Available slots</th>
                 <th>Num. on waitlist</th>
+                <th>Bookmarks</th>
+                <th>Select</th>
               </tr>
             </thead>
             <tbody>
@@ -177,16 +215,48 @@ const StudentTasks: React.FC = () => {
                 <tr
                   key={topic.id}
                   style={{
-                    backgroundColor:
-                      userSelectedTopics.some(selected => selected.id === topic.id) 
-                        ? "#fff8c4" 
-                        : "white", // highlight selected row
+                    backgroundColor: topic.isTaken 
+                      ? "#fff8c4" // Yellow for taken topics
+                      : topic.isSelected 
+                        ? "#e3f2fd" // Light blue for selected topics
+                        : "white"
                   }}
                 >
                   <td>{topic.id}</td>
                   <td>{topic.name}</td>
                   <td>{topic.availableSlots}</td>
                   <td>{topic.waitlist}</td>
+                  <td className="text-center">
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => handleBookmarkToggle(topic.id)}
+                      className="p-0"
+                      style={{ border: 'none', background: 'none' }}
+                    >
+                      {topic.isBookmarked ? (
+                        <BsBookmarkFill className="text-warning" size={20} />
+                      ) : (
+                        <BsBookmark className="text-muted" size={20} />
+                      )}
+                    </Button>
+                  </td>
+                  <td className="text-center">
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => handleTopicSelect(topic.id)}
+                      className="p-0"
+                      style={{ border: 'none', background: 'none' }}
+                      disabled={topic.isTaken}
+                    >
+                      {topic.isSelected ? (
+                        <BsX className="text-danger" size={20} />
+                      ) : (
+                        <BsCheck className="text-success" size={20} />
+                      )}
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
