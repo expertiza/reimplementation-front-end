@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Col, Row, Form, Table as BootstrapTable, Button, Modal, FloatingLabel, Badge, Stack } from "react-bootstrap";
+import { Col, Row, Form, Table as BootstrapTable, Button, Modal, FloatingLabel, Stack } from "react-bootstrap";
 // Reverting to the standard import path for react-icons/bs
-import { BsInfoCircle, BsCheck, BsX, BsBookmark, BsPencil, BsLink45Deg, BsPersonPlusFill, BsFillBookmarkPlusFill } from "react-icons/bs";
+import { BsX, BsBookmark, BsPencil, BsLink45Deg, BsPersonPlusFill, BsFillBookmarkPlusFill } from "react-icons/bs";
 
 // --- Interface Modifications ---
 // Assuming these interfaces are defined elsewhere and imported
@@ -329,7 +329,8 @@ const TopicsTab = ({
         return 'No members';
     }
     return members.map(member => {
-      const displayName = displayUserNames ? member.name : member.id;
+      // Always show names in admin view, regardless of toggle setting
+      const displayName = member.name || member.id;
       return displayName || 'Unknown Member';
     }).join(', ');
   };
@@ -482,48 +483,46 @@ const TopicsTab = ({
                         {topic.description && (
                         <div className="text-muted small mt-1">{topic.description}</div>
                         )}
+                        
+                        {/* Student Names - Display directly under description */}
+                        {topic.assignedTeams && topic.assignedTeams.length > 0 && (
+                            <div className="mt-2">
+                                {topic.assignedTeams.map((team) => (
+                                    <div key={team.teamId} className="d-flex align-items-center mb-1">
+                                        <span className="small fw-bold text-primary">
+                                            {renderTeamMembers(team.members)}
+                                        </span>
+                                        {/* Drop Team Icon */}
+                                        <BsX
+                                            className="text-danger ms-2"
+                                            style={{ cursor: 'pointer', fontSize: '1.1rem' }}
+                                            onClick={() => onDropTeam(topic.id, team.teamId)}
+                                            title={`Drop team ${team.teamId} from topic`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Waitlisted Students */}
+                        {topic.waitlistedTeams && topic.waitlistedTeams.length > 0 && (
+                            <div className="mt-1">
+                                {topic.waitlistedTeams.map((team) => (
+                                    <div key={team.teamId} className="d-flex align-items-center mb-1">
+                                        <span className="small text-muted">
+                                            {renderTeamMembers(team.members)} (waitlisted)
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Show message if no teams assigned or waitlisted */}
+                        {(!topic.assignedTeams || topic.assignedTeams.length === 0) && 
+                         (!topic.waitlistedTeams || topic.waitlistedTeams.length === 0) && (
+                            <div className="text-muted small mt-2">No students assigned</div>
+                        )}
                     </div>
-                    
-                    {/* Assigned Teams (Confirmed) */}
-                    {topic.assignedTeams && topic.assignedTeams.length > 0 && (
-                        <div className="mt-2">
-                            {topic.assignedTeams.map((team) => (
-                                <div key={team.teamId} className="d-flex align-items-center mb-1">
-                                    <Badge bg="success" className="me-2">Assigned</Badge>
-                                    <span className="small">
-                                        {renderTeamMembers(team.members)}
-                                    </span>
-                                    {/* Drop Team Icon */}
-                                    <BsX
-                                        className="text-danger ms-2"
-                                        style={{ cursor: 'pointer', fontSize: '1.1rem' }}
-                                        onClick={() => onDropTeam(topic.id, team.teamId)}
-                                        title={`Drop team ${team.teamId} from topic`}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    
-                    {/* Waitlisted Teams */}
-                    {topic.waitlistedTeams && topic.waitlistedTeams.length > 0 && (
-                        <div className="mt-2">
-                            {topic.waitlistedTeams.map((team) => (
-                                <div key={team.teamId} className="d-flex align-items-center mb-1">
-                                    <Badge bg="warning" text="dark" className="me-2">Waitlisted</Badge>
-                                    <span className="small text-muted">
-                                        {renderTeamMembers(team.members)} (waitlisted)
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    
-                    {/* Show message if no teams assigned or waitlisted */}
-                    {(!topic.assignedTeams || topic.assignedTeams.length === 0) && 
-                     (!topic.waitlistedTeams || topic.waitlistedTeams.length === 0) && (
-                        <div className="text-muted small mt-2">No teams assigned</div>
-                    )}
                     
                     {/* Partner Advertisement */}
                     {topic.partnerAd && (
