@@ -4,8 +4,9 @@ import axiosClient from "../../utils/axios_client";
 import { ITA, ITARequest } from "../../utils/interfaces";
 
 /**
- * @author Atharva Thorve, on December, 2023
- * @author Divit Kalathil, on December, 2023
+ * @author Anurag Gorkar, on December, 2024
+ * @author Makarand Pundalik, on December, 2024
+ * @author Rutvik Kulkarni, on December, 2024
  */
 
 /**
@@ -17,7 +18,7 @@ export interface ITAFormValues {
 }
 
 export const transformTAResponse = (taList: string) => {
-  let taData: IFormOption[] = [{ label: "Select a TA", value: "" }]; 
+  let taData: IFormOption[] = []; 
   let tas: ITA[] = JSON.parse(taList);
   tas.forEach((ta) => taData.push({ label: ta.name, value: ta.id! }));
   return taData;
@@ -37,7 +38,16 @@ export async function loadTAs({ params }: any) {
   const taRoleUsersResponse = await axiosClient.get(`/users/role/Teaching Assistant`, {
     transformResponse: transformTAResponse
   });
-  const taUsers = taRoleUsersResponse.data;
+  let taUsers = taRoleUsersResponse.data;
+
+  // Making a GET request to fetch users with the "Student" role
+  const studentRoleUsersResponse = await axiosClient.get(`/users/role/Student`, {
+    transformResponse: transformTAResponse
+  });
+  let studentUsers = studentRoleUsersResponse.data;
+  for(let i=0; i<studentUsers.length; i++)
+    studentUsers[i].role = 'student';
+  taUsers = [{label: "Select a TA", value: ""}, ...taUsers, ...studentUsers];
 
   return { taUsers };
 }

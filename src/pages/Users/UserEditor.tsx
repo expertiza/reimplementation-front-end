@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { emailOptions, IUserFormValues, transformUserRequest } from "./userUtil";
 import { Form, Formik, FormikHelpers } from "formik";
-import { Button, Col, InputGroup, Modal, Row } from "react-bootstrap";
-import FormCheckBoxGroup from "../../components/Form/FormCheckBoxGroup";
-import FormInput from "../../components/Form/FormInput";
-import FormSelect from "../../components/Form/FormSelect";
-import { alertActions } from "../../store/slices/alertSlice";
+import { Button, Col, InputGroup, Modal, Row, Tooltip, OverlayTrigger } from "react-bootstrap";
+import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
+import FormInput from "components/Form/FormInput";
+import FormSelect from "components/Form/FormSelect";
+import { alertActions } from "store/slices/alertSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import { HttpMethod } from "../../utils/httpMethods";
@@ -26,6 +26,7 @@ const initialValues: IUserFormValues = {
   role_id: -1,
   institution_id: -1,
   emailPreferences: [],
+  date_format_pref: "MM/DD/YYYY",
 };
 
 const validationSchema = Yup.object({
@@ -40,6 +41,22 @@ const validationSchema = Yup.object({
   role_id: Yup.string().required("Required").nonNullable(),
   institution_id: Yup.string().required("Required").nonNullable(),
 });
+
+// Options for the new Timezone preference dropdown
+const timezoneOptions = [
+  { value: "EST", label: "EST (UTC-5:00)" },
+  { value: "EDT", label: "EDT (UTC-4:00)" },
+  { value: "CST", label: "CST (UTC-6:00)" },
+  { value: "CDT", label: "CDT (UTC-5:00)" },
+  { value: "PST", label: "PST (UTC-8:00)" },
+  { value: "PDT", label: "PDT (UTC-7:00)" },
+];
+
+// Options for the new Language preference dropdown
+const languageOptions = [
+  { value: "en", label: "English" },
+  { value: "hi", label: "Hindi" },
+];
 
 const UserEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: userResponse, error: userError, sendRequest } = useAPI();
@@ -97,11 +114,11 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/users");
 
   return (
-    <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
-      <Modal.Header closeButton>
+    <Modal centered show={true} onHide={handleClose} backdrop="static">
+      <Modal.Header closeButton className="pb-0">
         <Modal.Title>{mode === "update" ? "Update User" : "Create User"}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="pt-0">
         {userError && <p className="text-danger">{userError}</p>}
         <Formik
           initialValues={mode === "update" ? userData : initialValues}
@@ -113,18 +130,22 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
           {(formik) => {
             return (
               <Form>
-                <FormSelect
-                  controlId="user-role"
-                  name="role_id"
-                  options={roles}
-                  inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
-                />
+                <Row>
+                  <Col md={6}>
+                    <FormSelect
+                      controlId="user-role"
+                      name="role_id"
+                      options={roles}
+                      inputGroupPrepend={<InputGroup.Text id="role-prepend">Role</InputGroup.Text>}
+                    />
+                  </Col>
+                </Row>
                 <FormInput
                   controlId="user-name"
                   label="Username"
                   name="name"
                   disabled={mode === "update"}
-                  inputGroupPrepend={<InputGroup.Text id="user-name-prep">@</InputGroup.Text>}
+                //inputGroupPrepend={<InputGroup.Text id="user-name-prep">@</InputGroup.Text>}
                 />
                 <Row>
                   <FormInput
@@ -141,12 +162,51 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                   />
                 </Row>
                 <FormInput controlId="user-email" label="Email" name="email" />
-                <FormCheckBoxGroup
-                  controlId="email-pref"
-                  label="Email Preferences"
-                  name="emailPreferences"
-                  options={emailOptions}
-                />
+                <div className="checkbox-contrast">
+                  <FormCheckBoxGroup
+                    controlId="email-pref"
+                    label="Email preferences"
+                    name="emailPreferences"
+                    options={emailOptions}
+                  />
+                </div>
+                <Row>
+                  <Col md={6}>
+                    <FormSelect
+                      controlId="user-date-format"
+                      name="date_format_pref"
+                      label="Date format preference"
+                      options={[
+                        { value: "MM/DD/YYYY", label: "MM/DD/YYYY" },
+                        { value: "DD/MM/YYYY", label: "DD/MM/YYYY" },
+                        { value: "YYYY/MM/DD", label: "YYYY/MM/DD" },
+                        { value: "MMM DD, YYYY", label: "Jan 01, 2025" },
+                        { value: "DD MMM, YYYY", label: "01 Jan, 2025" },
+                      ]}
+                      placeholder="Select Date Format"
+                    />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <FormSelect
+                      controlId="user-timezone-pref"
+                      name="timezone_pref"
+                      label="Timezone preference"
+                      options={timezoneOptions}
+                      placeholder="Select Timezone"
+                    />
+                  </Col>
+                  <Col md={6}>
+                    <FormSelect
+                      controlId="user-language-pref"
+                      name="language_pref"
+                      label="Language preference"
+                      options={languageOptions}
+                      placeholder="Select Language"
+                    />
+                  </Col>
+                </Row>
                 <FormSelect
                   controlId="user-institution"
                   name="institution_id"

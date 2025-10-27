@@ -17,6 +17,7 @@ interface PaginationProps {
   setPageSize: (pageSize: number) => void;
   getPageCount: () => number;
   getState: () => TableState;
+  totalItems: number;
 }
 
 const Pagination: React.FC<PaginationProps> = (props) => {
@@ -29,7 +30,12 @@ const Pagination: React.FC<PaginationProps> = (props) => {
     setPageSize,
     getPageCount,
     getState,
+    totalItems,
   } = props;
+  const pageSize = getState().pagination.pageSize;
+  if (totalItems <= pageSize) {
+    return null;
+  }
   return (
     <Row className="justify-content-center">
       <Col xs="auto">
@@ -69,6 +75,7 @@ const Pagination: React.FC<PaginationProps> = (props) => {
             { label: "Show 10", value: "10" },
             { label: "Show 25", value: "25" },
             { label: "Show 50", value: "50" },
+            { label: "Show All", value: String(totalItems) },
           ]}
           input={{
             value: getState().pagination.pageSize,

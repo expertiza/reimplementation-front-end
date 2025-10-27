@@ -97,10 +97,16 @@ export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
   }
 
   // Load institutions data
-  const institutionsResponse = await axiosClient.get("/institutions", {
-    transformResponse: transformInstitutionsResponse,
-  });
-  const institutions = await institutionsResponse.data;
+  let institutions = [];
+  try {
+    const institutionsResponse = await axiosClient.get("/institutions", {
+      transformResponse: transformInstitutionsResponse,
+    });
+    institutions = await institutionsResponse.data;
+  } catch (error) {
+    console.error("Failed to load institutions:", error);
+    // Default to an empty array on error to prevent crashing
+  }
 
   // ToDo: Create an API to just fetch instructors, so here in the frontend we won't have to filter out the users based on the role.
   const usersResponse = await axiosClient.get("/users", {
