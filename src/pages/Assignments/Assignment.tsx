@@ -20,6 +20,7 @@ import EtcTab from "./tabs/EtcTab";
 const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
+  const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
 
 
   const auth = useSelector(
@@ -48,157 +49,60 @@ const Assignments = () => {
     allowBiddingForReviewers: false,
   });
 
-  // Sample topics data
-  const topicsData = [
-    {
-      id: "E2550",
-      name: "Response hierarchy and responses_controller back end",
-      students: ["Student 10929", "Student 10913", "Student 10912"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2551", 
-      name: "Reimplementing SubmittedContentController",
-      students: ["Student 10904", "Student 10922", "Student 10924"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-    {
-      id: "E2552",
-      name: "ProjectTopic and SignedUpTeam",
-      students: ["Student 10905", "Student 10915"],
-      questionnaire: "--Default rubric--",
-      numSlots: 1,
-      availableSlots: 0,
-      waitlist: 0,
-    },
-  ];
+  // Fetch topics for the current assignment
+  const fetchTopics = useCallback((assignmentId: number) => {
+    if (!assignmentId) return;
+    console.log('Fetching topics for assignment:', assignmentId);
+    fetchTopicsAPI({ 
+      url: `/project_topics?assignment_id=${assignmentId}`,
+      method: 'GET'
+    });
+  }, [fetchTopicsAPI]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Topics response:', topicsResponse);
+    console.log('Topics response data:', topicsResponse?.data);
+    console.log('Topics response data type:', typeof topicsResponse?.data);
+    console.log('Is topics response data array:', Array.isArray(topicsResponse?.data));
+    console.log('Topics error:', topicsError);
+    console.log('Topics loading:', topicsLoading);
+  }, [topicsResponse, topicsError, topicsLoading]);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [assignments, courses] = await Promise.all([
-        fetchAssignments({ url: `/assignments` }),
-        fetchCourses({ url: '/courses' }),
-      ]);
-      // Handle the responses as needed
-    } catch (err) {
-      // Handle any errors that occur during the fetch
-      console.error("Error fetching data:", err);
+  // Transform topics data to match expected format
+  const topicsData = useMemo(() => {
+    // If there's an error or no response, return empty array
+    if (topicsError || !topicsResponse?.data) {
+      console.log('No topics data available:', { topicsError, topicsResponse });
+      return [];
     }
+    
+    // Check if data is an array, if not, return empty array
+    const topics = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
+    
+    console.log('Processing topics:', topics);
+    
+    return topics.map((topic: any) => ({
+      id: topic.topic_identifier || topic.id?.toString() || 'unknown',
+      name: topic.topic_name || 'Unnamed Topic',
+      assignedTeams: topic.confirmed_teams || [],
+      waitlistedTeams: topic.waitlisted_teams || [],
+      questionnaire: "--Default rubric--", // This would need to be fetched separately
+      numSlots: topic.max_choosers || 1,
+      availableSlots: topic.available_slots || 0,
+      bookmarks: [], // This would need to be fetched separately
+      category: topic.category || '',
+      description: topic.description || '',
+      link: topic.link || '',
+      micropayment: topic.micropayment || 0,
+      private_to: topic.private_to || null
+    }));
+  }, [topicsResponse, topicsError]);
+
+  const fetchData = useCallback(() => {
+    // Trigger the API calls - they will update the state
+    fetchAssignments({ url: `/assignments` });
+    fetchCourses({ url: '/courses' });
   }, [fetchAssignments, fetchCourses]);
 
   useEffect(() => {
@@ -206,6 +110,14 @@ const Assignments = () => {
       fetchData();
     }
   }, [fetchData, showDeleteConfirmation.visible, auth.user.id]);
+
+  // Fetch topics when assignment data is available
+  useEffect(() => {
+    if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
+      const firstAssignment = assignmentResponse.data[0];
+      fetchTopics(firstAssignment.id);
+    }
+  }, [assignmentResponse, fetchTopics]);
 
   let mergedData: Array<any & { courseName?: string }> = [];
 
@@ -250,6 +162,106 @@ const Assignments = () => {
     }));
   };
 
+  // Handler functions for TopicsTab
+  const handleDropTeam = async (topicId: string, teamId: string) => {
+    try {
+      // This would require a specific API endpoint for dropping teams from topics
+      // For now, we'll just refresh the topics data
+      console.log(`Dropping team ${teamId} from topic ${topicId}`);
+      // TODO: Implement team dropping API call when endpoint is available
+      
+      // Refresh topics data
+      if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
+        fetchTopics(assignmentResponse.data[0].id);
+      }
+    } catch (err) {
+      console.error("Error dropping team:", err);
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: string) => {
+    try {
+      if (!assignmentResponse || !assignmentResponse.data || assignmentResponse.data.length === 0) {
+        throw new Error('No assignment found');
+      }
+      
+      fetchTopicsAPI({
+        url: `/project_topics?assignment_id=${assignmentResponse.data[0].id}&topic_ids[]=${topicId}`,
+        method: 'DELETE'
+      });
+      
+      // Refresh topics data after a short delay
+      setTimeout(() => {
+        fetchTopics(assignmentResponse.data[0].id);
+      }, 500);
+      
+      console.log(`Topic ${topicId} deleted successfully`);
+    } catch (err) {
+      console.error("Error deleting topic:", err);
+    }
+  };
+
+  const handleEditTopic = async (topicId: string, updatedData: any) => {
+    try {
+      fetchTopicsAPI({
+        url: `/project_topics/${topicId}`,
+        method: 'PATCH',
+        data: {
+          project_topic: updatedData
+        }
+      });
+      
+      // Refresh topics data after a short delay
+      if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
+        setTimeout(() => {
+          fetchTopics(assignmentResponse.data[0].id);
+        }, 500);
+      }
+      
+      console.log(`Topic ${topicId} updated successfully`);
+    } catch (err) {
+      console.error("Error updating topic:", err);
+    }
+  };
+
+  const handleCreateTopic = async (topicData: any) => {
+    try {
+      if (!assignmentResponse || !assignmentResponse.data || assignmentResponse.data.length === 0) {
+        throw new Error('No assignment found');
+      }
+      
+      fetchTopicsAPI({
+        url: `/project_topics`,
+        method: 'POST',
+        data: {
+          project_topic: {
+            ...topicData,
+            assignment_id: assignmentResponse.data[0].id
+          }
+        }
+      });
+      
+      // Refresh topics data after a short delay
+      setTimeout(() => {
+        fetchTopics(assignmentResponse.data[0].id);
+      }, 500);
+      
+      console.log(`Topic created successfully`);
+    } catch (err) {
+      console.error("Error creating topic:", err);
+    }
+  };
+
+  const handleCreateBookmark = (topicId: string) => {
+    console.log(`Creating bookmark for topic ${topicId}`);
+    // TODO: Implement bookmark creation logic
+  };
+
+  const handleApplyPartnerAd = (topicId: string, applicationText: string) => {
+    console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
+    // TODO: Implement partner ad application logic
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
@@ -269,7 +281,15 @@ const Assignments = () => {
           <TopicsTab
             topicSettings={topicSettings}
             topicsData={topicsData}
+            topicsLoading={topicsLoading}
+            topicsError={topicsError}
             onTopicSettingChange={handleTopicSettingChange}
+            onDropTeam={handleDropTeam}
+            onDeleteTopic={handleDeleteTopic}
+            onEditTopic={handleEditTopic}
+            onCreateTopic={handleCreateTopic}
+            onCreateBookmark={handleCreateBookmark}
+            onApplyPartnerAd={handleApplyPartnerAd}
           />
         );
       

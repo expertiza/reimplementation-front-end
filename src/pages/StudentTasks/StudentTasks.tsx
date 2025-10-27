@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Container, Table } from "react-bootstrap";
+import React, { useEffect, useCallback, useMemo } from "react";
+import { Container, Table, Spinner, Alert } from "react-bootstrap";
+import { useParams } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 interface Topic {
   id: string;
@@ -9,24 +11,127 @@ interface Topic {
 }
 
 const StudentTasks: React.FC = () => {
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const { assignmentId } = useParams<{ assignmentId?: string }>();
+  const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
+  const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
 
+  // Fetch assignment data first to get the assignment ID
+  const fetchAssignmentData = useCallback(() => {
+    if (assignmentId) {
+      fetchAssignment({
+        url: `/assignments/${assignmentId}`,
+        method: 'GET'
+      });
+    } else {
+      // If no assignment ID in URL, fetch all assignments and use the first one
+      fetchAssignment({
+        url: `/assignments`,
+        method: 'GET'
+      });
+    }
+  }, [assignmentId, fetchAssignment]);
+
+  // Fetch topics for the current assignment
+  const fetchTopics = useCallback((assignmentId: number) => {
+    if (!assignmentId) return;
+    console.log('Fetching topics for assignment:', assignmentId);
+    fetchTopicsAPI({ 
+      url: `/project_topics?assignment_id=${assignmentId}`,
+      method: 'GET'
+    });
+  }, [fetchTopicsAPI]);
+
+  // Load assignment data on component mount
   useEffect(() => {
-    // Temporary hardcoded data (replace later with API call)
-    const mockData: Topic[] = [
-      { id: "E2450", name: "Refactor assignments_controller.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2451", name: "Reimplement feedback_response_map.rb", availableSlots: 1, waitlist: 0 },
-      { id: "E2452", name: "Refactor review_mapping_controller.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2453", name: "Refactor review_mapping_helper.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2454", name: "Refactor student_task.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2455", name: "Refactor sign_up_sheet_controller.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2456", name: "Refactor teams_user.rb", availableSlots: 0, waitlist: 0 },
-      { id: "E2457", name: "Github metrics integration", availableSlots: 1, waitlist: 0 },
-      { id: "E2458", name: "User management and users table", availableSlots: 0, waitlist: 0 },
-      { id: "E2459", name: "View for results of bidding", availableSlots: 0, waitlist: 0 },
-    ];
-    setTopics(mockData);
+    fetchAssignmentData();
+  }, [fetchAssignmentData]);
+
+  // Fetch topics when assignment data is available
+  useEffect(() => {
+    if (assignmentResponse?.data) {
+      let targetAssignmentId: number;
+      
+      if (assignmentId) {
+        // If assignment ID is in URL, use it
+        targetAssignmentId = parseInt(assignmentId);
+      } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+        // If no assignment ID in URL, use the first assignment
+        targetAssignmentId = assignmentResponse.data[0].id;
+      } else {
+        // Single assignment object
+        targetAssignmentId = assignmentResponse.data.id;
+      }
+      
+      fetchTopics(targetAssignmentId);
+    }
+  }, [assignmentResponse, assignmentId, fetchTopics]);
+
+  // Transform topics data to match expected format
+  const topics = useMemo(() => {
+    // If there's an error or no response, return empty array
+    if (topicsError || !topicsResponse?.data) {
+      console.log('No topics data available:', { topicsError, topicsResponse });
+      return [];
+    }
+    
+    // Check if data is an array, if not, return empty array
+    const topicsData = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
+    
+    console.log('Processing topics for StudentTasks:', topicsData);
+    
+    return topicsData.map((topic: any) => ({
+      id: topic.topic_identifier || topic.id?.toString() || 'unknown',
+      name: topic.topic_name || 'Unnamed Topic',
+      availableSlots: topic.available_slots || 0,
+      waitlist: topic.waitlisted_teams?.length || 0
+    }));
+  }, [topicsResponse, topicsError]);
+
+  // Get assignment name for display
+  const assignmentName = useMemo(() => {
+    if (!assignmentResponse?.data) return 'OSS project & documentation assignment';
+    
+    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+      return assignmentResponse.data[0].name || 'OSS project & documentation assignment';
+    } else {
+      return assignmentResponse.data.name || 'OSS project & documentation assignment';
+    }
+  }, [assignmentResponse]);
+
+  // Get user's selected topics (this would need to be implemented based on user's selections)
+  const userSelectedTopics: Topic[] = useMemo(() => {
+    // For now, return empty array - this would need to be fetched from user's topic selections
+    return [];
   }, []);
+
+  // Show loading spinner while data is being fetched
+  if (topicsLoading) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading topics...</span>
+        </Spinner>
+        <p className="mt-2">Loading topics...</p>
+      </Container>
+    );
+  }
+
+  // Show error message if there's an error
+  if (topicsError) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">
+          <Alert.Heading>Error Loading Topics</Alert.Heading>
+          <p>
+            {typeof topicsError === 'string'
+              ? topicsError
+              : JSON.stringify(topicsError)
+            }
+          </p>
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container
@@ -40,40 +145,53 @@ const StudentTasks: React.FC = () => {
     >
       <div style={{ width: "100%", marginBottom: "20px" }}>
         <h3 className="fw-bold">
-          Signup sheet for OSS project & documentation assignment
+          Signup sheet for {assignmentName}
         </h3>
         <p className="mt-2">
-          <strong>Your topic(s):</strong> Refactor review_mapping_controller.rb
+          <strong>Your topic(s):</strong> {
+            userSelectedTopics.length > 0 
+              ? userSelectedTopics.map(topic => topic.name).join(', ')
+              : 'No topics selected yet'
+          }
         </p>
       </div>
 
       <div style={{ width: "100%" }}>
-        <Table bordered hover striped responsive>
-          <thead className="table-light">
-            <tr>
-              <th>Topic ID</th>
-              <th>Topic name(s)</th>
-              <th>Available slots</th>
-              <th>Num. on waitlist</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topics.map((topic) => (
-              <tr
-                key={topic.id}
-                style={{
-                  backgroundColor:
-                    topic.id === "E2452" ? "#fff8c4" : "white", // highlight selected row
-                }}
-              >
-                <td>{topic.id}</td>
-                <td>{topic.name}</td>
-                <td>{topic.availableSlots}</td>
-                <td>{topic.waitlist}</td>
+        {topics.length === 0 ? (
+          <Alert variant="info">
+            <Alert.Heading>No Topics Available</Alert.Heading>
+            <p>There are no topics available for this assignment yet.</p>
+          </Alert>
+        ) : (
+          <Table bordered hover striped responsive>
+            <thead className="table-light">
+              <tr>
+                <th>Topic ID</th>
+                <th>Topic name(s)</th>
+                <th>Available slots</th>
+                <th>Num. on waitlist</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {topics.map((topic) => (
+                <tr
+                  key={topic.id}
+                  style={{
+                    backgroundColor:
+                      userSelectedTopics.some(selected => selected.id === topic.id) 
+                        ? "#fff8c4" 
+                        : "white", // highlight selected row
+                  }}
+                >
+                  <td>{topic.id}</td>
+                  <td>{topic.name}</td>
+                  <td>{topic.availableSlots}</td>
+                  <td>{topic.waitlist}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
       </div>
     </Container>
   );

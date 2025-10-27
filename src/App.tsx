@@ -203,6 +203,10 @@ function App() {
           path: "student_tasks",
           element: <ProtectedRoute element={<StudentTasks />} />,
         },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
