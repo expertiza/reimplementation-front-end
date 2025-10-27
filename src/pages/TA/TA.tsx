@@ -94,7 +94,11 @@ const TAs = () => {
                   className="ms-sm-2"
                   onClick={() => navigate("new")}
                   tooltip="Add TA to this course"
-                  icon={<BsPersonFillAdd />}
+                  icon={<img
+              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              alt="Assign TA"
+              style={{ width: "20px", height: "20px" }}
+            />}
                 />
               </Col>
             </Row>
