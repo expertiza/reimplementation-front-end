@@ -35,6 +35,7 @@ import EditProfile from "pages/Profile/Edit";
 import Reviews from "pages/Reviews/reviews";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import CreateTeams from "pages/Assignments/CreateTeams";
+import StudentTasks from "pages/StudentTasks/StudentTasks";
 import AssignReviewer from "pages/Assignments/AssignReviewer";
 import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
@@ -197,6 +198,10 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author/>,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
