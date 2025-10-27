@@ -21,6 +21,7 @@ const Assignments = () => {
   const { error, isLoading, data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const { data: coursesResponse, sendRequest: fetchCourses } = useAPI();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
+  const { data: editResponse, error: editError, sendRequest: editTopicAPI } = useAPI();
 
 
   const auth = useSelector(
@@ -84,6 +85,7 @@ const Assignments = () => {
     
     return topics.map((topic: any) => ({
       id: topic.topic_identifier || topic.id?.toString() || 'unknown',
+      databaseId: topic.id, // Store the actual database ID for API calls
       name: topic.topic_name || 'Unnamed Topic',
       assignedTeams: topic.confirmed_teams || [],
       waitlistedTeams: topic.waitlisted_teams || [],
@@ -118,6 +120,23 @@ const Assignments = () => {
       fetchTopics(firstAssignment.id);
     }
   }, [assignmentResponse, fetchTopics]);
+
+  // Refresh topics when edit is successful
+  useEffect(() => {
+    if (editResponse && assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
+      console.log('Edit successful, refreshing topics...');
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully!" }));
+      fetchTopics(assignmentResponse.data[0].id);
+    }
+  }, [editResponse, assignmentResponse, fetchTopics, dispatch]);
+
+  // Handle edit errors
+  useEffect(() => {
+    if (editError) {
+      console.error('Edit error:', editError);
+      dispatch(alertActions.showAlert({ variant: "danger", message: `Edit failed: ${editError}` }));
+    }
+  }, [editError, dispatch]);
 
   let mergedData: Array<any & { courseName?: string }> = [];
 
@@ -185,8 +204,16 @@ const Assignments = () => {
         throw new Error('No assignment found');
       }
       
+      // Find the topic to get the database ID
+      const topic = topicsData.find(t => t.id === topicId);
+      if (!topic || !topic.databaseId) {
+        console.error('Topic not found or missing database ID:', topicId);
+        dispatch(alertActions.showAlert({ variant: "danger", message: "Topic not found" }));
+        return;
+      }
+      
       fetchTopicsAPI({
-        url: `/project_topics?assignment_id=${assignmentResponse.data[0].id}&topic_ids[]=${topicId}`,
+        url: `/project_topics?assignment_id=${assignmentResponse.data[0].id}&topic_ids[]=${topic.databaseId}`,
         method: 'DELETE'
       });
       
@@ -195,7 +222,7 @@ const Assignments = () => {
         fetchTopics(assignmentResponse.data[0].id);
       }, 500);
       
-      console.log(`Topic ${topicId} deleted successfully`);
+      console.log(`Topic ${topicId} (database ID: ${topic.databaseId}) deleted successfully`);
     } catch (err) {
       console.error("Error deleting topic:", err);
     }
@@ -203,24 +230,28 @@ const Assignments = () => {
 
   const handleEditTopic = async (topicId: string, updatedData: any) => {
     try {
-      fetchTopicsAPI({
-        url: `/project_topics/${topicId}`,
+      // Find the topic to get the database ID
+      const topic = topicsData.find(t => t.id === topicId);
+      if (!topic || !topic.databaseId) {
+        console.error('Topic not found or missing database ID:', topicId);
+        dispatch(alertActions.showAlert({ variant: "danger", message: "Topic not found" }));
+        return;
+      }
+      
+      console.log('Starting edit for topic:', topicId, 'database ID:', topic.databaseId, 'with data:', updatedData);
+      
+      editTopicAPI({
+        url: `/project_topics/${topic.databaseId}`,
         method: 'PATCH',
         data: {
           project_topic: updatedData
         }
       });
       
-      // Refresh topics data after a short delay
-      if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
-        setTimeout(() => {
-          fetchTopics(assignmentResponse.data[0].id);
-        }, 500);
-      }
-      
-      console.log(`Topic ${topicId} updated successfully`);
+      console.log(`Edit request sent for topic ${topicId} (database ID: ${topic.databaseId})`);
     } catch (err) {
       console.error("Error updating topic:", err);
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Failed to update topic" }));
     }
   };
 

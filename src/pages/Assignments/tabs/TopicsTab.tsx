@@ -35,7 +35,8 @@ interface BookmarkData {
 
 // Updated TopicData interface
 interface TopicData {
-  id: string; // Topic ID
+  id: string; // Topic ID (topic_identifier for display)
+  databaseId: number; // Database ID for API calls
   name: string; // Topic Name
   url?: string; // Optional URL for the topic name
   description?: string; // Optional short description
@@ -184,6 +185,7 @@ const TopicsTab = ({
 
   // --- Edit Topic Modal Handlers ---
   const handleShowEditTopic = (topic: TopicData) => {
+    console.log('Edit button clicked for topic:', topic);
     setEditingTopic(topic);
     setEditTopicData({
       topic_name: topic.name || '',
@@ -194,6 +196,7 @@ const TopicsTab = ({
       link: topic.url || ''
     });
     setShowEditModal(true);
+    console.log('Edit modal should be opening now');
   };
 
   const handleCloseEditTopic = () => {
@@ -202,9 +205,14 @@ const TopicsTab = ({
   };
 
   const handleSubmitEditTopic = () => {
+    console.log('Submitting edit for topic:', editingTopic);
+    console.log('Edit data:', editTopicData);
     if (editingTopic && onEditTopic) {
+      console.log('Calling onEditTopic with:', editingTopic.id, editTopicData);
       onEditTopic(editingTopic.id, editTopicData);
       handleCloseEditTopic();
+    } else {
+      console.log('Missing editingTopic or onEditTopic:', { editingTopic, onEditTopic });
     }
   };
 
@@ -544,7 +552,10 @@ const TopicsTab = ({
                         <BsPencil
                             className="text-primary"
                             style={{ cursor: 'pointer' }}
-                            onClick={() => handleShowEditTopic(topic)}
+                            onClick={() => {
+                              console.log('Edit icon clicked for topic:', topic);
+                              handleShowEditTopic(topic);
+                            }}
                             title="Edit Topic"
                         />
                         {/* Delete Icon */}
