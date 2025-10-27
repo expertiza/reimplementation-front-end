@@ -1,28 +1,29 @@
 import {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
-  ExpandedState,
-  getExpandedRowModel,
 } from "@tanstack/react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Col, Container, Row, Table as BTable } from "react-bootstrap";
-import { BsChevronRight, BsChevronDown } from "react-icons/bs";
+import { Table as BTable, Col, Container, Row } from "react-bootstrap";
+import { BsChevronDown, BsChevronRight } from "react-icons/bs";
+import { FaSearch } from "react-icons/fa";
 import ColumnFilter from "./ColumnFilter";
 import GlobalFilter from "./GlobalFilter";
 import Pagination from "./Pagination";
 import RowSelectCheckBox from "./RowSelectCheckBox";
-import { FaSearch } from "react-icons/fa";
 
 interface TableProps {
   data: Record<string, any>[];
   columns: ColumnDef<any, any>[];
+  disableGlobalFilter?: boolean;
   showGlobalFilter?: boolean;
   showColumnFilter?: boolean;
   showPagination?: boolean;
@@ -36,6 +37,7 @@ interface TableProps {
 const Table: React.FC<TableProps> = ({
   data: initialData,
   columns,
+  disableGlobalFilter = false,
   showGlobalFilter = false,
   showColumnFilter = true,
   showPagination = true,
@@ -55,7 +57,6 @@ const Table: React.FC<TableProps> = ({
 
   const selectable = typeof onSelectionChange === "function";
   const onSelectionChangeRef = useRef<any>(onSelectionChange);
-  const firstRenderRef = useRef(true);
 
   const colsPlusExpander = useMemo(() => {
     if (!renderSubComponent) return columns;
@@ -156,12 +157,33 @@ const Table: React.FC<TableProps> = ({
     handleSelectionChange?.(selectedData);
   }, [flatRows]);
 
+  const toggleGlobalFilter = () => {
+    setIsGlobalFilterVisible(!isGlobalFilterVisible);
+  };
+
+  const firstRenderRef = useRef(true);
+
   return (
     <>
+      {!disableGlobalFilter && (
+        <Container>
+          <Row className="mb-md-2" style={{ flex: 1 }}>
+            <Col md={{ span: 12 }}>
+              {isGlobalFilterVisible && (
+                <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
+              )}
+            </Col>
+            <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
+              <FaSearch style={{ cursor: "pointer" }} />
+              {isGlobalFilterVisible ? " Hide" : " Show"}
+            </span>
+          </Row>
+        </Container>
+      )}
       <Container>
-        <Row>
+        <Row style={{ flex: 1 }}>
           <Col md={tableSize}>
-            <BTable className="table table-sm table-striped table-hover" responsive>
+            <BTable striped hover responsive size="sm">
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -178,7 +200,10 @@ const Table: React.FC<TableProps> = ({
                               }}
                             >
                               {flexRender(header.column.columnDef.header, header.getContext())}
-                              {null}
+                              {{
+                                asc: " 🔼",
+                                desc: " 🔽",
+                              }[header.column.getIsSorted() as string] ?? null}
                             </div>
                             {showColumnFilter && header.column.getCanFilter() ? (
                               <ColumnFilter column={header.column} />

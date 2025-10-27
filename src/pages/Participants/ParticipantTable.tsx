@@ -1,7 +1,9 @@
-import React from "react";
-import { Badge, Button, Card, Form, Table as BTable } from "react-bootstrap";
-import { Participant, ALL_ROLES } from "./participantTypes";
+import { createColumnHelper } from "@tanstack/react-table";
+import React, { useMemo } from "react";
+import { Button, Card, Form } from "react-bootstrap";
+import Table from "../../components/Table/Table";
 import { prettyName } from "./participantHelpers";
+import { ALL_ROLES, Participant } from "./participantTypes";
 
 interface ParticipantTableProps {
   participants: Participant[];
@@ -11,6 +13,123 @@ interface ParticipantTableProps {
   onRemoveClick: (participant: Participant) => void;
 }
 
+const columnHelper = createColumnHelper<Participant>();
+const participantColumns = (
+  handleRoleChange: (userId: number, newId: number) => void,
+  handleDelete: (participant: Participant) => void
+) => [
+  columnHelper.accessor("parent.name", {
+    header: "PARENT",
+    enableColumnFilter: false,
+    enableSorting: false,
+  }),
+
+  columnHelper.accessor("name", {
+    header: "USERNAME",
+    enableColumnFilter: false,
+    enableSorting: true,
+  }),
+
+  columnHelper.display({
+    id: "full_name_handle",
+    header: "NAME",
+    cell: ({ row: { original } }) => (
+      <td style={{ verticalAlign: "middle" }}>
+        <div>
+          <div>{prettyName(original.full_name ?? "")}</div>
+          {original.handle && (
+            <div
+              style={{
+                color: "#727d8c",
+                fontSize: "0.88rem",
+                marginTop: "0.12rem",
+              }}
+            >
+              @{original.handle}
+            </div>
+          )}
+        </div>
+      </td>
+    ),
+  }),
+
+  columnHelper.accessor("email", {
+    header: "EMAIL",
+    enableColumnFilter: false,
+  }),
+
+  columnHelper.accessor("can_take_quiz", {
+    header: "QUIZ",
+    enableColumnFilter: false,
+    enableSorting: false,
+  }),
+
+  columnHelper.accessor("can_review", {
+    header: "REVIEW",
+    enableColumnFilter: false,
+    enableSorting: false,
+  }),
+
+  columnHelper.accessor("can_submit", {
+    header: "SUBMIT",
+    enableColumnFilter: false,
+    enableSorting: false,
+  }),
+
+  columnHelper.display({
+    id: "role",
+    header: "ROLE",
+    cell: ({ row }) => (
+      <Form.Select
+        size="sm"
+        aria-label="Participant Role"
+        value={row.original.role?.id}
+        onChange={(e) => handleRoleChange(row.original.id, parseInt(e.target.value, 10))}
+        style={{
+          fontSize: "0.8125rem",
+          padding: "0.5rem 0.75rem",
+          cursor: "pointer",
+          border: "1px solid #d1d5db",
+          borderRadius: "0.5rem",
+          fontWeight: 500,
+          color: "#374151",
+          maxWidth: "110px",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        {ALL_ROLES.map((r) => (
+          <option key={r.id} value={r.id}>
+            {r.name}
+          </option>
+        ))}
+      </Form.Select>
+    ),
+  }),
+
+  columnHelper.display({
+    id: "action",
+    header: "ACTION",
+    cell: ({ row }) => (
+      <div className="d-flex justify-content-center align-items-center">
+        <Button
+          className="btn btn-md"
+          title="Remove participant"
+          onClick={() => handleDelete(row.original)}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            border: "none",
+            outline: "none",
+            backgroundColor: "transparent",
+          }}
+        >
+          <img src="/assets/images/delete-icon-24.png" alt="Delete" width={14} height={14} />
+        </Button>
+      </div>
+    ),
+  }),
+];
+
 const ParticipantTable: React.FC<ParticipantTableProps> = ({
   participants,
   isLoading,
@@ -18,7 +137,8 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
   onRoleChange,
   onRemoveClick,
 }) => {
-  const hasHandles = participants.some((p) => p.handle);
+  const tableColumns = useMemo(() => participantColumns(onRoleChange, onRemoveClick), []);
+
   if (isLoading) {
     return (
       <Card
@@ -37,323 +157,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
     );
   }
 
-  if (participants.length === 0) {
-    return (
-      <Card
-        style={{
-          border: "1px solid #e2e8f0",
-          borderRadius: "0.75rem",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          overflow: "hidden",
-          backgroundColor: "#ffffff",
-        }}
-      >
-        <div style={{ padding: "2rem", textAlign: "center" }}>
-          <p style={{ color: "#718096" }}>No participants found</p>
-        </div>
-      </Card>
-    );
-  }
-
-  return (
-    <Card
-      style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "0.75rem",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-        overflow: "hidden",
-        backgroundColor: "#ffffff",
-      }}
-    >
-      <div className="table-responsive">
-        <BTable
-          hover
-          style={{
-            marginBottom: 0,
-            fontSize: "0.875rem",
-          }}
-        >
-          <thead
-            style={{
-              backgroundColor: "#f9fafb",
-              borderBottom: "2px solid #e5e7eb",
-              position: "sticky",
-              top: 0,
-              zIndex: 10,
-            }}
-          >
-            <tr>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                  width: "80px",
-                }}
-              >
-                Parent
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                }}
-              >
-                Username
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                }}
-              >
-                Name
-              </th>
-              {hasHandles && (
-                <th
-                  style={{
-                    color: "#374151",
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    padding: "1rem",
-                    borderBottom: "2px solid #e5e7eb",
-                    verticalAlign: "middle",
-                  }}
-                >
-                  Handles
-                </th>
-              )}
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                }}
-              >
-                Email
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                  textAlign: "center",
-                }}
-              >
-                Quiz
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                  textAlign: "center",
-                }}
-              >
-                Review
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                  textAlign: "center",
-                }}
-              >
-                Submit
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  verticalAlign: "middle",
-                }}
-              >
-                Participant Role
-              </th>
-              <th
-                style={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  padding: "1rem",
-                  borderBottom: "2px solid #e5e7eb",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                }}
-              >
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {participants.map((p, index) => (
-              <tr
-                key={p.id}
-                style={{
-                  backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
-                  transition: "background-color 0.15s ease",
-                }}
-              >
-                <td style={{ padding: "1rem", verticalAlign: "middle", width: "80px" }}>
-                  <span style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
-                    {p.parent?.name || "—"}
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      color: "#111827",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    {p.name}
-                  </div>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <div
-                    style={{
-                      color: "#111827",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {prettyName(p.full_name ?? "")}
-                  </div>
-                </td>
-                {hasHandles && (
-                  <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                    <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
-                      {p.handle || "—"}
-                    </span>
-                  </td>
-                )}
-                <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>{p.email ?? ""}</span>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
-                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
-                    {requireQuiz ? "Yes" : "No"}
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
-                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
-                    Yes
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle", textAlign: "center" }}>
-                  <span style={{ color: "#111827", fontSize: "0.875rem", fontWeight: 500 }}>
-                    Yes
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", verticalAlign: "middle" }}>
-                  <Form.Select
-                    size="sm"
-                    aria-label="Participant Role"
-                    value={p.role?.id}
-                    onChange={(e) => onRoleChange(p.id, parseInt(e.target.value, 10))}
-                    style={{
-                      fontSize: "0.8125rem",
-                      padding: "0.5rem 0.75rem",
-                      cursor: "pointer",
-                      border: "1px solid #d1d5db",
-                      borderRadius: "0.5rem",
-                      fontWeight: 500,
-                      color: "#374151",
-                      maxWidth: "110px",
-                      backgroundColor: "#ffffff",
-                    }}
-                  >
-                    {ALL_ROLES.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </td>
-                <td
-                  style={{
-                    padding: "1rem",
-                    verticalAlign: "middle",
-                    textAlign: "center",
-                  }}
-                >
-                  <Button
-                    className="btn btn-md"
-                    variant="danger"
-                    title="Remove participant"
-                    onClick={() => onRemoveClick(p)}
-                    style={{
-                      padding: "0.5rem 0.75rem",
-                      fontSize: "0.875rem",
-                      borderRadius: "0.5rem",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <img
-                      src="/assets/images/delete-icon-24.png"
-                      alt="Delete"
-                      width={14}
-                      height={14}
-                    />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </BTable>
-      </div>
-    </Card>
-  );
+  return <Table columns={tableColumns} data={participants} disableGlobalFilter />;
 };
 
 export default ParticipantTable;
