@@ -3,6 +3,8 @@ import { Container, Table, Spinner, Alert, Button } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { BsBookmark, BsBookmarkFill, BsCheck, BsX } from "react-icons/bs";
 import useAPI from "../../hooks/useAPI";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface Topic {
   id: string;
@@ -18,10 +20,17 @@ const StudentTasks: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId?: string }>();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
+  const { data: signUpResponse, error: signUpError, sendRequest: signUpAPI } = useAPI();
+  const { data: dropResponse, error: dropError, sendRequest: dropAPI } = useAPI();
+  
+  // Get current user from Redux store
+  const auth = useSelector((state: RootState) => state.authentication);
+  const currentUser = auth.user;
   
   // State for bookmarks and selections
   const [bookmarkedTopics, setBookmarkedTopics] = useState<Set<string>>(new Set());
-  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   // Fetch assignment data first to get the assignment ID
   const fetchAssignmentData = useCallback(() => {
@@ -74,6 +83,62 @@ const StudentTasks: React.FC = () => {
     }
   }, [assignmentResponse, assignmentId, fetchTopics]);
 
+  // Handle successful sign up
+  useEffect(() => {
+    if (signUpResponse) {
+      console.log('Successfully signed up for topic:', signUpResponse);
+      setIsSigningUp(false);
+      // Refresh topics to show updated available slots
+      if (assignmentResponse?.data) {
+        let targetAssignmentId: number;
+        if (assignmentId) {
+          targetAssignmentId = parseInt(assignmentId);
+        } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+          targetAssignmentId = assignmentResponse.data[0].id;
+        } else {
+          targetAssignmentId = assignmentResponse.data.id;
+        }
+        fetchTopics(targetAssignmentId);
+      }
+    }
+  }, [signUpResponse, assignmentResponse, assignmentId, fetchTopics]);
+
+  // Handle sign up error
+  useEffect(() => {
+    if (signUpError) {
+      console.error('Error signing up for topic:', signUpError);
+      setIsSigningUp(false);
+      // You might want to show an error message to the user here
+    }
+  }, [signUpError]);
+
+  // Handle successful drop
+  useEffect(() => {
+    if (dropResponse) {
+      console.log('Successfully dropped topic:', dropResponse);
+      // Refresh topics to show updated available slots
+      if (assignmentResponse?.data) {
+        let targetAssignmentId: number;
+        if (assignmentId) {
+          targetAssignmentId = parseInt(assignmentId);
+        } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+          targetAssignmentId = assignmentResponse.data[0].id;
+        } else {
+          targetAssignmentId = assignmentResponse.data.id;
+        }
+        fetchTopics(targetAssignmentId);
+      }
+    }
+  }, [dropResponse, assignmentResponse, assignmentId, fetchTopics]);
+
+  // Handle drop error
+  useEffect(() => {
+    if (dropError) {
+      console.error('Error dropping topic:', dropError);
+      // You might want to show an error message to the user here
+    }
+  }, [dropError]);
+
   // Transform topics data to match expected format
   const topics = useMemo(() => {
     // If there's an error or no response, return empty array
@@ -93,10 +158,10 @@ const StudentTasks: React.FC = () => {
       availableSlots: topic.available_slots || 0,
       waitlist: topic.waitlisted_teams?.length || 0,
       isBookmarked: bookmarkedTopics.has(topic.topic_identifier || topic.id?.toString() || 'unknown'),
-      isSelected: selectedTopics.has(topic.topic_identifier || topic.id?.toString() || 'unknown'),
+      isSelected: selectedTopic === (topic.topic_identifier || topic.id?.toString() || 'unknown'),
       isTaken: (topic.available_slots || 0) <= 0
     }));
-  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopics]);
+  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopic]);
 
   // Get assignment name for display
   const assignmentName = useMemo(() => {
@@ -127,17 +192,89 @@ const StudentTasks: React.FC = () => {
     });
   };
 
-  // Handle topic selection toggle
-  const handleTopicSelect = (topicId: string) => {
-    setSelectedTopics(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(topicId)) {
-        newSet.delete(topicId);
-      } else {
-        newSet.add(topicId);
+  // Handle topic selection (single selection only)
+  const handleTopicSelect = async (topicId: string) => {
+    console.log('Topic clicked:', topicId, 'Current selected:', selectedTopic);
+    
+    if (!currentUser?.id) {
+      console.error('No user logged in');
+      return;
+    }
+
+    if (selectedTopic === topicId) {
+      // If clicking the same topic, deselect it (drop the topic)
+      console.log('Deselecting topic:', topicId);
+      setSelectedTopic(null);
+      
+      // Find the topic to get its database ID
+      const topic = topics.find(t => t.id === topicId);
+      if (topic) {
+        // We need to find the database ID from the topics response
+        const topicData = topicsResponse?.data?.find((t: any) => 
+          t.topic_identifier === topicId || t.id?.toString() === topicId
+        );
+        
+        if (topicData?.id) {
+          dropAPI({
+            url: '/signed_up_teams/drop_topic',
+            method: 'DELETE',
+            data: {
+              user_id: currentUser.id,
+              topic_id: topicData.id
+            }
+          });
+        }
       }
-      return newSet;
-    });
+    } else {
+      // Select the new topic (automatically deselects the previous one)
+      console.log('Selecting topic:', topicId);
+      
+      // If there's a previously selected topic, drop it first
+      if (selectedTopic) {
+        console.log('Dropping previously selected topic:', selectedTopic);
+        const previousTopicData = topicsResponse?.data?.find((t: any) => 
+          t.topic_identifier === selectedTopic || t.id?.toString() === selectedTopic
+        );
+        
+        if (previousTopicData?.id) {
+          // Drop the previous topic
+          dropAPI({
+            url: '/signed_up_teams/drop_topic',
+            method: 'DELETE',
+            data: {
+              user_id: currentUser.id,
+              topic_id: previousTopicData.id
+            }
+          });
+        }
+      }
+      
+      // Update UI state immediately
+      setSelectedTopic(topicId);
+      setIsSigningUp(true);
+      
+      // Find the new topic to get its database ID
+      const topicData = topicsResponse?.data?.find((t: any) => 
+        t.topic_identifier === topicId || t.id?.toString() === topicId
+      );
+      
+      if (topicData?.id) {
+        // Add a small delay to ensure the drop operation completes first
+        setTimeout(() => {
+          signUpAPI({
+            url: '/signed_up_teams/sign_up_student',
+            method: 'POST',
+            data: {
+              user_id: currentUser.id,
+              topic_id: topicData.id
+            }
+          });
+        }, 100); // Small delay to ensure drop completes first
+      } else {
+        console.error('Topic not found in response data');
+        setIsSigningUp(false);
+      }
+    }
   };
 
   // Show loading spinner while data is being fetched
@@ -211,22 +348,33 @@ const StudentTasks: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {topics.map((topic) => (
+              {topics.map((topic) => {
+                const isSelected = topic.isSelected;
+                const isTaken = topic.isTaken;
+                const backgroundColor = isSelected 
+                  ? "#ffff00" // Very bright yellow highlighter for selected topics
+                  : isTaken 
+                    ? "#f8f9fa" // Light gray for taken topics
+                    : "white";
+                
+                console.log(`Topic ${topic.id}: isSelected=${isSelected}, isTaken=${isTaken}, backgroundColor=${backgroundColor}`);
+                
+                return (
                 <tr
                   key={topic.id}
-                  style={{
-                    backgroundColor: topic.isTaken 
-                      ? "#fff8c4" // Yellow for taken topics
-                      : topic.isSelected 
-                        ? "#e3f2fd" // Light blue for selected topics
-                        : "white"
+                  style={{ 
+                    backgroundColor,
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    boxShadow: isSelected ? '0 0 12px rgba(255, 255, 0, 0.8)' : 'none',
+                    border: isSelected ? '2px solid #ffc107' : 'none',
+                    transition: 'all 0.2s ease-in-out'
                   }}
                 >
-                  <td>{topic.id}</td>
-                  <td>{topic.name}</td>
-                  <td>{topic.availableSlots}</td>
-                  <td>{topic.waitlist}</td>
-                  <td className="text-center">
+                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.id}</td>
+                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.name}</td>
+                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.availableSlots}</td>
+                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.waitlist}</td>
+                  <td className="text-center" style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent' }}>
                     <Button
                       variant="link"
                       size="sm"
@@ -241,16 +389,18 @@ const StudentTasks: React.FC = () => {
                       )}
                     </Button>
                   </td>
-                  <td className="text-center">
+                  <td className="text-center" style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent' }}>
                     <Button
                       variant="link"
                       size="sm"
                       onClick={() => handleTopicSelect(topic.id)}
                       className="p-0"
                       style={{ border: 'none', background: 'none' }}
-                      disabled={topic.isTaken}
+                      disabled={topic.isTaken || isSigningUp}
                     >
-                      {topic.isSelected ? (
+                      {isSigningUp && selectedTopic === topic.id ? (
+                        <Spinner size="sm" animation="border" />
+                      ) : topic.isSelected ? (
                         <BsX className="text-danger" size={20} />
                       ) : (
                         <BsCheck className="text-success" size={20} />
@@ -258,7 +408,8 @@ const StudentTasks: React.FC = () => {
                     </Button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </Table>
         )}

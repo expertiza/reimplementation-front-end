@@ -184,17 +184,40 @@ const Assignments = () => {
   // Handler functions for TopicsTab
   const handleDropTeam = async (topicId: string, teamId: string) => {
     try {
-      // This would require a specific API endpoint for dropping teams from topics
-      // For now, we'll just refresh the topics data
       console.log(`Dropping team ${teamId} from topic ${topicId}`);
-      // TODO: Implement team dropping API call when endpoint is available
       
-      // Refresh topics data
-      if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
-        fetchTopics(assignmentResponse.data[0].id);
+      // Find the topic to get the database ID
+      const topic = topicsData.find(t => t.id === topicId);
+      if (!topic || !topic.databaseId) {
+        console.error('Topic not found or missing database ID:', topicId);
+        dispatch(alertActions.showAlert({ variant: "danger", message: "Topic not found" }));
+        return;
       }
+      
+      // Call the drop team from topic API
+      fetchTopicsAPI({
+        url: `/signed_up_teams/drop_team_from_topic`,
+        method: 'DELETE',
+        data: {
+          topic_id: topic.databaseId,
+          team_id: teamId
+        }
+      });
+      
+      // Show success message
+      dispatch(alertActions.showAlert({ variant: "success", message: `Team ${teamId} dropped from topic ${topicId}` }));
+      
+      // Refresh topics data after a short delay
+      setTimeout(() => {
+        if (assignmentResponse && assignmentResponse.data && assignmentResponse.data.length > 0) {
+          fetchTopics(assignmentResponse.data[0].id);
+        }
+      }, 500);
+      
+      console.log(`Team ${teamId} dropped from topic ${topicId} (database ID: ${topic.databaseId})`);
     } catch (err) {
       console.error("Error dropping team:", err);
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Failed to drop team from topic" }));
     }
   };
 

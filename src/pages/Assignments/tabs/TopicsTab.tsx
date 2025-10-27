@@ -325,10 +325,13 @@ const TopicsTab = ({
   // --- Render Helper Functions ---
   const renderTeamMembers = (members: TeamMember[]) => {
     // Basic check for members array
-    if (!Array.isArray(members)) {
-        return '';
+    if (!Array.isArray(members) || members.length === 0) {
+        return 'No members';
     }
-    return members.map(member => (displayUserNames ? member.name : member.id)).join(', ');
+    return members.map(member => {
+      const displayName = displayUserNames ? member.name : member.id;
+      return displayName || 'Unknown Member';
+    }).join(', ');
   };
 
   return (
@@ -480,36 +483,56 @@ const TopicsTab = ({
                         <div className="text-muted small mt-1">{topic.description}</div>
                         )}
                     </div>
-                    {/* Assigned Teams */}
-                    {topic.assignedTeams && topic.assignedTeams.map((team) => (
-                        <div key={team.teamId} className="d-flex align-items-center mt-2">
-                            <Badge bg="success" className="me-2">Assigned</Badge>
-                            <span className="small">{renderTeamMembers(team.members)}</span>
-                            {/* Drop Team Icon - Requires handler */}
-                            <BsX
-                            className="text-danger ms-2"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => onDropTeam(topic.id, team.teamId)}
-                            title={`Drop team ${team.teamId}`}
-                            />
+                    
+                    {/* Assigned Teams (Confirmed) */}
+                    {topic.assignedTeams && topic.assignedTeams.length > 0 && (
+                        <div className="mt-2">
+                            {topic.assignedTeams.map((team) => (
+                                <div key={team.teamId} className="d-flex align-items-center mb-1">
+                                    <Badge bg="success" className="me-2">Assigned</Badge>
+                                    <span className="small">
+                                        {renderTeamMembers(team.members)}
+                                    </span>
+                                    {/* Drop Team Icon */}
+                                    <BsX
+                                        className="text-danger ms-2"
+                                        style={{ cursor: 'pointer', fontSize: '1.1rem' }}
+                                        onClick={() => onDropTeam(topic.id, team.teamId)}
+                                        title={`Drop team ${team.teamId} from topic`}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                        ))}
-                        {/* Waitlisted Teams */}
-                        {topic.waitlistedTeams && topic.waitlistedTeams.map((team) => (
-                        <div key={team.teamId} className="d-flex align-items-center mt-1">
-                            <Badge bg="warning" text="dark" className="me-2">Waitlisted</Badge>
-                            <span className="small text-muted">{renderTeamMembers(team.members)}</span>
-                            {/* Optional: Add icon/action for waitlisted teams if needed */}
+                    )}
+                    
+                    {/* Waitlisted Teams */}
+                    {topic.waitlistedTeams && topic.waitlistedTeams.length > 0 && (
+                        <div className="mt-2">
+                            {topic.waitlistedTeams.map((team) => (
+                                <div key={team.teamId} className="d-flex align-items-center mb-1">
+                                    <Badge bg="warning" text="dark" className="me-2">Waitlisted</Badge>
+                                    <span className="small text-muted">
+                                        {renderTeamMembers(team.members)} (waitlisted)
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                        ))}
-                        {/* Partner Advertisement */}
-                        {topic.partnerAd && (
+                    )}
+                    
+                    {/* Show message if no teams assigned or waitlisted */}
+                    {(!topic.assignedTeams || topic.assignedTeams.length === 0) && 
+                     (!topic.waitlistedTeams || topic.waitlistedTeams.length === 0) && (
+                        <div className="text-muted small mt-2">No teams assigned</div>
+                    )}
+                    
+                    {/* Partner Advertisement */}
+                    {topic.partnerAd && (
                         <div className="mt-2">
                             <Button variant="outline-info" size="sm" onClick={() => handleShowPartnerAd(topic)}>
-                            <BsPersonPlusFill className="me-1"/> Partner Ad
+                                <BsPersonPlusFill className="me-1"/> Partner Ad
                             </Button>
                         </div>
-                        )}
+                    )}
                     </td>
                     {/* Questionnaire */}
                     <td>
