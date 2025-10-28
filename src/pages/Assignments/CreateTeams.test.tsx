@@ -1,14 +1,12 @@
 import React, { act } from "react";
 import { render, screen, within } from "@testing-library/react";
 import CreateTeams from "./CreateTeams";
-import {Team, LoaderPayload, Participant, ContextType, sampleTeams, sampleUnassigned} from "./CreateTeams"
-import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
+import {Team, LoaderPayload, Participant, ContextType} from "./CreateTeams"
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
-import assignment from "./Assignment";
 import userEvent from "@testing-library/user-event";
 
 
-// Team Data for when page is linked to the backend
 const teamData: Team[] = [
     {
         id: 10917,
@@ -32,7 +30,6 @@ const teamData: Team[] = [
     },
 ]
 
-// Unassigned pepole for when backend is connected
 const participantData: Participant[] = [
     {id: 20000, username: "student20000", fullName: "Student 20000"},
     {id: 20001, username: "student20001", fullName: "Student 20001"},
@@ -149,14 +146,33 @@ describe("Test Create Teams Displays Correctly", () => {
 });
 
 describe("Test Create Teams Functions Correctly", () => {
-    xit("Test Adding a Student to a Team", () => {
+    it("Test Adding a Student to a Team", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
+
+      const teamTabPanel = screen.getByRole('tabpanel', {name: "Teams"})
+
       // Check student not on page
+      expect(within(teamTabPanel).queryByText(participantData[0].username)).not.toBeInTheDocument()
 
-      // Click Add Button
+      const firstRow = screen.getAllByTestId("team-row")[0]
 
-      // Select student in modal dropdown
+      // Click Add Button and Select student in modal dropdown
+      act(() => {
+        const addButton = within(firstRow).getByRole('button', {name: "Add member"})
+        addButton.click()
+      });
+
+      act(() => {
+        const dropdown = screen.getByRole('combobox')
+        userEvent.selectOptions(dropdown, String(participantData[0].id))
+
+        screen.getByRole('button', {name: "Add"}).click()
+      })
 
       // Check student on page
+      expect(within(teamTabPanel).getByText(participantData[0].username)).toBeInTheDocument()
     });
 
     it("Test Edit Team Name", async () => {
@@ -257,11 +273,17 @@ describe("Test Create Teams Functions Correctly", () => {
         renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
       });
 
+      const teamTabPanel = screen.getByRole('tabpanel', {name: "Teams"})
+      const unassignedTabPanel = screen.getByRole('tabpanel', {name: "Students without teams"})
+
       expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+      expect(teamTabPanel).toHaveClass('active')
+      expect(unassignedTabPanel).not.toHaveClass('active')
 
       // Check unassigned participants aren't there
       participantData.forEach((participant) => {
-        expect(screen.queryByText(participant.username || "")).not.toBe
+        expect(within(teamTabPanel).queryByText(participant.username || "")).not.toBeInTheDocument()
       })
 
       // Navigate to other tab
@@ -271,9 +293,12 @@ describe("Test Create Teams Functions Correctly", () => {
       });
 
 
+      expect(unassignedTabPanel).toHaveClass('active')
+      expect(teamTabPanel).not.toHaveClass(`active`)
+
       // Check all unassigned participants are on the page
       participantData.forEach((participant) => {
-        expect(within(screen.getByTestId("student-list")).getByText(participant.username)).toBeInTheDocument()
+        expect(within(within(unassignedTabPanel).getByTestId("student-list")).getByText(participant.username)).toBeInTheDocument()
         // expect(within(screen.getByTestId("student-list")).getByText(participant.fullName?.replace(" ", "") || "", {exact: false})).toBeInTheDocument()
       })
     });
@@ -281,7 +306,39 @@ describe("Test Create Teams Functions Correctly", () => {
 });
 
 describe("Test Create Teams Handles Errors Properly", () => {
-  xit("Make sure empty names aren't accepted for teams", () => {
+  it("Make sure empty names aren't accepted for teams", async () => {
+    await act(async () => {
+      renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+    });
 
+    // Check team on page
+    const teamRegex = new RegExp(`${teamData[0].name}` , "i");
+    const team = screen.getByText(teamRegex)
+    expect(team).toBeInTheDocument()
+
+    // Click Edit Button
+    act(() => {
+      if (!team.parentElement?.parentElement) fail()
+      const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Edit team name"})
+      editButton.click()
+    });
+
+    // Make text box empty
+    act(() => {
+      var textBox = screen.getByRole('textbox', {name: "Team name"})
+      userEvent.type(textBox, "{selectall}{backspace}")
+      screen.getByRole('button', {name: "Save"}).click()
+    })
+
+    // Make sure the modal is still on the screen
+    expect(screen.getByRole('textbox', {name: "Team name"})).toBeInTheDocument()
+
+    // Close Modal
+    act(() => {
+      screen.getByRole('button', {name: "Cancel"}).click()
+    })
+
+    // Make sure name stayed the same
+    expect(team).toBeInTheDocument()
   })
 });

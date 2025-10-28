@@ -272,8 +272,6 @@ describe("Test Assign Reviewers Functions Correctly", () => {
 
     firstRowContributorCell = (await within((await screen.findAllByRole('row'))[1]).findAllByRole("cell"))[1]
     expect(firstRowContributorCell).toHaveTextContent(user_name)
-
-
   });
 
   xit("Test Adding a Reviewer", () => {
@@ -295,22 +293,4 @@ describe("Test Assign Reviewers Functions Correctly", () => {
   xit("Test Showing Names / Usernames", () => {
 
   });
-
-
-  // teamData.forEach((team) => {
-  //   expect(await screen.findByText("thing")).toBeInTheDocument();
-  //
-  //   var teamMentorRegex = new RegExp(`${team.mentor.id}` , "i");
-  //   expect(screen.getAllByText(teamMentorRegex)[0]).toBeInTheDocument();
-  //
-  //   team.members.forEach((member) => {
-  //     var memberRegex = new RegExp(`${member.id}` , "i");
-  //     expect(screen.getAllByText(memberRegex)[0]).toBeInTheDocument();
-  //   })
-  //
-  //   team.reviewers.forEach((reviewer) => {
-  //     var reviewerRegex = new RegExp(`${reviewer.id}` , "i");
-  //     expect(screen.getAllByText(reviewerRegex)[0]).toBeInTheDocument();
-  //   })
-  // })
 });
