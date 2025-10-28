@@ -301,9 +301,11 @@ const StudentTasks: React.FC = () => {
                         className="p-0"
                         style={{ border: 'none', background: 'none' }}
                       >
+                        {/* --- CHANGE 1: Set FILLED icon to beige/tan --- */}
                         {topic.isBookmarked ? (
-                          <BsBookmarkFill className="text-warning" size={20} />
+                          <BsBookmarkFill style={{ color: "#D2B48C" }} size={20} />
                         ) : (
+                        // --- CHANGE 2: Set OUTLINE icon back to muted gray ---
                           <BsBookmark className="text-muted" size={20} />
                         )}
                       </Button>
@@ -320,7 +322,6 @@ const StudentTasks: React.FC = () => {
                         {isSigningUp && selectedTopic === topic.id ? (
                           <Spinner size="sm" animation="border" />
                         ) : topic.isSelected ? (
-                          // --- CHANGE 1: Path updated (removed "public/") ---
                           <img 
                             src="/assets/images/delete-icon-24.png" 
                             alt="Deselect" 
@@ -328,7 +329,6 @@ const StudentTasks: React.FC = () => {
                             height="20" 
                           />
                         ) : (
-                          // --- CHANGE 2: Path updated (removed "public/") ---
                           <img 
                             src="/assets/icons/Check-icon.png" 
                             alt="Select" 
