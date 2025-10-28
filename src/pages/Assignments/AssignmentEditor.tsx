@@ -149,6 +149,54 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
       >
         {(formik) => (
           <Form>
+            <Tabs defaultActiveKey="general" id="assignment-tabs">
+              {/* Review Strategy Tab */}
+              <Tab eventKey="review_strategy" title="Review strategy">
+                <div style={{ marginTop: '20px' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
+                  <label className="form-label">Review strategy:</label>
+                  <FormSelect
+                    controlId="assignment-review_strategy"
+                    name="review_strategy"
+                    options={[
+                      { label: "Review Strategy 1", value: 1 },
+                      { label: "Review Strategy 2", value: 2 },
+                      { label: "Review Strategy 3", value: 3 },
+                    ]}
+                  />
+                </div>
+                {formik.values.has_topics && (
+                  <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
+                    <label className="form-label">Review topic threshold (k):</label>
+                    <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                      <FormInput controlId="assignment-review_topic_threshold" name="review_topic_threshold" type="number" />
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: 'grid', alignItems: 'center', columnGap: '10px', gridTemplateColumns: 'max-content 1fr' }}>
+                  <label className="form-label">Maximum number of reviews per submission:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-maximum_number_of_reviews_per_submission" name="maximum_number_of_reviews_per_submission" type="number" />
+                  </div>
+                  <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
+                  <div></div>
+                  <label className="form-label">Set allowed number of reviews per reviewer:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
+                  </div>
+                  <label className="form-label">Set required number of reviews per reviewer:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" name="set_required_number_of_reviews_per_reviewer" type="number" />
+                  </div>
+                </div>
+                <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
+                <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
+                <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
+                <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
+
+              </Tab>
+              
+            </Tabs>
 
             {/* Submit button */}
             <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
