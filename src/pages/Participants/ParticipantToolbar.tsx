@@ -142,7 +142,7 @@ const ParticipantToolbar: React.FC<ParticipantToolbarProps> = ({
                 borderRadius: "0.5rem",
               }}
             >
-              <img src="/assets/images/Copy-icon-24.png" alt="Import" width={14} height={14} />
+              <img src="/assets/icons/assign-survey-24.png" alt="Import" width={14} height={14} />
               Import CSV
             </Button>
             <Button

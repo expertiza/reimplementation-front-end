@@ -19,20 +19,20 @@ const participantColumns = (
   handleDelete: (participant: Participant) => void
 ) => [
   columnHelper.accessor("parent.name", {
-    header: "PARENT",
+    header: "Parent",
     enableColumnFilter: false,
     enableSorting: false,
   }),
 
   columnHelper.accessor("name", {
-    header: "USERNAME",
+    header: "UserName",
     enableColumnFilter: false,
     enableSorting: true,
   }),
 
   columnHelper.display({
     id: "full_name_handle",
-    header: "NAME",
+    header: "Name",
     cell: ({ row: { original } }) => (
       <td style={{ verticalAlign: "middle" }}>
         <div>
@@ -54,31 +54,31 @@ const participantColumns = (
   }),
 
   columnHelper.accessor("email", {
-    header: "EMAIL",
+    header: "Email",
     enableColumnFilter: false,
   }),
 
-  columnHelper.accessor("can_take_quiz", {
-    header: "QUIZ",
-    enableColumnFilter: false,
-    enableSorting: false,
+  columnHelper.display({
+    id: "can_take_quiz",
+    header: "Quiz",
+    cell: ({ row }) => <BlankOrCheck value={row.original.can_take_quiz ?? false} />,
   }),
 
-  columnHelper.accessor("can_review", {
-    header: "REVIEW",
-    enableColumnFilter: false,
-    enableSorting: false,
+  columnHelper.display({
+    id: "can_review",
+    header: "Review",
+    cell: ({ row }) => <BlankOrCheck value={row.original.can_review ?? false} />,
   }),
 
-  columnHelper.accessor("can_submit", {
-    header: "SUBMIT",
-    enableColumnFilter: false,
-    enableSorting: false,
+  columnHelper.display({
+    id: "can_submit",
+    header: "Submit",
+    cell: ({ row }) => <BlankOrCheck value={row.original.can_submit ?? false} />,
   }),
 
   columnHelper.display({
     id: "role",
-    header: "ROLE",
+    header: "Role",
     cell: ({ row }) => (
       <Form.Select
         size="sm"
@@ -108,7 +108,7 @@ const participantColumns = (
 
   columnHelper.display({
     id: "action",
-    header: "ACTION",
+    header: "Action",
     cell: ({ row }) => (
       <div className="d-flex justify-content-center align-items-center">
         <Button
@@ -129,6 +129,16 @@ const participantColumns = (
     ),
   }),
 ];
+
+const BlankOrCheck: React.FC<{ value: boolean }> = ({ value }) => {
+  return value ? (
+    <div className="d-flex justify-content-center align-items-center p-2">
+      <img src="/assets/icons/Check-icon.png" alt="Yes" width={16} height={16} />
+    </div>
+  ) : (
+    <span></span>
+  );
+};
 
 const ParticipantTable: React.FC<ParticipantTableProps> = ({
   participants,
