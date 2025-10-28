@@ -348,69 +348,76 @@ const StudentTasks: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {topics.map((topic) => {
-                const isSelected = topic.isSelected;
-                const isTaken = topic.isTaken;
-                const backgroundColor = isSelected 
-                  ? "#ffff00" // Very bright yellow highlighter for selected topics
-                  : isTaken 
-                    ? "#f8f9fa" // Light gray for taken topics
-                    : "white";
-                
-                console.log(`Topic ${topic.id}: isSelected=${isSelected}, isTaken=${isTaken}, backgroundColor=${backgroundColor}`);
-                
-                return (
-                <tr
-                  key={topic.id}
-                  style={{ 
-                    backgroundColor,
-                    fontWeight: isSelected ? 'bold' : 'normal',
-                    boxShadow: isSelected ? '0 0 12px rgba(255, 255, 0, 0.8)' : 'none',
-                    border: isSelected ? '2px solid #ffc107' : 'none',
-                    transition: 'all 0.2s ease-in-out'
-                  }}
-                >
-                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.id}</td>
-                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.name}</td>
-                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.availableSlots}</td>
-                  <td style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent', color: isSelected ? '#000000' : 'inherit' }}>{topic.waitlist}</td>
-                  <td className="text-center" style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent' }}>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      onClick={() => handleBookmarkToggle(topic.id)}
-                      className="p-0"
-                      style={{ border: 'none', background: 'none' }}
-                    >
-                      {topic.isBookmarked ? (
-                        <BsBookmarkFill className="text-warning" size={20} />
-                      ) : (
-                        <BsBookmark className="text-muted" size={20} />
-                      )}
-                    </Button>
-                  </td>
-                  <td className="text-center" style={{ backgroundColor: isSelected ? '#ffff00' : 'transparent' }}>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      onClick={() => handleTopicSelect(topic.id)}
-                      className="p-0"
-                      style={{ border: 'none', background: 'none' }}
-                      disabled={topic.isTaken || isSigningUp}
-                    >
-                      {isSigningUp && selectedTopic === topic.id ? (
-                        <Spinner size="sm" animation="border" />
-                      ) : topic.isSelected ? (
-                        <BsX className="text-danger" size={20} />
-                      ) : (
-                        <BsCheck className="text-success" size={20} />
-                      )}
-                    </Button>
-                  </td>
-                </tr>
-                );
-              })}
-            </tbody>
+                  {topics.map((topic) => {
+                    const isSelected = topic.isSelected;
+                    const isTaken = topic.isTaken;
+
+                    // Use Bootstrap's built-in table variants for highlighting
+                    // This will work correctly with 'bordered' and 'striped'
+                    const rowClass = isSelected
+                      ? "table-warning" // Bootstrap's standard yellow
+                      : isTaken
+                      ? "table-light"   // Bootstrap's standard gray
+                      : "";
+
+                    // You can still keep the 'bold' style if you like
+                    const rowStyle = {
+                      fontWeight: isSelected ? 'bold' : 'normal',
+                    };
+                    
+                    console.log(`Topic ${topic.id}: isSelected=${isSelected}, isTaken=${isTaken}, rowClass=${rowClass}`);
+                    
+                    return (
+                      <tr
+                        key={topic.id}
+                        className={rowClass} // Use className for backgrounds
+                        style={rowStyle}    // Only apply non-conflicting styles
+                      >
+                        {/* REMOVE ALL INLINE 'style' PROPS FROM ALL <td> TAGS.
+                          This is the most important step.
+                        */}
+                        
+                        <td>{topic.id}</td>
+                        <td>{topic.name}</td>
+                        <td>{topic.availableSlots}</td>
+                        <td>{topic.waitlist}</td>
+                        <td className="text-center">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => handleBookmarkToggle(topic.id)}
+                            className="p-0"
+                            style={{ border: 'none', background: 'none' }}
+                          >
+                            {topic.isBookmarked ? (
+                              <BsBookmarkFill className="text-warning" size={20} />
+                            ) : (
+                              <BsBookmark className="text-muted" size={20} />
+                            )}
+                          </Button>
+                        </td>
+                        <td className="text-center">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => handleTopicSelect(topic.id)}
+                            className="p-0"
+                            style={{ border: 'none', background: 'none' }}
+                            disabled={topic.isTaken || isSigningUp}
+                          >
+                            {isSigningUp && selectedTopic === topic.id ? (
+                              <Spinner size="sm" animation="border" />
+                            ) : topic.isSelected ? (
+                              <BsX className="text-danger" size={20} />
+                            ) : (
+                              <BsCheck className="text-success" size={20} />
+                            )}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
           </Table>
         )}
       </div>
