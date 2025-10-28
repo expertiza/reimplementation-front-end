@@ -289,7 +289,6 @@ const StudentTasks: React.FC = () => {
                     className={rowClass}
                     style={rowStyle}
                   >
-                    {/* CHANGE 3: Added style to prevent wrapping */}
                     <td className="p-3" style={{ whiteSpace: "nowrap" }}>{topic.id}</td>
                     <td className="p-3" style={{ whiteSpace: "nowrap" }}>{topic.name}</td>
                     <td className="p-3 text-center" style={{ whiteSpace: "nowrap" }}>{topic.availableSlots}</td>
@@ -302,7 +301,6 @@ const StudentTasks: React.FC = () => {
                         className="p-0"
                         style={{ border: 'none', background: 'none' }}
                       >
-                        {/* Your original BsBookmark icons are back */}
                         {topic.isBookmarked ? (
                           <BsBookmarkFill className="text-warning" size={20} />
                         ) : (
@@ -319,13 +317,24 @@ const StudentTasks: React.FC = () => {
                         style={{ border: 'none', background: 'none' }}
                         disabled={topic.isTaken || isSigningUp}
                       >
-                        {/* Your original BsCheck/BsX icons are back */}
                         {isSigningUp && selectedTopic === topic.id ? (
                           <Spinner size="sm" animation="border" />
                         ) : topic.isSelected ? (
-                          <BsX className="text-danger" size={20} />
+                          // --- CHANGE 1: Path updated (removed "public/") ---
+                          <img 
+                            src="/assets/images/delete-icon-24.png" 
+                            alt="Deselect" 
+                            width="20" 
+                            height="20" 
+                          />
                         ) : (
-                          <BsCheck className="text-success" size={20} />
+                          // --- CHANGE 2: Path updated (removed "public/") ---
+                          <img 
+                            src="/assets/icons/Check-icon.png" 
+                            alt="Select" 
+                            width="20" 
+                            height="20" 
+                          />
                         )}
                       </Button>
                     </td>
