@@ -312,7 +312,7 @@ const StudentTasks: React.FC = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "center", // <-- Centers the content
         justifyContent: "flex-start",
       }}
     >
@@ -337,84 +337,82 @@ const StudentTasks: React.FC = () => {
           </Alert>
         ) : (
           <Table bordered hover striped responsive>
-               <thead className="table-light">
-                  <tr>
-                    <th className="p-3">Topic ID</th>
-                    <th className="p-3">Topic name(s)</th>
-                    <th className="p-3">Available slots</th>
-                    <th className="p-3">Num. on waitlist</th>
-                    <th className="p-3">Bookmarks</th>
-                    <th className="p-3">Select</th>
-                  </tr>
-                </thead>
+            <thead className="table-light">
+              <tr>
+                {/* Added p-3 for padding and text-center where requested */}
+                <th className="p-3">Topic ID</th>
+                <th className="p-3">Topic name(s)</th>
+                <th className="p-3 text-center">Available slots</th>
+                <th className="p-3 text-center">Num. on waitlist</th>
+                <th className="p-3">Bookmarks</th>
+                <th className="p-3">Select</th>
+              </tr>
+            </thead>
             <tbody>
-                  {topics.map((topic) => {
-                    const isSelected = topic.isSelected;
-                    const isTaken = topic.isTaken;
+              {topics.map((topic) => {
+                const isSelected = topic.isSelected;
+                const isTaken = topic.isTaken;
 
-                    // Use Bootstrap's built-in table variants for highlighting
-                    // This will work correctly with 'bordered' and 'striped'
-                    const rowClass = isSelected
-                      ? "table-warning" // Bootstrap's standard yellow
-                      : isTaken
-                      ? "table-light"   // Bootstrap's standard gray
-                      : "";
+                // Use Bootstrap's built-in table variants for highlighting
+                const rowClass = isSelected
+                  ? "table-warning" // Bootstrap's standard yellow
+                  : isTaken
+                  ? "table-light"   // Bootstrap's standard gray
+                  : "";
 
-                    // You can still keep the 'bold' style if you like
-                    const rowStyle = {
-                      fontWeight: isSelected ? 'bold' : 'normal',
-                    };
-                    
-                    console.log(`Topic ${topic.id}: isSelected=${isSelected}, isTaken=${isTaken}, rowClass=${rowClass}`);
-                    
-                    return (
-                      <tr
-                        key={topic.id}
-                        className={rowClass} 
-                        style={rowStyle}    
+                // Apply bold style for selected row
+                const rowStyle = {
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                };
+                
+                return (
+                  <tr
+                    key={topic.id}
+                    className={rowClass} // Use className for backgrounds
+                    style={rowStyle}    // Only apply non-conflicting styles
+                  >
+                    {/* Added p-3 for padding and text-center where requested */}
+                    <td className="p-3">{topic.id}</td>
+                    <td className="p-3">{topic.name}</td>
+                    <td className="p-3 text-center">{topic.availableSlots}</td>
+                    <td className="p-3 text-center">{topic.waitlist}</td>
+                    <td className="text-center p-3"> {/* Added p-3 */}
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleBookmarkToggle(topic.id)}
+                        className="p-0"
+                        style={{ border: 'none', background: 'none' }}
                       >
-                        
-                        <td className="p-3">{topic.id}</td>
-                        <td className="p-3">{topic.name}</td>
-                        <td className="p-3">{topic.availableSlots}</td>
-                        <td className="p-3">{topic.waitlist}</td>
-                        <td className="text-center p-3"> {/* Added p-3 */}
-                          <Button
-                            variant="link"
-                            size="sm"
-                            onClick={() => handleBookmarkToggle(topic.id)}
-                            className="p-0"
-                            style={{ border: 'none', background: 'none' }}
-                          >
-                            {topic.isBookmarked ? (
-                              <BsBookmarkFill className="text-warning" size={20} />
-                            ) : (
-                              <BsBookmark className="text-muted" size={20} />
-                            )}
-                          </Button>
-                        </td>
-                        <td className="text-center p-3"> {/* Added p-3 */}
-                          <Button
-                            variant="link"
-                            size="sm"
-                            onClick={() => handleTopicSelect(topic.id)}
-                            className="p-0"
-                            style={{ border: 'none', background: 'none' }}
-                            disabled={topic.isTaken || isSigningUp}
-                          >
-                            {isSigningUp && selectedTopic === topic.id ? (
-                              <Spinner size="sm" animation="border" />
-                            ) : topic.isSelected ? (
-                              <BsX className="text-danger" size={20} />
-                            ) : (
-                              <BsCheck className="text-success" size={20} />
-                            )}
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                        {topic.isBookmarked ? (
+                          <BsBookmarkFill className="text-warning" size={20} />
+                        ) : (
+                          <BsBookmark className="text-muted" size={20} />
+                        )}
+                      </Button>
+                    </td>
+                    <td className="text-center p-3">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleTopicSelect(topic.id)}
+                        className="p-0"
+                        style={{ border: 'none', background: 'none' }}
+                        disabled={topic.isTaken || isSigningUp}
+                      >
+                        {isSigningUp && selectedTopic === topic.id ? (
+                          <Spinner size="sm" animation="border" />
+                        ) : topic.isSelected ? (
+                          <BsX className="text-danger" size={20} />
+                        ) : (
+                          <BsCheck className="text-success" size={20} />
+                        )}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </Table>
         )}
       </div>
