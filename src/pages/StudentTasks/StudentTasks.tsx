@@ -29,6 +29,7 @@ const StudentTasks: React.FC = () => {
   const [bookmarkedTopics, setBookmarkedTopics] = useState<Set<string>>(new Set());
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const [optimisticSlotChanges, setOptimisticSlotChanges] = useState<Map<string, number>>(new Map());
 
   const fetchAssignmentData = useCallback(() => {
     if (assignmentId) {
@@ -64,6 +65,8 @@ const StudentTasks: React.FC = () => {
   useEffect(() => {
     if (signUpResponse) {
       setIsSigningUp(false);
+      // Clear optimistic updates since we'll get real data
+      setOptimisticSlotChanges(new Map());
       if (assignmentResponse?.data) {
         let targetAssignmentId: number;
         if (assignmentId) {
@@ -82,11 +85,15 @@ const StudentTasks: React.FC = () => {
     if (signUpError) {
       console.error('Error signing up for topic:', signUpError);
       setIsSigningUp(false);
+      // Clear optimistic updates on error to restore actual values
+      setOptimisticSlotChanges(new Map());
     }
   }, [signUpError]);
 
   useEffect(() => {
     if (dropResponse) {
+      // Clear optimistic updates since we'll get real data
+      setOptimisticSlotChanges(new Map());
       if (assignmentResponse?.data) {
         let targetAssignmentId: number;
         if (assignmentId) {
@@ -104,22 +111,32 @@ const StudentTasks: React.FC = () => {
   useEffect(() => {
     if (dropError) {
       console.error('Error dropping topic:', dropError);
+      // Clear optimistic updates on error to restore actual values
+      setOptimisticSlotChanges(new Map());
     }
   }, [dropError]);
 
   const topics = useMemo(() => {
     if (topicsError || !topicsResponse?.data) return [];
     const topicsData = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
-    return topicsData.map((topic: any) => ({
-      id: topic.topic_identifier || topic.id?.toString() || 'unknown',
-      name: topic.topic_name || 'Unnamed Topic',
-      availableSlots: topic.available_slots || 0,
-      waitlist: topic.waitlisted_teams?.length || 0,
-      isBookmarked: bookmarkedTopics.has(topic.topic_identifier || topic.id?.toString() || 'unknown'),
-      isSelected: selectedTopic === (topic.topic_identifier || topic.id?.toString() || 'unknown'),
-      isTaken: (topic.available_slots || 0) <= 0
-    }));
-  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopic]);
+    return topicsData.map((topic: any) => {
+      const topicId = topic.topic_identifier || topic.id?.toString() || 'unknown';
+      const baseSlots = topic.available_slots || 0;
+      const adjustedSlots = optimisticSlotChanges.has(topicId) 
+        ? optimisticSlotChanges.get(topicId)! 
+        : baseSlots;
+      
+      return {
+        id: topicId,
+        name: topic.topic_name || 'Unnamed Topic',
+        availableSlots: adjustedSlots,
+        waitlist: topic.waitlisted_teams?.length || 0,
+        isBookmarked: bookmarkedTopics.has(topicId),
+        isSelected: selectedTopic === topicId,
+        isTaken: adjustedSlots <= 0
+      };
+    });
+  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopic, optimisticSlotChanges]);
 
   const assignmentName = useMemo(() => {
     if (!assignmentResponse?.data) return 'OSS project & documentation assignment';
@@ -160,22 +177,49 @@ const StudentTasks: React.FC = () => {
     if (!currentUser?.id) return;
 
     if (selectedTopic === topicId) {
-      setSelectedTopic(null);
+      // Deselecting current topic - optimistically increment available slots
       const topic = topics.find(t => t.id === topicId);
       if (topic) {
-        const topicData = topicsResponse?.data?.find((t: any) => 
-          t.topic_identifier === topicId || t.id?.toString() === topicId
-        );
-        if (topicData?.id) {
-          dropAPI({
-            url: '/signed_up_teams/drop_topic',
-            method: 'DELETE',
-            data: { user_id: currentUser.id, topic_id: topicData.id }
-          });
-        }
+        setOptimisticSlotChanges(prev => {
+          const newMap = new Map(prev);
+          newMap.set(topicId, topic.availableSlots + 1);
+          return newMap;
+        });
+      }
+      
+      setSelectedTopic(null);
+      const topicData = topicsResponse?.data?.find((t: any) => 
+        t.topic_identifier === topicId || t.id?.toString() === topicId
+      );
+      if (topicData?.id) {
+        dropAPI({
+          url: '/signed_up_teams/drop_topic',
+          method: 'DELETE',
+          data: { user_id: currentUser.id, topic_id: topicData.id }
+        });
       }
     } else {
+      // Selecting new topic - optimistically decrement available slots
+      const topic = topics.find(t => t.id === topicId);
+      if (topic) {
+        setOptimisticSlotChanges(prev => {
+          const newMap = new Map(prev);
+          newMap.set(topicId, Math.max(0, topic.availableSlots - 1));
+          
+          // If there's a previously selected topic, increment its slots
+          if (selectedTopic) {
+            const prevTopic = topics.find(t => t.id === selectedTopic);
+            if (prevTopic) {
+              newMap.set(selectedTopic, prevTopic.availableSlots + 1);
+            }
+          }
+          
+          return newMap;
+        });
+      }
+      
       if (selectedTopic) {
+        // Drop previous topic first
         const previousTopicData = topicsResponse?.data?.find((t: any) => 
           t.topic_identifier === selectedTopic || t.id?.toString() === selectedTopic
         );
@@ -187,11 +231,14 @@ const StudentTasks: React.FC = () => {
           });
         }
       }
+      
       setSelectedTopic(topicId);
       setIsSigningUp(true);
+      
       const topicData = topicsResponse?.data?.find((t: any) => 
         t.topic_identifier === topicId || t.id?.toString() === topicId
       );
+      
       if (topicData?.id) {
         setTimeout(() => {
           signUpAPI({

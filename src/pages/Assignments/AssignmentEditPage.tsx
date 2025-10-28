@@ -66,6 +66,9 @@ const AssignmentEditPage = () => {
   const { data: assignmentResponse, error: assignmentError, sendRequest: fetchAssignment } = useAPI();
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
+  const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
+  const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
+  const { data: updateTopicResponse, error: updateTopicError, sendRequest: updateTopic } = useAPI();
 
   useEffect(() => {
     if (id) {
@@ -100,6 +103,54 @@ const AssignmentEditPage = () => {
       dispatch(alertActions.showAlert({ variant: "danger", message: updateError }));
     }
   }, [updateError, dispatch]);
+
+  useEffect(() => {
+    if (deleteResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [deleteResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (deleteError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: deleteError }));
+    }
+  }, [deleteError, dispatch]);
+
+  useEffect(() => {
+    if (createResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [createResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (createError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: createError }));
+    }
+  }, [createError, dispatch]);
+
+  useEffect(() => {
+    if (updateTopicResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [updateTopicResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (updateTopicError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: updateTopicError }));
+    }
+  }, [updateTopicError, dispatch]);
 
   // Load topics for this assignment
   useEffect(() => {
@@ -165,19 +216,53 @@ const AssignmentEditPage = () => {
 
   const handleDeleteTopic = useCallback((topicId: string) => {
     console.log(`Delete topic ${topicId}`);
-    // TODO: Implement delete topic logic
-    setTopicsData((prev) => prev.filter((t) => t.id !== topicId));
-  }, []);
+    if (id) {
+      deleteTopic({
+        url: `/project_topics`,
+        method: 'DELETE',
+        data: { 
+          assignment_id: id,
+          topic_ids: [topicId]
+        }
+      });
+    }
+  }, [id, deleteTopic]);
 
   const handleEditTopic = useCallback((topicId: string, updatedData: any) => {
     console.log(`Edit topic ${topicId}`, updatedData);
-    // TODO: Implement edit topic logic
-  }, []);
+    updateTopic({
+      url: `/project_topics/${topicId}`,
+      method: 'PATCH',
+      data: {
+        project_topic: {
+          topic_identifier: updatedData.topic_identifier || updatedData.id,
+          topic_name: updatedData.name,
+          category: updatedData.category,
+          max_choosers: updatedData.numSlots,
+          assignment_id: id
+        }
+      }
+    });
+  }, [id, updateTopic]);
 
   const handleCreateTopic = useCallback((topicData: any) => {
     console.log(`Create topic`, topicData);
-    // TODO: Implement create topic logic
-  }, []);
+    if (id) {
+      createTopic({
+        url: `/project_topics`,
+        method: 'POST',
+        data: {
+          project_topic: {
+            topic_identifier: topicData.topic_identifier || topicData.id,
+            topic_name: topicData.name,
+            category: topicData.category,
+            max_choosers: topicData.numSlots,
+            assignment_id: id
+          }
+        }
+      });
+    }
+  }, [id, createTopic]);
 
   const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
     console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);

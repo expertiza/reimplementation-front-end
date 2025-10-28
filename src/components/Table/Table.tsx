@@ -155,6 +155,16 @@ import {
   
 	return (
 	  <>
+		<style>
+		  {`
+			.selected-topic-row {
+			  background-color: #ffeb3b !important;
+			}
+			.selected-topic-row:hover {
+			  background-color: #fdd835 !important;
+			}
+		  `}
+		</style>
 		<Container>
 		  <Row className="mb-md-2">
 			<Col md={{ span: 12 }}>
@@ -202,7 +212,7 @@ import {
 				<tbody>
 				  {table.getRowModel().rows.map((row) => (
 					<React.Fragment key={row.id}>
-					  <tr>
+					  <tr className={row.original.isSelected ? 'selected-topic-row' : ''}>
 						{row.getVisibleCells().map((cell) => (
 						  <td key={cell.id}>
 							{flexRender(cell.column.columnDef.cell, cell.getContext())}
