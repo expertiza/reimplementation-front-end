@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { Button, Container, Row, Col, Modal, Form, Tabs, Tab } from 'react-bootstrap';
+import { Button, Container, Row, Col, Modal, Form, Tabs, Tab, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { BsPlus, BsX, BsPencil } from 'react-icons/bs';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 
@@ -73,7 +73,7 @@ const sampleTeams: Team[] = [
   },
 ];
 
-/* ----------------------------- STYLES (Option A) ----------------------------- */
+/* ----------------------------- STYLES ----------------------------- */
 const frame: React.CSSProperties = {
   border: '1px solid #9aa0a6',
   borderRadius: 12,
@@ -96,6 +96,7 @@ const teamRowStyle: React.CSSProperties = {
   padding: '12px 18px',
   background: '#d8d8b8',
   borderBottom: '1px solid #ebe9dc',
+  whiteSpace: 'nowrap',
 };
 
 const membersRowStyle: React.CSSProperties = {
@@ -105,12 +106,15 @@ const membersRowStyle: React.CSSProperties = {
 };
 
 const caretBtn: React.CSSProperties = { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0, width: 24, height: 24 };
-const actionCell: React.CSSProperties = { width: 120, textAlign: 'right' };
+const actionCell: React.CSSProperties = { width: 160, textAlign: 'right' };
 const chip: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', padding: '6px 12px', marginRight: 10, marginBottom: 10, fontSize: 14, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 18, boxShadow: '0 1px 0 rgba(0,0,0,0.03)' };
 const chipRemoveBtn: React.CSSProperties = { marginLeft: 10, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, lineHeight: 1 };
 const headingStyle: React.CSSProperties = { fontSize: '2.25rem', fontWeight: 700, letterSpacing: '0.2px', margin: '10px 0 6px 0', textAlign: 'left' };
 const toolbarRowStyle: React.CSSProperties = { fontSize: 14, marginBottom: 12 };
 const toolbarLinkCls = 'p-0 text-decoration-none';
+
+const scrollerOuter: React.CSSProperties = { overflowX: 'auto' };
+const contentMaxWidth: React.CSSProperties = { width: 'max-content', minWidth: '100%' };
 
 /* ------------------------------ COMPONENT ------------------------------ */
 const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }> = ({ contextType, contextName }) => {
@@ -120,7 +124,6 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const ctxType = (contextType || loader.contextType || 'assignment') as ContextType;
   const ctxName = contextName || loader.contextName || 'Program';
 
-  // start from loader/demo; ensure unassigned excludes anyone already on a team
   const baseTeams = loader.initialTeams || sampleTeams;
   const baseUnassigned = loader.initialUnassigned || sampleUnassigned;
   const assignedIdSet = new Set(baseTeams.flatMap((t) => t.members.map((m) => String(m.id))));
@@ -134,13 +137,16 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showBequeathModal, setShowBequeathModal] = useState(false);
+
+  const [showCopyToModal, setShowCopyToModal] = useState(false);
+  const [showCopyFromModal, setShowCopyFromModal] = useState(false);
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [selectedParticipantId, setSelectedParticipantId] = useState<string>('');
   const [editTeamName, setEditTeamName] = useState('');
   const [newTeamName, setNewTeamName] = useState('');
-  const [bequeathTarget, setBequeathTarget] = useState('');
+  const [copyTarget, setCopyTarget] = useState('');
+  const [copySource, setCopySource] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -164,6 +170,25 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     const member = team.members.find((m) => m.id === memberId);
     setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t)));
     if (member) setUnassigned((prev) => [...prev, { ...member, teamName: '' }]);
+  };
+
+  // Replace the existing removeMentor with this:
+  const removeMentor = (teamId: Team['id']) => {
+    setTeams((prev) =>
+      prev.map((t) => {
+        if (t.id !== teamId) return t;
+        if (!t.mentor) return t;
+
+        // Drop any member that is the mentor (by id / username / fullName)
+        const membersWithoutMentor = t.members.filter((m) => !isMentorMember(t, m));
+
+        return {
+          ...t,
+          mentor: undefined,
+          members: membersWithoutMentor,
+        };
+      })
+    );
   };
 
   const openEdit = (team: Team) => { setSelectedTeam(team); setEditTeamName(team.name); setShowEditModal(true); };
@@ -223,18 +248,55 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     const a = document.createElement('a'); a.href = url; a.download = `teams-export-${Date.now()}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   };
 
-  const bequeathAll = () => { alert(`Bequeathing ${teams.length} team(s) to "${bequeathTarget || '(choose target)'}"`); setShowBequeathModal(false); };
+  const copyTeamsToCourse = () => {
+    alert(`Copying ${teams.length} team(s) to "${copyTarget || '(choose destination)'}"`);
+    setShowCopyToModal(false);
+  };
+
+  const copyTeamsFromCourse = () => {
+    alert(`Copying teams from "${copySource || '(choose source)'}" into this ${ctxType}`);
+    setShowCopyFromModal(false);
+  };
 
   const studentsWithoutTeams = useMemo(() => unassigned, [unassigned]);
 
+  // --- helper: identify if a member entry is the mentor (to hide it in the chip list) ---
+  const isMentorMember = (team: Team, m: Participant) => {
+    if (!team.mentor) return false;
+    const norm = (s: string) => s.replace(/\s*\(Mentor\)\s*$/i, '').trim();
+    const mIdEq = String(m.id) === String(team.mentor.id);
+    const userEq = norm(m.username) === norm(team.mentor.username);
+    const nameEq = m.fullName && team.mentor.fullName && norm(m.fullName) === norm(team.mentor.fullName);
+    return mIdEq || userEq || !!nameEq;
+  };
+
+  const MentorRemovalBtn: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <OverlayTrigger placement="top" overlay={<Tooltip id="rm-mentor-tt">Remove mentor</Tooltip>}>
+      <button
+        style={{ ...chipRemoveBtn, marginLeft: 6 }}
+        onClick={onClick}
+        aria-label="Remove mentor"
+        title="Remove mentor"
+      >
+        <BsX style={{ color: '#b91c1c' }} />
+      </button>
+    </OverlayTrigger>
+  );
+
   return (
-    <Container fluid className="px-md-4">
-      <Row className="mt-3 align-items-center">
+    <Container fluid className="px-md-4" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '0.97rem' }}>
+    <Row className="mt-3 align-items-center">
         <Col className="text-start">
           <h1 style={headingStyle}>{`Teams for ${ctxName}`}</h1>
         </Col>
         <Col xs="auto" className="ms-auto d-flex align-items-center" style={{ paddingTop: 6 }}>
-          <Form.Check type="switch" id="toggle-names" label={showUsernames ? 'Showing: Usernames' : 'Showing: Names'} checked={!showUsernames} onChange={() => setShowUsernames((prev) => !prev)} />
+          <Form.Check
+            type="switch"
+            id="toggle-names"
+            label={showUsernames ? 'Showing: Usernames' : 'Showing: Names'}
+            checked={!showUsernames}
+            onChange={() => setShowUsernames((prev) => !prev)}
+          />
         </Col>
       </Row>
 
@@ -250,13 +312,14 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
           <span className="text-muted mx-2">|</span>
           <Button variant="link" className={toolbarLinkCls} onClick={deleteAllTeams}>Delete All Teams</Button>
           <span className="text-muted mx-2">|</span>
-          <Button variant="link" className={toolbarLinkCls} onClick={() => setShowBequeathModal(true)}>Bequeath All Teams</Button>
+          <Button variant="link" className={toolbarLinkCls} onClick={() => setShowCopyToModal(true)}>Copy Teams to Course</Button>
+          <span className="text-muted mx-2">|</span>
+          <Button variant="link" className={toolbarLinkCls} onClick={() => setShowCopyFromModal(true)}>Copy Teams from Course</Button>
           <span className="text-muted mx-2">|</span>
           <Button variant="link" className={toolbarLinkCls} onClick={() => navigate(-1)}>Back</Button>
         </Col>
       </Row>
 
-      {/* Unified outer wrapper for BOTH tabs */}
       <div
         style={{
           border: '2px solid #9aa0a6',
@@ -270,67 +333,90 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       >
         <Tabs defaultActiveKey="teams" className="mb-3">
           <Tab eventKey="teams" title="Teams">
-            <div style={frame}>
-              <div style={headerBar}>
-                <div style={{ width: 40 }} />
-                <div className="flex-grow-1">Details</div>
-                <div style={{ width: 120, textAlign: 'center' }}>Actions</div>
-              </div>
+            <div style={scrollerOuter}>
+              <div style={{ ...frame, ...contentMaxWidth }}>
+                <div style={headerBar}>
+                  <div style={{ width: 40 }} />
+                  <div className="flex-grow-1">Details</div>
+                  <div style={{ width: 160, textAlign: 'center' }}>Actions</div>
+                </div>
 
-              {teams.map((team) => {
-                const open = !!expanded[team.id];
-                return (
-                  <div key={team.id}>
-                    <div style={teamRowStyle}>
-                      <div style={{ width: 40 }}>
-                        <button style={caretBtn} onClick={() => toggleTeam(team.id)}>{open ? '▾' : '▸'}</button>
+                {teams.map((team) => {
+                  const open = !!expanded[team.id];
+                  // filter mentor out of the visible member list
+                  const visibleMembers = team.members.filter((m) => !isMentorMember(team, m));
+                  return (
+                    <div key={team.id}>
+                      <div style={teamRowStyle}>
+                        <div style={{ width: 40 }}>
+                          <button style={caretBtn} onClick={() => toggleTeam(team.id)}>{open ? '▾' : '▸'}</button>
+                        </div>
+
+                        {/* Header shows TEAM NAME + mentor (if any), with remove-mentor control */}
+                        <div className="flex-grow-1" style={{ overflow: 'hidden' }}>
+                          <strong>{baseTeamName(team.name)}</strong>
+                          {team.mentor && (
+                            <>
+                              <span className="ms-2">: {displayOf(team.mentor)} <span style={{ opacity: 0.9 }}>(Mentor)</span></span>
+                              <MentorRemovalBtn onClick={() => removeMentor(team.id)} />
+                            </>
+                          )}
+                        </div>
+
+                        <div style={actionCell}>
+                          <Button variant="link" className="p-0 me-3" title="Add member" onClick={() => openAdd(team)}>
+                            <BsPlus style={{ color: '#2e8b57', fontSize: 18 }} />
+                          </Button>
+                          <Button variant="link" className="p-0 me-3" title="Delete team" onClick={() => deleteTeam(team.id)}>
+                            <BsX style={{ color: '#c53030', fontSize: 18 }} />
+                          </Button>
+                          <Button variant="link" className="p-0" title="Edit team name" onClick={() => openEdit(team)}>
+                            <BsPencil style={{ color: '#6c757d', fontSize: 16 }} />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex-grow-1">
-                        <strong>{baseTeamName(team.name)}</strong>
-                        {team.mentor && (
-                          <span className="ms-2">: {displayOf(team.mentor)} <span style={{ opacity: 0.9 }}>(Mentor)</span></span>
-                        )}
-                      </div>
-                      <div style={actionCell}>
-                        <Button variant="link" className="p-0 me-3" title="Add member" onClick={() => openAdd(team)}><BsPlus style={{ color: '#2e8b57', fontSize: 18 }} /></Button>
-                        <Button variant="link" className="p-0 me-3" title="Delete team" onClick={() => deleteTeam(team.id)}><BsX style={{ color: '#c53030', fontSize: 18 }} /></Button>
-                        <Button variant="link" className="p-0" title="Edit team name" onClick={() => openEdit(team)}><BsPencil style={{ color: '#6c757d', fontSize: 16 }} /></Button>
-                      </div>
+
+                      {open && (
+                        <div style={membersRowStyle}>
+                          {visibleMembers.length === 0 ? (
+                            <span style={{ color: '#6b7280' }}>No students yet.</span>
+                          ) : (
+                            visibleMembers.map((m) => (
+                              <span key={`${team.id}-${m.id}`} style={chip}>
+                                {displayOf(m)}
+                                <button
+                                  style={chipRemoveBtn}
+                                  title="Remove"
+                                  aria-label={`Remove ${displayOf(m)} from ${team.name}`}
+                                  onClick={() => removeFromTeam(team.id, m.id)}
+                                >
+                                  <BsX style={{ color: '#b91c1c' }} />
+                                </button>
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
-
-                    {open && (
-                      <div style={membersRowStyle}>
-                        {team.members.length === 0 ? (
-                          <span style={{ color: '#6b7280' }}>No students yet.</span>
-                        ) : (
-                          team.members.map((m) => (
-                            <span key={`${team.id}-${m.id}`} style={chip}>
-                              {displayOf(m)}
-                              <button style={chipRemoveBtn} title="Remove" aria-label={`Remove ${displayOf(m)} from ${team.name}`} onClick={() => removeFromTeam(team.id, m.id)}>
-                                <BsX style={{ color: '#b91c1c' }} />
-                              </button>
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </Tab>
 
           <Tab eventKey="students" title="Students without teams">
-            <div style={frame}>
-              <div style={headerBar}><div className="flex-grow-1">Student</div></div>
-              <div style={{ padding: 16 }}>
-                {studentsWithoutTeams.length === 0 ? (
-                  <span style={{ color: '#6b7280' }}>All students are on a team.</span>
-                ) : (
-                  studentsWithoutTeams.map((u) => (
-                    <span key={`un-${u.id}`} style={chip}>{displayOf(u)}</span>
-                  ))
-                )}
+            <div style={scrollerOuter}>
+              <div style={{ ...frame, ...contentMaxWidth }}>
+                <div style={headerBar}><div className="flex-grow-1">Student</div></div>
+                <div style={{ padding: 16 }}>
+                  {studentsWithoutTeams.length === 0 ? (
+                    <span style={{ color: '#6b7280' }}>All students are on a team.</span>
+                  ) : (
+                    studentsWithoutTeams.map((u) => (
+                      <span key={`un-${u.id}`} style={chip}>{displayOf(u)}</span>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </Tab>
@@ -393,21 +479,49 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
         </Modal.Footer>
       </Modal>
 
-      {/* BEQUEATH MODAL (stub) */}
-      <Modal show={showBequeathModal} onHide={() => setShowBequeathModal(false)}>
-        <Modal.Header closeButton><Modal.Title>Bequeath All Teams</Modal.Title></Modal.Header>
+      {/* COPY TO COURSE */}
+      <Modal show={showCopyToModal} onHide={() => setShowCopyToModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Copy Teams to Course</Modal.Title></Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group controlId="bequeathTarget">
-              <Form.Label>Destination {ctxType === 'course' ? 'course' : 'assignment'}</Form.Label>
-              <Form.Control type="text" placeholder="e.g., Assignment 12 / Course Section 003" value={bequeathTarget} onChange={(e) => setBequeathTarget(e.target.value)} />
-              <Form.Text className="text-muted">(Stub) Wire this to your backend to copy teams.</Form.Text>
+            <Form.Group controlId="copyTarget">
+              <Form.Label>Destination course</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="e.g., CSC517 Section 003"
+                value={copyTarget}
+                onChange={(e) => setCopyTarget(e.target.value)}
+              />
+              <Form.Text className="text-muted">(Stub) Wire this to your backend to copy teams to a course.</Form.Text>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowBequeathModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={bequeathAll}>Bequeath</Button>
+          <Button variant="secondary" onClick={() => setShowCopyToModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={copyTeamsToCourse}>Copy</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* COPY FROM COURSE */}
+      <Modal show={showCopyFromModal} onHide={() => setShowCopyFromModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Copy Teams from Course</Modal.Title></Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="copySource">
+              <Form.Label>Source course</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="e.g., CSC517 Section 002"
+                value={copySource}
+                onChange={(e) => setCopySource(e.target.value)}
+              />
+              <Form.Text className="text-muted">(Stub) Wire this to your backend to pull teams from another course.</Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCopyFromModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={copyTeamsFromCourse}>Copy</Button>
         </Modal.Footer>
       </Modal>
     </Container>
