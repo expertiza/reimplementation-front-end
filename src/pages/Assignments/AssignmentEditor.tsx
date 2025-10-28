@@ -193,8 +193,140 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
                 <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
                 <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
-
               </Tab>
+
+              {/* Due dates Tab */}
+              <Tab eventKey="due_dates" title="Due dates">
+                <div style={{ marginTop: '20px' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px', marginBottom: '10px' }}>
+                  <label className="form-label">Number of review rounds:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center', marginBottom: '-0.3rem' }}>
+                    <FormInput controlId="assignment-number_of_review_rounds" name="number_of_review_rounds" type="number" />
+                  </div>
+                  <Button variant="outline-secondary">Set</Button>
+                </div>
+
+                <FormCheckbox controlId="assignment-use_signup_deadline" label="Use signup deadline" name="use_signup_deadline" />
+                <FormCheckbox controlId="assignment-use_drop_topic_deadline" label="Use drop-topic deadline" name="use_drop_topic_deadline" />
+                <FormCheckbox controlId="assignment-use_team_formation_deadline" label="Use team-formation deadline" name="use_team_formation_deadline" />
+
+                <Button variant="outline-secondary" style={{ marginTop: '10px', marginBottom: '10px' }}>Show/Hide date updater</Button>
+
+                <div>
+                  <div style={{ display: 'ruby', marginTop: '30px' }}>
+                    <Table
+                      showColumnFilter={false}
+                      showGlobalFilter={false}
+                      showPagination={false}
+                      data={[
+                        ...Array.from({ length: formik.values.number_of_review_rounds ?? 0 }, (_, i) => ([
+                          {
+                            id: 2 * i,
+                            deadline_type: `Review ${i + 1}: Submission`,
+                          },
+                          {
+                            id: 2 * i + 1,
+                            deadline_type: `Review ${i + 1}: Review`,
+                          },
+                        ])).flat(),
+                        ...(formik.values.use_signup_deadline ? [
+                          {
+                            id: 'signup_deadline',
+                            deadline_type: "Signup deadline",
+                          },
+                        ] : []),
+                        ...(formik.values.use_drop_topic_deadline ? [
+                          {
+                            id: 'drop_topic_deadline',
+                            deadline_type: "Drop topic deadline",
+                          },
+                        ] : []),
+                        ...(formik.values.use_team_formation_deadline ? [
+                          {
+                            id: 'team_formation_deadline',
+                            deadline_type: "Team formation deadline",
+                          },
+                        ] : []),
+                      ]}
+                      columns={[
+                        { accessorKey: "deadline_type", header: "Deadline type", enableSorting: false, enableColumnFilter: false },
+                        {
+                          cell: ({ row }) => <><FormDatePicker controlId={`assignment-date_time_${row.original.id}`} name={`date_time[${row.original.id}]`} /></>,
+                          accessorKey: "date_time", header: "Date & Time", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <><FormCheckbox controlId={`assignment-use_date_updater_${row.original.id}`} name={`use_date_updater[${row.original.id}]`} /></>,
+                          accessorKey: `use_date_updater`, header: "Use date updater?", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <>
+                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                              { label: "Yes", value: "yes" },
+                              { label: "No", value: "no" },
+                            ]} />
+                          </>,
+                          accessorKey: "submission_allowed", header: "Submission allowed?", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <>
+                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                              { label: "Yes", value: "yes" },
+                              { label: "No", value: "no" },
+                            ]} />
+                          </>,
+                          accessorKey: "review_allowed", header: "Review allowed?", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <>
+                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                              { label: "Yes", value: "yes" },
+                              { label: "No", value: "no" },
+                            ]} />
+                          </>,
+                          accessorKey: "teammate_allowed", header: "Teammate allowed?", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <>
+                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                              { label: "Yes", value: "yes" },
+                              { label: "No", value: "no" },
+                            ]} />
+                          </>,
+                          accessorKey: "metareview_allowed", header: "Meta-review allowed?", enableSorting: false, enableColumnFilter: false
+                        },
+                        {
+                          cell: ({ row }) => <>
+                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                              { label: "1", value: "1" },
+                              { label: "2", value: "2" },
+                              { label: "3", value: "3" },
+                              { label: "4", value: "4" },
+                              { label: "5", value: "5" },
+                              { label: "6", value: "6" },
+                              { label: "7", value: "7" },
+                              { label: "8", value: "8" },
+                              { label: "9", value: "9" },
+                              { label: "10", value: "10" },
+                            ]} /></>,
+                          accessorKey: "reminder", header: "Reminder (hrs)", enableSorting: false, enableColumnFilter: false
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
+                  <FormCheckbox controlId={`assignment-apply_late_policy`} label="Apply late policy:" name={`apply_late_policy?`} />
+                  <div style={{ marginBottom: '-0.3rem' }}>
+                    <FormSelect controlId={`assignment-late_policy_date_time`} name={`late_policy_date_time`} options={[
+                      { label: "--None--", value: "none" },
+                    ]} />
+                  </div>
+                  <Button variant="outline-secondary">New late policy</Button>
+                </div>
+              </Tab>
+
+
               
             </Tabs>
 
