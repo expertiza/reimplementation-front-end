@@ -3,6 +3,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import Table from "components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useLoaderData, useNavigate } from 'react-router-dom';
+import './ViewSubmissions.css';
 
 
 interface ISubmissionMember {
@@ -95,11 +96,11 @@ const ViewSubmissions: React.FC = () => {
         }
         return (
           <div>
-            <div>{team}</div>
+            <div className="team-name">{team}</div>
             <div>
-              <a href="#" onClick={(e) => { e.preventDefault(); console.log('View Reviews for', row.id); }}>
+              <button className="btn btn-link submission-link p-0" onClick={() => console.log('View Reviews for', row.id)}>
                 {past ? 'Assign grade' : 'View Reviews'}
-              </a>
+              </button>
             </div>
           </div>
         );
@@ -113,7 +114,10 @@ const ViewSubmissions: React.FC = () => {
       cell: info => (
         <div>
           {info.getValue().map((m: ISubmissionMember, idx: number) => (
-            <div key={idx}>{m.github} ({m.full_name})</div>
+            <div key={idx}>
+              <button className="btn btn-link submission-link p-0" style={{ verticalAlign: 'baseline' }}>{m.github}</button>
+              <span> ({m.full_name})</span>
+            </div>
           ))}
         </div>
       )
@@ -139,13 +143,13 @@ const ViewSubmissions: React.FC = () => {
                   <th>Name</th>
                   <th>Size</th>
                   <th>Type</th>
-                  <th>Modified</th>
+                  <th>Date Modified</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={i}>
-                    <td>{r.url ? <a href={r.url} target="_blank" rel="noreferrer">{r.name}</a> : r.name}</td>
+                    <td>{r.url ? <a href={r.url} target="_blank" rel="noreferrer" className="submission-link">{r.name}</a> : r.name}</td>
                     <td>{r.size}</td>
                     <td>{r.type}</td>
                     <td>{r.modified}</td>
@@ -163,13 +167,13 @@ const ViewSubmissions: React.FC = () => {
       id: 'history',
       header: () => 'History',
       cell: ({ row }) => (
-        <button className="btn btn-link p-0" onClick={() => navigate(`/submissions/history/${row.original.id}`)}>History</button>
+        <button className="btn btn-link submission-link p-0" onClick={() => navigate(`/submissions/history/${row.original.id}`)}>History</button>
       )
     }),
   ], [assignment, navigate]);
 
   return (
-    <Container fluid className="mt-4">
+    <Container fluid className="submission-container">
       <Row className="mt-md-2 mb-md-2">
         <Col xs={12} className="text-center">
           <h1>View Submissions - {assignment?.name || 'Assignment'}</h1>
@@ -183,14 +187,18 @@ const ViewSubmissions: React.FC = () => {
       </Row>
 
       <Row>
-        <Col xs={12} md={{ span: 8, offset: 2 }}>
-          <Table
-            data={submissions}
-            columns={columns}
-            columnVisibility={{
-              id: false,
-            }}
-          />
+        <Col xs={12}>
+          <div data-testid="submission-table-container" style={{ width: '100%' }}>
+            <Table
+              data={submissions}
+              columns={columns}
+              columnVisibility={{
+                id: false,
+              }}
+              tableSize={{ span: 12, offset: 0 }}
+              showColumnFilter={false}
+            />
+          </div>
         </Col>
       </Row>
     </Container>

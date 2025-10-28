@@ -1,0 +1,132 @@
+.submission-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Force table to take full width */
+.table-responsive,
+div[class*="Table_container"],
+div[class*="Table_table-container"],
+table {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Set columns to use available space */
+.table td {
+  width: auto;
+}
+
+/* Set specific column widths */
+.table td:first-child {
+  width: 15%;  /* Team Name column */
+}
+.table td:nth-child(2) {
+  width: 25%;  /* Team Members column */
+}
+.table td:nth-child(3) {
+  width: 50%;  /* Links column */
+}
+.table td:last-child {
+  width: 10%;  /* History column */
+}
+
+.submission-link {
+  color: #e49b1f !important;
+  text-decoration: none;
+}
+
+.submission-link:hover {
+  color: #e49b1f !important;
+  text-decoration: underline;
+}
+
+.team-name {
+  color: #0d6efd;
+  font-weight: 500;
+}
+
+/* Make all tables use full width */
+.table {
+  width: 100% !important;
+  max-width: none !important;
+  margin-bottom: 0;
+}
+
+/* Add proper spacing to table cells and make headers bold */
+.table td {
+  padding: 1rem;
+}
+
+.table th {
+  padding: 1rem;
+  font-weight: bold !important;
+}
+
+/* Ensure nested tables use full width */
+.table td > table {
+  width: 100% !important;
+  margin: 0;
+}
+
+/* Style for the links table inside cells */
+.table td > div {
+  width: 100% !important;
+}
+
+.table td > div > table {
+  width: 100% !important;
+  margin: 0;
+  table-layout: fixed;
+}
+
+/* Set widths for nested table columns */
+.table td > div > table th:nth-child(1),
+.table td > div > table td:nth-child(1) {
+  width: 40%;
+}
+.table td > div > table th:nth-child(2),
+.table td > div > table td:nth-child(2) {
+  width: 15%;
+}
+.table td > div > table th:nth-child(3),
+.table td > div > table td:nth-child(3) {
+  width: 15%;
+}
+.table td > div > table th:nth-child(4),
+.table td > div > table td:nth-child(4) {
+  width: 30%;
+}
+
+/* Remove extra padding from nested tables and style headers */
+.table td > div > table td {
+  padding: 0.5rem;
+  background: none !important;
+  font-weight: normal;
+  border: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table td > div > table th {
+  padding: 0.5rem;
+  background: none !important;
+  font-weight: bold !important;
+  border: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure the table container takes full width */
+div[class*="Table_container"] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
