@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
-import useAPI from "hooks/useAPI";
-import { Participant, Role, ALL_ROLES } from "./participantTypes";
+import { useCallback, useEffect, useState } from "react";
+import useAPI from "../../hooks/useAPI";
 import { parseCSV, prettyName } from "./participantHelpers";
+import { ALL_ROLES, Participant } from "./participantTypes";
 
 interface UseParticipantsProps {
   assignmentId?: number;
