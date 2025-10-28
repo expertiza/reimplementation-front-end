@@ -195,6 +195,83 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
               </Tab>
 
+              <Tab eventKey="rubrics" title="Rubrics">
+                <div style={{ marginTop: '20px' }}></div>
+                <FormCheckbox controlId="assignment-review_rubric_varies_by_round" label="Review rubric varies by round?" name="review_rubric_varies_by_round" />
+                <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
+                <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
+
+                <div style={{ marginTop: '20px', display: 'ruby' }}>
+                  <Table
+                    showColumnFilter={false}
+                    showGlobalFilter={false}
+                    showPagination={false}
+                    data={[
+                      ...Array.from({ length: formik.values.number_of_review_rounds ?? 0 }, (_, i) => ([
+                        {
+                          id: i,
+                          title: `Review round ${i + 1}:`,
+                          questionnaire: ['Sample 1', 'Sample 2', 'Sample 3'],
+                          questionnaire_type: 'dropdown',
+                        },
+                        {
+                          id: i,
+                          title: `Add tag prompts`,
+                          questionnaire_type: 'tag_prompts',
+                        }
+                      ])).flat(),
+                      {
+                        id: formik.values.number_of_review_rounds ?? 0,
+                        title: "Author feedback:",
+                        questionnaire: ['Standard author feedback'],
+                        questionnaire_type: 'dropdown',
+                      },
+                      {
+                        id: formik.values.number_of_review_rounds ?? 0,
+                        title: "Add tag prompts",
+                        questionnaire_type: 'tag_prompts',
+                      },
+                      {
+                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
+                        title: "Teammate review:",
+                        questionnaire: ['Review with Github metrics'],
+                        questionnaire_type: 'dropdown',
+                      },
+                      {
+                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
+                        title: "Add tag prompts",
+                        questionnaire_type: 'tag_prompts',
+                      },
+                    ]}
+                    columns={[
+                      {
+                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.title}</div>,
+                        accessorKey: "title", header: "", enableSorting: false, enableColumnFilter: false
+                      },
+                      {
+                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
+                          <FormSelect controlId={`assignment-questionnaire_${row.original.id}`} name="questionnaire"
+                            options={row.original.questionnaire.map((questionnaire: string) => ({ label: questionnaire, value: questionnaire }))} />}
+                          {row.original.questionnaire_type === 'tag_prompts' &&
+                            <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
+                              <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
+                        accessorKey: "questionnaire", header: "Questionnaire", enableSorting: false, enableColumnFilter: false
+                      },
+                      {
+                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
+                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-weight_${row.original.id}`} name={`weights[${row.original.id}]`} type="number" />%</div></>}</div>,
+                        accessorKey: `weights`, header: "Weight", enableSorting: false, enableColumnFilter: false
+                      },
+                      {
+                        cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
+                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
+                        accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
+                      },
+                    ]}
+                  />
+                </div>
+              </Tab>
+              
               {/* Due dates Tab */}
               <Tab eventKey="due_dates" title="Due dates">
                 <div style={{ marginTop: '20px' }}></div>
@@ -419,83 +496,6 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
               }}
             </Formik>
           </Tab>
-
-          <Tab eventKey="rubrics" title="Rubrics">
-                <div style={{ marginTop: '20px' }}></div>
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_round" label="Review rubric varies by round?" name="review_rubric_varies_by_round" />
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
-
-                <div style={{ marginTop: '20px', display: 'ruby' }}>
-                  <Table
-                    showColumnFilter={false}
-                    showGlobalFilter={false}
-                    showPagination={false}
-                    data={[
-                      ...Array.from({ length: formik.values.number_of_review_rounds ?? 0 }, (_, i) => ([
-                        {
-                          id: i,
-                          title: `Review round ${i + 1}:`,
-                          questionnaire: ['Sample 1', 'Sample 2', 'Sample 3'],
-                          questionnaire_type: 'dropdown',
-                        },
-                        {
-                          id: i,
-                          title: `Add tag prompts`,
-                          questionnaire_type: 'tag_prompts',
-                        }
-                      ])).flat(),
-                      {
-                        id: formik.values.number_of_review_rounds ?? 0,
-                        title: "Author feedback:",
-                        questionnaire: ['Standard author feedback'],
-                        questionnaire_type: 'dropdown',
-                      },
-                      {
-                        id: formik.values.number_of_review_rounds ?? 0,
-                        title: "Add tag prompts",
-                        questionnaire_type: 'tag_prompts',
-                      },
-                      {
-                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
-                        title: "Teammate review:",
-                        questionnaire: ['Review with Github metrics'],
-                        questionnaire_type: 'dropdown',
-                      },
-                      {
-                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
-                        title: "Add tag prompts",
-                        questionnaire_type: 'tag_prompts',
-                      },
-                    ]}
-                    columns={[
-                      {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.title}</div>,
-                        accessorKey: "title", header: "", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
-                          <FormSelect controlId={`assignment-questionnaire_${row.original.id}`} name="questionnaire"
-                            options={row.original.questionnaire.map((questionnaire: string) => ({ label: questionnaire, value: questionnaire }))} />}
-                          {row.original.questionnaire_type === 'tag_prompts' &&
-                            <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
-                              <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
-                        accessorKey: "questionnaire", header: "Questionnaire", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-weight_${row.original.id}`} name={`weights[${row.original.id}]`} type="number" />%</div></>}</div>,
-                        accessorKey: `weights`, header: "Weight", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
-                        accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
-                      },
-                    ]}
-                  />
-                </div>
-              </Tab>
           
           <Tab eventKey="etc" title="Etc">
             <div className="assignment-actions d-flex flex-wrap justify-content-start">
