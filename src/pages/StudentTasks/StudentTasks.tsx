@@ -312,7 +312,7 @@ const StudentTasks: React.FC = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
+        alignItems: "center",
         justifyContent: "flex-start",
       }}
     >
@@ -329,7 +329,7 @@ const StudentTasks: React.FC = () => {
         </p>
       </div>
 
-      <div style={{ width: "100%" }}>
+      <div style={{ width: "fit-content" }}>
         {topics.length === 0 ? (
           <Alert variant="info">
             <Alert.Heading>No Topics Available</Alert.Heading>
@@ -337,16 +337,16 @@ const StudentTasks: React.FC = () => {
           </Alert>
         ) : (
           <Table bordered hover striped responsive>
-            <thead className="table-light">
-              <tr>
-                <th>Topic ID</th>
-                <th>Topic name(s)</th>
-                <th>Available slots</th>
-                <th>Num. on waitlist</th>
-                <th>Bookmarks</th>
-                <th>Select</th>
-              </tr>
-            </thead>
+               <thead className="table-light">
+                  <tr>
+                    <th className="p-3">Topic ID</th>
+                    <th className="p-3">Topic name(s)</th>
+                    <th className="p-3">Available slots</th>
+                    <th className="p-3">Num. on waitlist</th>
+                    <th className="p-3">Bookmarks</th>
+                    <th className="p-3">Select</th>
+                  </tr>
+                </thead>
             <tbody>
                   {topics.map((topic) => {
                     const isSelected = topic.isSelected;
@@ -370,18 +370,15 @@ const StudentTasks: React.FC = () => {
                     return (
                       <tr
                         key={topic.id}
-                        className={rowClass} // Use className for backgrounds
-                        style={rowStyle}    // Only apply non-conflicting styles
+                        className={rowClass} 
+                        style={rowStyle}    
                       >
-                        {/* REMOVE ALL INLINE 'style' PROPS FROM ALL <td> TAGS.
-                          This is the most important step.
-                        */}
                         
-                        <td>{topic.id}</td>
-                        <td>{topic.name}</td>
-                        <td>{topic.availableSlots}</td>
-                        <td>{topic.waitlist}</td>
-                        <td className="text-center">
+                        <td className="p-3">{topic.id}</td>
+                        <td className="p-3">{topic.name}</td>
+                        <td className="p-3">{topic.availableSlots}</td>
+                        <td className="p-3">{topic.waitlist}</td>
+                        <td className="text-center p-3"> {/* Added p-3 */}
                           <Button
                             variant="link"
                             size="sm"
@@ -396,7 +393,7 @@ const StudentTasks: React.FC = () => {
                             )}
                           </Button>
                         </td>
-                        <td className="text-center">
+                        <td className="text-center p-3"> {/* Added p-3 */}
                           <Button
                             variant="link"
                             size="sm"
