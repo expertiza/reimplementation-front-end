@@ -18,7 +18,6 @@ import {
   import GlobalFilter from "./GlobalFilter";
   import Pagination from "./Pagination";
   import RowSelectCheckBox from "./RowSelectCheckBox";
-  import { FaSearch } from "react-icons/fa";
   
   interface TableProps {
 	data: Record<string, any>[];
@@ -151,9 +150,6 @@ import {
 	  handleSelectionChange?.(selectedData);
 	}, [flatRows]);
   
-	const toggleGlobalFilter = () => {
-	  setIsGlobalFilterVisible(!isGlobalFilterVisible);
-	};
   
 	const firstRenderRef = useRef(true);
   
@@ -166,10 +162,6 @@ import {
 				<GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
 			  )}
 			</Col>
-			<span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
-			  <FaSearch style={{ cursor: "pointer" }} />
-			  {isGlobalFilterVisible ? " Hide" : " Show"}
-			</span>
 		  </Row>
 		</Container>
 		<Container>

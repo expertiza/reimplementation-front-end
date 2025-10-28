@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Col, Row, Form, Table as BootstrapTable, Button, Modal, FloatingLabel, Stack } from "react-bootstrap";
+import { Col, Row, Form, Button, Modal, FloatingLabel, Stack } from "react-bootstrap";
 // Reverting to the standard import path for react-icons/bs
-import { BsX, BsBookmark, BsPencil, BsLink45Deg, BsPersonPlusFill, BsFillBookmarkPlusFill } from "react-icons/bs";
+import { BsPersonPlusFill, BsBookmark, BsBookmarkFill } from "react-icons/bs";
+import TopicsTable from "pages/Assignments/components/TopicsTable";
 
 // --- Interface Modifications ---
 // Assuming these interfaces are defined elsewhere and imported
@@ -62,6 +63,7 @@ interface TopicSettings {
 }
 
 interface TopicsTabProps {
+  assignmentName?: string;
   topicSettings: TopicSettings;
   topicsData: TopicData[]; // Ensure the data passed matches the updated TopicData interface
   topicsLoading?: boolean;
@@ -72,7 +74,6 @@ interface TopicsTabProps {
   onDeleteTopic: (topicId: string) => void;
   onEditTopic: (topicId: string, updatedData?: any) => void;
   onCreateTopic?: (topicData: any) => void;
-  onCreateBookmark: (topicId: string) => void; // Function to handle opening a create bookmark UI/modal
   // Handler for partner ad application submission
   onApplyPartnerAd: (topicId: string, applicationText: string) => void;
 }
@@ -80,6 +81,7 @@ interface TopicsTabProps {
 // --- Component Implementation ---
 
 const TopicsTab = ({
+  assignmentName = "Assignment",
   topicSettings,
   topicsData,
   topicsLoading = false,
@@ -89,7 +91,6 @@ const TopicsTab = ({
   onDeleteTopic,
   onEditTopic,
   onCreateTopic,
-  onCreateBookmark,
   onApplyPartnerAd,
 }: TopicsTabProps) => {
   const [displayUserNames, setDisplayUserNames] = useState(false); // State for toggling user name/ID display
@@ -118,7 +119,6 @@ const TopicsTab = ({
 
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteType, setDeleteType] = useState<'selected' | 'all'>('selected');
 
   // Edit topic modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -287,28 +287,15 @@ const TopicsTab = ({
 
   // --- Delete Handlers ---
   const handleDeleteSelected = () => {
-    setDeleteType('selected');
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteAll = () => {
-    setDeleteType('all');
     setShowDeleteModal(true);
   };
 
   const handleConfirmDelete = () => {
-    if (deleteType === 'selected') {
-      selectedTopics.forEach(topicId => {
-        onDeleteTopic(topicId);
-      });
-      setSelectedTopics(new Set());
-      setSelectAll(false);
-    } else {
-      // Delete all topics
-      topicsData.forEach(topic => {
-        onDeleteTopic(topic.id);
-      });
-    }
+    selectedTopics.forEach(topicId => {
+      onDeleteTopic(topicId);
+    });
+    setSelectedTopics(new Set());
+    setSelectAll(false);
     setShowDeleteModal(false);
   };
 
@@ -323,22 +310,12 @@ const TopicsTab = ({
   };
 
   // --- Render Helper Functions ---
-  const renderTeamMembers = (members: TeamMember[]) => {
-    // Basic check for members array
-    if (!Array.isArray(members) || members.length === 0) {
-        return 'No members';
-    }
-    return members.map(member => {
-      // Always show names in admin view, regardless of toggle setting
-      const displayName = member.name || member.id;
-      return displayName || 'Unknown Member';
-    }).join(', ');
-  };
+  // removed: renderTeamMembers (moved to TopicsTable renderDetails inline rendering)
 
   return (
     <Row className="mt-4">
       <Col>
-        <h4>Topics for OSS project & documentation assignment</h4>
+        <h4>Topics for {assignmentName} assignment</h4>
 
         {/* Topic Settings */}
         <div className="mb-4">
@@ -419,186 +396,134 @@ const TopicsTab = ({
           </div>
         )}
 
-        {/* Topics Table */}
-        <BootstrapTable striped bordered hover responsive> {/* Added responsive */}
-          <thead>
-            <tr>
-              {/* Adjusted width for checkbox column */}
-              <th style={{ width: '50px' }}>
-                <Form.Check 
-                  type="checkbox" 
-                  aria-label="Select all topics"
-                  checked={selectAll}
-                  onChange={handleSelectAll}
-                />
-              </th>
-              <th>Topic ID</th>
-              {/* Topic Name column with max-width */}
-              <th style={{ maxWidth: '400px', wordWrap: 'break-word' }}>Topic name(s)</th>
-              <th>Questionnaire</th>
-              <th>Num. slots</th>
-              <th>Available slots</th>
-              <th>Waitlist</th>
-              <th>Bookmarks</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Loading State */}
-            {topicsLoading ? (
-              <tr>
-                <td colSpan={9} className="text-center">
-                  <div className="d-flex justify-content-center align-items-center">
-                    <div className="spinner-border spinner-border-sm me-2" role="status">
-                      <span className="visually-hidden">Loading...</span>
+        <TopicsTable
+          data={(topicsData || []).map((t) => ({
+            id: t.id,
+            name: t.name,
+            url: t.url,
+            description: t.description,
+            availableSlots: t.availableSlots,
+            waitlistCount: t.waitlistedTeams?.length || 0,
+            assignedTeams: t.assignedTeams,
+            waitlistedTeams: t.waitlistedTeams,
+          }))}
+          mode="instructor"
+          selectable
+          selectAll={selectAll}
+          isRowSelected={(id) => selectedTopics.has(id)}
+          onToggleAll={handleSelectAll}
+          onToggleRow={handleSelectTopic}
+          extraColumns={[
+            {
+              id: "questionnaire",
+              header: "Questionnaire",
+              cell: ({ row }) => <span>{(topicsData.find(t => t.id === row.original.id)?.questionnaire) || "--Default rubric--"}</span>,
+            },
+            {
+              id: "numSlots",
+              header: "Num. of Slots",
+              cell: ({ row }) => <span className="d-block text-center">{topicsData.find(t => t.id === row.original.id)?.numSlots ?? 0}</span>,
+            },
+            {
+              id: "availableSlots",
+              header: "Available Slots",
+              cell: ({ row }) => <span className="d-block text-center">{row.original.availableSlots ?? 0}</span>,
+            },
+            {
+              id: "waitlisted",
+              header: "Waitlisted",
+              cell: ({ row }) => <span className="d-block text-center">{row.original.waitlistedTeams?.length ?? 0}</span>,
+            },
+            {
+              id: "bookmarks",
+              header: "Bookmarks",
+              cell: ({ row }) => {
+                const topic = topicsData.find(t => t.id === row.original.id);
+                const bookmarkCount = topic?.bookmarks?.length || 0;
+                return (
+                  <span>
+                    {bookmarkCount === 0 ? "None" : `${bookmarkCount} bookmark${bookmarkCount > 1 ? 's' : ''}`}
+                  </span>
+                );
+              },
+            },
+          ]}
+          renderDetails={(row) => (
+            <div>
+              {row.assignedTeams && row.assignedTeams.length > 0 && (
+                <div className="mt-2">
+                  {row.assignedTeams.map((team) => (
+                    <div key={team.teamId} className="d-flex align-items-center mb-1">
+                      <span className="small fw-bold text-primary">
+                        {team.members.map(m => m.name || m.id).join(", ")}
+                      </span>
+                      <img
+                        src="/assets/icons/delete-temp.png"
+                        alt="Drop team"
+                        width="18"
+                        height="18"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => onDropTeam(row.id, team.teamId)}
+                      />
                     </div>
-                    Loading topics...
-                  </div>
-                </td>
-              </tr>
-            ) : topicsData && topicsData.length > 0 ? (
-                topicsData.map((topic) => (
-                <tr key={topic.id}>
-                    {/* Checkbox cell */}
-                    <td>
-                    <Form.Check 
-                      type="checkbox" 
-                      aria-label={`Select topic ${topic.id}`}
-                      checked={selectedTopics.has(topic.id)}
-                      onChange={() => handleSelectTopic(topic.id)}
-                    />
-                    </td>
-                    {/* Topic ID */}
-                    <td>{topic.id}</td>
-                    {/* Topic Name, Description, Teams, Waitlist, Partner Ad */}
-                    <td>
-                    <div>
-                        {/* Topic Name (as link if URL exists) */}
-                        {topic.url ? (
-                        <a href={topic.url} target="_blank" rel="noopener noreferrer">{topic.name} <BsLink45Deg/></a>
-                        ) : (
-                        <span>{topic.name}</span>
-                        )}
-                        {/* Topic Description */}
-                        {topic.description && (
-                        <div className="text-muted small mt-1">{topic.description}</div>
-                        )}
-                        
-                        {/* Student Names - Display directly under description */}
-                        {topic.assignedTeams && topic.assignedTeams.length > 0 && (
-                            <div className="mt-2">
-                                {topic.assignedTeams.map((team) => (
-                                    <div key={team.teamId} className="d-flex align-items-center mb-1">
-                                        <span className="small fw-bold text-primary">
-                                            {renderTeamMembers(team.members)}
-                                        </span>
-                                        {/* Drop Team Icon */}
-                                        <BsX
-                                            className="text-danger ms-2"
-                                            style={{ cursor: 'pointer', fontSize: '1.1rem' }}
-                                            onClick={() => onDropTeam(topic.id, team.teamId)}
-                                            title={`Drop team ${team.teamId} from topic`}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        
-                        {/* Waitlisted Students */}
-                        {topic.waitlistedTeams && topic.waitlistedTeams.length > 0 && (
-                            <div className="mt-1">
-                                {topic.waitlistedTeams.map((team) => (
-                                    <div key={team.teamId} className="d-flex align-items-center mb-1">
-                                        <span className="small text-muted">
-                                            {renderTeamMembers(team.members)} (waitlisted)
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        
-                        {/* Show message if no teams assigned or waitlisted */}
-                        {(!topic.assignedTeams || topic.assignedTeams.length === 0) && 
-                         (!topic.waitlistedTeams || topic.waitlistedTeams.length === 0) && (
-                            <div className="text-muted small mt-2">No students assigned</div>
-                        )}
+                  ))}
+                </div>
+              )}
+              {row.waitlistedTeams && row.waitlistedTeams.length > 0 && (
+                <div className="mt-1">
+                  {row.waitlistedTeams.map((team) => (
+                    <div key={team.teamId} className="d-flex align-items-center mb-1">
+                      <span className="small text-muted">
+                        {team.members.map(m => m.name || m.id).join(", ")} (waitlisted)
+                      </span>
                     </div>
-                    
-                    {/* Partner Advertisement */}
-                    {topic.partnerAd && (
-                        <div className="mt-2">
-                            <Button variant="outline-info" size="sm" onClick={() => handleShowPartnerAd(topic)}>
-                                <BsPersonPlusFill className="me-1"/> Partner Ad
-                            </Button>
-                        </div>
-                    )}
-                    </td>
-                    {/* Questionnaire */}
-                    <td>
-                    {/* This might need adjustment based on how questionnaires are handled (e.g., multiple rounds) */}
-                    <div>Review Round 1:</div>
-                    <Form.Select size="sm" defaultValue={topic.questionnaire} disabled> {/* Assuming display only */}
-                        <option>{topic.questionnaire}</option>
-                    </Form.Select>
-                    </td>
-                    {/* Slots */}
-                    <td>{topic.numSlots}</td>
-                    <td>{topic.availableSlots}</td>
-                    {/* Waitlist count */}
-                    <td>{topic.waitlistedTeams ? topic.waitlistedTeams.length : 0}</td>
-                    {/* Bookmarks */}
-                    <td>
-                    <Stack gap={1} className="align-items-start">
-                        {/* Display existing bookmarks */}
-                        {topic.bookmarks && topic.bookmarks.length > 0 ? (
-                        topic.bookmarks.map(bm => (
-                            <a key={bm.id} href={bm.url} target="_blank" rel="noopener noreferrer" className="small text-truncate" title={bm.title}>
-                            <BsBookmark className="me-1"/> {bm.title || bm.url}
-                            </a>
-                        ))
-                        ) : (
-                        <span className="text-muted small">None</span>
-                        )}
-                        {/* Create Bookmark Button */}
-                        {topicSettings.allowBookmarks && (
-                        <Button variant="outline-secondary" size="sm" className="mt-1" onClick={() => onCreateBookmark(topic.id)} title="Add Bookmark">
-                            <BsFillBookmarkPlusFill />
-                        </Button>
-                        )}
-                    </Stack>
-                    </td>
-                    {/* Actions */}
-                    <td>
-                    <div className="d-flex gap-2">
-                        {/* Edit Icon */}
-                        <BsPencil
-                            className="text-primary"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => {
-                              console.log('Edit icon clicked for topic:', topic);
-                              handleShowEditTopic(topic);
-                            }}
-                            title="Edit Topic"
-                        />
-                        {/* Delete Icon */}
-                        <BsX
-                            className="text-danger"
-                            style={{ cursor: 'pointer', fontSize: '1.2rem' }} // Made slightly larger
-                            onClick={() => onDeleteTopic(topic.id)}
-                            title="Delete Topic"
-                        />
-                    </div>
-                    </td>
-                </tr>
-                ))
-            ) : (
-                 /* Add row for empty state */
-                <tr>
-                    <td colSpan={9} className="text-center text-muted">No topics found.</td>
-                </tr>
-            )}
-          </tbody>
-        </BootstrapTable>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          renderInstructorActions={(topic) => (
+            <Stack direction="horizontal" gap={2}>
+              <Button variant="outline-secondary" size="sm" onClick={() => handleShowEditTopic({
+                id: topic.id,
+                name: topic.name,
+                url: topic.url,
+                description: topic.description,
+                questionnaire: "",
+                numSlots: topicsData.find(t => t.id === topic.id)?.numSlots ?? 0,
+                availableSlots: topic.availableSlots,
+                waitlistedTeams: topic.waitlistedTeams || [],
+                assignedTeams: topic.assignedTeams || [],
+                bookmarks: [],
+                category: "",
+                link: topic.url || "",
+                databaseId: 0,
+              } as any)} title="Edit topic">
+                <img src="/assets/icons/edit-temp.png" alt="Edit" width="20" height="20" />
+              </Button>
+              <Button variant="outline-danger" size="sm" onClick={() => onDeleteTopic(topic.id)} title="Delete topic">
+                <img src="/assets/icons/delete-temp.png" alt="Delete" width="20" height="20" />
+              </Button>
+              <Button variant="outline-success" size="sm" onClick={() => handleShowPartnerAd({
+                id: topic.id,
+                name: topic.name,
+                url: topic.url,
+                description: topic.description,
+                questionnaire: "",
+                numSlots: topicsData.find(t => t.id === topic.id)?.numSlots ?? 0,
+                availableSlots: topic.availableSlots,
+                waitlistedTeams: topic.waitlistedTeams || [],
+                assignedTeams: topic.assignedTeams || [],
+                bookmarks: [],
+                category: "",
+                link: topic.url || "",
+                databaseId: 0,
+              } as any)} title="Apply to partner ad">
+                <BsPersonPlusFill />
+              </Button>
+            </Stack>
+          )}
+        />
 
         {/* Action Buttons */}
         <div className="d-flex gap-2 mt-3 flex-wrap"> {/* Added flex-wrap */}
@@ -620,13 +545,6 @@ const TopicsTab = ({
             disabled={selectedTopics.size === 0}
           >
             Delete selected topics ({selectedTopics.size})
-          </Button>
-          <Button 
-            variant="danger" 
-            onClick={handleDeleteAll}
-            disabled={topicsData.length === 0}
-          >
-            Delete all topics
           </Button>
           <Button 
             variant="secondary" 
@@ -803,10 +721,7 @@ const TopicsTab = ({
         </Modal.Header>
         <Modal.Body>
           <p>
-            {deleteType === 'selected' 
-              ? `Are you sure you want to delete ${selectedTopics.size} selected topic(s)? This action cannot be undone.`
-              : `Are you sure you want to delete ALL topics (${topicsData.length} total)? This action cannot be undone.`
-            }
+            Are you sure you want to delete {selectedTopics.size} selected topic(s)? This action cannot be undone.
           </p>
         </Modal.Body>
         <Modal.Footer>
@@ -814,7 +729,7 @@ const TopicsTab = ({
             Cancel
           </Button>
           <Button variant="danger" onClick={handleConfirmDelete}>
-            Delete {deleteType === 'selected' ? 'Selected' : 'All'}
+            Delete Selected
           </Button>
         </Modal.Footer>
       </Modal>
@@ -919,4 +834,3 @@ const TopicsTab = ({
 };
 
 export default TopicsTab;
-

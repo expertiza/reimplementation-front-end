@@ -10,6 +10,7 @@ import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
+import AssignmentEditPage from "./pages/Assignments/AssignmentEditPage";
 import { loadAssignment } from "pages/Assignments/AssignmentUtil";
 import ErrorPage from "./router/ErrorPage";
 import ProtectedRoute from "./router/ProtectedRoute";
@@ -100,12 +101,11 @@ function App() {
               element: <AssignmentEditor mode="create" />,
               loader: loadAssignment,
             },
-            {
-              path: "edit/:id",
-              element: <AssignmentEditor mode="update" />,
-              loader: loadAssignment,
-            },
           ],
+        },
+        {
+          path: "assignments/edit/:id",
+          element: <ProtectedRoute element={<AssignmentEditPage />} leastPrivilegeRole={ROLE.TA} />,
         },
         {
           path: "users",

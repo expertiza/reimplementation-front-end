@@ -5,16 +5,15 @@ import { faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { faChartBar } from '@fortawesome/free-solid-svg-icons';
-import { Button, FormSelect, Modal } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import FormInput from "components/Form/FormInput";
 import { HttpMethod } from "utils/httpMethods";
-import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import FormCheckbox from "components/Form/FormCheckBox";
@@ -44,10 +43,7 @@ const validationSchema = Yup.object({
 
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
-  const auth = useSelector(
-    (state: RootState) => state.authentication,
-    (prev, next) => prev.isAuthenticated === next.isAuthenticated
-  );
+  // authentication state not required in this editor
   const assignmentData: any = useLoaderData();
   const dispatch = useDispatch();
   const navigate = useNavigate();

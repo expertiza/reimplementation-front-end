@@ -143,9 +143,11 @@ const Header: React.FC = () => {
                     </NavDropdown.Item>
                   </NavDropdown>
                 )}
-                <Nav.Link as={Link} to="/student_tasks">
-                  Assignments
-                </Nav.Link>
+                {auth.user.role === ROLE.STUDENT.valueOf() && (
+                  <Nav.Link as={Link} to="/student_tasks">
+                    Assignments
+                  </Nav.Link>
+                )}
                 <Nav.Link as={Link} to="/profile">
                   Profile
                 </Nav.Link>

@@ -1,11 +1,10 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
-import { Container, Table, Spinner, Alert, Button } from "react-bootstrap";
+import { Container, Spinner, Alert, Row, Col } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-// We are bringing back the react-icons you were using
-import { BsBookmark, BsBookmarkFill, BsCheck, BsX } from "react-icons/bs"; 
 import useAPI from "../../hooks/useAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import TopicsTable, { TopicRow } from "pages/Assignments/components/TopicsTable";
 
 interface Topic {
   id: string;
@@ -131,11 +130,21 @@ const StudentTasks: React.FC = () => {
     }
   }, [assignmentResponse]);
 
+  // Check if bookmarks are allowed for this assignment
+  const allowBookmarks = useMemo(() => {
+    if (!assignmentResponse?.data) return false;
+    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+      return assignmentResponse.data[0].allow_bookmarks || false;
+    } else {
+      return assignmentResponse.data.allow_bookmarks || false;
+    }
+  }, [assignmentResponse]);
+
   const userSelectedTopics: Topic[] = useMemo(() => {
     return topics.filter(topic => topic.isSelected);
   }, [topics]);
 
-  const handleBookmarkToggle = (topicId: string) => {
+  const handleBookmarkToggle = useCallback((topicId: string) => {
     setBookmarkedTopics(prev => {
       const newSet = new Set(prev);
       if (newSet.has(topicId)) {
@@ -145,9 +154,9 @@ const StudentTasks: React.FC = () => {
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const handleTopicSelect = async (topicId: string) => {
+  const handleTopicSelect = useCallback(async (topicId: string) => {
     if (!currentUser?.id) return;
 
     if (selectedTopic === topicId) {
@@ -195,7 +204,18 @@ const StudentTasks: React.FC = () => {
         setIsSigningUp(false);
       }
     }
-  };
+  }, [currentUser?.id, dropAPI, selectedTopic, signUpAPI, topics, topicsResponse?.data]);
+
+  // Table columns (declare before any conditional returns to satisfy hooks rules)
+  const topicRows: TopicRow[] = useMemo(() => topics.map(t => ({
+    id: t.id,
+    name: t.name,
+    availableSlots: t.availableSlots,
+    waitlistCount: t.waitlist,
+    isTaken: t.isTaken,
+    isBookmarked: t.isBookmarked,
+    isSelected: t.isSelected,
+  })), [topics]);
 
   if (topicsLoading) {
     return (
@@ -224,127 +244,48 @@ const StudentTasks: React.FC = () => {
     );
   }
 
+  // removed duplicate columns definition placed after conditional returns
+
   return (
-    <Container
-      className="mt-4"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
-      }}
-    >
-      <div style={{ width: "100%", marginBottom: "20px" }}>
-        <h3 className="fw-bold">
-          Signup sheet for {assignmentName}
-        </h3>
-        <p className="mt-2">
-          <strong>Your topic(s):</strong> {
-            userSelectedTopics.length > 0 
-              ? userSelectedTopics.map(topic => topic.name).join(', ')
-              : 'No topics selected yet'
-          }
-        </p>
-      </div>
+    <Container fluid className="px-md-4">
+      <Row className="mt-3 mb-3">
+        <Col xs={12}>
+          <h2>Signup Sheet For {assignmentName}</h2>
+        </Col>
+      </Row>
+      
+      <Row className="mb-4">
+        <Col xs={12}>
+          <p className="mb-0">
+            <strong>Your topic(s):</strong> {userSelectedTopics.length > 0
+              ? userSelectedTopics.map((topic) => topic.name).join(", ")
+              : "No topics selected yet"}
+          </p>
+        </Col>
+      </Row>
 
-      {/* This div will now shrink to fit the table content */}
-      <div style={{ width: "fit-content" }}>
-        {topics.length === 0 ? (
-          <Alert variant="info">
-            <Alert.Heading>No Topics Available</Alert.Heading>
-            <p>There are no topics available for this assignment yet.</p>
-          </Alert>
-        ) : (
-          // CHANGE 1: Removed the "bordered" prop to get rid of lines
-          <Table hover striped responsive>
-            <thead className="table-light"> {/* This gives the gray header */}
-              <tr>
-                {/* CHANGE 2: Added style to prevent wrapping */}
-                <th className="p-3" style={{ whiteSpace: "nowrap" }}>Topic ID</th>
-                <th className="p-3" style={{ whiteSpace: "nowrap" }}>Topic name(s)</th>
-                <th className="p-3 text-center" style={{ whiteSpace: "nowrap" }}>Available slots</th>
-                <th className="p-3 text-center" style={{ whiteSpace: "nowrap" }}>Num. on waitlist</th>
-                <th className="p-3" style={{ whiteSpace: "nowrap" }}>Bookmarks</th>
-                <th className="p-3" style={{ whiteSpace: "nowrap" }}>Select</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topics.map((topic) => {
-                const isSelected = topic.isSelected;
-                const isTaken = topic.isTaken;
-
-                const rowClass = isSelected
-                  ? "table-warning"
-                  : isTaken
-                  ? "table-light"
-                  : "";
-
-                const rowStyle = {
-                  fontWeight: isSelected ? 'bold' : 'normal',
-                };
-                
-                return (
-                  <tr
-                    key={topic.id}
-                    className={rowClass}
-                    style={rowStyle}
-                  >
-                    <td className="p-3" style={{ whiteSpace: "nowrap" }}>{topic.id}</td>
-                    <td className="p-3" style={{ whiteSpace: "nowrap" }}>{topic.name}</td>
-                    <td className="p-3 text-center" style={{ whiteSpace: "nowrap" }}>{topic.availableSlots}</td>
-                    <td className="p-3 text-center" style={{ whiteSpace: "nowrap" }}>{topic.waitlist}</td>
-                    <td className="text-center p-3" style={{ whiteSpace: "nowrap" }}>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => handleBookmarkToggle(topic.id)}
-                        className="p-0"
-                        style={{ border: 'none', background: 'none' }}
-                      >
-                        {/* --- CHANGE 1: Set FILLED icon to beige/tan --- */}
-                        {topic.isBookmarked ? (
-                          <BsBookmarkFill style={{ color: "#D2B48C" }} size={20} />
-                        ) : (
-                        // --- CHANGE 2: Set OUTLINE icon back to muted gray ---
-                          <BsBookmark className="text-muted" size={20} />
-                        )}
-                      </Button>
-                    </td>
-                    <td className="text-center p-3" style={{ whiteSpace: "nowrap" }}>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => handleTopicSelect(topic.id)}
-                        className="p-0"
-                        style={{ border: 'none', background: 'none' }}
-                        disabled={topic.isTaken || isSigningUp}
-                      >
-                        {isSigningUp && selectedTopic === topic.id ? (
-                          <Spinner size="sm" animation="border" />
-                        ) : topic.isSelected ? (
-                          <img 
-                            src="/assets/images/delete-icon-24.png" 
-                            alt="Deselect" 
-                            width="20" 
-                            height="20" 
-                          />
-                        ) : (
-                          <img 
-                            src="/assets/icons/Check-icon.png" 
-                            alt="Select" 
-                            width="20" 
-                            height="20" 
-                          />
-                        )}
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        )}
-      </div>
+      <Row>
+        <Col xs={12}>
+          {topics.length === 0 ? (
+            <Alert variant="info">
+              <Alert.Heading>No Topics Available</Alert.Heading>
+              <p>There are no topics available for this assignment yet.</p>
+            </Alert>
+          ) : (
+            <TopicsTable
+              data={topicRows}
+              mode="student"
+              onBookmarkToggle={handleBookmarkToggle}
+              onSelectTopic={handleTopicSelect}
+              isSigningUp={isSigningUp}
+              selectedTopicId={selectedTopic}
+              showBookmarks={allowBookmarks}
+              showPaginationThreshold={10}
+              tableSize={{ span: 12, offset: 0 }}
+            />
+          )}
+        </Col>
+      </Row>
     </Container>
   );
 };
