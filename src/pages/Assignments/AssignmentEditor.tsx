@@ -5,14 +5,15 @@ import { faUserCheck } from '@fortawesome/free-solid-svg-icons';
 import { faClock } from '@fortawesome/free-solid-svg-icons';
 import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { faChartBar } from '@fortawesome/free-solid-svg-icons';
-import { Button, FormSelect, Modal } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import FormInput from "components/Form/FormInput";
+import FormSelect from "components/Form/FormSelect";
 import { HttpMethod } from "utils/httpMethods";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
@@ -22,6 +23,9 @@ import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
+import Table from "components/Table/Table";
+import FormDatePicker from "components/Form/FormDatePicker";
+import ToolTip from "components/ToolTip";
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -42,8 +46,10 @@ const validationSchema = Yup.object({
   // Add other assignment-specific validation rules
 });
 
-const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
+const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
+  const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
+  const [courses, setCourses] = useState<any[]>([]);
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -75,10 +81,39 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     assignmentError && dispatch(alertActions.showAlert({ variant: "danger", message: assignmentError }));
   }, [assignmentError, dispatch]);
 
+  // Load courses on component mount
+  useEffect(() => {
+    sendCoursesRequest({
+      url: "/courses",
+      method: HttpMethod.GET,
+    });
+  }, []);
+
+  // Handle courses response
+  useEffect(() => {
+    if (coursesResponse && coursesResponse.status >= 200 && coursesResponse.status < 300) {
+      setCourses(coursesResponse.data || []);
+    }
+  }, [coursesResponse]);
+
+  // Show courses error message
+  useEffect(() => {
+    coursesError && dispatch(alertActions.showAlert({ variant: "danger", message: coursesError }));
+  }, [coursesError, dispatch]);
+
   const onSubmit = (
     values: IAssignmentFormValues,
     submitProps: FormikHelpers<IAssignmentFormValues>
   ) => {
+
+    // validate sum of weights = 100%
+    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
+    console.log(totalWeight);
+    if (totalWeight !== 100) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
+      return;
+    }
+
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/assignments";
     if (mode === "update") {
@@ -87,7 +122,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     }
     // to be used to display message when assignment is created
     assignmentData.name = values.name;
-    console.log(values);
     sendRequest({
       url: url,
       method: method,
@@ -98,6 +132,34 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   };
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/assignments");
+
+  return (
+    <div style={{ padding: '30px' }}>
+      <h1>Editing Assignment: {assignmentData.name}</h1>
+
+      <Formik
+        initialValues={mode === "update" ? assignmentData : initialValues}
+        onSubmit={onSubmit}
+        validationSchema={validationSchema}
+        validateOnChange={false}
+        enableReinitialize={true}
+      >
+        {(formik) => (
+          <Form>
+
+            {/* Submit button */}
+            <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
+              <Button type="submit" variant="outline-secondary">
+                Save
+              </Button> |
+              <a href="/assignments" style={{ color: 'var(--bs-secondary)', textDecoration: 'none' }}>Back</a>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </div >
+
+  );
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -126,7 +188,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     <FormInput controlId="assignment-num_review_of_reviews" label="Number of Review of Reviews" name="num_review_of_reviews" type="number" />
                     <FormInput controlId="assignment-num_review_of_reviewers" label="Number of Review of Reviewers" name="num_review_of_reviewers" type="number" />
                     <FormInput controlId="assignment-num_reviewers" label="Number of Reviewers" name="num_reviewers" type="number" />
-                    <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
+                    <FormCheckbox controlId="assignment-has-teams-modal" label="Has teams?" name="has_teams" />
+                    {formik.values.has_teams && (
+                      <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
+                    )}
                     <FormInput controlId="assignment-days_between_submissions" label="Days Between Submissions" name="days_between_submissions" type="number" />
                     <FormInput controlId="assignment-review_assignment_strategy" label="Review Assignment Strategy" name="review_assignment_strategy" />
                     <FormInput controlId="assignment-max_reviews_per_submission" label="Max Reviews Per Submission" name="max_reviews_per_submission" type="number" />
