@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Button, Container, Row, Col, Modal, Form } from 'react-bootstrap';
-import Table from "components/Table/Table";
+import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { BsFileText, BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { useLoaderData } from 'react-router-dom';

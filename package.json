@@ -8,11 +8,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@tanstack/react-table": "^8.9.1",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.29",
+    "@types/node": "^20.19.0",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
     "@types/react-redux": "^7.1.25",
@@ -33,7 +29,6 @@
     "react-icons": "^4.9.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.11.1",
-    "react-scripts": "^5.0.1",
     "recharts": "^2.0.0",
     "redux-persist": "^6.0.0",
     "sass": "^1.62.1",
@@ -42,15 +37,14 @@
     "yup": "^1.4.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
@@ -71,7 +65,10 @@
     "@types/jqueryui": "^1.12.21",
     "@types/react-bootstrap": "^0.32.32",
     "@types/react-datepicker": "^4.10.0",
+    "@vitejs/plugin-react": "^5.0.4",
     "prettier": "^2.8.7",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vitest": "^1.0.0"
   }
 }

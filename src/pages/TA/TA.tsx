@@ -1,14 +1,14 @@
 // Importing necessary interfaces and modules
 
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
-import useAPI from "hooks/useAPI";
+import Table from "../../components/Table/Table";
+import useAPI from "../../hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
+import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { ITAResponse, ROLE } from "../../utils/interfaces";
 import { TAColumns as TA_COLUMNS } from "./TAColumns";

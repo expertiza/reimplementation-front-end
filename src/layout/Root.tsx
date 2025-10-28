@@ -1,10 +1,9 @@
 import { FC, Fragment, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
-import { RootState } from "store/store";
-import Header from "./Header";
+import { RootState } from "../store/store";
 import { getTokenDuration } from "../utils/auth";
+import Header from "./Header";
 
 /**
  * @author Ankur Mundra on May, 2023

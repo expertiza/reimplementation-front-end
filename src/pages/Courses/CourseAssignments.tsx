@@ -1,7 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
+import Table from "../../components/Table/Table";
 import React from 'react';
-import useAPI from "hooks/useAPI";
+import useAPI from "../../hooks/useAPI";
 import { useCallback, useEffect, useState } from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
 
