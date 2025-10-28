@@ -1,10 +1,13 @@
 import React, { act } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import AssignReviewer from "./AssignReviewer";
 import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
+import {demo} from "./AssignReviewer"
+import {Simulate} from "react-dom/test-utils";
+import click = Simulate.click;
 
-const assignmentData = {
+const APIAssignmentData = {
       id: 2,
       name: "Assignment 2",
       courseName: "Test Course",
@@ -13,7 +16,11 @@ const assignmentData = {
       updated_at: "2023-01-04",
     };
 
-const teamData = [
+
+/**
+ * To be used when API is introduced to the page
+ */
+const APITeamData = [
   {
     id: 10917,
     name: "Team 10917",
@@ -72,7 +79,7 @@ jest.mock("hooks/useAPI", () => () => ({
   error: null,
   isLoading: false,
   data: {
-    data: teamData
+    data: APITeamData
   },
   sendRequest: jest.fn(),
 }));
@@ -81,13 +88,13 @@ const renderWithRouter = (component: React.ReactNode) => {
   const router = createMemoryRouter(
     [
       {
-        path: "/",
+        path: "/ssignments/edit/:id/assignreviewer",
         element: component,
-        loader: () => (assignmentData), // Mock your loader data
+        loader: () => (APIAssignmentData), // Mock your loader data
       },
     ],
     {
-      initialEntries: ["/"], // Specify the initial URL
+      initialEntries: [`/ssignments/edit/${APIAssignmentData.id}/assignreviewer`], // Specify the initial URL
     }
   );
 
@@ -100,6 +107,18 @@ const renderWithRouter = (component: React.ReactNode) => {
     />
   );
 };
+
+const renderAndLoad = async () => {
+  await act(async () => {
+    renderWithRouter(<AssignReviewer />);
+  });
+
+  await act (async () => {
+    // Load Table Data
+    const loadButton = screen.getByRole("button", {'name': /Load demo data/i})
+    loadButton.click()
+  });
+}
 
 describe("Test Assign Reviewers Displays Correctly", () => {
   it("Renders the component correctly", async () => {
@@ -116,7 +135,8 @@ describe("Test Assign Reviewers Displays Correctly", () => {
 
     const table = screen.getByRole("table");
     expect(table).toBeInTheDocument();
-
+    var memberRegex = new RegExp(`Assign Reviewer: ${APIAssignmentData.name}` , "i");
+    expect(screen.getByText(/Assign Reviewer: /i))
 
     expect(screen.getByText(/Contributor/i)).toBeInTheDocument();
     expect(screen.getByText(/Reviewed By/i)).toBeInTheDocument();
@@ -127,33 +147,132 @@ describe("Test Assign Reviewers Displays Correctly", () => {
    * The correct information is displayed. Currently, elements don't have distinguishing
    * classes/ids.
    */
-  it("Renders the table contents correctly", async () => {
+  it("Renders the Contributor Column Correctly", async () => {
 
-    await act(async () => {
-      renderWithRouter(<AssignReviewer />);
-    });
+    await renderAndLoad()
 
-    teamData.forEach((team) => {
-      expect(screen.getByText(team.name)).toBeInTheDocument();
+    const data = demo(APIAssignmentData.id)
+    const sortedTeams = data.teams.sort((teamA,teamB) => teamA.id - teamB.id)
 
-      var teamMentorRegex = new RegExp(`${team.mentor.id}` , "i");
-      expect(screen.getAllByText(teamMentorRegex)[0]).toBeInTheDocument();
 
-      team.members.forEach((member) => {
-        var memberRegex = new RegExp(`${member.id}` , "i");
-        expect(screen.getAllByText(memberRegex)[0]).toBeInTheDocument();
-      })
+    // Get the table rows, and remove the first (column headers)
+    const allTableRows = screen.getAllByRole('row')
+    allTableRows.shift()
 
-      team.reviewers.forEach((reviewer) => {
-        var reviewerRegex = new RegExp(`${reviewer.id}` , "i");
-        expect(screen.getAllByText(reviewerRegex)[0]).toBeInTheDocument();
-      })
+    allTableRows.forEach((row, idx) => {
+      // Skip the header row
+      if (idx != 0) {
+        const cols = within(row).getAllByRole("cell");
+        expect(cols).toHaveLength(2);
+
+        const contributerCol = cols[0];
+        const reviewedByCol = cols[1];
+
+        var team = sortedTeams[idx]
+        var mentorName = data.users.find((user) => user.id === team.mentor_id)?.full_name
+        var members = data.teams_users.filter((user) => user.team_id === team.id)
+
+        // Team Name
+        expect(within(contributerCol).getByText(sortedTeams[idx].name)).toBeInTheDocument();
+
+        // Mentor Name
+        expect(contributerCol).toHaveTextContent(`Mentor: ${mentorName}`);
+
+        // Members
+        members.forEach((member) => {
+          var memberName = data.users.find((user) => user.id === member.user_id)?.full_name
+          expect(memberName).toBeTruthy()
+          expect(contributerCol).toHaveTextContent(memberName || "")
+        })
+
+        // Buttons
+        var buttons = within(contributerCol).getAllByRole('button')
+        expect(buttons).toHaveLength(2)
+        expect(buttons[0]).toHaveTextContent("add reviewer")
+        expect(buttons[1]).toHaveTextContent("delete outstanding reviewers")
+      }
+    })
+  });
+
+  it("Renders the Reviewed By Column Correctly", async () => {
+
+    await renderAndLoad()
+
+    const data = demo(APIAssignmentData.id)
+    console.log(data.users)
+    const sortedTeams = data.teams.sort((teamA,teamB) => teamA.id - teamB.id)
+
+    // Get the table rows, and remove the first (column headers)
+    const allTableRows = screen.getAllByRole('row')
+    allTableRows.shift()
+
+    allTableRows.forEach((row, idx) => {
+        var team = sortedTeams[idx]
+        var teamResponseMaps = data.response_maps.filter((responseMap) => responseMap.reviewee_team_id == team.id)
+        var teamReviewers = teamResponseMaps.map((responseMap) => {return data.users.find((user) => user.id === responseMap.reviewer_user_id)})
+        var teamReviews  = teamResponseMaps.map((responseMap) => {return data.responses.find((response) => response.map_id === responseMap.id)})
+        const reviewerRows = within(row).queryAllByTestId("ex-review-row")
+
+
+        reviewerRows.forEach((reviewerRow, reviewerIdx) => {
+          var review = teamReviews.find((review) => teamResponseMaps[reviewerIdx].id === review?.map_id )
+
+          // Name
+          expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.full_name || "")
+
+          // Status
+          // If the review is submitted
+          if (review && review.is_submitted) {
+            expect(reviewerRow).toHaveTextContent("Submitted")
+
+            expect(within(reviewerRow).getByRole('button', {name: "(unsubmit)"})).toBeInTheDocument()
+          } else {
+            if (review) {
+              expect(reviewerRow).toHaveTextContent("Saved")
+            } else {
+              expect(reviewerRow).toHaveTextContent("Not saved")
+            }
+          }
+
+          expect(within(reviewerRow).getByRole('button', {name: "delete"})).toBeInTheDocument()
+        })
     })
   });
 });
 
 describe("Test Assign Reviewers Functions Correctly", () => {
-  xit("Test Assigning a Reviewer", () => {
+  let promptSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    promptSpy = jest.spyOn(window, 'prompt');
+  });
+
+  afterEach(() => {
+    promptSpy.mockRestore();
+  });
+
+  it("Test Assigning a Reviewer", async () => {
+    promptSpy.mockReturnValue('1005');
+    await renderAndLoad()
+    const data = demo(APIAssignmentData.id)
+
+    // Finds the first "Add Reviewer" button on the screen
+    var user_name = data.users.find((user) => user.id === 1005)?.full_name || ""
+    var firstRow = screen.getAllByRole('row')[1]
+    var firstRowContributorCell = within(firstRow).getAllByRole("cell")[1];
+
+    expect(firstRowContributorCell).not.toHaveTextContent(user_name)
+
+
+    var addReviewerButton = within(firstRow).getByRole('button', {name: "add reviewer"})
+    addReviewerButton.click()
+
+    console.log(promptSpy)
+    expect(promptSpy).toBeCalled()
+
+    firstRowContributorCell = (await within((await screen.findAllByRole('row'))[1]).findAllByRole("cell"))[1]
+    expect(firstRowContributorCell).toHaveTextContent(user_name)
+
 
   });
 
@@ -177,4 +296,21 @@ describe("Test Assign Reviewers Functions Correctly", () => {
 
   });
 
+
+  // teamData.forEach((team) => {
+  //   expect(await screen.findByText("thing")).toBeInTheDocument();
+  //
+  //   var teamMentorRegex = new RegExp(`${team.mentor.id}` , "i");
+  //   expect(screen.getAllByText(teamMentorRegex)[0]).toBeInTheDocument();
+  //
+  //   team.members.forEach((member) => {
+  //     var memberRegex = new RegExp(`${member.id}` , "i");
+  //     expect(screen.getAllByText(memberRegex)[0]).toBeInTheDocument();
+  //   })
+  //
+  //   team.reviewers.forEach((reviewer) => {
+  //     var reviewerRegex = new RegExp(`${reviewer.id}` , "i");
+  //     expect(screen.getAllByText(reviewerRegex)[0]).toBeInTheDocument();
+  //   })
+  // })
 });

@@ -3,23 +3,23 @@ import { Button, Container, Row, Col, Modal, Form, Tabs, Tab } from 'react-boots
 import { BsPlus, BsX, BsPencil } from 'react-icons/bs';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 
-type ContextType = 'assignment' | 'course';
+export type ContextType = 'assignment' | 'course';
 
-interface Participant {
+export interface Participant {
   id: string | number;
   username: string;
   fullName?: string;
   teamName?: string;
 }
 
-interface Team {
+export interface Team {
   id: string | number;
   name: string;
   mentor?: Participant;
   members: Participant[];
 }
 
-interface LoaderPayload {
+export interface LoaderPayload {
   contextType?: ContextType;
   contextName?: string;
   initialTeams?: Team[];

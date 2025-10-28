@@ -110,7 +110,7 @@ function makeEmpty(asgId: Id): Persist {
 }
 
 /* Demo data: 4 teams per assignment id with varied reviewer counts (1, 2, 3, 0) */
-function demo(asgId: Id): Persist {
+export function demo(asgId: Id): Persist {
   let uid = 1000, pid = 2000, mid = 3000, rid = 4000;
 
   // Derive 4 team IDs from the assignment id so they look consistent with your DB examples
@@ -561,7 +561,7 @@ const AssignReviewer: React.FC = () => {
                   {team.reviewers.length === 0 && <span className="ex-muted">—</span>}
 
                   {team.reviewers.map(r => (
-                    <div key={r.id} className="ex-review-row">
+                    <div key={r.id} className="ex-review-row" data-testid="ex-review-row">
                       <span className="ex-reviewer">{fmt(r.reviewer)}</span>
                       <span className="ex-muted">&nbsp;Review Status:&nbsp;</span>
                       <strong>{r.status}</strong>
