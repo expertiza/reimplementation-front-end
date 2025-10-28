@@ -1,20 +1,14 @@
 import React, { act } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import CreateTeams from "./CreateTeams";
-import {Team, LoaderPayload, Participant, ContextType} from "./CreateTeams"
+import {Team, LoaderPayload, Participant, ContextType, sampleTeams, sampleUnassigned} from "./CreateTeams"
 import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
 import assignment from "./Assignment";
+import userEvent from "@testing-library/user-event";
 
-// const assignmentData = {
-//     id: 2,
-//     name: "Assignment 2",
-//     courseName: "Test Course",
-//     description: "Description 2",
-//     created_at: "2023-01-03",
-//     updated_at: "2023-01-04",
-// };
 
+// Team Data for when page is linked to the backend
 const teamData: Team[] = [
     {
         id: 10917,
@@ -38,6 +32,7 @@ const teamData: Team[] = [
     },
 ]
 
+// Unassigned pepole for when backend is connected
 const participantData: Participant[] = [
     {id: 20000, username: "student20000", fullName: "Student 20000"},
     {id: 20001, username: "student20001", fullName: "Student 20001"},
@@ -54,7 +49,8 @@ jest.mock("hooks/useAPI", () => () => ({
     error: null,
     isLoading: false,
     data: {
-        data: teamData
+        initialTeams: teamData,
+        initialUnassigned: participantData
     },
     sendRequest: jest.fn(),
 }));
@@ -88,7 +84,7 @@ const renderWithRouter = (component: React.ReactNode, contextType: ContextType, 
     );
 };
 
-describe("Test Assign Reviewers Displays Correctly", () => {
+describe("Test Create Teams Displays Correctly", () => {
     it("Renders the component correctly as an assignment", async () => {
         await act(async () => {
             renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
@@ -110,12 +106,8 @@ describe("Test Assign Reviewers Displays Correctly", () => {
             renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
         });
 
-        const table = screen.getByRole("table");
-        expect(table).toBeInTheDocument();
-
-
-        expect(screen.getByText(/Contributor/i)).toBeInTheDocument();
-        expect(screen.getByText(/Reviewed By/i)).toBeInTheDocument();
+        expect(screen.getByText(/Details/i)).toBeInTheDocument();
+        expect(screen.getByText(/Actions/i)).toBeInTheDocument();
     });
 
     /**
@@ -129,43 +121,167 @@ describe("Test Assign Reviewers Displays Correctly", () => {
             renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
         });
 
-        teamData.forEach((team) => {
-            expect(screen.getByText(team.name)).toBeInTheDocument();
 
-            var teamMentorRegex = new RegExp(`${team.mentor?.id}` , "i");
-            expect(screen.getAllByText(teamMentorRegex)[0]).toBeInTheDocument();
+        const sortedTeams = teamData.sort((teamA, teamB) => {
+          if (typeof teamA.id === 'string' && typeof teamB.id === 'string') {
+            return teamA.id.localeCompare(teamB.id)
+          } else {
+            return Number(teamA.id)  - Number(teamB.id)
+          }
+        });
+        const teamRows = screen.getAllByTestId("team-row")
+
+      teamRows.forEach((row, teamIdx) => {
+            const team = sortedTeams[teamIdx]
+
+            const actual_team_name = team.name.replace(/\s*MentoredTeam$/i, '')
+            expect(within(row).getByText(actual_team_name)).toBeInTheDocument();
+
+            const teamMentorRegex = new RegExp(`${team.mentor?.id}` , "i");
+            expect(within(row).getAllByText(teamMentorRegex)[0]).toBeInTheDocument();
 
             team.members.forEach((member) => {
-                var memberRegex = new RegExp(`${member.id}` , "i");
-                expect(screen.getAllByText(memberRegex)[0]).toBeInTheDocument();
+                const memberRegex = new RegExp(`${member.id}` , "i");
+                expect(within(row).getAllByText(memberRegex)[0]).toBeInTheDocument();
             })
         })
     });
 });
 
-describe("Test Assign Reviewers Functions Correctly", () => {
-    xit("Test Assigning a Reviewer", () => {
+describe("Test Create Teams Functions Correctly", () => {
+    xit("Test Adding a Student to a Team", () => {
+      // Check student not on page
+
+      // Click Add Button
+
+      // Select student in modal dropdown
+
+      // Check student on page
+    });
+
+    it("Test Edit Team Name", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
+
+      // Check team on page
+      const teamRegex = new RegExp(`${teamData[0].name}` , "i");
+      const team = screen.getByText(teamRegex)
+      expect(team).toBeInTheDocument()
+
+      // Click Edit Button
+      act(() => {
+        if (!team.parentElement?.parentElement) fail()
+        const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Edit team name"})
+        editButton.click()
+      });
+
+      // Type in new team name
+      act(() => {
+        var textBox = screen.getByRole('textbox', {name: "Team name"})
+        userEvent.type(textBox, "{selectall}{backspace}")
+        userEvent.type(textBox, "New Team Name", {});
+        screen.getByRole('button', {name: "Save"}).click()
+      })
+
+      // Check new team name
+      const teamNewName = await screen.findByText("New Team Name")
+      expect(teamNewName).toBeInTheDocument()
+    });
+
+    it("Test Removing a Team", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
+
+      // Check team on page
+      const teamRegex = new RegExp(`${teamData[0].name}` , "i");
+      const team = screen.getByText(teamRegex)
+      expect(team).toBeInTheDocument()
+
+      // Click Delete button
+      act(() => {
+        if (!team.parentElement?.parentElement) fail()
+        const deleteButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Delete team"})
+        deleteButton.click()
+      });
+
+      // Check team not on page
+      expect(team).not.toBeInTheDocument()
 
     });
 
-    xit("Test Adding a Reviewer", () => {
+    it("Test Removing a Mentor", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
 
+      // Check Mentor is there
+      //   const team = screen.getByRole('tabpanel', {name: "Teams"})
+        const teamMentorRegex = new RegExp(`${teamData[0].mentor?.username}` , "i");
+        const mentor = screen.getByText(teamMentorRegex)
+        expect(mentor).toBeInTheDocument()
+
+      // Click Delete Button
+      act(() => {
+        if (!mentor.parentElement) fail()
+        const deleteButton = within(mentor.parentElement).getByRole("button")
+        deleteButton.click()
+      });
+
+      // Check Mentor no longer there
+      expect(mentor).not.toBeInTheDocument()
     });
 
-    xit("Test Removing a Reviewer", () => {
+    it("Test Removing a Student", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
 
+      // Check Student is there
+      const studentButton = screen.getByText(teamData[0].members[0].username || "")
+      expect(studentButton).toBeInTheDocument()
+
+      // Click Delete ButtonfullName
+      act(() => {
+        const deleteButton = within(studentButton).getByRole('button')
+        deleteButton.click()
+      });
+
+      // Check Student no longer there
+      expect(studentButton).not.toBeInTheDocument()
     });
 
-    xit("Test Removing all Current Reviewer", () => {
+    it("Test Showing All Unassigned Users", async () => {
+      await act(async () => {
+        renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
+      });
 
+      expect(screen.getAllByRole('tab')).toHaveLength(2)
+
+      // Check unassigned participants aren't there
+      participantData.forEach((participant) => {
+        expect(screen.queryByText(participant.username || "")).not.toBe
+      })
+
+      // Navigate to other tab
+      act(() => {
+        const unassignedTab = screen.getByRole('tab', {name: "Students without teams"})
+        unassignedTab.click()
+      });
+
+
+      // Check all unassigned participants are on the page
+      participantData.forEach((participant) => {
+        expect(within(screen.getByTestId("student-list")).getByText(participant.username)).toBeInTheDocument()
+        // expect(within(screen.getByTestId("student-list")).getByText(participant.fullName?.replace(" ", "") || "", {exact: false})).toBeInTheDocument()
+      })
     });
 
-    xit("Test Unsubmitting a Review", () => {
+});
 
-    });
+describe("Test Create Teams Handles Errors Properly", () => {
+  xit("Make sure empty names aren't accepted for teams", () => {
 
-    xit("Test Showing Names / Usernames", () => {
-
-    });
-
+  })
 });

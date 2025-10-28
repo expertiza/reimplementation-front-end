@@ -27,14 +27,14 @@ export interface LoaderPayload {
 }
 
 /* ---------- DEMO DATA (replace with loader/backend) ---------- */
-const sampleUnassigned: Participant[] = [
+export const sampleUnassigned: Participant[] = [
   { id: 2001, username: 'Student 10933', fullName: 'Kai Moore' },
   { id: 2002, username: 'Student 10934', fullName: 'Rowan Diaz' },
   { id: 2003, username: 'Student 10935', fullName: 'Parker Lee' },
   { id: 2004, username: 'Student 10936', fullName: 'Jamie Rivera' },
 ];
 
-const sampleTeams: Team[] = [
+export const sampleTeams: Team[] = [
   {
     id: 't1',
     name: 'sshivas MentoredTeam',
@@ -346,7 +346,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
                   // filter mentor out of the visible member list
                   const visibleMembers = team.members.filter((m) => !isMentorMember(team, m));
                   return (
-                    <div key={team.id}>
+                    <div key={team.id} data-testid="team-row">
                       <div style={teamRowStyle}>
                         <div style={{ width: 40 }}>
                           <button style={caretBtn} onClick={() => toggleTeam(team.id)}>{open ? '▾' : '▸'}</button>
@@ -408,7 +408,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
             <div style={scrollerOuter}>
               <div style={{ ...frame, ...contentMaxWidth }}>
                 <div style={headerBar}><div className="flex-grow-1">Student</div></div>
-                <div style={{ padding: 16 }}>
+                <div style={{ padding: 16 }} data-testid="student-list">
                   {studentsWithoutTeams.length === 0 ? (
                     <span style={{ color: '#6b7280' }}>All students are on a team.</span>
                   ) : (
