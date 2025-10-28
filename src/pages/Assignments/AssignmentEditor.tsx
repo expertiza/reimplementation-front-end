@@ -106,14 +106,6 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     submitProps: FormikHelpers<IAssignmentFormValues>
   ) => {
 
-    // validate sum of weights = 100%
-    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
-    console.log(totalWeight);
-    if (totalWeight !== 100) {
-      dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
-      return;
-    }
-
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/assignments";
     if (mode === "update") {
