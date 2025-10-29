@@ -73,14 +73,32 @@ const useAPI = () => {
             return;
           }
 
-          const assignmentIdMatch = url.match(/^\/assignments\/(\d+)/);
-          if (assignmentIdMatch && method === "get") {
-            const id = parseInt(assignmentIdMatch[1], 10);
-            const found = mockAssignments.find((a) => a.id === id) || mockAssignments[0];
-            setData(makeResponse(found));
-            setIsLoading(false);
-            return;
-          }
+          // Match any assignment ID routes (GET /assignments/1, /assignments/1/edit, etc)
+const assignmentIdMatch = url.match(/\/assignments\/(\d+)/);
+if (assignmentIdMatch && method === "get") {
+  const id = parseInt(assignmentIdMatch[1], 10);
+  const found = mockAssignments.find((a) => a.id === id);
+  if (found) {
+    setData(makeResponse(found));
+  } else {
+    // Return a mock assignment with the requested ID
+    setData(makeResponse({
+      id: id,
+      name: `Mock Assignment ${id}`,
+      directory_path: "mock/path",
+      spec_location: "",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      course_id: 1,
+    }));
+  }
+  setIsLoading(false);
+  return;
+}
 
           if (url === "/assignments" && (method === "post" || method === "put" || method === "patch")) {
             // create or update - echo back created assignment with id
@@ -101,6 +119,30 @@ const useAPI = () => {
             setIsLoading(false);
             return;
           }
+          // Mock submission/review related endpoints
+if (url.includes("/submissions") && method === "get") {
+  setData(makeResponse([]));
+  setIsLoading(false);
+  return;
+}
+
+if (url.includes("/reviews") && method === "get") {
+  setData(makeResponse([]));
+  setIsLoading(false);
+  return;
+}
+
+if (url.includes("/teams") && method === "get") {
+  setData(makeResponse([]));
+  setIsLoading(false);
+  return;
+}
+
+if (url.includes("/participants") && method === "get") {
+  setData(makeResponse([]));
+  setIsLoading(false);
+  return;
+}
 
           // Mock user/profile endpoint
           if (url.includes("/users") && method === "get") {
