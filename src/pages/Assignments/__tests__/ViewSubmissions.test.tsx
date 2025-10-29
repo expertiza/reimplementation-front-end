@@ -117,6 +117,16 @@ describe('ViewSubmissions Component', () => {
     expect(historyButtons.length).toBeGreaterThan(0);
     expect(historyButtons[0]).toHaveClass('submission-link');
   });
+  
+  it('validates data formatting', () => {
+  renderComponent();
+  
+  // Check date formatting
+  const dates = screen.getAllByText(/\d{4}-\d{2}-\d{2}/);
+  dates.forEach(dateElement => {
+    const dateText = dateElement.textContent;
+    expect(dateText).toMatch(/^\d{4}-\d{2}-\d{2}/);
+  });
 
   it('applies correct table sizing', () => {
     renderComponent();
