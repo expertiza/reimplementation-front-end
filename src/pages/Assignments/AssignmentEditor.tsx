@@ -264,7 +264,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
 
-                <div style={{ marginTop: '20px', display: 'ruby' }}>
+                <div style={{ marginTop: '20px'}}>
                   <Table
                     showColumnFilter={false}
                     showGlobalFilter={false}
@@ -399,7 +399,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <Button variant="outline-secondary" style={{ marginTop: '10px', marginBottom: '10px' }}>Show/Hide date updater</Button>
 
                 <div>
-                  <div style={{ display: 'ruby', marginTop: '30px' }}>
+                  <div style={{marginTop: '30px' }}>
                     <Table
                       showColumnFilter={false}
                       showGlobalFilter={false}
