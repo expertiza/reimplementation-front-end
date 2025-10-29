@@ -31,7 +31,7 @@ const useAPI = () => {
     setError("");
 
     // Development mock handlers: allow working without a backend
-    if (process.env.NODE_ENV === "development" || process.env.REACT_APP_USE_MOCK === "true")  {
+    if (process.env.NODE_ENV === "development" || process.env.REACT_APP_USE_MOCK === "true") {
       const url = (requestConfig.url || "").toString();
       const method = (requestConfig.method || "get").toString().toLowerCase();
 
@@ -82,7 +82,7 @@ const useAPI = () => {
             return;
           }
 
-          if (url === "/assignments" && (method === "post" || method === "put")) {
+          if (url === "/assignments" && (method === "post" || method === "put" || method === "patch")) {
             // create or update - echo back created assignment with id
             let payload: any = requestConfig.data || {};
             try {
@@ -102,12 +102,49 @@ const useAPI = () => {
             return;
           }
 
-          // Default: fall through to real network call if not matched
+          // Mock user/profile endpoint
+          if (url.includes("/users") && method === "get") {
+            const mockUser = {
+              id: 6,
+              name: "Instructor Six",
+              full_name: "Instructor Six",
+              email: "instructor6@example.com",
+              role: "Instructor"
+            };
+            setData(makeResponse(mockUser));
+            setIsLoading(false);
+            return;
+          }
+
+          // Mock any other GET requests with empty array
+          if (method === "get") {
+            setData(makeResponse([]));
+            setIsLoading(false);
+            return;
+          }
+
+          // Mock any POST/PUT/PATCH with success response
+          if (method === "post" || method === "put" || method === "patch") {
+            setData(makeResponse({ success: true, message: "Operation successful" }, 201));
+            setIsLoading(false);
+            return;
+          }
+
+          // Mock DELETE
+          if (method === "delete") {
+            setData(makeResponse({ success: true, message: "Deleted successfully" }));
+            setIsLoading(false);
+            return;
+          }
+
         } catch (err) {
           setError((err as Error).message || "Mock error");
           setIsLoading(false);
         }
       }, 200);
+      
+      // IMPORTANT: Return early to prevent real axios call
+      return;
     }
 
     let errorMessage = "";
