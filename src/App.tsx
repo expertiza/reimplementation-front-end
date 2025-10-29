@@ -35,7 +35,7 @@ import EditProfile from "pages/Profile/Edit";
 import Reviews from "pages/Reviews/reviews";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import CreateTeams from "pages/Assignments/CreateTeams";
-import AssignReviewer from "pages/Assignments/AssignReviewer";
+import ResponseMaps from "pages/Assignments/ResponseMaps";
 import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
@@ -70,7 +70,7 @@ function App() {
         // Assign Reviewer: no route loader (component handles localStorage/URL id)
         {
           path: "assignments/edit/:id/assignreviewer",
-          element: <AssignReviewer />,
+          element: <ResponseMaps />,
         },
 
         {
