@@ -1,21 +1,21 @@
-// src/pages/Assignments/AssignReviewer.tsx
+// src/pages/Assignments/ResponseMappings.tsx
 import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { useLocation, useParams } from "react-router-dom";
 
 type Id = number;
-type ReviewStatus = "Not saved" | "Saved" | "Submitted";
+export type ReviewStatus = "Not saved" | "Saved" | "Submitted";
 
-interface Assignment { id: Id; name: string }
-interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null }
-interface User { id: Id; name: string | null; full_name: string | null }
-interface TeamUser { team_id: Id; user_id: Id }
-interface Participant { id: Id; user_id: Id; parent_id: Id; team_id?: Id | null }
-interface ResponseMapRow {
+export interface Assignment { id: Id; name: string }
+export interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null }
+export interface User { id: Id; name: string | null; full_name: string | null }
+export interface TeamUser { team_id: Id; user_id: Id }
+export interface Participant { id: Id; user_id: Id; parent_id: Id; team_id?: Id | null }
+export interface ResponseMapRow {
   id: Id; reviewer_id: Id; reviewee_id: Id; reviewed_object_id: Id;
   reviewee_team_id?: Id | null; reviewer_user_id?: Id | null;
 }
-interface ResponseRow {
+export interface ResponseRow {
   id: Id; map_id: Id; is_submitted: boolean | 0 | 1; created_at?: string | null; updated_at?: string | null;
 }
 
@@ -289,7 +289,7 @@ export function demo(asgId: Id): Persist {
 }
 
 
-const AssignReviewer: React.FC = () => {
+const ResponseMappings: React.FC = () => {
   const location = useLocation();
   const params = useParams();
   const maybeId = parseAssignmentId(location, params);
@@ -454,25 +454,26 @@ const AssignReviewer: React.FC = () => {
   const empty = teams.length === 0 && users.length === 0 && participants.length === 0 && response_maps.length === 0;
 
   return (
-    <Container fluid className="px-3">
+    <Container fluid className="px-3" style={{ fontFamily: "verdana,arial,helvetica,sans-serif" }}>
       <div className="ex-shell">
-        <div className="ex-help mb-3">
-          Assign Reviewers — {(hasValidId ? assignment?.name : "Assignment")} {hasValidId ? `(ID: ${assignmentId})` : "(ID: unknown)"} ·
-          {" "}teams:{teams.length} · maps:{response_maps.length} · responses:{responses.length}
+        <div className="flash_note alert alert-info mb-3" style={{ color: "#333" }}>
+          Assign Reviewer: {(hasValidId ? assignment?.name : "Assignment")} {hasValidId ? `(ID: ${assignmentId})` : "(ID: unknown)"} ·
+          {" "}Teams:{teams.length} · Maps:{response_maps.length} · Responses:{responses.length}
         </div>
 
         {!hasValidId && (
-          <div className="ex-help mb-3" style={{ color:"#a94442", background:"#f2dede", border:"1px solid #ebccd1" }}>
+          <div className="flash_note alert alert-danger mb-3">
             Missing assignment id in URL. Actions are disabled.
           </div>
         )}
 
         <Row className="align-items-center mb-2 g-2">
           <Col xs={12} md className="min-w-0">
-            <h1 className="m-0 text-truncate">
-              Assign Reviewer — {(hasValidId ? assignment?.name : "Assignment")} {hasValidId ? `(ID: ${assignmentId})` : ""}
-            </h1>
+            <h2 className="m-0 text-truncate" style={{ color: "#333", lineHeight: "32px" }}>
+              Assign Reviewer: {(hasValidId ? assignment?.name : "Assignment")} {hasValidId ? `(ID: ${assignmentId})` : ""}
+            </h2>
           </Col>
+
           <Col xs="auto" className="d-flex align-items-center gap-3 flex-shrink-0">
             <Form.Check
               type="switch"
@@ -481,10 +482,10 @@ const AssignReviewer: React.FC = () => {
               checked={showNames}
               onChange={() => setShowNames(v => !v)}
             />
+
             <Button
-              size="sm"
               variant="outline-secondary"
-              disabled={!hasValidId || !empty ? false : false /* still enabled to seed when empty */}
+              disabled={!hasValidId ? true : false}
               onClick={() => {
                 if (!hasValidId) return;
                 if (!empty) { window.alert("Data exists. Clear first to load demo."); return; }
@@ -494,9 +495,9 @@ const AssignReviewer: React.FC = () => {
             >
               Load demo data
             </Button>
+
             <Button
-              size="sm"
-              variant="outline-danger"
+              variant="danger"
               disabled={!hasValidId}
               onClick={() => {
                 if (!hasValidId) return;
@@ -512,21 +513,21 @@ const AssignReviewer: React.FC = () => {
         </Row>
 
         <div className="ex-table-wrap">
-          <table className="ex-table">
+          <table className="table table-striped table-sm align-middle ex-table">
             <thead>
             <tr>
               <th style={{ width: "42%" }}>Contributor</th>
-              <th>Reviewed By</th>
+              <th>Reviewed by</th>
             </tr>
             </thead>
-            <tbody>
+
+            <tbody style={{ fontSize: "15px", lineHeight: "1.428em", color: "#333" }}>
             {rows.length === 0 && (
               <tr>
                 <td className="ex-cell" colSpan={2}>
-                    <span className="ex-muted">
-                      No reviewer data to display.
-                      {" "}Use “Load demo data” or add reviewers after you add teams/users locally.
-                    </span>
+                <span className="text-muted">
+                  No reviewer data to display. Use “Load demo data” or add reviewers after you add teams/users locally.
+                </span>
                 </td>
               </tr>
             )}
@@ -538,37 +539,37 @@ const AssignReviewer: React.FC = () => {
 
                   {team.mentor && (
                     <div className="ex-line">
-                      <span className="ex-muted">Mentor:&nbsp;</span>
-                      {fmt(team.mentor)} <span className="ex-muted">(Mentor)</span>
+                      <span className="text-muted">Mentor:&nbsp;</span>
+                      {fmt(team.mentor)} <span className="text-muted">(Mentor)</span>
                     </div>
                   )}
 
                   <div className="ex-line">
-                    <span className="ex-muted">Members:&nbsp;</span>
+                    <span className="text-muted">Members:&nbsp;</span>
                     {team.members.length === 0
-                      ? <span className="ex-muted">none</span>
+                      ? <span className="text-muted">none</span>
                       : team.members.map((m, i) => <span key={m.id}>{fmt(m)}{i < team.members.length - 1 ? ", " : ""}</span>)
                     }
                   </div>
 
                   <div className="ex-actions">
-                    <a role="button" className="ex-link" onClick={() => hasValidId && onAddReviewer(team.id)}>add reviewer</a>
-                    <a role="button" className="ex-link" onClick={() => hasValidId && onDeleteAll(team.id)}>delete outstanding reviewers</a>
+                    <a role="button" className="ex-link" onClick={() => hasValidId && onAddReviewer(team.id)}>Add reviewer</a>
+                    <a role="button" className="ex-link" onClick={() => hasValidId && onDeleteAll(team.id)}>Delete outstanding reviewers</a>
                   </div>
                 </td>
 
                 <td className="ex-cell">
-                  {team.reviewers.length === 0 && <span className="ex-muted">—</span>}
+                  {team.reviewers.length === 0 && <span className="text-muted">—</span>}
 
                   {team.reviewers.map(r => (
-                    <div key={r.id} className="ex-review-row" data-testid="ex-review-row">
+                    <div key={r.id} className="ex-review-row">
                       <span className="ex-reviewer">{fmt(r.reviewer)}</span>
-                      <span className="ex-muted">&nbsp;Review Status:&nbsp;</span>
+                      <span className="text-muted">&nbsp;Review status:&nbsp;</span>
                       <strong>{r.status}</strong>
                       {r.status === "Submitted" && (
-                        <a role="button" className="ex-inline-link" onClick={() => hasValidId && onUnsubmit(team.id, r.id)}>(unsubmit)</a>
+                        <a role="button" className="ex-inline-link" onClick={() => hasValidId && onUnsubmit(team.id, r.id)}>(Unsubmit)</a>
                       )}
-                      <a role="button" className="ex-inline-link" onClick={() => hasValidId && onDeleteReviewer(team.id, r.id)}>delete</a>
+                      <a role="button" className="ex-inline-link" onClick={() => hasValidId && onDeleteReviewer(team.id, r.id)}>Delete</a>
                     </div>
                   ))}
                 </td>
@@ -580,36 +581,49 @@ const AssignReviewer: React.FC = () => {
       </div>
 
       <style>{`
-        .ex-shell{ max-width:1100px; margin:24px auto; clear:both; }
-        .ex-help{ float:none!important; width:100%; box-sizing:border-box; margin:0 0 16px 0;
-          color:#31708f; background:#d9edf7; border:1px solid #bce8f1; border-radius:4px; padding:10px; }
-        .ex-table-wrap{ width:100%; border:1px solid #c8b89a; border-radius:4px; overflow:hidden }
-        .ex-table{ width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; }
-        .ex-table thead th{
-          background:#7a2c2c; color:#fff; font-weight:600; text-align:left;
-          padding:10px 12px; border-right:1px solid #6c2626;
-        }
-        .ex-table thead th:last-child{ border-right:0; }
-        .ex-table tbody tr:nth-child(odd) td{ background:#fafae8; }
-        .ex-table tbody tr:nth-child(even) td{ background:#e8e8d1; }
-        .ex-cell{ padding:12px 14px; font-size:0.97rem; vertical-align:top; }
-        .ex-team{ font-weight:600; margin-bottom:2px; }
-        .ex-line{ margin-top:2px; }
-        .ex-muted{ color:#6b6b6b; }
-        .ex-actions{ margin-top:8px; }
-        .ex-link{ font-size:0.95rem; color:#7a2c2c; text-decoration:none; margin-right:18px; cursor:pointer; }
-        .ex-link:hover{ text-decoration:underline; }
-        .ex-review-row{ padding:2px 0; }
-        .ex-reviewer{ font-weight:600; }
-        .ex-inline-link{ margin-left:8px; color:#7a2c2c; cursor:pointer; text-decoration:none; }
-        .ex-inline-link:hover{ text-decoration:underline; }
-        @media (max-width:768px){
-          .ex-cell{ font-size:0.95rem; }
-          .ex-table thead th{ font-size:0.95rem; }
-        }
-      `}</style>
+    .ex-shell {
+      max-width: 1100px;
+      margin: 24px auto;
+      clear: both;
+      display: flex;
+      flex-direction: column;
+      align-items: center;   /* centers everything horizontally */
+    }
+    .flash_note { margin: 0 0 16px 0; }
+
+    .ex-table-wrap {
+      display: inline-block;   /* shrink to fit content */
+      max-width: 100%;
+      overflow: auto;
+      border-radius: 4px;
+      margin: 16px auto;       /* add spacing and keep it centered */
+    }
+    .ex-table{ width:auto; table-layout:auto; margin: auto;}
+
+    .ex-cell{ padding:12px 14px; vertical-align:top; }
+    .ex-team{ font-weight:600; margin-bottom:2px; }
+    .ex-line{ margin-top:2px; }
+    .ex-actions{ margin-top:8px; }
+
+    .ex-link, .ex-inline-link{
+      font-size:0.95rem; color:#7a2c2c; text-decoration:none; cursor:pointer;
+      margin-right:18px;
+    }
+    .ex-inline-link{ margin-left:8px; }
+    .ex-link:hover, .ex-inline-link:hover{ text-decoration:underline; }
+
+    .ex-review-row{ padding:2px 0; }
+    .ex-reviewer{ font-weight:600; }
+
+    body, .ex-shell { color:#333; }
+    td, th { font-size:15px; line-height:1.428em; }
+
+    @media (max-width:768px){
+      .ex-cell{ font-size:0.95rem; }
+    }
+  `}</style>
     </Container>
   );
 };
 
-export default AssignReviewer;
+export default ResponseMappings;
