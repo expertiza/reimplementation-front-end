@@ -45,13 +45,33 @@ interface LoaderPayload {
    Assets (icons used only where required)
 ============================================================================= */
 
-const publicUrl =
-  (import.meta as any)?.env?.BASE_URL ??
-  (typeof process !== 'undefined' ? (process as any)?.env?.PUBLIC_URL : '') ??
-  '';
+// const publicUrl =
+//   (import.meta as any)?.env?.BASE_URL ??
+//   (typeof process !== 'undefined' ? (process as any)?.env?.PUBLIC_URL : '') ??
+//   '';
+//
+// const assetUrl = (rel: string) =>
+//   `${publicUrl.replace(/\/$/, '')}/${rel.replace(/^\//, '')}`;
+
+// Safe base URL (no import.meta)
+const getBaseUrl = (): string => {
+  // 1) <base href="..."> if present
+  if (typeof document !== 'undefined') {
+    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
+    if (base?.href) return base.href.replace(/\/$/, '');
+  }
+  // 2) Optional global you can set from Rails/layout, etc.
+  const fromGlobal = (globalThis as any)?.__BASE_URL__;
+  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
+
+  // 3) CRA-style env if available in tests/builds
+  const fromProcess =
+      (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
+  return String(fromProcess).replace(/\/$/, '');
+};
 
 const assetUrl = (rel: string) =>
-  `${publicUrl.replace(/\/$/, '')}/${rel.replace(/^\//, '')}`;
+    `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
 
 const ICONS = {
   add: 'assets/icons/add-participant-24.png',
@@ -663,7 +683,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
                   const open = !!expanded[team.id];
                   const visibleMembers = team.members.filter((m) => !isMentorMember(team, m));
                   return (
-                    <div key={team.id}>
+                    <div key={team.id} data-testid="team-row">
                       <div style={{ ...teamRowStyle }}>
                         <div style={{ width: 40 }}>
                           <button
@@ -751,7 +771,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
                 <div style={{ ...headerBar }}>
                   <div className="flex-grow-1">Student</div>
                 </div>
-                <div style={{ padding: 16 }}>
+                <div style={{ padding: 16 }} data-testid="student-list">
                   {studentsWithoutTeams.length === 0 ? (
                     <span style={{ color: '#6b7280' }}>All students are on a team.</span>
                   ) : (

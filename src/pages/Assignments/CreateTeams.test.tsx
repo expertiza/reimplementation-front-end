@@ -160,7 +160,7 @@ describe("Test Create Teams Functions Correctly", () => {
 
       // Click Add Button and Select student in modal dropdown
       act(() => {
-        const addButton = within(firstRow).getByRole('button', {name: "Add member"})
+        const addButton = within(firstRow).getByRole('button', {name: "add"})
         addButton.click()
       });
 
@@ -168,7 +168,7 @@ describe("Test Create Teams Functions Correctly", () => {
         const dropdown = screen.getByRole('combobox')
         userEvent.selectOptions(dropdown, String(participantData[0].id))
 
-        screen.getByRole('button', {name: "Add"}).click()
+        within(screen.getByRole('dialog')).getByRole('button', {name: "add"}).click()
       })
 
       // Check student on page
@@ -188,7 +188,7 @@ describe("Test Create Teams Functions Correctly", () => {
       // Click Edit Button
       act(() => {
         if (!team.parentElement?.parentElement) fail()
-        const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Edit team name"})
+        const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "edit"})
         editButton.click()
       });
 
@@ -197,7 +197,7 @@ describe("Test Create Teams Functions Correctly", () => {
         var textBox = screen.getByRole('textbox', {name: "Team name"})
         userEvent.type(textBox, "{selectall}{backspace}")
         userEvent.type(textBox, "New Team Name", {});
-        screen.getByRole('button', {name: "Save"}).click()
+        screen.getByRole('button', {name: "save"}).click()
       })
 
       // Check new team name
@@ -218,7 +218,7 @@ describe("Test Create Teams Functions Correctly", () => {
       // Click Delete button
       act(() => {
         if (!team.parentElement?.parentElement) fail()
-        const deleteButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Delete team"})
+        const deleteButton = within(team.parentElement?.parentElement).getByRole('button', {name: "delete"})
         deleteButton.click()
       });
 
@@ -319,7 +319,7 @@ describe("Test Create Teams Handles Errors Properly", () => {
     // Click Edit Button
     act(() => {
       if (!team.parentElement?.parentElement) fail()
-      const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "Edit team name"})
+      const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "edit"})
       editButton.click()
     });
 
@@ -327,7 +327,7 @@ describe("Test Create Teams Handles Errors Properly", () => {
     act(() => {
       var textBox = screen.getByRole('textbox', {name: "Team name"})
       userEvent.type(textBox, "{selectall}{backspace}")
-      screen.getByRole('button', {name: "Save"}).click()
+      screen.getByRole('button', {name: "save"}).click()
     })
 
     // Make sure the modal is still on the screen
@@ -335,7 +335,7 @@ describe("Test Create Teams Handles Errors Properly", () => {
 
     // Close Modal
     act(() => {
-      screen.getByRole('button', {name: "Cancel"}).click()
+      screen.getByRole('button', {name: "cancel"}).click()
     })
 
     // Make sure name stayed the same
