@@ -7,7 +7,8 @@ export const useStudentTeam = (studentId: string) => {
     const retractAPI = useAPI();
     const updateInviteAPI = useAPI();
     const leaveAPI = useAPI();
-    const fetchSentInvitationsAPI = useAPI();
+    const fetchSentInvitationsByTeamAPI = useAPI();
+    const fetchSentInvitationsByParticipantAPI = useAPI();
     const fetchReceivedInvitationsAPI = useAPI();
 
     const fetchTeam = () =>
@@ -50,8 +51,12 @@ export const useStudentTeam = (studentId: string) => {
             method: "PUT",
         });
 
-    const fetchSentInvitations = (teamId: number) => fetchSentInvitationsAPI.sendRequest({
-        url: `/invitations/sent_by/${teamId}`
+    const fetchSentInvitationsByTeam = (teamId: number) => fetchSentInvitationsByTeamAPI.sendRequest({
+        url: `/invitations/sent_by/team/${teamId}`
+    })
+
+    const fetchSentInvitationsByParticipant = (participantId: number) => fetchSentInvitationsByParticipantAPI.sendRequest({
+        url: `/invitations/sent_by/participant/${participantId}`
     })
 
     const fetchReceivedInvitations = () => fetchReceivedInvitationsAPI.sendRequest({
@@ -65,15 +70,17 @@ export const useStudentTeam = (studentId: string) => {
         updateInviteAPI,
         updateTeamNameAPI,
         leaveAPI,
-        fetchSentInvitationsAPI,
+        fetchSentInvitationsByTeamAPI,
         fetchReceivedInvitationsAPI,
+        fetchSentInvitationsByParticipantAPI,
         fetchTeam,
         createTeam,
         updateName,
         sendInvite,
         retractInvite,
         updateInvite,
-        fetchSentInvitations,
+        fetchSentInvitationsByTeam,
+        fetchSentInvitationsByParticipant,
         fetchReceivedInvitations,
         leaveTeam,
     };

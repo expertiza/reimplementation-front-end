@@ -40,8 +40,8 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
-import StudentTeams from "pages/Student Teams/student_teams";
-import StudentTeamView from "pages/Student Teams/student_teams";
+import StudentTeams from "pages/Student Teams/StudentTeamView";
+import StudentTeamView from "pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from 'pages/Student Teams/NewTeammateAdvertisement';
 import TeammateReview from 'pages/Student Teams/TeammateReview';
 
@@ -122,7 +122,7 @@ function App() {
           ],
         },
         {
-          path: "advertise_for_partner/new",
+          path: "advertise_for_partner",
           element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
         },
         {
