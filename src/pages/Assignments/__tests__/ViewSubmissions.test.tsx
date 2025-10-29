@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ViewSubmissions from '../ViewSubmissions';
 import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
 
 // Mock the useLoaderData hook
 jest.mock('react-router-dom', () => ({
