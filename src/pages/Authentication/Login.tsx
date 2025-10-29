@@ -30,7 +30,7 @@ const Login: React.FC = () => {
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
   // Mock authentication - bypass real backend
-  const MOCK_USERNAME = "instructor6";
+  const MOCK_USERNAME = "admin";
   const MOCK_PASSWORD = "password";
   
   if (values.user_name === MOCK_USERNAME && values.password === MOCK_PASSWORD) {
@@ -81,7 +81,7 @@ const Login: React.FC = () => {
     dispatch(
       alertActions.showAlert({
         variant: "danger",
-        message: "Use username: 'instructor6' and password: 'password'",
+        message: "Use username: 'admin' and password: 'password'",
         title: "Unable to authenticate user!",
       })
     );
