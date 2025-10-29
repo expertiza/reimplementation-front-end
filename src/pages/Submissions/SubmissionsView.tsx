@@ -34,7 +34,7 @@ const SubmissionsView: React.FC = () => {
       </Row>
       <Row>
         <Col>
-          <Table data={submissions} columns={columns} columnVisibility={{ id: false }} />
+          <Table data={ submissions } columns={columns} columnVisibility={{ id: false }} />
         </Col>
       </Row>
     </Container>

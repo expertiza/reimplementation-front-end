@@ -7,7 +7,7 @@ interface Props {
 	submissionId?: number;
 }
 
-const SubmissionGradeModal: React.FC<Props> = ({ show, onHide, submissionId }) => {
+const SubmissionGradeModal: React.FC<Props> = ({show, onHide, submissionId}) => {
 	return (
 		<Modal show={show} onHide={onHide} centered>
 			<Modal.Header closeButton>
