@@ -1,9 +1,15 @@
 import React, { act } from "react";
 import { render, screen, within } from "@testing-library/react";
-import AssignReviewer from "./AssignReviewer";
+import ResponseMappings, {
+  ResponseMapRow,
+  ResponseRow,
+  Team,
+  TeamUser,
+  User,
+    demo
+} from "./ResponseMappings";
 import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
-import {demo} from "./AssignReviewer"
 import {Simulate} from "react-dom/test-utils";
 import click = Simulate.click;
 
@@ -88,13 +94,13 @@ const renderWithRouter = (component: React.ReactNode) => {
   const router = createMemoryRouter(
     [
       {
-        path: "/ssignments/edit/:id/assignreviewer",
+        path: "/ssignments/edit/:id/responsemappings",
         element: component,
         loader: () => (APIAssignmentData), // Mock your loader data
       },
     ],
     {
-      initialEntries: [`/ssignments/edit/${APIAssignmentData.id}/assignreviewer`], // Specify the initial URL
+      initialEntries: [`/ssignments/edit/${APIAssignmentData.id}/responsemappings`], // Specify the initial URL
     }
   );
 
@@ -110,7 +116,7 @@ const renderWithRouter = (component: React.ReactNode) => {
 
 const renderAndLoad = async () => {
   await act(async () => {
-    renderWithRouter(<AssignReviewer />);
+    renderWithRouter(<ResponseMappings />);
   });
 
   await act (async () => {
@@ -120,26 +126,19 @@ const renderAndLoad = async () => {
   });
 }
 
-describe("Test Assign Reviewers Displays Correctly", () => {
-  it("Renders the component correctly", async () => {
-    await act(async () => {
-      renderWithRouter(<AssignReviewer />);
-    });
-    expect(screen.getByText(/Assign Reviewers/i)).toBeInTheDocument();
-  });
-
+describe("Test Response Mappings Displays Correctly", () => {
   it("Renders the table correctly", async () => {
     await act(async () => {
-      renderWithRouter(<AssignReviewer />);
+      renderWithRouter(<ResponseMappings />);
     });
 
     const table = screen.getByRole("table");
     expect(table).toBeInTheDocument();
     var memberRegex = new RegExp(`Assign Reviewer: ${APIAssignmentData.name}` , "i");
-    expect(screen.getByText(/Assign Reviewer: /i))
+    expect(screen.getAllByText(/Assign Reviewer: /i)).toHaveLength(2)
 
     expect(screen.getByText(/Contributor/i)).toBeInTheDocument();
-    expect(screen.getByText(/Reviewed By/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reviewed by/i)).toBeInTheDocument();
   });
 
   /**
@@ -152,7 +151,7 @@ describe("Test Assign Reviewers Displays Correctly", () => {
     await renderAndLoad()
 
     const data = demo(APIAssignmentData.id)
-    const sortedTeams = data.teams.sort((teamA,teamB) => teamA.id - teamB.id)
+    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id)
 
 
     // Get the table rows, and remove the first (column headers)
@@ -169,8 +168,8 @@ describe("Test Assign Reviewers Displays Correctly", () => {
         const reviewedByCol = cols[1];
 
         var team = sortedTeams[idx]
-        var mentorName = data.users.find((user) => user.id === team.mentor_id)?.full_name
-        var members = data.teams_users.filter((user) => user.team_id === team.id)
+        var mentorName = data.users.find((user: User) => user.id === team.mentor_id)?.full_name
+        var members = data.teams_users.filter((user: TeamUser) => user.team_id === team.id)
 
         // Team Name
         expect(within(contributerCol).getByText(sortedTeams[idx].name)).toBeInTheDocument();
@@ -179,8 +178,8 @@ describe("Test Assign Reviewers Displays Correctly", () => {
         expect(contributerCol).toHaveTextContent(`Mentor: ${mentorName}`);
 
         // Members
-        members.forEach((member) => {
-          var memberName = data.users.find((user) => user.id === member.user_id)?.full_name
+        members.forEach((member: TeamUser) => {
+          var memberName = data.users.find((user: User) => user.id === member.user_id)?.full_name
           expect(memberName).toBeTruthy()
           expect(contributerCol).toHaveTextContent(memberName || "")
         })
@@ -188,8 +187,8 @@ describe("Test Assign Reviewers Displays Correctly", () => {
         // Buttons
         var buttons = within(contributerCol).getAllByRole('button')
         expect(buttons).toHaveLength(2)
-        expect(buttons[0]).toHaveTextContent("add reviewer")
-        expect(buttons[1]).toHaveTextContent("delete outstanding reviewers")
+        expect(buttons[0]).toHaveTextContent("Add reviewer")
+        expect(buttons[1]).toHaveTextContent("Delete outstanding reviewers")
       }
     })
   });
@@ -200,7 +199,7 @@ describe("Test Assign Reviewers Displays Correctly", () => {
 
     const data = demo(APIAssignmentData.id)
     console.log(data.users)
-    const sortedTeams = data.teams.sort((teamA,teamB) => teamA.id - teamB.id)
+    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id)
 
     // Get the table rows, and remove the first (column headers)
     const allTableRows = screen.getAllByRole('row')
@@ -208,14 +207,15 @@ describe("Test Assign Reviewers Displays Correctly", () => {
 
     allTableRows.forEach((row, idx) => {
         var team = sortedTeams[idx]
-        var teamResponseMaps = data.response_maps.filter((responseMap) => responseMap.reviewee_team_id == team.id)
-        var teamReviewers = teamResponseMaps.map((responseMap) => {return data.users.find((user) => user.id === responseMap.reviewer_user_id)})
-        var teamReviews  = teamResponseMaps.map((responseMap) => {return data.responses.find((response) => response.map_id === responseMap.id)})
+        var teamResponseMaps = data.response_maps.filter((responseMap: ResponseMapRow) => responseMap.reviewee_team_id == team.id)
+        var teamReviewers = teamResponseMaps.map((responseMap: ResponseMapRow) => {return data.users.find((user: User) => user.id === responseMap.reviewer_user_id)})
+        var teamReviews  = teamResponseMaps.map((responseMap: ResponseMapRow) => {return data.responses.find((response: ResponseRow) => response.map_id === responseMap.id)})
+        var cleanedTeamReviews = teamReviews.filter(item => item !== null && item !== undefined);
         const reviewerRows = within(row).queryAllByTestId("ex-review-row")
 
 
         reviewerRows.forEach((reviewerRow, reviewerIdx) => {
-          var review = teamReviews.find((review) => teamResponseMaps[reviewerIdx].id === review?.map_id )
+          var review = cleanedTeamReviews.find((review: ResponseRow) => teamResponseMaps[reviewerIdx].id === review?.map_id )
 
           // Name
           expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.full_name || "")
@@ -240,7 +240,7 @@ describe("Test Assign Reviewers Displays Correctly", () => {
   });
 });
 
-describe("Test Assign Reviewers Functions Correctly", () => {
+describe("Test Response Mappings Functions Correctly", () => {
   let promptSpy: jest.SpyInstance;
 
   beforeEach(() => {
@@ -257,14 +257,14 @@ describe("Test Assign Reviewers Functions Correctly", () => {
     const data = demo(APIAssignmentData.id)
 
     // Finds the first "Add Reviewer" button on the screen
-    var user_name = data.users.find((user) => user.id === 1005)?.full_name || ""
+    var user_name = data.users.find((user: User) => user.id === 1005)?.full_name || ""
     var firstRow = screen.getAllByRole('row')[1]
     var firstRowContributorCell = within(firstRow).getAllByRole("cell")[1];
 
     expect(firstRowContributorCell).not.toHaveTextContent(user_name)
 
 
-    var addReviewerButton = within(firstRow).getByRole('button', {name: "add reviewer"})
+    var addReviewerButton = within(firstRow).getByRole('button', {name: "Add reviewer"})
     addReviewerButton.click()
 
     console.log(promptSpy)
