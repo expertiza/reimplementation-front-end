@@ -117,11 +117,25 @@ describe('ViewSubmissions Component', () => {
     expect(historyButtons.length).toBeGreaterThan(0);
     expect(historyButtons[0]).toHaveClass('submission-link');
   });
+
+  it('handles different assignment states', () => {
+  const pastDueDate = new Date();
+  pastDueDate.setFullYear(pastDueDate.getFullYear() - 1);
   
+  jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useLoaderData: () => ({
+      id: 1,
+      name: 'Past Due Assignment',
+      due_date: pastDueDate.toISOString()
+    }),
+    useNavigate: () => jest.fn()
+  }));
+
   it('validates data formatting', () => {
   renderComponent();
   
-  // Check date formatting
+  
   const dates = screen.getAllByText(/\d{4}-\d{2}-\d{2}/);
   dates.forEach(dateElement => {
     const dateText = dateElement.textContent;
