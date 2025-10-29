@@ -1,3 +1,4 @@
+/* This file is to adjust the page style of the view submission page. The color codes were taken from custom.scss according to our TA. */
 .submission-container {
   width: 100% !important;
   max-width: 100% !important;
