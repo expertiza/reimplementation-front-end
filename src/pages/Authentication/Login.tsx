@@ -30,33 +30,39 @@ const Login: React.FC = () => {
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
   // Mock authentication - bypass real backend
-  const MOCK_USERNAME = "admin";
-  const MOCK_PASSWORD = "password123";
+  const MOCK_USERNAME = "instructor6";
+  const MOCK_PASSWORD = "password";
   
   if (values.user_name === MOCK_USERNAME && values.password === MOCK_PASSWORD) {
-    // Create a mock JWT token
-    const mockToken = btoa(JSON.stringify({
+    // Create a proper mock JWT token (header.payload.signature format)
+    const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const payload = btoa(JSON.stringify({
       user_name: MOCK_USERNAME,
       role: "Instructor",
       id: 6,
+      full_name: "Instructor Six",
+      email: "instructor6@example.com",
       exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours from now
     }));
+    const signature = btoa("mock-signature");
+    const mockToken = `${header}.${payload}.${signature}`;
 
     try {
-      const payload = setAuthToken(mockToken);
+      const decodedPayload = setAuthToken(mockToken);
 
       dispatch(
         authenticationActions.setAuthentication({
           authToken: mockToken,
-          user: payload,
+          user: decodedPayload,
         })
       );
       navigate(location.state?.from ? location.state.from : "/");
     } catch (error) {
+      console.error("Mock auth error:", error);
       dispatch(
         alertActions.showAlert({
           variant: "danger",
-          message: "Mock authentication failed",
+          message: `Mock authentication failed: ${error}`,
           title: "Unable to authenticate user!",
         })
       );
@@ -65,7 +71,7 @@ const Login: React.FC = () => {
     dispatch(
       alertActions.showAlert({
         variant: "danger",
-        message: "Username or password is incorrect. Use 'admin' / 'password123'",
+        message: "Username or password is incorrect. Use 'instructor6' / 'password'",
         title: "Unable to authenticate user!",
       })
     );
