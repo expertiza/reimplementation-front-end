@@ -80,13 +80,13 @@ const mockAdapter = (config: AxiosRequestConfig): Promise<any> => {
       console.log("Mock response:", responseData);
 
       resolve({
-        data: responseData,
-        status: 200,
-        statusText: "OK",
-        headers: { "content-type": "application/json" },
-        config: config,
-        request: {}
-      });
+  data: JSON.stringify(responseData), // Convert to JSON string
+  status: 200,
+  statusText: "OK",
+  headers: { "content-type": "application/json" },
+  config: config,
+  request: {}
+});
     }, 100);
   });
 };
