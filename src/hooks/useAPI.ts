@@ -31,7 +31,7 @@ const useAPI = () => {
     setError("");
 
     // Development mock handlers: allow working without a backend
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development" || process.env.REACT_APP_USE_MOCK === "true")  {
       const url = (requestConfig.url || "").toString();
       const method = (requestConfig.method || "get").toString().toLowerCase();
 
