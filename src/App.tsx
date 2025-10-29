@@ -60,6 +60,11 @@ function App() {
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
         {
+          path: "assignments/edit/:id",
+          element: <AssignmentEditor mode="update" />,
+          loader: loadAssignment,
+        },
+        {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
           loader: loadAssignment,
@@ -97,11 +102,6 @@ function App() {
             {
               path: "new",
               element: <AssignmentEditor mode="create" />,
-              loader: loadAssignment,
-            },
-            {
-              path: "edit/:id",
-              element: <AssignmentEditor mode="update" />,
               loader: loadAssignment,
             },
           ],
