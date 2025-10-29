@@ -7,15 +7,21 @@ import { getAuthToken } from "./auth";
 
 const axiosClient = axios.create({
   baseURL: "http://localhost:3002/api/v1",
-  timeout: 10000, // Increased timeout
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Add mock interceptor BEFORE the auth interceptor
+// Single interceptor that handles both auth and mocking
 axiosClient.interceptors.request.use((config) => {
+  // Add auth token first
+  const token = getAuthToken();
+  if (token && token !== "EXPIRED") {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+
   console.log("axiosClient request:", config.method?.toUpperCase(), config.url);
   
   // Mock all requests - return mock data instead of making real calls
@@ -41,7 +47,7 @@ axiosClient.interceptors.request.use((config) => {
 
   const mockCourses = [{ id: 1, name: "Mock Course" }];
 
-  // Intercept and return mock data
+  // Match assignment by ID
   const assignmentIdMatch = url.match(/\/assignments\/(\d+)/);
   if (assignmentIdMatch && method === "get") {
     const id = parseInt(assignmentIdMatch[1], 10);
@@ -61,7 +67,6 @@ axiosClient.interceptors.request.use((config) => {
     };
     
     console.log("Mock: Returning assignment", mockData);
-    // Return a fake adapter that resolves with mock data
     config.adapter = () => {
       return Promise.resolve({
         data: mockData,
@@ -69,12 +74,12 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
 
-  if (url === "/assignments" && method === "get") {
+  if (url.includes("/assignments") && method === "get") {
     console.log("Mock: Returning assignments list");
     config.adapter = () => {
       return Promise.resolve({
@@ -83,12 +88,27 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
 
-  if (url === "/courses" && method === "get") {
+  if (url.includes("/assignments") && (method === "post" || method === "put" || method === "patch")) {
+    console.log("Mock: Create/update assignment");
+    const payload = config.data;
+    config.adapter = () => {
+      return Promise.resolve({
+        data: { id: Math.floor(Math.random() * 10000) + 2, ...payload },
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: config,
+      } as any);
+    };
+    return config;
+  }
+
+  if (url.includes("/courses") && method === "get") {
     console.log("Mock: Returning courses");
     config.adapter = () => {
       return Promise.resolve({
@@ -97,12 +117,12 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
 
-  // Mock any URL containing these keywords
+  // Mock submissions, reviews, teams, participants
   if (url.includes("/submissions") || url.includes("/reviews") || 
       url.includes("/teams") || url.includes("/participants")) {
     console.log("Mock: Returning empty array for", url);
@@ -113,7 +133,7 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
@@ -133,26 +153,12 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
 
-  // Mock all POST/PUT/PATCH/DELETE
-  if (method === "post" || method === "put" || method === "patch") {
-    console.log("Mock: Operation successful");
-    config.adapter = () => {
-      return Promise.resolve({
-        data: { success: true, message: "Operation successful" },
-        status: 201,
-        statusText: "Created",
-        headers: {},
-        config: config,
-      });
-    };
-    return config;
-  }
-
+  // Mock DELETE
   if (method === "delete") {
     console.log("Mock: Delete successful");
     config.adapter = () => {
@@ -162,7 +168,22 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
+    };
+    return config;
+  }
+
+  // Mock POST/PUT/PATCH
+  if (method === "post" || method === "put" || method === "patch") {
+    console.log("Mock: Operation successful");
+    config.adapter = () => {
+      return Promise.resolve({
+        data: { success: true, message: "Operation successful" },
+        status: 201,
+        statusText: "Created",
+        headers: {},
+        config: config,
+      } as any);
     };
     return config;
   }
@@ -177,21 +198,14 @@ axiosClient.interceptors.request.use((config) => {
         statusText: "OK",
         headers: {},
         config: config,
-      });
+      } as any);
     };
     return config;
   }
 
   return config;
-});
-
-axiosClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token && token !== "EXPIRED") {
-    config.headers["Authorization"] = `Bearer ${token}`;
-    return config;
-  }
-  return Promise.reject("Authentication token not found! Please login again.");
+}, (error) => {
+  return Promise.reject(error);
 });
 
 export default axiosClient;
