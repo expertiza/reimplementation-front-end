@@ -1,3 +1,5 @@
+// The view submission page has a mock assignment just in case the backend API is not working.
+// If the backend is running correctly, it will fetch data from the backend and ignore the mock data.
 import React, { useMemo } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import Table from "components/Table/Table";

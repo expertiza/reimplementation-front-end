@@ -25,7 +25,7 @@ const SubmissionHistoryView: React.FC = () => {
     // Mock team name - in real implementation this would come from API
     const teamName = `Team_${id}`;
     
-    // generate mock history data with team and submitter info
+    // generate mock history data with team and submit info
     return Array.from({ length: 5 }, (_, i) => ({
       id: i + 1,
       teamName: teamName,

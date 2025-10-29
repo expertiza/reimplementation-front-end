@@ -4,7 +4,7 @@ import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import { calculateAverages, getColorClass } from "../ViewTeamGrades/utils";
 import "./assignments.scss";
 
-// ---------- types ----------
+// ----------- types -----------
 type Reviewer = { id: number; name: string };
 type RubricRow = { questionNo: number; scores: Record<number, number> };
 type LinkItem = { name: string; url: string };
