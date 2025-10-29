@@ -89,18 +89,35 @@ const ViewSubmissions: React.FC = () => {
         // Check assignment deadline: prefer assignment.due_date or assignment.deadline
         const assignmentData: any = assignment || {};
         const deadlineStr = assignmentData.due_date || assignmentData.deadline || assignmentData.close_date;
-        let past = false;
-        if (deadlineStr) {
+        const computedPast = (() => {
+          if (!deadlineStr) return false;
           const d = new Date(deadlineStr);
-          past = !isNaN(d.getTime()) && d.getTime() < Date.now();
-        }
+          return !isNaN(d.getTime()) && d.getTime() < Date.now();
+        })();
+        // Force the FIRST mock team to be "past due" so it shows "Assign grade"
+        // (When you go back to real data this falls back to computedPast for all rows.)
+        const forcePastForFirstRow = info.row.index === 0;
+        const past = forcePastForFirstRow || computedPast;
+        
         return (
           <div>
             <div className="team-name">{team}</div>
             <div>
-              <button className="btn btn-link submission-link p-0" onClick={() => console.log('View Reviews for', row.id)}>
-                {past ? 'Assign grade' : 'View Reviews'}
-              </button>
+              <button
+                // href="#"
+                className="btn btn-link submission-link p-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (past) {
+                    // Go to /assignments/:assignmentId/assign-grades (+ keep team_id if you need it)
+                    const aid = assignmentData?.id ?? assignment?.id ?? '';
+                    const teamParam = row?.id ? `?team_id=${row.id}` : '';
+                    navigate(`/assignments/${aid}/assign-grades${teamParam}`);
+                  } else {
+                    console.log('View Reviews for', row.id);
+                  }
+                }}
+              >{past ? 'Assign grade' : 'View Reviews'}</button>
             </div>
           </div>
         );

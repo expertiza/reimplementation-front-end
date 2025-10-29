@@ -37,6 +37,7 @@ import Email_the_author from "./pages/Email_the_author/email_the_author";
 import CreateTeams from "pages/Assignments/CreateTeams";
 import AssignReviewer from "pages/Assignments/AssignReviewer";
 import ViewSubmissions from "pages/Assignments/ViewSubmissions";
+import AssignGrades, { assignGradesLoader } from "pages/Assignments/AssignGrades";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
@@ -75,6 +76,11 @@ function App() {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
           loader: loadAssignment,
+        },
+        {
+          path: "/assignments/:assignmentId/assign-grades",
+          element: <AssignGrades />,
+          loader: assignGradesLoader
         },
         {
           path: "assignments/edit/:id/viewscores",

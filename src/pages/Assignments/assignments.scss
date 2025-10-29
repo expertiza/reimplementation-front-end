@@ -1,0 +1,163 @@
+/* assignments.scss */
+@use "../ViewTeamGrades/grades" as *;  /* pulls in grades.scss’ CSS once via this entry */
+
+.assignments-scope {
+  /* Typography per guidelines */
+  font-family: verdana,arial,helvetica,sans-serif;
+  font-size: 13px;
+  line-height: 30px;
+  color: #333;
+
+  /* Kill any card/well/bg around the entire grade section */
+  .grade-no-panel,
+  .grade-no-panel .card,
+  .grade-no-panel .card-body,
+  .grade-no-panel .bg-light,
+  .grade-no-panel .border,
+  .grade-no-panel .shadow,
+  .grade-no-panel .panel,
+  .grade-no-panel .well {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* inline links beside "Teammate Review" */
+  .legend-links {
+    a {
+      margin-right: 16px;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+  }
+
+  /* single-line row of dummy word-length checkboxes */
+  .word-comments {
+    display: inline-flex;          /* keep them on one line */
+    align-items: center;
+    gap: 16px;                     /* space between the two items */
+    flex-wrap: nowrap;             /* never wrap to next line */
+    font-size: 12px;
+  }
+  .word-comments label {
+    display: inline-flex;          /* defeat any global label:block rules */
+    align-items: center;
+    margin: 0;
+    cursor: pointer;
+  }
+  .word-comments input {
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  /* Remove heat coloring from Avg column explicitly */
+  .tbl_heat .no-heat,
+  .tbl_heat .avg-th { background-color: #fff !important; }
+
+  /* keep the wrapper flush-left and allow natural table width */
+  .table-container {
+    max-width: none !important;
+    margin: 0 !important;              /* kill any centering */
+    display: block;                    /* avoid inline alignment quirks */
+  }
+
+  /* make the table hug its content and start at the left edge */
+  .tbl_heat {
+    table-layout: auto !important;
+    width: max-content !important;     /* shrink-wrap to content */
+    margin: 0 !important;              /* no extra offset */
+    display: inline-table;             /* prevents full-width stretching */
+    border-collapse: collapse;
+  }
+
+  /* table data sizes per spec */
+  .tbl_heat th,
+  .tbl_heat td {
+    white-space: nowrap;
+    font-size: 15px;
+    line-height: 1.428em;
+    color: #333;
+  }
+
+  /* force the page title to be left aligned even if globals center h2 */
+  .assignments-title {
+    text-align: left !important;
+    margin: 0 0 4px 0;
+  }
+
+  /* left-align the big page title */
+  .assignments-heading {
+    text-align: left;
+    margin: 0 0 4px 0;
+  }
+
+  /* The form itself: remove any panel-like styling */
+  .plain-grade-form {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: 0 !important;
+  }
+
+  /* plain, old-school form look to match example */
+  .plain-grade-form {
+    .form-label {
+      /* lean, not flashy */
+      font-weight: 700;
+      margin: 8px 0 4px;
+      color: #000 !important;
+    }
+
+    input[type="number"] {
+      appearance: none;
+      border: 1px solid #ccc;
+      padding: 4px 6px;
+      font-size: 12px;
+      width: 8rem; /* small grade input like the example */
+    }
+
+    textarea {
+      appearance: none;
+      border: 1px solid #ccc;
+      padding: 6px;
+      font-size: 12px;
+      width: 640px;
+      height: 160px;
+    }
+  }
+
+  .plain-actions { display: flex; gap: 8px; align-items: center; }
+  .plain-btn { appearance: none; background: #eee; border: 1px solid #ccc; padding: 4px 10px; font-size: 12px; color: #333; }
+  .plain-link { appearance: none; background: none; border: 0; padding: 0; font-size: 12px; color: inherit; text-decoration: underline; cursor: pointer; }
+
+  /* vertical stack for Save + Back-link */
+  .actions-vertical {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  /* Back hyperlink color and style */
+  .back-link {
+    color: #e49b1f;
+    text-decoration: underline;
+    font-size: 12px;
+  }
+
+  /* give the bottom section the same horizontal gutter/padding
+     Bootstrap rows use --bs-gutter-x; mirror that so it "matches the page" */
+  .grade-section {
+    padding-left: calc(var(--bs-gutter-x) / 2);
+    padding-right: calc(var(--bs-gutter-x) / 2);
+    margin-top: 1rem;   /* a little breathing room above */
+  }
+
+  .plain-form-title {
+    color: #000 !important;
+  }
+}
