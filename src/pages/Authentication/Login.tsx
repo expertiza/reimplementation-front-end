@@ -29,30 +29,50 @@ const Login: React.FC = () => {
   const location = useLocation();
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
-    axios
-      .post("http://localhost:3002/login", values)
-      .then((response) => {
-        const payload = setAuthToken(response.data.token);
+  // Mock authentication - bypass real backend
+  const MOCK_USERNAME = "admin";
+  const MOCK_PASSWORD = "password123";
+  
+  if (values.user_name === MOCK_USERNAME && values.password === MOCK_PASSWORD) {
+    // Create a mock JWT token
+    const mockToken = btoa(JSON.stringify({
+      user_name: MOCK_USERNAME,
+      role: "Instructor",
+      id: 6,
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours from now
+    }));
 
-        dispatch(
-          authenticationActions.setAuthentication({
-            authToken: response.data.token,
-            user: payload,
-          })
-        );
-        navigate(location.state?.from ? location.state.from : "/");
+    try {
+      const payload = setAuthToken(mockToken);
+
+      dispatch(
+        authenticationActions.setAuthentication({
+          authToken: mockToken,
+          user: payload,
+        })
+      );
+      navigate(location.state?.from ? location.state.from : "/");
+    } catch (error) {
+      dispatch(
+        alertActions.showAlert({
+          variant: "danger",
+          message: "Mock authentication failed",
+          title: "Unable to authenticate user!",
+        })
+      );
+    }
+  } else {
+    dispatch(
+      alertActions.showAlert({
+        variant: "danger",
+        message: "Username or password is incorrect. Use 'admin' / 'password123'",
+        title: "Unable to authenticate user!",
       })
-      .catch((error) => {
-        dispatch(
-          alertActions.showAlert({
-            variant: "danger",
-            message: `Username or password is incorrect, ${error.message}`,
-            title: "Unable to authenticate user!",
-          })
-        );
-      });
-    submitProps.setSubmitting(false);
-  };
+    );
+  }
+  
+  submitProps.setSubmitting(false);
+};
 
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
