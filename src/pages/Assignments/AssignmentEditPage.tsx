@@ -165,8 +165,8 @@ const AssignmentEditPage = () => {
   useEffect(() => {
     if (topicsResponse?.data) {
       const transformedTopics: TopicData[] = (topicsResponse.data || []).map((topic: any) => ({
-        id: topic.topic_identifier || topic.id?.toString(),
-        databaseId: topic.id,
+        id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
+        databaseId: Number(topic.id),
         name: topic.topic_name,
         url: topic.link,
         description: topic.description,
@@ -214,32 +214,34 @@ const AssignmentEditPage = () => {
     // TODO: Implement drop team logic
   }, []);
 
-  const handleDeleteTopic = useCallback((topicId: string) => {
-    console.log(`Delete topic ${topicId}`);
+  const handleDeleteTopic = useCallback((topicIdentifier: string) => {
+    console.log(`Delete topic ${topicIdentifier}`);
     if (id) {
       deleteTopic({
         url: `/project_topics`,
         method: 'DELETE',
-        data: { 
-          assignment_id: id,
-          topic_ids: [topicId]
+        params: {
+          assignment_id: Number(id),
+          'topic_ids[]': [topicIdentifier]
         }
       });
     }
   }, [id, deleteTopic]);
 
-  const handleEditTopic = useCallback((topicId: string, updatedData: any) => {
-    console.log(`Edit topic ${topicId}`, updatedData);
+  const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
+    console.log(`Edit topic DB id ${dbId}`, updatedData);
     updateTopic({
-      url: `/project_topics/${topicId}`,
+      url: `/project_topics/${dbId}`,
       method: 'PATCH',
       data: {
         project_topic: {
-          topic_identifier: updatedData.topic_identifier || updatedData.id,
-          topic_name: updatedData.name,
+          topic_identifier: updatedData.topic_identifier,
+          topic_name: updatedData.topic_name,
           category: updatedData.category,
-          max_choosers: updatedData.numSlots,
-          assignment_id: id
+          max_choosers: updatedData.max_choosers,
+          assignment_id: id,
+          description: updatedData.description,
+          link: updatedData.link
         }
       }
     });
@@ -254,11 +256,14 @@ const AssignmentEditPage = () => {
         data: {
           project_topic: {
             topic_identifier: topicData.topic_identifier || topicData.id,
-            topic_name: topicData.name,
+            topic_name: topicData.topic_name || topicData.name,
             category: topicData.category,
-            max_choosers: topicData.numSlots,
-            assignment_id: id
-          }
+            max_choosers: topicData.max_choosers ?? topicData.numSlots,
+            assignment_id: id,
+            description: topicData.description,
+            link: topicData.link
+          },
+          micropayment: topicData.micropayment ?? 0
         }
       });
     }
@@ -472,4 +477,3 @@ const AssignmentEditPage = () => {
 };
 
 export default AssignmentEditPage;
-

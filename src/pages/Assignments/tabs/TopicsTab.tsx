@@ -36,7 +36,7 @@ interface BookmarkData {
 
 // Updated TopicData interface
 interface TopicData {
-  id: string; // Topic ID (topic_identifier for display)
+  id: string; // topic_identifier for display/selection
   databaseId: number; // Database ID for API calls
   name: string; // Topic Name
   url?: string; // Optional URL for the topic name
@@ -208,8 +208,8 @@ const TopicsTab = ({
     console.log('Submitting edit for topic:', editingTopic);
     console.log('Edit data:', editTopicData);
     if (editingTopic && onEditTopic) {
-      console.log('Calling onEditTopic with:', editingTopic.id, editTopicData);
-      onEditTopic(editingTopic.id, editTopicData);
+      console.log('Calling onEditTopic with DB id:', editingTopic.databaseId, editTopicData);
+      onEditTopic(String(editingTopic.databaseId), editTopicData);
       handleCloseEditTopic();
     } else {
       console.log('Missing editingTopic or onEditTopic:', { editingTopic, onEditTopic });
@@ -484,41 +484,31 @@ const TopicsTab = ({
           )}
           renderInstructorActions={(topic) => (
             <Stack direction="horizontal" gap={2}>
-              <Button variant="outline-secondary" size="sm" onClick={() => handleShowEditTopic({
-                id: topic.id,
-                name: topic.name,
-                url: topic.url,
-                description: topic.description,
-                questionnaire: "",
-                numSlots: topicsData.find(t => t.id === topic.id)?.numSlots ?? 0,
-                availableSlots: topic.availableSlots,
-                waitlistedTeams: topic.waitlistedTeams || [],
-                assignedTeams: topic.assignedTeams || [],
-                bookmarks: [],
-                category: "",
-                link: topic.url || "",
-                databaseId: 0,
-              } as any)} title="Edit topic">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => {
+                  const full = topicsData.find(t => t.id === topic.id);
+                  if (!full) return;
+                  handleShowEditTopic(full);
+                }}
+                title="Edit topic"
+              >
                 <img src="/assets/icons/edit-temp.png" alt="Edit" width="20" height="20" />
               </Button>
               <Button variant="outline-danger" size="sm" onClick={() => onDeleteTopic(topic.id)} title="Delete topic">
                 <img src="/assets/icons/delete-temp.png" alt="Delete" width="20" height="20" />
               </Button>
-              <Button variant="outline-success" size="sm" onClick={() => handleShowPartnerAd({
-                id: topic.id,
-                name: topic.name,
-                url: topic.url,
-                description: topic.description,
-                questionnaire: "",
-                numSlots: topicsData.find(t => t.id === topic.id)?.numSlots ?? 0,
-                availableSlots: topic.availableSlots,
-                waitlistedTeams: topic.waitlistedTeams || [],
-                assignedTeams: topic.assignedTeams || [],
-                bookmarks: [],
-                category: "",
-                link: topic.url || "",
-                databaseId: 0,
-              } as any)} title="Apply to partner ad">
+              <Button
+                variant="outline-success"
+                size="sm"
+                onClick={() => {
+                  const full = topicsData.find(t => t.id === topic.id);
+                  if (!full) return;
+                  handleShowPartnerAd(full);
+                }}
+                title="Apply to partner ad"
+              >
                 <BsPersonPlusFill />
               </Button>
             </Stack>
