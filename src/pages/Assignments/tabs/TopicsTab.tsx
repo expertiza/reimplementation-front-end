@@ -100,7 +100,6 @@ const TopicsTab = ({
   onApplyPartnerAd,
   onTopicsChanged,
 }: TopicsTabProps) => {
-  const [displayUserNames, setDisplayUserNames] = useState(false); // State for toggling user name/ID display
   const [showPartnerAdModal, setShowPartnerAdModal] = useState(false);
   const [selectedPartnerAdTopic, setSelectedPartnerAdTopic] = useState<TopicData | null>(null);
   const [partnerAdApplication, setPartnerAdApplication] = useState("");
@@ -367,20 +366,6 @@ const TopicsTab = ({
           </Form>
         </div>
 
-        {/* View Options */}
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-           {/* Hide all teams link - Functionality TBD */}
-           {/* <a href="#" className="text-decoration-none">Hide all teams</a> */}
-           <div></div> {/* Placeholder for alignment */}
-          <Form.Check
-            type="switch"
-            id="displayUserNamesToggle"
-            label="Display User Names"
-            checked={displayUserNames}
-            onChange={(e) => setDisplayUserNames(e.target.checked)}
-          />
-        </div>
-
 
         {/* Error Message */}
         {topicsError && (
@@ -396,6 +381,7 @@ const TopicsTab = ({
         <TopicsTable
           data={(topicsData || []).map((t) => ({
             id: t.id,
+            databaseId: t.databaseId,
             name: t.name,
             url: t.url,
             description: t.description,
@@ -415,22 +401,6 @@ const TopicsTab = ({
               id: "questionnaire",
               header: "Questionnaire",
               cell: ({ row }) => <span>{(topicsData.find(t => t.id === row.original.id)?.questionnaire) || "--Default rubric--"}</span>,
-            },
-            {
-              id: "createdAt",
-              header: "Creation Date",
-              cell: ({ row }) => {
-                const t = topicsData.find(t => t.id === row.original.id);
-                return <span>{t?.createdAt || ''}</span>;
-              },
-            },
-            {
-              id: "updatedAt",
-              header: "Updated Date",
-              cell: ({ row }) => {
-                const t = topicsData.find(t => t.id === row.original.id);
-                return <span>{t?.updatedAt || ''}</span>;
-              },
             },
             {
               id: "numSlots",
@@ -465,21 +435,24 @@ const TopicsTab = ({
             <div>
               {row.assignedTeams && row.assignedTeams.length > 0 && (
                 <div className="mt-2">
-                  {row.assignedTeams.map((team) => (
-                    <div key={team.teamId} className="d-flex align-items-center mb-1">
-                      <span className="small fw-bold text-primary">
-                        {team.members.map(m => m.name || m.id).join(", ")}
-                      </span>
-                      <img
-                        src="/assets/icons/delete-temp.png"
-                        alt="Drop team"
-                        width="18"
-                        height="18"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => onDropTeam(row.id, team.teamId)}
-                      />
-                    </div>
-                  ))}
+                  {row.assignedTeams.map((team) => {
+                    const topicDbId = row.databaseId?.toString() ?? row.id;
+                    return (
+                      <div key={team.teamId} className="d-flex align-items-center mb-1">
+                        <span className="small fw-bold text-primary">
+                          {team.members.map(m => m.name || m.id).join(", ")}
+                        </span>
+                        <img
+                          src="/assets/icons/delete-temp.png"
+                          alt="Drop team"
+                          width="18"
+                          height="18"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => onDropTeam(topicDbId, team.teamId)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               {row.waitlistedTeams && row.waitlistedTeams.length > 0 && (

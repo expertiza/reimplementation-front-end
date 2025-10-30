@@ -71,6 +71,7 @@ const AssignmentEditPage = () => {
   const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
   const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
   const { data: updateTopicResponse, error: updateTopicError, sendRequest: updateTopic } = useAPI();
+  const { data: dropTeamResponse, error: dropTeamError, sendRequest: dropTeamRequest } = useAPI();
 
   useEffect(() => {
     if (id) {
@@ -154,6 +155,21 @@ const AssignmentEditPage = () => {
     }
   }, [updateTopicError, dispatch]);
 
+  useEffect(() => {
+    if (dropTeamResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [dropTeamResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (dropTeamError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: dropTeamError }));
+    }
+  }, [dropTeamError, dispatch]);
+
   // Load topics for this assignment
   useEffect(() => {
     if (id) {
@@ -214,9 +230,16 @@ const AssignmentEditPage = () => {
   }, [id, updateAssignment]);
 
   const handleDropTeam = useCallback((topicId: string, teamId: string) => {
-    console.log(`Drop team ${teamId} from topic ${topicId}`);
-    // TODO: Implement drop team logic
-  }, []);
+    if (!topicId || !teamId) return;
+    dropTeamRequest({
+      url: `/signed_up_teams/drop_team_from_topic`,
+      method: 'DELETE',
+      params: {
+        topic_id: topicId,
+        team_id: teamId,
+      },
+    });
+  }, [dropTeamRequest]);
 
   const handleDeleteTopic = useCallback((topicIdentifier: string) => {
     console.log(`Delete topic ${topicIdentifier}`);
