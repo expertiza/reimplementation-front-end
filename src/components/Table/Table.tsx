@@ -212,12 +212,18 @@ import {
 				<tbody>
 				  {table.getRowModel().rows.map((row) => (
 					<React.Fragment key={row.id}>
-					  <tr className={row.original.isSelected ? 'selected-topic-row' : ''}>
-						{row.getVisibleCells().map((cell) => (
-						  <td key={cell.id}>
-							{flexRender(cell.column.columnDef.cell, cell.getContext())}
-						  </td>
-						))}
+					  <tr
+						className={row.original.isSelected ? 'selected-topic-row' : ''}
+						style={row.original.isSelected ? { backgroundColor: '#fff3cd' } : undefined}
+					  >
+						{row.getVisibleCells().map((cell) => {
+						  const selected = !!row.original.isSelected;
+						  return (
+							<td key={cell.id} style={selected ? { backgroundColor: '#fff3cd' } : undefined}>
+							  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+							</td>
+						  );
+						})}
 					  </tr>
 					  {row.getIsExpanded() && renderSubComponent && (
 						<tr>

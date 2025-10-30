@@ -9,6 +9,7 @@ export interface Team { teamId: string; members: TeamMember[] }
 
 export interface TopicRow {
   id: string;
+  databaseId?: number;
   name: string;
   url?: string;
   description?: string;
@@ -133,7 +134,7 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
         header: "Select",
         cell: ({ row }) => {
           const t = row.original;
-          const disabled = t.isTaken || !!isSigningUp;
+          const disabled = !!isSigningUp || (!t.isSelected && t.isTaken);
           const isThisSigning = !!isSigningUp && selectedTopicId === t.id;
           return (
             <div className="text-center" style={{ whiteSpace: "nowrap" }}>

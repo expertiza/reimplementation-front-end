@@ -27,9 +27,13 @@ const StudentTasks: React.FC = () => {
   const currentUser = auth.user;
   
   const [bookmarkedTopics, setBookmarkedTopics] = useState<Set<string>>(new Set());
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  // UI-selected topic override for instant icon/row updates
+  const [uiSelectedTopic, setUiSelectedTopic] = useState<string | null>(null);
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [optimisticSlotChanges, setOptimisticSlotChanges] = useState<Map<string, number>>(new Map());
+  const [optimisticSelection, setOptimisticSelection] = useState<Map<string, 'selected' | 'deselected'>>(new Map());
+  const [pendingDeselections, setPendingDeselections] = useState<Set<string>>(new Set());
+  const [lastSignedDbTopicId, setLastSignedDbTopicId] = useState<number | null>(null);
 
   const fetchAssignmentData = useCallback(() => {
     if (assignmentId) {
@@ -65,6 +69,8 @@ const StudentTasks: React.FC = () => {
   useEffect(() => {
     if (signUpResponse) {
       setIsSigningUp(false);
+      const dbTopicId = (signUpResponse as any)?.data?.signed_up_team?.project_topic_id;
+      if (dbTopicId) setLastSignedDbTopicId(Number(dbTopicId));
       // Clear optimistic updates since we'll get real data
       setOptimisticSlotChanges(new Map());
       if (assignmentResponse?.data) {
@@ -113,30 +119,106 @@ const StudentTasks: React.FC = () => {
       console.error('Error dropping topic:', dropError);
       // Clear optimistic updates on error to restore actual values
       setOptimisticSlotChanges(new Map());
+      setPendingDeselections(new Set());
     }
   }, [dropError]);
+
+  const isUserOnTopic = useCallback((topic: any) => {
+    if (!topic) return false;
+    const matches = (teams: any[]) => Array.isArray(teams)
+      ? teams.some((team: any) =>
+          Array.isArray(team.members) &&
+          team.members.some((m: any) => String(m.id) === String(currentUser?.id)))
+      : false;
+    return matches(topic.confirmed_teams) || matches(topic.waitlisted_teams);
+  }, [currentUser?.id]);
 
   const topics = useMemo(() => {
     if (topicsError || !topicsResponse?.data) return [];
     const topicsData = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
     return topicsData.map((topic: any) => {
       const topicId = topic.topic_identifier || topic.id?.toString() || 'unknown';
+      const dbId = Number(topic.id);
       const baseSlots = topic.available_slots || 0;
       const adjustedSlots = optimisticSlotChanges.has(topicId) 
         ? optimisticSlotChanges.get(topicId)! 
         : baseSlots;
+      // Determine if current user is on a team for this topic (confirmed or waitlisted)
+      const userOnTopic = isUserOnTopic(topic);
+      const pendingDrop = pendingDeselections.has(topicId);
       
+      const selectionOverride = optimisticSelection.get(topicId);
+      const isSelected = pendingDrop
+        ? false
+        : selectionOverride === 'selected'
+        ? true
+        : selectionOverride === 'deselected'
+          ? false
+          : uiSelectedTopic !== null
+            ? uiSelectedTopic === topicId
+            : userOnTopic;
       return {
         id: topicId,
+        databaseId: isNaN(dbId) ? undefined : dbId,
         name: topic.topic_name || 'Unnamed Topic',
         availableSlots: adjustedSlots,
         waitlist: topic.waitlisted_teams?.length || 0,
         isBookmarked: bookmarkedTopics.has(topicId),
-        isSelected: selectedTopic === topicId,
+        isSelected,
         isTaken: adjustedSlots <= 0
       };
     });
-  }, [topicsResponse, topicsError, bookmarkedTopics, selectedTopic, optimisticSlotChanges]);
+  }, [topicsResponse, topicsError, bookmarkedTopics, uiSelectedTopic, optimisticSlotChanges, optimisticSelection, isUserOnTopic, pendingDeselections]);
+
+  // Initialize or reconcile selectedTopic from backend data after fetch
+  useEffect(() => {
+    if (Array.isArray(topicsResponse?.data)) {
+      // Priority 1: if we have lastSignedDbTopicId, map it to identifier and select
+      if (lastSignedDbTopicId) {
+        const t = topicsResponse.data.find((x: any) => Number(x.id) === Number(lastSignedDbTopicId));
+        const key = t?.topic_identifier || t?.id?.toString();
+        if (key) setUiSelectedTopic(key);
+        setLastSignedDbTopicId(null);
+        return;
+      }
+      // Priority 2: use membership lists
+      if (uiSelectedTopic === null) {
+        const found = topicsResponse.data.find((topic: any) => {
+          const topicKey = topic.topic_identifier || topic.id?.toString();
+          if (!topicKey || pendingDeselections.has(topicKey)) return false;
+          return isUserOnTopic(topic);
+        });
+        if (found) {
+          const key = found.topic_identifier || found.id?.toString();
+          if (key) setUiSelectedTopic(key);
+        }
+      }
+    }
+    if (optimisticSelection.size > 0) {
+      setOptimisticSelection(new Map());
+    }
+  }, [topicsResponse?.data, currentUser?.id, uiSelectedTopic, lastSignedDbTopicId, optimisticSelection.size, pendingDeselections, isUserOnTopic]);
+
+  useEffect(() => {
+    if (!Array.isArray(topicsResponse?.data)) return;
+    setPendingDeselections(prev => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      let changed = false;
+      prev.forEach(topicId => {
+        const topic = topicsResponse.data.find((t: any) => {
+          const key = t.topic_identifier || t.id?.toString();
+          return key === topicId;
+        });
+        const stillAssigned = topic ? isUserOnTopic(topic) : false;
+        if (!stillAssigned) {
+          next.delete(topicId);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [topicsResponse?.data, isUserOnTopic]);
 
   const assignmentName = useMemo(() => {
     if (!assignmentResponse?.data) return 'OSS project & documentation assignment';
@@ -175,27 +257,38 @@ const StudentTasks: React.FC = () => {
 
   const handleTopicSelect = useCallback(async (topicId: string) => {
     if (!currentUser?.id) return;
+    // Treat as deselect if either local selection matches or backend indicates selection
+    const topicEntry = topics.find(t => t.id === topicId);
+    const isCurrentlyOnThisTopic = !!topicEntry?.isSelected;
 
-    if (selectedTopic === topicId) {
+    if (uiSelectedTopic === topicId || (uiSelectedTopic === null && isCurrentlyOnThisTopic)) {
       // Deselecting current topic - optimistically increment available slots
-      const topic = topics.find(t => t.id === topicId);
-      if (topic) {
+      if (topicEntry) {
         setOptimisticSlotChanges(prev => {
           const newMap = new Map(prev);
-          newMap.set(topicId, topic.availableSlots + 1);
+          newMap.set(topicId, topicEntry.availableSlots + 1);
           return newMap;
         });
       }
+      setPendingDeselections(prev => {
+        if (prev.has(topicId)) return prev;
+        const next = new Set(prev);
+        next.add(topicId);
+        return next;
+      });
       
-      setSelectedTopic(null);
-      const topicData = topicsResponse?.data?.find((t: any) => 
-        t.topic_identifier === topicId || t.id?.toString() === topicId
-      );
-      if (topicData?.id) {
+      setUiSelectedTopic(null);
+      setOptimisticSelection(prev => {
+        const next = new Map(prev);
+        next.set(topicId, 'deselected');
+        return next;
+      });
+      const dbId = topicEntry?.databaseId || topicsResponse?.data?.find((t: any) => t.topic_identifier === topicId || t.id?.toString() === topicId)?.id;
+      if (dbId) {
         dropAPI({
           url: '/signed_up_teams/drop_topic',
           method: 'DELETE',
-          data: { user_id: currentUser.id, topic_id: topicData.id }
+          data: { user_id: currentUser.id, topic_id: dbId }
         });
       }
     } else {
@@ -205,53 +298,67 @@ const StudentTasks: React.FC = () => {
         setOptimisticSlotChanges(prev => {
           const newMap = new Map(prev);
           newMap.set(topicId, Math.max(0, topic.availableSlots - 1));
-          
+
           // If there's a previously selected topic, increment its slots
-          if (selectedTopic) {
-            const prevTopic = topics.find(t => t.id === selectedTopic);
+          if (uiSelectedTopic) {
+            const prevTopic = topics.find(t => t.id === uiSelectedTopic);
             if (prevTopic) {
-              newMap.set(selectedTopic, prevTopic.availableSlots + 1);
+              newMap.set(uiSelectedTopic, prevTopic.availableSlots + 1);
             }
           }
-          
+
           return newMap;
         });
       }
+
+      setOptimisticSelection(prev => {
+        const next = new Map(prev);
+        next.set(topicId, 'selected');
+        if (uiSelectedTopic) {
+          next.set(uiSelectedTopic, 'deselected');
+        }
+        return next;
+      });
+      setPendingDeselections(prev => {
+        const next = new Set(prev);
+        next.delete(topicId);
+        if (uiSelectedTopic) {
+          next.add(uiSelectedTopic);
+        }
+        return next;
+      });
       
-      if (selectedTopic) {
+      if (uiSelectedTopic) {
         // Drop previous topic first
-        const previousTopicData = topicsResponse?.data?.find((t: any) => 
-          t.topic_identifier === selectedTopic || t.id?.toString() === selectedTopic
-        );
-        if (previousTopicData?.id) {
+        const prev = topics.find(t => t.id === uiSelectedTopic);
+        const prevDbId = prev?.databaseId || topicsResponse?.data?.find((t: any) => t.topic_identifier === uiSelectedTopic || t.id?.toString() === uiSelectedTopic)?.id;
+        if (prevDbId) {
           dropAPI({
             url: '/signed_up_teams/drop_topic',
             method: 'DELETE',
-            data: { user_id: currentUser.id, topic_id: previousTopicData.id }
+            data: { user_id: currentUser.id, topic_id: prevDbId }
           });
         }
       }
       
-      setSelectedTopic(topicId);
+      setUiSelectedTopic(topicId);
       setIsSigningUp(true);
       
-      const topicData = topicsResponse?.data?.find((t: any) => 
-        t.topic_identifier === topicId || t.id?.toString() === topicId
-      );
-      
-      if (topicData?.id) {
+      const topicData = topics.find(t => t.id === topicId);
+      const dbId = topicData?.databaseId || topicsResponse?.data?.find((t: any) => t.topic_identifier === topicId || t.id?.toString() === topicId)?.id;
+      if (dbId) {
         setTimeout(() => {
           signUpAPI({
             url: '/signed_up_teams/sign_up_student',
             method: 'POST',
-            data: { user_id: currentUser.id, topic_id: topicData.id }
+            data: { user_id: currentUser.id, topic_id: dbId }
           });
         }, 100);
       } else {
         setIsSigningUp(false);
       }
     }
-  }, [currentUser?.id, dropAPI, selectedTopic, signUpAPI, topics, topicsResponse?.data]);
+  }, [currentUser?.id, dropAPI, uiSelectedTopic, signUpAPI, topics, topicsResponse?.data]);
 
   // Table columns (declare before any conditional returns to satisfy hooks rules)
   const topicRows: TopicRow[] = useMemo(() => topics.map(t => ({
@@ -325,7 +432,7 @@ const StudentTasks: React.FC = () => {
               onBookmarkToggle={handleBookmarkToggle}
               onSelectTopic={handleTopicSelect}
               isSigningUp={isSigningUp}
-              selectedTopicId={selectedTopic}
+              selectedTopicId={uiSelectedTopic}
               showBookmarks={allowBookmarks}
               showPaginationThreshold={10}
               tableSize={{ span: 12, offset: 0 }}
