@@ -211,8 +211,8 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       data={data}
       columns={columns as ColumnDef<any, any>[]}
       showGlobalFilter={false}
-      showColumnFilter={false}
-      showPagination={data.length >= showPaginationThreshold}
+      showColumnFilter={true}
+      showPagination={true}
       renderSubComponent={renderDetails ? ({ row }) => renderDetails(row.original as TopicRow) : undefined}
       getRowCanExpand={renderDetails ? (row) => {
         const r = row.original as TopicRow;

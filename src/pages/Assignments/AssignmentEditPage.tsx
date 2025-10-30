@@ -36,6 +36,8 @@ interface TopicData {
   availableSlots: number;
   bookmarks: any[];
   partnerAd?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const AssignmentEditPage = () => {
@@ -178,6 +180,8 @@ const AssignmentEditPage = () => {
         availableSlots: topic.available_slots || 0,
         bookmarks: [],
         partnerAd: undefined,
+        createdAt: topic.created_at,
+        updatedAt: topic.updated_at,
       }));
       setTopicsData(transformedTopics);
       setTopicsLoading(false);

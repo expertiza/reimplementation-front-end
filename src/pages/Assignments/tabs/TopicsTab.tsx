@@ -51,6 +51,8 @@ interface TopicData {
   // waitlist: number; // Redundant now, can derive from waitlistedTeams.length
   bookmarks: BookmarkData[]; // Array of bookmarks for this topic
   partnerAd?: PartnerAd; // Optional partner advertisement details
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Same as before
@@ -413,6 +415,22 @@ const TopicsTab = ({
               id: "questionnaire",
               header: "Questionnaire",
               cell: ({ row }) => <span>{(topicsData.find(t => t.id === row.original.id)?.questionnaire) || "--Default rubric--"}</span>,
+            },
+            {
+              id: "createdAt",
+              header: "Creation Date",
+              cell: ({ row }) => {
+                const t = topicsData.find(t => t.id === row.original.id);
+                return <span>{t?.createdAt || ''}</span>;
+              },
+            },
+            {
+              id: "updatedAt",
+              header: "Updated Date",
+              cell: ({ row }) => {
+                const t = topicsData.find(t => t.id === row.original.id);
+                return <span>{t?.updatedAt || ''}</span>;
+              },
             },
             {
               id: "numSlots",
