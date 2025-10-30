@@ -438,18 +438,18 @@ const TopicsTab = ({
                   {row.assignedTeams.map((team) => {
                     const topicDbId = row.databaseId?.toString() ?? row.id;
                     return (
-                      <div key={team.teamId} className="d-flex align-items-center mb-1">
-                        <span className="small fw-bold text-primary">
+                      <div key={team.teamId} className="d-flex align-items-center justify-content-between mb-2">
+                        <span className="small fw-bold text-primary me-2">
                           {team.members.map(m => m.name || m.id).join(", ")}
                         </span>
-                        <img
-                          src="/assets/icons/delete-temp.png"
-                          alt="Drop team"
-                          width="18"
-                          height="18"
-                          style={{ cursor: 'pointer' }}
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
                           onClick={() => onDropTeam(topicDbId, team.teamId)}
-                        />
+                          title="Remove signup team from topic"
+                        >
+                          Remove team
+                        </Button>
                       </div>
                     );
                   })}
