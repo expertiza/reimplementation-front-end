@@ -280,6 +280,7 @@ const AssignmentEditPage = () => {
         return (
           <TopicsTab
             assignmentName={assignmentName}
+            assignmentId={id!}
             topicSettings={topicSettings}
             topicsData={topicsData}
             topicsLoading={topicsLoading}
@@ -290,6 +291,7 @@ const AssignmentEditPage = () => {
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
+            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
           />
         );
       

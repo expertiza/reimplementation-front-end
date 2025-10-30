@@ -3,6 +3,7 @@ import { Col, Row, Form, Button, Modal, FloatingLabel, Stack } from "react-boots
 // Reverting to the standard import path for react-icons/bs
 import { BsPersonPlusFill, BsBookmark, BsBookmarkFill } from "react-icons/bs";
 import TopicsTable from "pages/Assignments/components/TopicsTable";
+import DeleteTopics from "../TopicDelete";
 
 // --- Interface Modifications ---
 // Assuming these interfaces are defined elsewhere and imported
@@ -64,6 +65,7 @@ interface TopicSettings {
 
 interface TopicsTabProps {
   assignmentName?: string;
+  assignmentId: string;
   topicSettings: TopicSettings;
   topicsData: TopicData[]; // Ensure the data passed matches the updated TopicData interface
   topicsLoading?: boolean;
@@ -76,12 +78,14 @@ interface TopicsTabProps {
   onCreateTopic?: (topicData: any) => void;
   // Handler for partner ad application submission
   onApplyPartnerAd: (topicId: string, applicationText: string) => void;
+  onTopicsChanged?: () => void;
 }
 
 // --- Component Implementation ---
 
 const TopicsTab = ({
   assignmentName = "Assignment",
+  assignmentId,
   topicSettings,
   topicsData,
   topicsLoading = false,
@@ -92,6 +96,7 @@ const TopicsTab = ({
   onEditTopic,
   onCreateTopic,
   onApplyPartnerAd,
+  onTopicsChanged,
 }: TopicsTabProps) => {
   const [displayUserNames, setDisplayUserNames] = useState(false); // State for toggling user name/ID display
   const [showPartnerAdModal, setShowPartnerAdModal] = useState(false);
@@ -117,8 +122,8 @@ const TopicsTab = ({
   const [showImportModal, setShowImportModal] = useState(false);
   const [importData, setImportData] = useState('');
 
-  // Delete confirmation modal state
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // Delete modal state (repo-standard)
+  const [deleteState, setDeleteState] = useState<{ visible: boolean; ids: string[]; names: string[] }>({ visible: false, ids: [], names: [] });
 
   // Edit topic modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -287,20 +292,10 @@ const TopicsTab = ({
 
   // --- Delete Handlers ---
   const handleDeleteSelected = () => {
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = () => {
-    selectedTopics.forEach(topicId => {
-      onDeleteTopic(topicId);
-    });
-    setSelectedTopics(new Set());
-    setSelectAll(false);
-    setShowDeleteModal(false);
-  };
-
-  const handleCloseDelete = () => {
-    setShowDeleteModal(false);
+    if (selectedTopics.size === 0) return;
+    const ids = Array.from(selectedTopics);
+    const names = ids.map(id => topicsData.find(t => t.id === id)?.name || id);
+    setDeleteState({ visible: true, ids, names });
   };
 
   // --- Back Handler ---
@@ -496,7 +491,12 @@ const TopicsTab = ({
               >
                 <img src="/assets/icons/edit-temp.png" alt="Edit" width="20" height="20" />
               </Button>
-              <Button variant="outline-danger" size="sm" onClick={() => onDeleteTopic(topic.id)} title="Delete topic">
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => setDeleteState({ visible: true, ids: [topic.id], names: [topic.name] })}
+                title="Delete topic"
+              >
                 <img src="/assets/icons/delete-temp.png" alt="Delete" width="20" height="20" />
               </Button>
               <Button
@@ -704,25 +704,15 @@ const TopicsTab = ({
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={handleCloseDelete} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>
-            Are you sure you want to delete {selectedTopics.size} selected topic(s)? This action cannot be undone.
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDelete}>
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={handleConfirmDelete}>
-            Delete Selected
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {deleteState.visible && (
+        <DeleteTopics
+          assignmentId={assignmentId}
+          topicIds={deleteState.ids}
+          topicNames={deleteState.names}
+          onClose={() => setDeleteState({ visible: false, ids: [], names: [] })}
+          onDeleted={onTopicsChanged}
+        />
+      )}
 
       {/* Edit Topic Modal */}
       <Modal show={showEditModal} onHide={handleCloseEditTopic} centered size="lg">
