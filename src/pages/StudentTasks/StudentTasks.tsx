@@ -8,12 +8,14 @@ import TopicsTable, { TopicRow } from "pages/Assignments/components/TopicsTable"
 
 interface Topic {
   id: string;
+  databaseId?: number;
   name: string;
   availableSlots: number;
   waitlist: number;
   isBookmarked?: boolean;
   isSelected?: boolean;
   isTaken?: boolean;
+  isWaitlisted?: boolean;
 }
 
 const StudentTasks: React.FC = () => {
@@ -144,19 +146,28 @@ const StudentTasks: React.FC = () => {
         ? optimisticSlotChanges.get(topicId)! 
         : baseSlots;
       // Determine if current user is on a team for this topic (confirmed or waitlisted)
-      const userOnTopic = isUserOnTopic(topic);
+      const matches = (teams: any[]) => {
+        if (!currentUser?.id || !Array.isArray(teams)) return false;
+        return teams.some((team: any) =>
+          Array.isArray(team.members) &&
+          team.members.some((m: any) => String(m.id) === String(currentUser.id))
+        );
+      };
+      const userWaitlisted = matches(topic.waitlisted_teams);
+      const userConfirmed = matches(topic.confirmed_teams);
+      const userOnTopic = userConfirmed || userWaitlisted;
       const pendingDrop = pendingDeselections.has(topicId);
       
       const selectionOverride = optimisticSelection.get(topicId);
       const isSelected = pendingDrop
         ? false
         : selectionOverride === 'selected'
-        ? true
-        : selectionOverride === 'deselected'
-          ? false
-          : uiSelectedTopic !== null
-            ? uiSelectedTopic === topicId
-            : userOnTopic;
+            ? true
+            : selectionOverride === 'deselected'
+              ? false
+              : uiSelectedTopic !== null
+                ? uiSelectedTopic === topicId
+                : userOnTopic;
       return {
         id: topicId,
         databaseId: isNaN(dbId) ? undefined : dbId,
@@ -165,10 +176,11 @@ const StudentTasks: React.FC = () => {
         waitlist: topic.waitlisted_teams?.length || 0,
         isBookmarked: bookmarkedTopics.has(topicId),
         isSelected,
-        isTaken: adjustedSlots <= 0
+        isTaken: adjustedSlots <= 0,
+        isWaitlisted: userWaitlisted
       };
     });
-  }, [topicsResponse, topicsError, bookmarkedTopics, uiSelectedTopic, optimisticSlotChanges, optimisticSelection, isUserOnTopic, pendingDeselections]);
+  }, [topicsResponse, topicsError, bookmarkedTopics, uiSelectedTopic, optimisticSlotChanges, optimisticSelection, pendingDeselections, currentUser?.id]);
 
   // Initialize or reconcile selectedTopic from backend data after fetch
   useEffect(() => {
@@ -262,8 +274,8 @@ const StudentTasks: React.FC = () => {
     const isCurrentlyOnThisTopic = !!topicEntry?.isSelected;
 
     if (uiSelectedTopic === topicId || (uiSelectedTopic === null && isCurrentlyOnThisTopic)) {
-      // Deselecting current topic - optimistically increment available slots
-      if (topicEntry) {
+      // Deselecting current topic - optimistically increment available slots when confirmed
+      if (topicEntry && !topicEntry.isWaitlisted) {
         setOptimisticSlotChanges(prev => {
           const newMap = new Map(prev);
           newMap.set(topicId, topicEntry.availableSlots + 1);
@@ -369,6 +381,7 @@ const StudentTasks: React.FC = () => {
     isTaken: t.isTaken,
     isBookmarked: t.isBookmarked,
     isSelected: t.isSelected,
+    isWaitlisted: t.isWaitlisted,
   })), [topics]);
 
   if (topicsLoading) {
@@ -412,7 +425,7 @@ const StudentTasks: React.FC = () => {
         <Col xs={12}>
           <p className="mb-0">
             <strong>Your topic(s):</strong> {userSelectedTopics.length > 0
-              ? userSelectedTopics.map((topic) => topic.name).join(", ")
+              ? userSelectedTopics.map((topic) => topic.isWaitlisted ? `${topic.name} (waitlisted)` : topic.name).join(", ")
               : "No topics selected yet"}
           </p>
         </Col>

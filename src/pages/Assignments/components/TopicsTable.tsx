@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import Table from "components/Table/Table";
-import { Button, Spinner } from "react-bootstrap";
+import { Badge, Button, Spinner } from "react-bootstrap";
 import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
 
 export interface TeamMember { id: string; name?: string }
@@ -20,6 +20,7 @@ export interface TopicRow {
   isTaken?: boolean;
   isBookmarked?: boolean;
   isSelected?: boolean;
+  isWaitlisted?: boolean;
 }
 
 type Mode = "student" | "instructor";
@@ -79,10 +80,15 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       accessorKey: "name",
       header: "Topic Names",
       cell: ({ row }) => (
-        <span>{row.original.name}</span>
+        <span>
+          {row.original.name}
+          {mode === "student" && row.original.isWaitlisted && (
+            <Badge bg="warning" text="dark" className="ms-2">Waitlisted</Badge>
+          )}
+        </span>
       ),
     },
-  ], []);
+  ], [mode]);
 
   const studentColumns: ColumnDef<TopicRow>[] = useMemo(() => {
     return [
@@ -134,8 +140,11 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
         header: "Select",
         cell: ({ row }) => {
           const t = row.original;
-          const disabled = !!isSigningUp || (!t.isSelected && t.isTaken);
+          const disabled = !!isSigningUp;
           const isThisSigning = !!isSigningUp && selectedTopicId === t.id;
+          const ariaLabel = t.isSelected
+            ? (t.isWaitlisted ? "Leave waitlist" : "Deselect topic")
+            : (t.isTaken ? "Join waitlist" : "Select topic");
           return (
             <div className="text-center" style={{ whiteSpace: "nowrap" }}>
               <Button
@@ -145,14 +154,15 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
                 className="p-0"
                 style={{ border: "none", background: "none" }}
                 disabled={disabled}
-                aria-label={t.isSelected ? "Deselect topic" : "Select topic"}
+                aria-label={ariaLabel}
+                title={ariaLabel}
               >
                 {isThisSigning ? (
                   <Spinner size="sm" animation="border" />
                 ) : t.isSelected ? (
-                  <img src="/assets/images/delete-icon-24.png" alt="Deselect" width={20} height={20} />
+                  <img src="/assets/images/delete-icon-24.png" alt={t.isWaitlisted ? "Leave waitlist" : "Deselect"} width={20} height={20} />
                 ) : (
-                  <img src="/assets/icons/Check-icon.png" alt="Select" width={20} height={20} />
+                  <img src="/assets/icons/Check-icon.png" alt={t.isTaken ? "Join waitlist" : "Select"} width={20} height={20} />
                 )}
               </Button>
             </div>
