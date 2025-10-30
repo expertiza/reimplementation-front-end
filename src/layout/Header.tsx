@@ -151,9 +151,6 @@ const Header: React.FC = () => {
                 <Nav.Link as={Link} to="/profile">
                   Profile
                 </Nav.Link>
-                <Nav.Link as={Link} to="/student_view">
-                  Student View
-                </Nav.Link>
                 <Nav.Link as={Link} to="/view-team-grades">
                   Grades View
                 </Nav.Link>
