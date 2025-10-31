@@ -31,7 +31,7 @@ const useAPI = () => {
     setError("");
 
     // Development mock handlers: allow working without a backend
-    if (process.env.NODE_ENV === "development" || process.env.REACT_APP_USE_MOCK === "true") {
+    if (process.env.NODE_ENV === "development") {
       const url = (requestConfig.url || "").toString();
       const method = (requestConfig.method || "get").toString().toLowerCase();
 
@@ -73,34 +73,16 @@ const useAPI = () => {
             return;
           }
 
-          // Match any assignment ID routes (GET /assignments/1, /assignments/1/edit, etc)
-const assignmentIdMatch = url.match(/\/assignments\/(\d+)/);
-if (assignmentIdMatch && method === "get") {
-  const id = parseInt(assignmentIdMatch[1], 10);
-  const found = mockAssignments.find((a) => a.id === id);
-  if (found) {
-    setData(makeResponse(found));
-  } else {
-    // Return a mock assignment with the requested ID
-    setData(makeResponse({
-      id: id,
-      name: `Mock Assignment ${id}`,
-      directory_path: "mock/path",
-      spec_location: "",
-      private: false,
-      show_template_review: false,
-      require_quiz: false,
-      has_badge: false,
-      staggered_deadline: false,
-      is_calibrated: false,
-      course_id: 1,
-    }));
-  }
-  setIsLoading(false);
-  return;
-}
+          const assignmentIdMatch = url.match(/^\/assignments\/(\d+)/);
+          if (assignmentIdMatch && method === "get") {
+            const id = parseInt(assignmentIdMatch[1], 10);
+            const found = mockAssignments.find((a) => a.id === id) || mockAssignments[0];
+            setData(makeResponse(found));
+            setIsLoading(false);
+            return;
+          }
 
-          if (url === "/assignments" && (method === "post" || method === "put" || method === "patch")) {
+          if (url === "/assignments" && (method === "post" || method === "put")) {
             // create or update - echo back created assignment with id
             let payload: any = requestConfig.data || {};
             try {
@@ -119,74 +101,13 @@ if (assignmentIdMatch && method === "get") {
             setIsLoading(false);
             return;
           }
-          // Mock submission/review related endpoints
-if (url.includes("/submissions") && method === "get") {
-  setData(makeResponse([]));
-  setIsLoading(false);
-  return;
-}
 
-if (url.includes("/reviews") && method === "get") {
-  setData(makeResponse([]));
-  setIsLoading(false);
-  return;
-}
-
-if (url.includes("/teams") && method === "get") {
-  setData(makeResponse([]));
-  setIsLoading(false);
-  return;
-}
-
-if (url.includes("/participants") && method === "get") {
-  setData(makeResponse([]));
-  setIsLoading(false);
-  return;
-}
-
-          // Mock user/profile endpoint
-          if (url.includes("/users") && method === "get") {
-            const mockUser = {
-              id: 6,
-              name: "Instructor Six",
-              full_name: "Instructor Six",
-              email: "instructor6@example.com",
-              role: "Instructor"
-            };
-            setData(makeResponse(mockUser));
-            setIsLoading(false);
-            return;
-          }
-
-          // Mock any other GET requests with empty array
-          if (method === "get") {
-            setData(makeResponse([]));
-            setIsLoading(false);
-            return;
-          }
-
-          // Mock any POST/PUT/PATCH with success response
-          if (method === "post" || method === "put" || method === "patch") {
-            setData(makeResponse({ success: true, message: "Operation successful" }, 201));
-            setIsLoading(false);
-            return;
-          }
-
-          // Mock DELETE
-          if (method === "delete") {
-            setData(makeResponse({ success: true, message: "Deleted successfully" }));
-            setIsLoading(false);
-            return;
-          }
-
+          // Default: fall through to real network call if not matched
         } catch (err) {
           setError((err as Error).message || "Mock error");
           setIsLoading(false);
         }
       }, 200);
-      
-      // IMPORTANT: Return early to prevent real axios call
-      return;
     }
 
     let errorMessage = "";

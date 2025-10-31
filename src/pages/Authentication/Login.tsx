@@ -29,66 +29,30 @@ const Login: React.FC = () => {
   const location = useLocation();
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
-  // Mock authentication - bypass real backend
-  const MOCK_USERNAME = "admin";
-  const MOCK_PASSWORD = "password";
-  
-  if (values.user_name === MOCK_USERNAME && values.password === MOCK_PASSWORD) {
-    // Helper function for proper base64 URL encoding
-    const base64UrlEncode = (str: string) => {
-      return btoa(str)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-    };
+    axios
+      .post("http://localhost:3002/login", values)
+      .then((response) => {
+        const payload = setAuthToken(response.data.token);
 
-    // Create a proper mock JWT token (header.payload.signature format)
-    const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-    const payload = base64UrlEncode(JSON.stringify({
-      user_name: MOCK_USERNAME,
-      role: "Instructor",
-      id: 6,
-      full_name: "Instructor Six",
-      email: "instructor6@example.com",
-      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours from now
-    }));
-    const signature = base64UrlEncode("mock-signature");
-    const mockToken = `${header}.${payload}.${signature}`;
-
-    console.log("Mock token created:", mockToken);
-
-    try {
-      const decodedPayload = setAuthToken(mockToken);
-
-      dispatch(
-        authenticationActions.setAuthentication({
-          authToken: mockToken,
-          user: decodedPayload,
-        })
-      );
-      navigate(location.state?.from ? location.state.from : "/");
-    } catch (error) {
-      console.error("Mock auth error:", error);
-      dispatch(
-        alertActions.showAlert({
-          variant: "danger",
-          message: `Mock authentication failed: ${(error as Error).message}`,
-          title: "Unable to authenticate user!",
-        })
-      );
-    }
-  } else {
-    dispatch(
-      alertActions.showAlert({
-        variant: "danger",
-        message: "Use username: 'admin' and password: 'password'",
-        title: "Unable to authenticate user!",
+        dispatch(
+          authenticationActions.setAuthentication({
+            authToken: response.data.token,
+            user: payload,
+          })
+        );
+        navigate(location.state?.from ? location.state.from : "/");
       })
-    );
-  }
-  
-  submitProps.setSubmitting(false);
-};
+      .catch((error) => {
+        dispatch(
+          alertActions.showAlert({
+            variant: "danger",
+            message: `Username or password is incorrect, ${error.message}`,
+            title: "Unable to authenticate user!",
+          })
+        );
+      });
+    submitProps.setSubmitting(false);
+  };
 
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
