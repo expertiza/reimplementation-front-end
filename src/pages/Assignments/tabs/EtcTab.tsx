@@ -20,7 +20,7 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
   
   return (
     <div>
-      <div className="alert alert-info">
+      <div>
         <h4>Assignment Actions</h4>
         <div className="assignment-actions d-flex flex-wrap justify-content-start">
           <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
