@@ -1,10 +1,5 @@
 import * as Yup from "yup";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { faUserCheck } from '@fortawesome/free-solid-svg-icons';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
-import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import { faChartBar } from '@fortawesome/free-solid-svg-icons';
+// FontAwesome icons removed (unused)
 import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
@@ -19,8 +14,7 @@ import useAPI from "hooks/useAPI";
 import FormCheckbox from "components/Form/FormCheckBox";
 import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
-import { faUsers } from '@fortawesome/free-solid-svg-icons';
-import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
+import EtcTab from './tabs/EtcTab';
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -168,38 +162,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             </Formik>
           </Tab>
           <Tab eventKey="etc" title="Etc">
-            <div className="assignment-actions d-flex flex-wrap justify-content-start">
-              <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
-                <FontAwesomeIcon icon={faUser} className="icon" />
-                <span>Add Participant</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
-                <FontAwesomeIcon icon={faUsers} className="icon" />
-                <span>Create Teams</span>
-              </div>
-
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
-                <FontAwesomeIcon icon={faUserCheck} className="icon" />
-                <span>Assign Reviewer</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
-                <FontAwesomeIcon icon={faClipboardList} className="icon" />
-                <span>View Submissions</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewscores`)}>
-                <FontAwesomeIcon icon={faChartBar} className="icon" />
-                <span>View Scores</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
-                <FontAwesomeIcon icon={faFileAlt} className="icon" />
-                <span>View Reports</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
-                <FontAwesomeIcon icon={faClock} className="icon" />
-                <span>View Delayed Jobs</span>
-              </div>
-            </div>
-
+            <EtcTab assignmentId={assignmentData?.id} />
           </Tab>
         </Tabs>
       </Modal.Body>

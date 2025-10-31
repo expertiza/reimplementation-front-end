@@ -7,6 +7,7 @@ import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 
 // Import tab components
+import GeneralTab from "./tabs/GeneralTab";
 import TopicsTab from "./tabs/TopicsTab";
 import RubricsTab from "./tabs/RubricsTab";
 import ReviewStrategyTab from "./tabs/ReviewStrategyTab";
@@ -303,6 +304,10 @@ const AssignmentEditPage = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      
+      case "general":
+        return <GeneralTab />;
+      
       case "topics":
         return (
           <TopicsTab
