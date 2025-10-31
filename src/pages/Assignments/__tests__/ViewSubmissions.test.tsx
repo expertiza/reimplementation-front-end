@@ -119,27 +119,30 @@ describe('ViewSubmissions Component', () => {
   });
 
   it('handles different assignment states', () => {
-  const pastDueDate = new Date();
-  pastDueDate.setFullYear(pastDueDate.getFullYear() - 1);
-  
-  jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useLoaderData: () => ({
-      id: 1,
-      name: 'Past Due Assignment',
-      due_date: pastDueDate.toISOString()
-    }),
-    useNavigate: () => jest.fn()
-  }));
+    const pastDueDate = new Date();
+    pastDueDate.setFullYear(pastDueDate.getFullYear() - 1);
+    
+    jest.mock('react-router-dom', () => ({
+      ...jest.requireActual('react-router-dom'),
+      useLoaderData: () => ({
+        id: 1,
+        name: 'Past Due Assignment',
+        due_date: pastDueDate.toISOString()
+      }),
+      useNavigate: () => jest.fn()
+    }));
+
+    renderComponent();
+    expect(screen.getByText('View Submissions - Past Due Assignment')).toBeInTheDocument();
+  });
 
   it('validates data formatting', () => {
-  renderComponent();
-  
-  
-  const dates = screen.getAllByText(/\d{4}-\d{2}-\d{2}/);
-  dates.forEach(dateElement => {
-    const dateText = dateElement.textContent;
-    expect(dateText).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    renderComponent();
+    const dates = screen.getAllByText(/\d{4}-\d{2}-\d{2}/);
+    dates.forEach(dateElement => {
+      const dateText = dateElement.textContent;
+      expect(dateText).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    });
   });
 
   it('applies correct table sizing', () => {
