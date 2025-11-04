@@ -1,9 +1,9 @@
 import { Button, Modal } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 
-import { HttpMethod } from "utils/httpMethods";
+import { HttpMethod } from "../../utils/httpMethods";
 import { IAssignmentResponse as IAssignment } from "../../utils/interfaces";
-import { alertActions } from "store/slices/alertSlice";
+import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
 import { useDispatch } from "react-redux";
 
