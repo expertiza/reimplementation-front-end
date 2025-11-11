@@ -1,12 +1,12 @@
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
-import useAPI from "hooks/useAPI";
+import Table from "../../components/Table/Table";
+import useAPI from "../../hooks/useAPI";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { BsPersonFillAdd } from "react-icons/bs";
+
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
+import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
 import DeleteParticipant from "./ParticipantDelete";
@@ -17,7 +17,7 @@ import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns
  */
 
 interface IModel {
-  type: "student_tasks" | "courses"|"assignments";
+  type: "student_tasks" | "courses" | "assignments";
   id: Number;
 }
 
@@ -47,7 +47,10 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     }
   }, [error, dispatch]);
 
-  const onDeleteParticipantHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  const onDeleteParticipantHandler = useCallback(
+    () => setShowDeleteConfirmation({ visible: false }),
+    []
+  );
 
   const onEditHandle = useCallback(
     (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
@@ -55,7 +58,8 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
 
   const onDeleteHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => setShowDeleteConfirmation({ visible: true, data: row.original }),
+    (row: TRow<IParticipantResponse>) =>
+      setShowDeleteConfirmation({ visible: true, data: row.original }),
     []
   );
 
@@ -76,18 +80,22 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
             <Col className="text-center">
-              <h1>Manage Participants</h1>
+              <h2>Manage Participants</h2>
             </Col>
             <hr />
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
-                <BsPersonFillAdd />
+              <Button className="btn btn-md" variant="success" onClick={() => navigate("new")}>
+                <img src="/assets/icons/add-participant-24.png" alt="Add" width="16" height="16" />{" "}
+                Add
               </Button>
             </Col>
             {showDeleteConfirmation.visible && (
-              <DeleteParticipant participantData={showDeleteConfirmation.data!} onClose={onDeleteParticipantHandler} />
+              <DeleteParticipant
+                participantData={showDeleteConfirmation.data!}
+                onClose={onDeleteParticipantHandler}
+              />
             )}
           </Row>
           <Row>
