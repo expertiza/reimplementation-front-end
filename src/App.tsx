@@ -5,7 +5,7 @@ import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/Mana
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
 import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
-import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
 import CreateTeams from "./pages/Assignments/CreateTeams";
 import ViewDelayedJobs from "./pages/Assignments/ViewDelayedJobs";
 import ViewReports from "./pages/Assignments/ViewReports";
