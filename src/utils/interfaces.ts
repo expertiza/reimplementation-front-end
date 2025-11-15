@@ -197,6 +197,51 @@ export interface Invitation {
   status?: string;
 }
 
+// SignupSheet interfaces
+export interface SignUpTopic {
+  id: number;
+  topic_name: string;
+  topic_identifier: string;
+  assignment_id: number;
+  max_choosers: number;
+  category: string;
+  description?: string;
+  micropayment?: number;
+  private_to?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SignedUpTeam {
+  id: number;
+  team_id: number;
+  sign_up_topic_id: number;
+  is_waitlisted: boolean;
+  preference_priority_number?: number;
+  comments_for_advertisement?: string;
+  advertise_for_partner: boolean;
+  created_at: string;
+  updated_at: string;
+  team?: {
+    id: number;
+    name: string;
+    team_size: number;
+    max_size?: number;
+    parent_id: number;
+  };
+}
+
+export interface TopicWithTeams {
+  topic: SignUpTopic;
+  signedUpTeams: SignedUpTeam[];
+  availableSlots: number;
+  waitlistCount: number;
+}
+
+export interface AdvertisementDetails {
+  signedUpTeam: SignedUpTeam;
+  topic: SignUpTopic;
+}
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
