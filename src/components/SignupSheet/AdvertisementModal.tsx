@@ -103,7 +103,14 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
         
         {success && (
           <Alert variant="success" dismissible onClose={() => setSuccess(null)}>
-            {success}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '1.5rem' }}>✅</span>
+              <div>
+                <strong>Success!</strong>
+                <div>{success}</div>
+                <small style={{ color: '#155724' }}>The team will be notified of your request.</small>
+              </div>
+            </div>
           </Alert>
         )}
 
