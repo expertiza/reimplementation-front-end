@@ -122,14 +122,8 @@ function App() {
           ],
         },
         {
-          path: "student_teams",
-          element: <ProtectedRoute element={<StudentTeams />} />,
-          children: [
-            {
-              path: "view",
-              element: <StudentTeamView />,
-            },
-          ],
+          path: "student_teams/view",
+          element: <ProtectedRoute element={<StudentTeamView />} />,
         },
         {
           path: "advertise_for_partner",

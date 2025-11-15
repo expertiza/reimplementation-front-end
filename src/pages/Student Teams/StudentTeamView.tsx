@@ -73,8 +73,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   useEffect(() => {
     if (team?.data.team) setTeamName(team.data.team.name);
     if (team?.data.team) {
+      console.log('🔍 DEBUG: Team loaded, ID:', team.data.team.id);
       fetchSentInvitationsByParticipant(parseInt(studentId));
       // Fetch join team requests for this team
+      console.log('🔍 DEBUG: Fetching join team requests for team ID:', team.data.team.id);
       fetchJoinTeamRequests(team.data.team.id);
       if (team.data.team.signed_up_team && team.data.team.signed_up_team.advertise_for_partner) {
         setAdExist(true);
@@ -511,6 +513,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       </div>}
 
       {/* Received Requests (Join Team Requests) */}
+      {console.log('🔍 DEBUG: joinTeamRequests:', joinTeamRequests)}
       {joinTeamRequests && joinTeamRequests.data && joinTeamRequests.data.length > 0 && (
         <div style={{ marginTop: "2rem" }}>
           <h3 className={styles.studentTeamFormLabel}>Received Requests</h3>
