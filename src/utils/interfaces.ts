@@ -214,8 +214,8 @@ export interface SignUpTopic {
 
 export interface SignedUpTeam {
   id: number;
-  team_id: number;
   sign_up_topic_id: number;
+  team_id: number;
   is_waitlisted: boolean;
   preference_priority_number?: number;
   comments_for_advertisement?: string;
@@ -228,7 +228,13 @@ export interface SignedUpTeam {
     team_size: number;
     max_size?: number;
     parent_id: number;
+    users?: Array<{
+      id: number;
+      name: string;
+      full_name: string;
+    }>;
   };
+  sign_up_topic?: SignUpTopic;
 }
 
 export interface TopicWithTeams {
@@ -243,10 +249,34 @@ export interface AdvertisementDetails {
   topic: SignUpTopic;
 }
 
+export interface JoinTeamRequest {
+  id: number;
+  comments: string;
+  reply_status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  created_at: string;
+  updated_at: string;
+  participant: {
+    id: number;
+    user_id: number;
+    user_name: string;
+    user_email: string;
+    handle: string;
+  };
+  team: {
+    id: number;
+    name: string;
+    type: string;
+    team_size: number;
+    max_size: number | null;
+    is_full: boolean;
+  };
+}
+
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {
   const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
   // Transform response as needed
   return assignment;
 };
+
 

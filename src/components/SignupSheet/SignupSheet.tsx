@@ -133,7 +133,14 @@ const SignupSheet: FC = () => {
                   <tr key={topic.id}>
                     <td style={{ textAlign: 'center' }}>{index + 1}</td>
                     <td>
-                      <div className={styles.topicName}>{topic.topic_name}</div>
+                      <div 
+                        className={styles.topicName}
+                        style={{ cursor: 'pointer', color: '#0066cc' }}
+                        onClick={() => navigate(`/topics/${topic.id}/partner_advertisements`)}
+                        title="Click to view partner advertisements for this topic"
+                      >
+                        {topic.topic_name}
+                      </div>
                       {topic.description && (
                         <div className={styles.topicDescription}>{topic.description}</div>
                       )}

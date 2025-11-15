@@ -31,6 +31,9 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     leaveAPI,
     fetchSentInvitationsByParticipantAPI,
     fetchReceivedInvitationsAPI,
+    fetchJoinTeamRequestsAPI,
+    acceptJoinRequestAPI,
+    declineJoinRequestAPI,
     fetchTeam,
     createTeam,
     updateName,
@@ -38,7 +41,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     updateInvite,
     leaveTeam,
     fetchSentInvitationsByParticipant,
-    fetchReceivedInvitations
+    fetchReceivedInvitations,
+    fetchJoinTeamRequests,
+    acceptJoinRequest,
+    declineJoinRequest
   } = useStudentTeam(studentId);
 
   const [editMode, setEditMode] = useState(false);
@@ -52,9 +58,12 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const { error: updateNameError, data: updateNameResponse, reset: resetUpdateName } = updateTeamNameAPI;
   const { data: sentInvitations } = fetchSentInvitationsByParticipantAPI;
   const { data: receivedInvitations } = fetchReceivedInvitationsAPI;
+  const { data: joinTeamRequests } = fetchJoinTeamRequestsAPI;
   const { error: sendInviteError, data: sendInviteResponse, reset: resetSendInvite } = inviteAPI;
   const { error: updateInviteError, data: updateInviteResponse, reset: resetUpdateInvite } = updateInviteAPI;
   const { error: leaveTeamError, data: leaveTeamResponse, reset: resetLeaveTeam } = leaveAPI;
+  const { error: acceptJoinRequestError, data: acceptJoinRequestResponse, reset: resetAcceptJoinRequest } = acceptJoinRequestAPI;
+  const { error: declineJoinRequestError, data: declineJoinRequestResponse, reset: resetDeclineJoinRequest } = declineJoinRequestAPI;
 
   useEffect(() => {
     if (errorStatus != "403")
@@ -65,6 +74,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     if (team?.data.team) setTeamName(team.data.team.name);
     if (team?.data.team) {
       fetchSentInvitationsByParticipant(parseInt(studentId));
+      // Fetch join team requests for this team
+      fetchJoinTeamRequests(team.data.team.id);
       if (team.data.team.signed_up_team && team.data.team.signed_up_team.advertise_for_partner) {
         setAdExist(true);
         const { comments_for_advertisement } = team.data.team.signed_up_team;
@@ -72,7 +83,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
         setItems(skills);
       }
     }
-  }, [team, sendInviteResponse]);
+  }, [team, sendInviteResponse, acceptJoinRequestResponse, declineJoinRequestResponse]);
 
   // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
@@ -122,6 +133,18 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     [updateName, teamName]
   );
 
+  const handleAcceptJoinRequest = (requestId: number) => {
+    acceptJoinRequest(requestId);
+    setShowAlert(false);
+    setToastMessage("Join request accepted successfully!");
+  };
+
+  const handleDeclineJoinRequest = (requestId: number) => {
+    declineJoinRequest(requestId);
+    setShowAlert(false);
+    setToastMessage("Join request declined.");
+  };
+
   useEffect(() => {
     const updateToastMessage = (response: any) => {
       if (response.data.success) {
@@ -169,6 +192,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     resetSendInvite?.(error, data);
     resetLeaveTeam?.(error, data);
     resetUpdateInvite?.(error, data);
+    resetAcceptJoinRequest?.(error, data);
+    resetDeclineJoinRequest?.(error, data);
   };
 
   // Combine all hook errors into one derived variable
@@ -178,6 +203,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     sendInviteError ||
     leaveTeamError ||
     updateInviteError ||
+    acceptJoinRequestError ||
+    declineJoinRequestError ||
     null;
 
   useEffect(() => {
@@ -482,6 +509,73 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
           </Table>
         )}
       </div>}
+
+      {/* Received Requests (Join Team Requests) */}
+      {joinTeamRequests && joinTeamRequests.data && joinTeamRequests.data.length > 0 && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3 className={styles.studentTeamFormLabel}>Received Requests</h3>
+          <Table striped bordered hover className={styles.studentTeamTable}>
+            <thead>
+              <tr>
+                <th className={styles.studentTeamTableCellHeader}>Name</th>
+                <th className={styles.studentTeamTableCellHeader}>Comments</th>
+                <th className={styles.studentTeamTableCellHeader}>Action</th>
+                <th className={styles.studentTeamTableCellHeader}>Sent at</th>
+              </tr>
+            </thead>
+            <tbody>
+              {joinTeamRequests.data.map((request: any) => {
+                const isTeamFull = request.team?.is_full || false;
+                const createdDate = new Date(request.created_at);
+                const formattedDate = createdDate.toISOString().replace('T', ' ').split('.')[0] + ' UTC';
+                
+                return (
+                  <tr key={request.id}>
+                    <td className={styles.studentTeamTableCell}>{request.participant.user_name}</td>
+                    <td className={styles.studentTeamTableCell}>{request.comments}</td>
+                    <td className={styles.studentTeamTableCell}>
+                      {request.reply_status === 'PENDING' ? (
+                        <>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className={styles.studentTeamButtonLink}
+                            disabled={isTeamFull}
+                            onClick={() => {
+                              if (window.confirm(`Invite ${request.participant.user_name} to join the team?`)) {
+                                handleAcceptJoinRequest(request.id);
+                              }
+                            }}
+                            title={isTeamFull ? "Team is full" : "Invite this user to join the team"}
+                          >
+                            Invite
+                          </Button>
+                          {' | '}
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className={styles.studentTeamButtonLink}
+                            onClick={() => {
+                              if (window.confirm(`Decline join request from ${request.participant.user_name}?`)) {
+                                handleDeclineJoinRequest(request.id);
+                              }
+                            }}
+                          >
+                            Decline
+                          </Button>
+                        </>
+                      ) : (
+                        <span>{request.reply_status}</span>
+                      )}
+                    </td>
+                    <td className={styles.studentTeamTableCell}>{formattedDate}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };
