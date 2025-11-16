@@ -109,7 +109,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   }, [fetchAssignments]);
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
-    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}).filter(col => 
+    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col => 
       !['edit', 'delete', 'actions'].includes(String(col.id))
     );
     baseColumns = baseColumns.filter(col => col.header !== 'Course Name');
