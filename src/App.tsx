@@ -41,6 +41,9 @@ import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
+import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -215,6 +218,10 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author />,
+        },
+        {
+          path: "assignments/:id/review",
+          element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
