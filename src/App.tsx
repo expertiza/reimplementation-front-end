@@ -42,6 +42,7 @@ import ViewSubmissions from "pages/Assignments/ViewSubmissions";
 import ViewScores from "pages/Assignments/ViewScores";
 import ViewReports from "pages/Assignments/ViewReports";
 import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
+import ReviewReportPage from "pages/Reviews/ReviewReportPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -206,6 +207,10 @@ function App() {
         {
           path: "student_tasks/:assignmentId",
           element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "assignments/:id/review",
+          element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
