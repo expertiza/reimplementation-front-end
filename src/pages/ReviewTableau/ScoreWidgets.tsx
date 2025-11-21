@@ -8,7 +8,7 @@ import '../ViewTeamGrades/grades.scss';
  * Shows a score inside a colored circle with color coding based on performance
  */
 export const ScoreWidget: React.FC<ScoreWidgetProps> = ({ 
-  score, 
+  score,
   maxScore, 
   comment, 
   hasComment = false 

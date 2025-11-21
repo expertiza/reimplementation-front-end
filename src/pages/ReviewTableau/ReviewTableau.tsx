@@ -8,7 +8,6 @@ import './ReviewTableau.scss';
 
 /**
  * Review Tableau Page
- * 
  * Displays a review rubric in the left column with subsequent columns showing
  * each reviewer's responses. Multiple rounds are supported with proper ordering.
  * 

@@ -73,7 +73,7 @@ function App() {
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id)
+        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
         {
           path: "assignments/edit/:id/responsemappings",
           element: <ResponseMappings />,

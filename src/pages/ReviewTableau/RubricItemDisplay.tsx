@@ -7,7 +7,7 @@ import { MaxScoreWidget } from './ScoreWidgets';
  * Handles all different item types with appropriate styling
  */
 export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({ 
-  item, 
+  item,
   isHeader = false 
 }) => {
   const renderItemContent = () => {

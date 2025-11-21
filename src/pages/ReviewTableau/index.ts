@@ -1,4 +1,4 @@
-// Export all components from the ReviewTableau module
+// Export all components from the ReviewTableau module 
 export { default } from './ReviewTableau';
 export { ScoreWidget, MaxScoreWidget, CheckWidget } from './ScoreWidgets';
 export { RubricItemDisplay } from './RubricItemDisplay';

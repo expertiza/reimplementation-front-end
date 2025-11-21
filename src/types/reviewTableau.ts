@@ -16,7 +16,7 @@ export type ItemType =
 
 export interface RubricItem {
   id: string;
-  txt: string | null; // null means end of section/table/column
+  txt: string | null; // null means end of section/table/column 
   itemType: ItemType;
   questionNumber?: string;
   maxScore?: number;

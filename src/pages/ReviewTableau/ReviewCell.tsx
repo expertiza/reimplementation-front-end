@@ -4,7 +4,7 @@ import { ScoreWidget, CheckWidget } from './ScoreWidgets';
 
 /**
  * Component for displaying individual review responses in tableau cells
- * Handles different response types based on rubric item type
+ * Handles different response types based on rubric item type 
  */
 export const ReviewCell: React.FC<ReviewCellProps> = ({ 
   item, 
