@@ -28,6 +28,7 @@ import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
 import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
 import EditProfile from "./pages/Profile/Edit";
 import Reviews from "./pages/Reviews/reviews";
+import ReviewTableau from "./pages/ReviewTableau/ReviewTableau";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import TA from "./pages/TA/TA";
@@ -203,6 +204,10 @@ function App() {
         {
           path: "reviews",
           element: <Reviews />,
+        },
+        {
+          path: "review-tableau",
+          element: <ProtectedRoute element={<ReviewTableau />} />,
         },
         {
           path: "demo/participants",
