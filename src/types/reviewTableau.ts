@@ -16,7 +16,7 @@ export type ItemType =
 
 export interface RubricItem {
   id: string;
-  txt: string | null; // null means end of section/table/column 
+  txt: string | null;
   itemType: ItemType;
   questionNumber?: string;
   maxScore?: number;
@@ -25,21 +25,24 @@ export interface RubricItem {
   options?: string[]; // For dropdown, multiple choice
   scaleDescription?: string; // For scale items
   isRequired?: boolean;
+  topicName?: string; // For grouping items by topic
 }
 
 export interface ReviewResponse {
   reviewerId: string;
   reviewerName: string;
   roundNumber: number;
+  submissionTime?: string;
   responses: {
     [itemId: string]: {
       score?: number;
       comment?: string;
       textResponse?: string;
       selectedOption?: string;
-      selections?: string[]; // For checkboxes
+      selections?: string[];
       fileName?: string;
       fileUrl?: string;
+      checkValue?: boolean;
     };
   };
 }
@@ -48,10 +51,20 @@ export interface ReviewRound {
   roundNumber: number;
   roundName: string;
   reviews: ReviewResponse[];
+  rubricId?: string; // Which rubric this round uses
+}
+
+export interface Rubric {
+  id: string;
+  name: string;
+  items: RubricItem[];
 }
 
 export interface ReviewTableauData {
-  rubric: RubricItem[];
+  studentId?: string;
+  course?: string;
+  assignment?: string;
+  rubrics: Rubric[]; // Multiple rubrics instead of single rubric
   rounds: ReviewRound[];
   assignmentId?: string;
   participantId?: string;
