@@ -372,9 +372,6 @@ const ReviewTableau: React.FC = () => {
     return columns;
   };
 
-  // Sort rounds by round number (keeping for potential future use)
-  const sortedRounds = data?.rounds ? [...data.rounds].sort((a, b) => a.roundNumber - b.roundNumber) : [];
-
   // Helper function to render score or check/X
   const renderReviewCell = (item: RubricItem, response: any) => {
     if (!response) return <span className="no-response">—</span>;
@@ -388,7 +385,11 @@ const ReviewTableau: React.FC = () => {
     if (item.itemType === 'Checkbox' && response.checkValue !== undefined) {
       return (
         <span className={`check-icon ${response.checkValue ? 'check-true' : 'check-false'}`}>
-          {response.checkValue ? '✓' : '✗'}
+          {response.checkValue ? (
+            <img src="/assets/icons/Check-icon.png" alt="✓" />
+          ) : (
+            <img src="/assets/icons/delete-temp.png" alt="✗" />
+          )}
         </span>
       );
     }
@@ -402,83 +403,6 @@ const ReviewTableau: React.FC = () => {
     }
     
     return <span className="no-response">—</span>;
-  };
-
-  // Generate table data and columns for each round
-  const generateTableData = (round: ReviewRound, rubricItems: RubricItem[]) => {
-    // Show all items for all rounds
-    const filteredItems = rubricItems;
-
-    return filteredItems.map(item => {
-      const rowData: any = {
-        id: item.id,
-        item: item.txt,
-        itemType: item.itemType,
-        maxScore: item.maxScore
-      };
-
-      // Add response data for each reviewer
-      round.reviews.forEach((review, index) => {
-        rowData[`reviewer_${index}`] = {
-          reviewerId: review.reviewerId,
-          reviewerName: review.reviewerName,
-          response: review.responses[item.id]
-        };
-      });
-
-      return rowData;
-    });
-  };
-
-  // Generate columns for each round
-  const generateColumns = (round: ReviewRound): ColumnDef<any>[] => {
-    const columns: ColumnDef<any>[] = [
-      {
-        id: 'item',
-        header: 'Item',
-        accessorKey: 'item',
-        cell: ({ row }) => row.original.item,
-        enableSorting: false,
-        enableColumnFilter: false,
-      }
-    ];
-
-    // Add reviewer columns
-    round.reviews.forEach((review, index) => {
-      columns.push({
-        id: `reviewer_${index}`,
-        header: () => (
-          <div className="reviewer-header-content">
-            <div className="reviewer-name">{review.reviewerName}</div>
-            <div className="submission-time">{review.submissionTime}</div>
-          </div>
-        ),
-        accessorKey: `reviewer_${index}`,
-        cell: ({ row }) => {
-          const reviewerData = row.original[`reviewer_${index}`];
-          if (!reviewerData || !reviewerData.response) {
-            return <span className="no-response">—</span>;
-          }
-
-          const item = {
-            id: row.original.id,
-            txt: row.original.item,
-            itemType: row.original.itemType,
-            maxScore: row.original.maxScore
-          } as RubricItem;
-
-          return (
-            <div className="response-cell-content">
-              {renderReviewCell(item, reviewerData.response)}
-            </div>
-          );
-        },
-        enableSorting: false,
-        enableColumnFilter: false,
-      });
-    });
-
-    return columns;
   };
 
   if (loading) {

@@ -64,7 +64,7 @@
 }
 
 .review-table-wrapper .table thead th {
-  background-color: #c0c0b0 !important;
+  background-color: white !important;
   border: 1px solid #999 !important;
   padding: 8px !important;
   text-align: center !important;
@@ -75,6 +75,11 @@
   color: #333 !important;
 }
 
+/* First header cell (Item column) should have beige background */
+.review-table-wrapper .table thead th:first-child {
+  background-color: #c0c0b0 !important;
+}
+
 .review-table-wrapper .table tbody td {
   border: 1px solid #999 !important;
   padding: 4px 8px !important;
@@ -83,20 +88,9 @@
   line-height: 1.428em !important;
 }
 
-/* Item cell styling (first column) */
-.item-cell-content {
-  background-color: #cccc86; /* Beige color matching screenshot */
-  padding: 4px;
-  text-align: left;
-  font-weight: normal;
-  max-width: 300px;
-  word-wrap: break-word;
-  color: #333;
-}
-
 /* Make sure the first column (ITEM) has beige background */
 .review-table-wrapper .table tbody td:first-child {
-  background-color: #cccc86 !important;
+  background-color: #c0c0b0 !important;
 }
 
 /* Reviewer header styling */
@@ -115,16 +109,16 @@
   font-size: 13px;
   line-height: 30px;
   font-weight: normal;
-  color: #666;
+  color: #4e4d4d;
   font-style: italic;
 }
 
 /* Response cell styling */
 .response-cell-content {
-  text-align: center;
+  text-align: left;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 /* Score widgets - match the green circular design */
@@ -134,19 +128,17 @@
   justify-content: center;
 }
 
-/* Check/X icons matching screenshot */
+/* Check/X icons using images */
 .check-icon {
-  font-size: 14px;
-  font-weight: bold;
   display: inline-block;
+  width: 16px;
+  height: 16px;
 }
 
-.check-true {
-  color: #008000; /* Green checkmark */
-}
-
-.check-false {
-  color: #ff0000; /* Red X */
+.check-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Text response styling */
@@ -169,34 +161,6 @@
   font-size: 13px;
   line-height: 30px;
 }
-
-/* Remove Bootstrap striping for consistent look */
-.review-table-wrapper .table-striped > tbody > tr:nth-of-type(odd) > td {
-  background-color: white !important;
-}
-
-.review-table-wrapper .table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
-  background-color: #c0c0b0 !important;
-}
-
-.review-table-wrapper .table-striped > tbody > tr:nth-of-type(even) > td {
-  background-color: #f9f9f9 !important;
-}
-
-.review-table-wrapper .table-striped > tbody > tr:nth-of-type(even) > td:first-child {
-  background-color: #c0c0b0 !important;
-}
-
-/* Hide table hover effect */
-.review-table-wrapper .table-hover > tbody > tr:hover > td {
-  background-color: inherit !important;
-}
-
-.review-table-wrapper .table-hover > tbody > tr:hover > td:first-child {
-  background-color: #c0c0b0 !important;
-}
-
-
 
 /* Loading and error states */
 .review-tableau-loading,
@@ -251,15 +215,6 @@
     line-height: 16px;
   }
   
-  .round-title {
-    font-size: 1.1em;
-    line-height: 16px;
-  }
-  
-  .item-cell-content {
-    max-width: 200px;
-  }
-  
   .review-table-wrapper .table {
     font-size: 13px;
     line-height: 30px;
@@ -270,15 +225,6 @@
   .main-title {
     font-size: 1em;
     line-height: 14px;
-  }
-  
-  .round-title {
-    font-size: 1em;
-    line-height: 14px;
-  }
-  
-  .item-cell-content {
-    max-width: 150px;
   }
   
   .review-table-wrapper .table {

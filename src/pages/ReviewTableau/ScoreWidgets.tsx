@@ -17,20 +17,33 @@ export const ScoreWidget: React.FC<ScoreWidgetProps> = ({
   const title = comment ? `Score: ${score}/${maxScore}\nComment: ${comment}` : `Score: ${score}/${maxScore}`;
   
   return (
-    <div className="circle-container" title={title}>
-      <span 
-        className={`grade-circle ${colorClass} ${hasComment ? 'underlined' : ''}`}
-        style={{ 
-          cursor: hasComment ? 'pointer' : 'default',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }}
-      >
-        {score}
-      </span>
+    <div className="score-widget-container" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+      <div className="circle-container" title={title}>
+        <span 
+          className={`grade-circle ${colorClass} ${hasComment ? 'underlined' : ''}`}
+          style={{ 
+            cursor: hasComment ? 'pointer' : 'default',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {score}
+        </span>
+      </div>
+      {comment && (
+        <div className="score-comment" style={{
+          fontSize: '13px',
+          lineHeight: '1.3',
+          color: '#333',
+          flexGrow: 1,
+          wordWrap: 'break-word'
+        }}>
+          {comment}
+        </div>
+      )}
     </div>
   );
 };
