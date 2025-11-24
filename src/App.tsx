@@ -1,46 +1,46 @@
-import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
+import RootLayout from "./layout/Root";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
-import Login from "./pages/Authentication/Login";
-import Logout from "./pages/Authentication/Logout";
-import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
-import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
-import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
-import Roles, { loadRoles } from "./pages/Roles/Roles";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment } from "pages/Assignments/AssignmentUtil";
+import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
+import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
+import CreateTeams from "./pages/Assignments/CreateTeams";
+import ViewDelayedJobs from "./pages/Assignments/ViewDelayedJobs";
+import ViewReports from "./pages/Assignments/ViewReports";
+import ViewScores from "./pages/Assignments/ViewScores";
+import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
+import Login from "./pages/Authentication/Login";
+import Logout from "./pages/Authentication/Logout";
+import Courses from "./pages/Courses/Course";
+import CourseEditor from "./pages/Courses/CourseEditor";
+import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
+import Questionnaire from "./pages/EditQuestionnaire/Questionnaire";
+import Email_the_author from "./pages/Email_the_author/email_the_author";
+import Home from "./pages/Home";
+import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
+import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
+import Participants from "./pages/Participants/Participant";
+import ParticipantEditor from "./pages/Participants/ParticipantEditor";
+import ParticipantsAPI from "./pages/Participants/ParticipantsAPI";
+import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
+import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
+import EditProfile from "./pages/Profile/Edit";
+import Reviews from "./pages/Reviews/reviews";
+import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
+import Roles, { loadRoles } from "./pages/Roles/Roles";
+import TA from "./pages/TA/TA";
+import TAEditor from "./pages/TA/TAEditor";
+import { loadTAs } from "./pages/TA/TAUtil";
+import Users from "./pages/Users/User";
+import UserEditor from "./pages/Users/UserEditor";
+import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
+import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
 import ErrorPage from "./router/ErrorPage";
+import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
-import NotFound from "./router/NotFound";
-import Participants from "pages/Participants/Participant";
-import ParticipantEditor from "pages/Participants/ParticipantEditor";
-import { loadParticipantDataRolesAndInstitutions } from "pages/Participants/participantUtil";
-import RootLayout from "layout/Root";
-import UserEditor from "./pages/Users/UserEditor";
-import Users from "./pages/Users/User";
-import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import Home from "pages/Home";
-import Questionnaire from "pages/EditQuestionnaire/Questionnaire";
-import Courses from "pages/Courses/Course";
-import CourseEditor from "pages/Courses/CourseEditor";
-import { loadCourseInstructorDataAndInstitutions } from "pages/Courses/CourseUtil";
-import TA from "pages/TA/TA";
-import TAEditor from "pages/TA/TAEditor";
-import { loadTAs } from "pages/TA/TAUtil";
-import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
-import EditProfile from "pages/Profile/Edit";
-import Reviews from "pages/Reviews/reviews";
-import Email_the_author from "./pages/Email_the_author/email_the_author";
-import CreateTeams from "pages/Assignments/CreateTeams";
-import ResponseMappings from "pages/ResponseMappings/ResponseMappings";
-import ViewSubmissions from "pages/Assignments/ViewSubmissions";
-import ViewScores from "pages/Assignments/ViewScores";
-import ViewReports from "pages/Assignments/ViewReports";
-import ViewDelayedJobs from "pages/Assignments/ViewDelayedJobs";
-
 function App() {
   const router = createBrowserRouter([
     {
@@ -61,6 +61,11 @@ function App() {
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
 
+        {
+          path: "assignments/edit/:id",
+          element: <AssignmentEditor mode="update" />,
+          loader: loadAssignment,
+        },
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
@@ -101,11 +106,6 @@ function App() {
             {
               path: "new",
               element: <AssignmentEditor mode="create" />,
-              loader: loadAssignment,
-            },
-            {
-              path: "edit/:id",
-              element: <AssignmentEditor mode="update" />,
               loader: loadAssignment,
             },
           ],
@@ -200,10 +200,23 @@ function App() {
             },
           ],
         },
-
-        { path: "reviews", element: <Reviews /> },
-        { path: "email_the_author", element: <Email_the_author /> },
-
+        {
+          path: "reviews",
+          element: <Reviews />,
+        },
+        {
+          path: "demo/participants",
+          element: <ParticipantsDemo />,
+        },
+        {
+          path: "participants",
+          element: <ProtectedRoute element={<ParticipantsAPI />} />,
+        },
+        {
+          path: "email_the_author",
+          element: <Email_the_author />,
+        },
+        // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
           element: <ProtectedRoute element={<Courses />} leastPrivilegeRole={ROLE.TA} />,

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
+import Table from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
 import { BsPlusSquareFill } from "react-icons/bs";
 import { IRole } from "../../utils/interfaces";
