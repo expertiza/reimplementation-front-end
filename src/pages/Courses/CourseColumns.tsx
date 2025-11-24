@@ -157,7 +157,7 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/edit-icon-24.png"}
+              src="/assets/images/edit-icon-24.png"
               alt="Edit"
               style={{ width: "25px", height: "20px" }}
             />
@@ -172,7 +172,7 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              src="/assets/images/delete-icon-24.png"
               alt="Delete"
               style={{ width: "25px", height: "20px" }}
             />
@@ -187,7 +187,7 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              src="/assets/images/add-ta-24.png"
               alt="Assign TA"
               style={{ width: "25px", height: "20px" }}
             />

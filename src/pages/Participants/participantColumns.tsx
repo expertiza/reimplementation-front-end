@@ -1,11 +1,6 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
-import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
-
-/**
- * @author Divit Kalathil on October, 2023
- */
 
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
@@ -77,16 +72,11 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Actions",
     cell: ({ row }) => (
       <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <BsPencilFill />
+        <Button className="btn btn-md" variant="outline-secondary" onClick={() => handleEdit(row)}>
+          <img src="/assets/images/edit-icon-24.png" alt="Edit" width="16" height="16" />
         </Button>
-        <Button
-          variant="outline-danger"
-          size="sm"
-          className="ms-sm-2"
-          onClick={() => handleDelete(row)}
-        >
-          <BsPersonXFill />
+        <Button className="btn btn-md ms-sm-2" variant="danger" onClick={() => handleDelete(row)}>
+          <img src="/assets/images/delete-icon-24.png" alt="Delete" width="16" height="16" />
         </Button>
       </>
     ),

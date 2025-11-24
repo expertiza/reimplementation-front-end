@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Button, Container, Row, Col, Modal } from 'react-bootstrap';
-import Table from "components/Table/Table";
+import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useLoaderData } from 'react-router-dom';
 import { BsGraphUp } from 'react-icons/bs';

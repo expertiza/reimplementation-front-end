@@ -79,7 +79,7 @@ const Header: React.FC = () => {
       >
         <Navbar.Brand>
           <img
-            src={`${process.env.PUBLIC_URL}/assets/images/wolf.png`}
+            src="/assets/images/wolf.png"
             className="d-inline-block align-top"
             alt="wolf"
             height="40"
