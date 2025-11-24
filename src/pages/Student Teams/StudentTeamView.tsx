@@ -93,7 +93,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     }
 
     const isMember = team?.data.team.members.some(
-      (m: any) => m.user.username === userLogin.trim()
+      (m: any) => m.user.username === userLogin.trim() ||  m.user.email === userLogin.trim()
     );
     if (isMember) {
       setShowAlert(true);
