@@ -50,8 +50,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const [editMode, setEditMode] = useState(false);
   const [userLogin, setUserLogin] = useState("");
   const [teamName, setTeamName] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
 
   const { error: fetchTeamError, isLoading, data: team, errorStatus } = teamAPI;
   const { error: createTeamError, data: createTeamResponse, reset: resetCreateTeam } = updateTeamNameAPI;
@@ -100,8 +98,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const handleInvite = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!userLogin.trim()) {
-      setShowAlert(true);
-      setToastMessage("Please enter a valid username.");
+      window.alert("Please enter a valid username.");
       return;
     }
 
@@ -109,8 +106,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       (m: any) => m.user.username === userLogin.trim()
     );
     if (isMember) {
-      setShowAlert(true);
-      setToastMessage(`${userLogin} is already part of your team.`);
+      window.alert(`${userLogin} is already part of your team.`);
       return;
     }
 
@@ -137,53 +133,40 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
   const handleAcceptJoinRequest = (requestId: number) => {
     acceptJoinRequest(requestId);
-    setShowAlert(false);
-    setToastMessage("Join request accepted successfully!");
+    window.alert("Join request accepted successfully!");
   };
 
   const handleDeclineJoinRequest = (requestId: number) => {
     declineJoinRequest(requestId);
-    setShowAlert(false);
-    setToastMessage("Join request declined.");
+    window.alert("Join request declined.");
   };
 
   useEffect(() => {
-    const updateToastMessage = (response: any) => {
-      if (response.data.success) {
-        setShowAlert(false);
-      } else {
-        setShowAlert(true)
-      }
-
-      setToastMessage(response.data.message);
-      const timeout = setTimeout(() => {
-        setToastMessage("");
-        setShowAlert(false);
-        resetAllLogs(false, true);
-      }, 3000);
-      return () => clearTimeout(timeout);
+    const showFeedback = (response: any) => {
+      window.alert(response.data.message);
+      resetAllLogs(false, true);
     }
     if (updateNameResponse) {
       if (updateNameResponse.data.success) {
         setTeamName(updateNameResponse.data.name);
         setEditMode(false); // Exit edit mode
       }
-      updateToastMessage(updateNameResponse);
+      showFeedback(updateNameResponse);
     }
 
     if (sendInviteResponse) {
-      updateToastMessage(sendInviteResponse)
+      showFeedback(sendInviteResponse)
     }
 
     if (updateInviteResponse) {
-      updateToastMessage(updateInviteResponse)
+      showFeedback(updateInviteResponse)
     }
 
     if (leaveTeamResponse) {
-      updateToastMessage(leaveTeamResponse)
+      showFeedback(leaveTeamResponse)
     }
     if (createTeamResponse) {
-      updateToastMessage(createTeamResponse)
+      showFeedback(createTeamResponse)
     }
 
   }, [updateNameResponse, sendInviteResponse, updateInviteResponse, leaveTeamResponse, createTeamResponse]);
@@ -212,16 +195,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   useEffect(() => {
     if (!error) return;
 
-    setShowAlert(true);
-    setToastMessage(error);
-
-    const timeout = setTimeout(() => {
-      setToastMessage("");
-      setShowAlert(false);
-      resetAllLogs(true, false);
-    }, 3000);
-
-    return () => clearTimeout(timeout);
+    window.alert(error);
+    resetAllLogs(true, false);
   }, [error]);
 
   useEffect(() => {
@@ -255,11 +230,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   return (
     <div className={styles.studentTeamContainer}>
       <div>
-        {toastMessage && (
-          <Alert className={showAlert ? "flash_note alert alert-warning" : "flash_note alert alert-success"}>
-            {toastMessage}
-          </Alert>
-        )}
       </div>
       {team && !team.data.team ?
         (<div>

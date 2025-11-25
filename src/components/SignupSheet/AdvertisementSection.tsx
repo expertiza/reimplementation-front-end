@@ -9,7 +9,7 @@ interface AdvertisementSectionProps {
   assignmentId: string;
   studentId: string;
   onClose: () => void;
-  onRequestSent?: () => void;
+  onShowAlert: (message: string, type: 'success' | 'danger') => void;
 }
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3002/api/v1';
@@ -19,11 +19,9 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   assignmentId,
   studentId,
   onClose,
-  onRequestSent,
+  onShowAlert,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [extendedTeamMembers, setExtendedTeamMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [comment, setComment] = useState('');
@@ -83,8 +81,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
     if (!advertisementData) return;
 
     setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setLoading(true);
 
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
@@ -103,25 +100,17 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         { headers }
       );
 
-      setSuccess('Join team request sent successfully!');
-      
-      if (onRequestSent) {
-        onRequestSent();
-      }
-
-      // Close section after 2 seconds
-      setTimeout(() => {
-        onClose();
-        setSuccess(null);
-      }, 2000);
+      onShowAlert('Join request sent successfully!', 'success');
+      onClose();
     } catch (err: any) {
       console.error('Error sending join team request:', err);
-      setError(
+      const errorMessage =
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          err.message ||
-          'Failed to send join team request'
-      );
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to send join team request';
+      
+      onShowAlert(errorMessage, 'danger');
     } finally {
       setLoading(false);
     }
@@ -145,24 +134,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         </Button>
       </div>
 
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-      
-      {success && (
-        <Alert variant="success" dismissible onClose={() => setSuccess(null)}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '1.5rem' }}>✅</span>
-            <div>
-              <strong>Success!</strong>
-              <div>{success}</div>
-              <small style={{ color: '#155724' }}>The team will be notified of your request.</small>
-            </div>
-          </div>
-        </Alert>
-      )}
+
 
       <div className={styles.advertisementContent}>
         <div className={styles.section}>
@@ -248,7 +220,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         <Button
           variant="link"
           onClick={handleRequestToJoin}
-          disabled={loading || !!success}
+          disabled={loading}
           className={styles.linkButton}
         >
           {loading ? (

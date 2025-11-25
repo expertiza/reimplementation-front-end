@@ -14,7 +14,6 @@ const SignupSheet: FC = () => {
 
 
   const [selectedAdvertisement, setSelectedAdvertisement] = useState<AdvertisementDetails | null>(null);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Get student ID from Redux store
   const user = useSelector((state: any) => state.authentication.user);
@@ -39,17 +38,12 @@ const SignupSheet: FC = () => {
     setSelectedAdvertisement(null);
   };
 
-  const handleRequestSent = () => {
-    // Show success toast
-    setShowSuccessToast(true);
+  const handleShowAlert = (message: string, type: 'success' | 'danger' = 'success') => {
+    window.alert(message);
 
-    // Refresh the signup sheet data
-    refresh();
-
-    // Hide toast after 5 seconds
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 5000);
+    if (type === 'success') {
+      refresh();
+    }
   };
 
   const handleBack = () => {
@@ -96,38 +90,7 @@ const SignupSheet: FC = () => {
 
   return (
     <div className={styles.signupSheetContainer}>
-      {/* Success Toast Notification */}
-      {showSuccessToast && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 9999,
-          minWidth: '300px',
-          maxWidth: '500px',
-          animation: 'slideInRight 0.3s ease-out'
-        }}>
-          <Alert
-            variant="success"
-            dismissible
-            onClose={() => setShowSuccessToast(false)}
-            style={{
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              border: '1px solid #28a745'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.5rem' }}>✅</span>
-              <div>
-                <strong>Join Request Sent!</strong>
-                <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                  Your request to join the team has been submitted successfully. The team will review your request.
-                </div>
-              </div>
-            </div>
-          </Alert>
-        </div>
-      )}
+
 
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -243,7 +206,7 @@ const SignupSheet: FC = () => {
           assignmentId={assignmentId || ''}
           studentId={studentId}
           onClose={handleCloseAdvertisement}
-          onRequestSent={handleRequestSent}
+          onShowAlert={handleShowAlert}
         />
       )}
 
