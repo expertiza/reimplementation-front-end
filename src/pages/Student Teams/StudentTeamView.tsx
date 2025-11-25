@@ -546,7 +546,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             className={styles.studentTeamButtonLink}
                             disabled={isTeamFull}
                             onClick={() => {
-                              if (window.confirm(`Invite ${request.participant.user_name} to join the team?`)) {
+                              if (window.confirm(`Accept ${request.participant.user_name}'s request to join team?`)) {
                                 handleAcceptJoinRequest(request.id);
                               }
                             }}
