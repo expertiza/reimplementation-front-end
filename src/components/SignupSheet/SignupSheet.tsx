@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner, Alert } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useSignupSheet } from '../../hooks/useSignupSheet';
-import AdvertisementModal from './AdvertisementModal';
+import AdvertisementSection from './AdvertisementSection';
 import { AdvertisementDetails, SignedUpTeam } from '../../utils/interfaces';
 import styles from './SignupSheet.module.css';
 
@@ -12,7 +12,7 @@ const SignupSheet: FC = () => {
   const navigate = useNavigate();
   const { topics, loading, error, refresh } = useSignupSheet(assignmentId || '');
 
-  const [showModal, setShowModal] = useState(false);
+
   const [selectedAdvertisement, setSelectedAdvertisement] = useState<AdvertisementDetails | null>(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
@@ -24,15 +24,18 @@ const SignupSheet: FC = () => {
     signedUpTeam: SignedUpTeam,
     topic: AdvertisementDetails['topic']
   ) => {
+
     setSelectedAdvertisement({
       signedUpTeam,
       topic,
     });
-    setShowModal(true);
+    // Scroll to bottom to show the advertisement section
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
   };
 
-  const handleModalClose = () => {
-    setShowModal(false);
+  const handleCloseAdvertisement = () => {
     setSelectedAdvertisement(null);
   };
 
@@ -238,15 +241,16 @@ const SignupSheet: FC = () => {
         </div>
       )}
 
-      {/* Advertisement Modal */}
-      <AdvertisementModal
-        show={showModal}
-        onHide={handleModalClose}
-        advertisementData={selectedAdvertisement}
-        assignmentId={assignmentId || ''}
-        studentId={studentId}
-        onRequestSent={handleRequestSent}
-      />
+      {/* Advertisement Section (Inline) */}
+      {selectedAdvertisement && (
+        <AdvertisementSection
+          advertisementData={selectedAdvertisement}
+          assignmentId={assignmentId || ''}
+          studentId={studentId}
+          onClose={handleCloseAdvertisement}
+          onRequestSent={handleRequestSent}
+        />
+      )}
 
       {/* Legend/Info Section */}
       <div className={styles.legend}>

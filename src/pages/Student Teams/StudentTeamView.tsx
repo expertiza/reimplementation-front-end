@@ -369,9 +369,9 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                   required
                   onChange={(e) => setUserLogin(e.target.value)}
                 />
-                <button onClick={handleInvite} className={styles.studentTeamInviteButton}>
+                <Button onClick={handleInvite} variant="link" className={styles.studentTeamButtonLink}>
                   Invite
-                </button>
+                </Button>
               </div>
             </Form> :
               <h6>You cannot invite new members as there is no room on your team. </h6>}

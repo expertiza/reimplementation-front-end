@@ -108,7 +108,7 @@ const PartnerAdvertisements: React.FC = () => {
                 ? team.users.map(u => u.name).join(', ')
                 : 'No members yet';
 
-              const qualifications = signedUpTeam.comments_for_advertisement || 'I want a person';
+              const qualifications = (signedUpTeam.comments_for_advertisement || 'I want a person').split(' &AND& ').join(', ');
 
               return (
                 <tr key={signedUpTeam.id}>
