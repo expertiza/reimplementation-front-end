@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { SignUpTopic, SignedUpTeam, TopicWithTeams } from '../utils/interfaces';
+import { SignUpTopic, SignedUpTeam, TopicWithTeams, IAssignmentResponse } from '../utils/interfaces';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3002/api/v1';
 
 export const useSignupSheet = (assignmentId: string) => {
   const [topics, setTopics] = useState<TopicWithTeams[]>([]);
+  const [assignment, setAssignment] = useState<IAssignmentResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +25,13 @@ export const useSignupSheet = (assignmentId: string) => {
       const headers = {
         Authorization: `Bearer ${token}`,
       };
+
+      // Fetch assignment details
+      const assignmentResponse = await axios.get<IAssignmentResponse>(
+        `${API_BASE_URL}/assignments/${assignmentId}`,
+        { headers }
+      );
+      setAssignment(assignmentResponse.data);
 
       // Fetch sign up topics for the assignment
       const topicsResponse = await axios.get<SignUpTopic[]>(
@@ -89,6 +97,7 @@ export const useSignupSheet = (assignmentId: string) => {
 
   return {
     topics,
+    assignment,
     loading,
     error,
     refresh,

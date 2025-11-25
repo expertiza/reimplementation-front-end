@@ -122,6 +122,17 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   const team = signedUpTeam.team;
   console.log('DEBUG: AdvertisementSection team:', team);
 
+  // Calculate members to display and check membership
+  const membersToDisplay = extendedTeamMembers.length > 0 
+    ? extendedTeamMembers 
+    : (team?.users || (team as any)?.members || (team as any)?.participants || []);
+
+  const isMember = membersToDisplay.some((member: any) => {
+    // Check for various possible ID fields depending on the object structure
+    const memberId = member.id || member.user_id || member.user?.id;
+    return memberId && memberId.toString() === studentId.toString();
+  });
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -170,11 +181,6 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                 <span className={styles.label}>Team Members:</span>
                 <span className={styles.value}>
                   {(() => {
-                    // Use local state or prop data
-                    const membersToDisplay = extendedTeamMembers.length > 0 
-                      ? extendedTeamMembers 
-                      : (team.users || (team as any).members || (team as any).participants || []);
-                    
                     let membersList: string[] = [];
                     if (Array.isArray(membersToDisplay)) {
                       membersList = membersToDisplay.map((u: any) => u.name || u.user_name || u.username || u.full_name || u.user?.name || u.user?.username || u.user?.full_name);
@@ -197,50 +203,54 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
           </div>
         )}
 
-        <div className={styles.section}>
-          <h5 className={styles.sectionTitle}>Message to Team (Optional)</h5>
-          <Form.Group controlId="comment" style={{ width: '100%' }}>
-            <Form.Control
-              as="textarea"
-              ref={textareaRef}
-              rows={1}
-              value={comment}
-              onChange={handleCommentChange}
-              placeholder="Write a message to the team..."
-              style={{ resize: 'none', overflow: 'hidden' }}
-            />
-          </Form.Group>
-        </div>
+        {!isMember && (
+          <div className={styles.section}>
+            <h5 className={styles.sectionTitle}>Message to Team (Optional)</h5>
+            <Form.Group controlId="comment" style={{ width: '100%' }}>
+              <Form.Control
+                as="textarea"
+                ref={textareaRef}
+                rows={1}
+                value={comment}
+                onChange={handleCommentChange}
+                placeholder="Write a message to the team..."
+                style={{ resize: 'none', overflow: 'hidden' }}
+              />
+            </Form.Group>
+          </div>
+        )}
       </div>
 
       <div className={styles.footer}>
         <Button variant="link" onClick={onClose} disabled={loading} className={styles.linkButton}>
           Close
         </Button>
-        <Button
-          variant="link"
-          onClick={handleRequestToJoin}
-          disabled={loading}
-          className={styles.linkButton}
-        >
-          {loading ? (
-            <>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-                className="me-2"
-              />
-              Sending...
-            </>
-          ) : (
-            <>
-              Request to Join Team
-            </>
-          )}
-        </Button>
+        {!isMember && (
+          <Button
+            variant="link"
+            onClick={handleRequestToJoin}
+            disabled={loading}
+            className={styles.linkButton}
+          >
+            {loading ? (
+              <>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  className="me-2"
+                />
+                Sending...
+              </>
+            ) : (
+              <>
+                Request to Join Team
+              </>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );

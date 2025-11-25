@@ -10,7 +10,7 @@ import styles from './SignupSheet.module.css';
 const SignupSheet: FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
-  const { topics, loading, error, refresh } = useSignupSheet(assignmentId || '');
+  const { topics, assignment, loading, error, refresh } = useSignupSheet(assignmentId || '');
 
 
   const [selectedAdvertisement, setSelectedAdvertisement] = useState<AdvertisementDetails | null>(null);
@@ -101,7 +101,7 @@ const SignupSheet: FC = () => {
           >
             Back
           </Button>
-          <h1 className={styles.title}>Signup Sheet</h1>
+          <h1 className={styles.title}>Signup Sheet for {assignment?.name}</h1>
         </div>
       </div>
 
