@@ -522,15 +522,14 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
               <tr>
                 <th className={styles.studentTeamTableCellHeader}>Name</th>
                 <th className={styles.studentTeamTableCellHeader}>Comments</th>
-                <th className={styles.studentTeamTableCellHeader}>Action</th>
-                <th className={styles.studentTeamTableCellHeader}>Sent at</th>
+                <th className={styles.studentTeamTableCellHeader} style={{ paddingLeft: "calc(0.2rem + 5px)" }}>Action</th>
+
               </tr>
             </thead>
             <tbody>
               {joinTeamRequests.data.map((request: any) => {
                 const isTeamFull = request.team?.is_full || false;
-                const createdDate = new Date(request.created_at);
-                const formattedDate = createdDate.toISOString().replace('T', ' ').split('.')[0] + ' UTC';
+
                 
                 return (
                   <tr key={request.id}>
@@ -551,7 +550,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             }}
                             title={isTeamFull ? "Team is full" : "Invite this user to join the team"}
                           >
-                            Invite
+                            Accept
                           </Button>
                           {' | '}
                           <Button
@@ -571,7 +570,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                         <span>{request.reply_status}</span>
                       )}
                     </td>
-                    <td className={styles.studentTeamTableCell}>{formattedDate}</td>
+
                   </tr>
                 );
               })}
