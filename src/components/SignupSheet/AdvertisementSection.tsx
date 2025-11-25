@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { Button, Alert, Spinner } from 'react-bootstrap';
+import { Button, Alert, Spinner, Form } from 'react-bootstrap';
 import { AdvertisementDetails } from '../../utils/interfaces';
 import axios from 'axios';
 import styles from './AdvertisementSection.module.css';
@@ -26,6 +26,20 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   const [success, setSuccess] = useState<string | null>(null);
   const [extendedTeamMembers, setExtendedTeamMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [comment, setComment] = useState('');
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value);
+  };
+
+  // Auto-resize textarea when comment changes
+  React.useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [comment]);
 
   React.useEffect(() => {
     const fetchMembers = async () => {
@@ -84,7 +98,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         {
           team_id: advertisementData.signedUpTeam.team_id,
           assignment_id: assignmentId,
-          comments: `Responding to advertisement for ${advertisementData.topic.topic_name}`,
+          comments: comment,
         },
         { headers }
       );
@@ -126,7 +140,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
           <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>📢</span>
           Teammate Advertisement
         </h3>
-        <Button variant="outline-secondary" size="sm" onClick={onClose}>
+        <Button variant="link" size="sm" onClick={onClose} className={styles.linkButton}>
           Close
         </Button>
       </div>
@@ -211,20 +225,31 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
           </div>
         )}
 
-        <div className={styles.infoBox}>
-          <span style={{ marginRight: '8px' }}>ℹ️</span>
-          This team is looking for partners to join them for this topic. Click "Request to Join" to send a join request to the team.
+        <div className={styles.section}>
+          <h5 className={styles.sectionTitle}>Message to Team (Optional)</h5>
+          <Form.Group controlId="comment" style={{ width: '100%' }}>
+            <Form.Control
+              as="textarea"
+              ref={textareaRef}
+              rows={1}
+              value={comment}
+              onChange={handleCommentChange}
+              placeholder="Write a message to the team..."
+              style={{ resize: 'none', overflow: 'hidden' }}
+            />
+          </Form.Group>
         </div>
       </div>
 
       <div className={styles.footer}>
-        <Button variant="secondary" onClick={onClose} disabled={loading}>
+        <Button variant="link" onClick={onClose} disabled={loading} className={styles.linkButton}>
           Close
         </Button>
         <Button
-          variant="primary"
+          variant="link"
           onClick={handleRequestToJoin}
           disabled={loading || !!success}
+          className={styles.linkButton}
         >
           {loading ? (
             <>
@@ -240,7 +265,6 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
             </>
           ) : (
             <>
-              <span style={{ marginRight: '8px' }}>➕</span>
               Request to Join Team
             </>
           )}

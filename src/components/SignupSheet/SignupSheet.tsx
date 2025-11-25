@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spinner, Alert } from 'react-bootstrap';
+import { Spinner, Alert, Button } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useSignupSheet } from '../../hooks/useSignupSheet';
 import AdvertisementSection from './AdvertisementSection';
@@ -131,19 +131,13 @@ const SignupSheet: FC = () => {
 
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <button
+          <Button
+            variant="link"
             onClick={handleBack}
-            style={{
-              background: 'transparent',
-              border: '1px solid #000',
-              borderRadius: '3px',
-              padding: '4px 8px',
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }}
+            className={styles.linkButton}
           >
-            ← Back
-          </button>
+            Back
+          </Button>
           <h1 className={styles.title}>Signup Sheet</h1>
         </div>
       </div>
@@ -163,7 +157,7 @@ const SignupSheet: FC = () => {
                 <th className={styles.narrowColumn}>Available slots</th>
                 <th className={styles.narrowColumn}>Num. on waitlist</th>
                 <th className={styles.narrowColumn}>Bookmarks</th>
-                <th className={styles.narrowColumn}>Actions</th>
+                <th className={styles.actionsColumn}>Actions</th>
                 <th className={styles.advertisementColumn}>Advertisement(s)</th>
               </tr>
             </thead>
@@ -203,12 +197,13 @@ const SignupSheet: FC = () => {
                       </button>
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      <button
+                      <Button
+                        variant="link"
                         disabled={topicData.availableSlots === 0}
-                        className={styles.actionButton}
+                        className={styles.linkButton}
                       >
                         Sign Up
-                      </button>
+                      </Button>
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       {advertisingTeams.length > 0 ? (

@@ -59,6 +59,11 @@
     text-align: center;
 }
 
+.actionsColumn {
+    width: 100px;
+    text-align: center;
+}
+
 .advertisementColumn {
     width: 120px;
     text-align: center;
@@ -214,6 +219,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -222,4 +228,27 @@
 
 :global(.slideInRight) {
     animation: slideInRight 0.3s ease-out;
+}
+
+.linkButton {
+    text-decoration: none;
+    padding: 0;
+    margin: 0px 5px;
+    color: #99570c;
+    font-size: 1rem;
+    align-self: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.linkButton:disabled {
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.linkButton:hover {
+    color: #7a460a;
+    text-decoration: underline;
 }

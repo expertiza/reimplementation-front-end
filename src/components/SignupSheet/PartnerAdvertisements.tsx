@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { SignedUpTeam } from '../../utils/interfaces';
@@ -116,8 +117,9 @@ const PartnerAdvertisements: React.FC = () => {
                   <td>{members}</td>
                   <td>{qualifications}</td>
                   <td>
-                    <button
-                      className={styles.requestButton}
+                    <Button
+                      variant="link"
+                      className={styles.linkButton}
                       onClick={() => handleRequestToJoin(team.id, team.name)}
                       disabled={requestStatus[team.id] === 'success'}
                     >
@@ -125,7 +127,7 @@ const PartnerAdvertisements: React.FC = () => {
                       <span className={styles.infoIcon} title="Send a request to join this team">
                         ℹ️
                       </span>
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               );
@@ -135,9 +137,9 @@ const PartnerAdvertisements: React.FC = () => {
       )}
 
       <div className={styles.actions}>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <Button variant="link" className={styles.linkButton} onClick={() => navigate(-1)}>
           Back
-        </button>
+        </Button>
       </div>
 
       <div className={styles.footer}>
