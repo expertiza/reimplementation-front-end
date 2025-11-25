@@ -24,6 +24,46 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [extendedTeamMembers, setExtendedTeamMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  React.useEffect(() => {
+    const fetchMembers = async () => {
+      if (!advertisementData) return;
+      const { signedUpTeam, topic } = advertisementData;
+      const team = signedUpTeam.team;
+      
+      if (!team) return;
+
+      // If members are already present, no need to fetch
+      if (team.users && team.users.length > 0) return;
+      if ((team as any).members && (team as any).members.length > 0) return;
+      if ((team as any).participants && (team as any).participants.length > 0) return;
+
+      setLoadingMembers(true);
+      try {
+        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+        const response = await axios.get(
+          `${API_BASE_URL}/signed_up_teams`,
+          {
+            params: { topic_id: topic.id },
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        const matchingTeam = response.data.find((t: any) => t.team_id === signedUpTeam.team_id);
+        if (matchingTeam && matchingTeam.team && matchingTeam.team.users) {
+          setExtendedTeamMembers(matchingTeam.team.users);
+        }
+      } catch (err) {
+        console.error('Error fetching extended team details:', err);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchMembers();
+  }, [advertisementData]);
 
   const handleRequestToJoin = async () => {
     if (!advertisementData) return;
@@ -77,6 +117,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
 
   const { signedUpTeam, topic } = advertisementData;
   const team = signedUpTeam.team;
+  console.log('DEBUG: AdvertisementSection team:', team);
 
   return (
     <div className={styles.container}>
@@ -137,6 +178,24 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                 <span className={styles.value}>
                   {team.team_size}
                   {team.max_size && ` / ${team.max_size}`}
+                </span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.label}>Team Members:</span>
+                <span className={styles.value}>
+                  {(() => {
+                    // Use local state or prop data
+                    const membersToDisplay = extendedTeamMembers.length > 0 
+                      ? extendedTeamMembers 
+                      : (team.users || (team as any).members || (team as any).participants || []);
+                    
+                    let membersList: string[] = [];
+                    if (Array.isArray(membersToDisplay)) {
+                      membersList = membersToDisplay.map((u: any) => u.name || u.user_name || u.username || u.full_name || u.user?.name || u.user?.username || u.user?.full_name);
+                    }
+
+                    return membersList.length > 0 ? membersList.join(', ') : (loadingMembers ? 'Loading members...' : 'No members information available');
+                  })()}
                 </span>
               </div>
             </>

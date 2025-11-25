@@ -229,10 +229,12 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   }, [studentId]);
 
   useEffect(() => {
-    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success) {
+    console.log('DEBUG: useEffect triggered. acceptJoinRequestResponse:', acceptJoinRequestResponse);
+    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success || acceptJoinRequestResponse || declineJoinRequestResponse) {
+      console.log('DEBUG: Auto-refreshing team data...');
       fetchTeam();
     }
-  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse])
+  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse, acceptJoinRequestResponse, declineJoinRequestResponse])
 
 
   if (isLoading)
