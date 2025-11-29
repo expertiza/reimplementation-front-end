@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { ReviewTableauData, ReviewRound, RubricItem, ReviewResponse, Rubric } from '../../types/reviewTableau';
+import useAPI from '../../hooks/useAPI';
 import { ScoreWidget } from './ScoreWidgets';
 import Table from '../../components/Table/Table';
 import './ReviewTableau.scss';
@@ -14,260 +15,116 @@ import './ReviewTableau.scss';
 const ReviewTableau: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<ReviewTableauData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // useAPI hook (follows pattern used in Participants.tsx)
+  const { error: apiError, isLoading: apiLoading, data: apiResponse, sendRequest: fetchGrades } = useAPI();
   
   // Get parameters from URL
   const studentId = searchParams.get('studentId') || '10836';
   const assignmentId = searchParams.get('assignmentId');
   const participantId = searchParams.get('participantId');
 
+  // Basic render/mount log to help debug routing/requests
+  console.log('ReviewTableau render - params', { studentId, assignmentId, participantId, apiLoading, apiError });
+
   useEffect(() => {
-    const loadReviewTableauData = async () => {
-      try {
-        setLoading(true);
-        
-        // Mock data with multiple rubrics and rounds
-        const mockData: ReviewTableauData = {
-          studentId: studentId,
-          course: 'CSC/ECE 517, Spring 2025',
-          assignment: 'Program 2',
-          rubrics: [
-            {
-              id: 'rubric1',
-              name: 'Functionality & Design Rubric',
-              items: [
-                {
-                  id: '1',
-                  txt: 'All necessary attributes are present for the admin.',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '2', 
-                  txt: 'All necessary attributes are present for the user.',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '3',
-                  txt: 'All necessary attributes are present for the show.',
-                  itemType: 'Criterion', 
-                  maxScore: 5
-                },
-                {
-                  id: '4',
-                  txt: 'All necessary attributes are present for the movie.',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '5',
-                  txt: 'All necessary attributes are present for the ticket.',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '6',
-                  txt: 'A user can sign up for a new account',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '7',
-                  txt: 'A user/admin can log in with a username and password.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '8',
-                  txt: 'A user can edit and delete her/his own profile.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '9',
-                  txt: 'A user/admin can view all the movies available on the website.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '10',
-                  txt: 'A user/admin can view all the shows for a movie available on the website.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '11',
-                  txt: 'A user can purchase tickets for a movie that has been released.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '12',
-                  txt: 'A user can not purchase tickets for a movie that is not yet released.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '13',
-                  txt: 'A user can check their own purchase history (or transaction history).',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '14',
-                  txt: 'A user can access only resources that they are allowed to, but cannot access others by simply changing the URL.',
-                  itemType: 'Checkbox'
-                },
-                {
-                  id: '15',
-                  txt: 'The workflow is intuitive. Would you suggest making any changes to the workflow?',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '16',
-                  txt: 'Overall, do you find other problem(s)? Please specify them.',
-                  itemType: 'TextArea'
-                },
-                {
-                  id: '17',
-                  txt: 'Additional Comments',
-                  itemType: 'TextArea'
-                }
-              ]
-            },
-            {
-              id: 'rubric2',
-              name: 'Code Quality Rubric',
-              items: [
-                {
-                  id: '18',
-                  txt: 'The code is written in a clean and readable way',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '19',
-                  txt: 'Code follows proper naming conventions',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                },
-                {
-                  id: '20',
-                  txt: 'Code has appropriate comments and documentation',
-                  itemType: 'Criterion',
-                  maxScore: 5
-                }
-              ]
-            }
-          ],
-          rounds: [
-            {
-              roundNumber: 1,
-              roundName: 'Review Round 1',
-              rubricId: 'rubric1',
-              reviews: [
-                {
-                  reviewerId: 'r1',
-                  reviewerName: 'Program_2_180',
-                  roundNumber: 1,
-                  submissionTime: 'done at — Wed, Feb 19, 2025 08:26:44 PM',
-                  responses: {
-                    '1': { score: 5 },
-                    '2': { score: 5 },
-                    '3': { score: 5 },
-                    '4': { score: 5 },
-                    '5': { score: 5 },
-                    '6': { checkValue: true },
-                    '7': { checkValue: true },
-                    '8': { checkValue: true },
-                    '9': { checkValue: true },
-                    '10': { checkValue: false },
-                    '11': { checkValue: false },
-                    '12': { checkValue: true },
-                    '13': { checkValue: false },
-                    '14': { checkValue: true },
-                    '15': { score: 4 },
-                    '16': { textResponse: 'When you click on a link — for example showings, sometimes the app will redirect the user to the login page instead of where they want to go. I also was not able to purchase or create tickets likely because remaining seats was negative.' },
-                    '17': { textResponse: '' }
-                  }
-                },
-                {
-                  reviewerId: 'r2',
-                  reviewerName: 'Oodd_project2',
-                  roundNumber: 1,
-                  submissionTime: 'done at — Wed, Feb 19, 2025 08:42:37 PM',
-                  responses: {
-                    '1': { score: 5 },
-                    '2': { score: 5 },
-                    '3': { score: 5 },
-                    '4': { score: 0 },
-                    '5': { score: 5 },
-                    '6': { checkValue: true },
-                    '7': { checkValue: true },
-                    '8': { checkValue: true },
-                    '9': { checkValue: true },
-                    '10': { checkValue: true },
-                    '11': { checkValue: true },
-                    '12': { checkValue: true },
-                    '13': { checkValue: false },
-                    '14': { checkValue: false },
-                    '15': { score: 0 },
-                    '16': { textResponse: 'A user can see the information for all other users and there is no link to go back to home or a users profile on certain pages.' },
-                    '17': { textResponse: 'Consider adding some type of message to let users know that sign up was successful. Currently, the app just redirects to login. Also, there is no button/link to return to home' }
-                  }
-                }
-              ]
-            },
-            {
-              roundNumber: 2,
-              roundName: 'Review Round 2',
-              rubricId: 'rubric2',
-              reviews: [
-                {
-                  reviewerId: 'r3',
-                  reviewerName: 'Program_2_180',
-                  roundNumber: 2,
-                  submissionTime: 'done at — Tue, Feb 25, 2025 11:18:04 PM',
-                  responses: {
-                    '18': { score: 4, comment: 'The code is well-organized and follows standard Rails conventions, with clear separation between tests, controllers, and views. The formatting and inline comments make it easy to follow the logic across different components.' },
-                    '19': { score: 5, comment: 'Excellent naming conventions throughout' },
-                    '20': { score: 3, comment: 'Some sections could use more documentation' }
-                  }
-                },
-                {
-                  reviewerId: 'r4',
-                  reviewerName: 'Oodd_project2',
-                  roundNumber: 2,
-                  submissionTime: 'done at — Tue, Feb 25, 2025 11:49:10 PM',
-                  responses: {
-                    '18': { score: 4, comment: 'Overall, the code was written using good practices and was readable.' },
-                    '19': { score: 4, comment: 'Good naming but some variables could be more descriptive' },
-                    '20': { score: 4, comment: 'Adequate documentation' }
-                  }
-                },
-                {
-                  reviewerId: 'r5',
-                  reviewerName: 'Coders',
-                  roundNumber: 2,
-                  submissionTime: 'done at — Tue, Feb 25, 2025 11:03:06 PM',
-                  responses: {
-                    '18': { score: 4, comment: 'The overall structure is clear and well-organized, with consistent formatting and helpful inline comments that make the code easy to follow.' },
-                    '19': { score: 5, comment: 'Very clear and consistent naming' },
-                    '20': { score: 5, comment: 'Well documented code' }
-                  }
-                }
-              ]
-            }
-          ]
-        };
+    console.log('ReviewTableau: requesting grades via useAPI', { studentId, assignmentId, participantId });
+    // sendRequest expects an AxiosRequestConfig-like object
+    fetchGrades({ url: `/grades/2/edit`, method: 'GET' });
+  }, [fetchGrades, studentId, assignmentId, participantId]);
 
-        setData(mockData);
-        setError(null);
-      } catch (err) {
-        console.error('Error loading review tableau data:', err);
-        setError('Failed to load review data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Map apiResponse (AxiosResponse) to local ReviewTableauData state
+  useEffect(() => {
+    if (!apiResponse) return;
+    try {
+      const resp = apiResponse.data;
+      console.log('ReviewTableau: apiResponse received', resp);
 
-    loadReviewTableauData();
-  }, [studentId, assignmentId, participantId]);
+      const itemsObj = resp?.items || {};
+      const rubrics: Rubric[] = Object.entries(itemsObj).map(([qId, itemsArr]: any) => {
+        const first = Array.isArray(itemsArr) && itemsArr.length > 0 ? itemsArr[0] : null;
+        const name = first?.questionnaire?.name || `Questionnaire ${qId}`;
+        return {
+          id: `q_${qId}`,
+          name,
+          items: (itemsArr || []).map((it: any, idx: number) => ({
+            id: String(it.seq ?? idx + 1),
+            txt: it.txt ?? null,
+            itemType: it.question_type === 'Scale' ? 'Criterion' : (it.question_type === 'Checkbox' ? 'Checkbox' : (it.question_type === 'TextArea' ? 'TextArea' : 'Criterion')),
+            maxScore: it.question_type === 'Scale' ? 5 : undefined,
+          }))
+        } as Rubric;
+      });
+
+      console.log('ReviewTableau: mapped rubrics count', { rubricsCount: rubrics.length });
+
+      // Extract reviews from scores.my_team.reviews_of_our_work
+      const scoresData = resp?.scores || {};
+      const reviewsOfOurWork = scoresData?.my_team?.reviews_of_our_work || {};
+      
+      console.log('ReviewTableau: reviewsOfOurWork structure', { keys: Object.keys(reviewsOfOurWork), data: reviewsOfOurWork });
+
+      // Convert reviews_of_our_work format to ReviewResponse[] format
+      const reviews: ReviewResponse[] = [];
+      Object.entries(reviewsOfOurWork).forEach(([roundKey, reviewsArray]: any) => {
+        // reviewsArray is expected to be an array of review objects per questionnaire
+        if (Array.isArray(reviewsArray)) {
+          // Flatten nested arrays if present (e.g., [[review1, review2], ...])
+          const flatReviews = reviewsArray.flat();
+          const groupedByReviewer = new Map<string, any>();
+
+          flatReviews.forEach((review: any) => {
+            const reviewerName = review.reviewer_name || `Reviewer ${review.id}`;
+            if (!groupedByReviewer.has(reviewerName)) {
+              groupedByReviewer.set(reviewerName, {
+                reviewerId: String(review.id),
+                reviewerName,
+                responses: {},
+              });
+            }
+            const reviewerGroup = groupedByReviewer.get(reviewerName)!;
+            reviewerGroup.responses[review.item_id || review.id] = {
+              score: review.answer !== undefined ? review.answer : undefined,
+              comment: review.comments || undefined,
+            };
+          });
+
+          groupedByReviewer.forEach((reviewerData) => {
+            reviews.push({
+              reviewerId: reviewerData.reviewerId,
+              reviewerName: reviewerData.reviewerName,
+              roundNumber: reviews.length + 1,
+              submissionTime: undefined,
+              responses: reviewerData.responses,
+            });
+          });
+        }
+      });
+
+      console.log('ReviewTableau: extracted reviews count', { reviewsCount: reviews.length });
+
+      const rounds: ReviewRound[] = rubrics.map((r, idx) => ({
+        roundNumber: idx + 1,
+        roundName: `Review Round ${idx + 1}`,
+        rubricId: r.id,
+        reviews: reviews.length > 0 ? reviews : [],
+      }));
+
+      const apiData: ReviewTableauData = {
+        studentId: resp?.participant?.handle ? String(resp.participant.handle) : String(resp?.participant?.id ?? studentId),
+        course: resp?.assignment?.course || '',
+        assignment: resp?.assignment?.name ?? '',
+        rubrics,
+        rounds,
+        assignmentId: assignmentId ?? resp?.assignment?.id,
+        participantId: participantId ?? resp?.participant?.id,
+      };
+
+      setData(apiData);
+      console.log('ReviewTableau: state set with apiData', { studentId: apiData.studentId, rubrics: apiData.rubrics.length, rounds: apiData.rounds.length });
+    } catch (err) {
+      console.error('ReviewTableau: error mapping apiResponse', err);
+    }
+  }, [apiResponse, studentId, assignmentId, participantId]);
 
   // Group by round first, then by rubrics within each round
   const roundRubricGroups = useMemo(() => {
@@ -405,7 +262,7 @@ const ReviewTableau: React.FC = () => {
     return <span className="no-response">—</span>;
   };
 
-  if (loading) {
+  if (apiLoading) {
     return (
       <div className="review-tableau-loading">
         <div className="loading-spinner">Loading review tableau...</div>
@@ -413,10 +270,10 @@ const ReviewTableau: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (apiError) {
     return (
       <div className="review-tableau-error">
-        <div className="error-message">{error}</div>
+        <div className="error-message">{apiError}</div>
       </div>
     );
   }
