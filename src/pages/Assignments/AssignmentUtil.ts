@@ -47,10 +47,32 @@ export interface IAssignmentFormValues {
   teammate_allowed?: boolean[];
   metareview_allowed?: boolean[];
   reminder?: number[];
+  due_dates?: { id: number; deadline_type_id: number; round?: number }[];
+  assignment_questionnaires?: {
+    id: number;
+    used_in_round?: number;
+    questionnaire?: { id: number; name: string };
+  }[];
+  [key: string]: any;
 }
 
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
+  // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
+  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
+  const roundCount = values.number_of_review_rounds ?? 0;
+  for (let i = 1; i <= roundCount; i += 1) {
+    const questionnaireId = values[`questionnaire_round_${i}`];
+    if (questionnaireId) {
+      const existingId = values[`assignment_questionnaire_id_${i}`];
+      assignmentQuestionnaires.push({
+        id: existingId,
+        questionnaire_id: questionnaireId,
+        used_in_round: i,
+      });
+    }
+  }
+
   const assignment: IAssignmentRequest = {
     name: values.name,
     directory_path: values.directory_path,
@@ -61,10 +83,13 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     has_badge: values.has_badge,
     staggered_deadline: values.staggered_deadline,
     is_calibrated: values.is_calibrated,
+    vary_by_round: values.review_rubric_varies_by_round,
+    rounds_of_reviews: values.number_of_review_rounds,
+    assignment_questionnaires_attributes: assignmentQuestionnaires,
 
   };
   console.log(assignment);
-  return JSON.stringify(assignment);
+  return JSON.stringify( { assignment } );
 };
 
 export const transformAssignmentResponse = (assignmentResponse: string) => {
@@ -80,7 +105,10 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     has_badge: assignment.has_badge,
     staggered_deadline: assignment.staggered_deadline,
     is_calibrated: assignment.is_calibrated,
-
+    review_rubric_varies_by_round: assignment.vary_by_round,
+    number_of_review_rounds: assignment.num_review_rounds,
+    due_dates: assignment.due_dates,
+    assignment_questionnaires: assignment.assignment_questionnaires,
   };
   return assignmentValues;
 };

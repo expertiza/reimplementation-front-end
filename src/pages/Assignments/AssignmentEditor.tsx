@@ -12,9 +12,9 @@ import { IEditor } from "../../utils/interfaces";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import FormInput from "components/Form/FormInput";
-import FormSelect from "components/Form/FormSelect";
-import { HttpMethod } from "utils/httpMethods";
+import FormInput from "../../components/Form/FormInput";
+import FormSelect from "../../components/Form/FormSelect";
+import { HttpMethod } from "../../utils/httpMethods";
 import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
@@ -23,9 +23,9 @@ import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
-import Table from "components/Table/Table";
-import FormDatePicker from "components/Form/FormDatePicker";
-import ToolTip from "components/ToolTip";
+import Table from "../../components/Table/Table";
+import FormDatePicker from "../../components/Form/FormDatePicker";
+import ToolTip from "../../components/ToolTip";
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -164,12 +164,42 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/assignments");
 
+  // Map the currently selected questionnaire for each round (used to prefill dropdowns)
+  const roundSelections: Record<number, { id: number; name: string }> = {};
+  (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
+    if (aq.used_in_round && aq.questionnaire) {
+      roundSelections[aq.used_in_round] = { id: aq.questionnaire.id, name: aq.questionnaire.name };
+    }
+  });
+
+  // Build dropdown options from the questionnaires already linked to this assignment
+  const questionnaireOptions = (assignmentData.assignment_questionnaires || [])
+    .map((aq: any) => aq.questionnaire)
+    .filter((q: any) => q)
+    .map((q: any) => ({ label: q.name, value: q.id }));
+
+  // Use the backend-computed review round count method (num_review_rounds) for existing assignments
+  const derivedReviewRounds = assignmentData.number_of_review_rounds;
+
+  // Build initial form values from existing assignment data (update) or defaults (create)
+  const formInitialValues: any = mode === "update" ? { ...assignmentData } : { ...initialValues };
+  
+  if (mode === "update") {
+    // Prefill per-round questionnaire selections and ids
+    (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
+      if (aq.used_in_round && aq.questionnaire) {
+        formInitialValues[`questionnaire_round_${aq.used_in_round}`] = aq.questionnaire.id;
+        formInitialValues[`assignment_questionnaire_id_${aq.used_in_round}`] = aq.id;
+      }
+    });
+  }
+
   return (
     <div style={{ padding: '30px' }}>
       <h1>Editing Assignment: {assignmentData.name}</h1>
 
       <Formik
-        initialValues={mode === "update" ? assignmentData : initialValues}
+        initialValues={formInitialValues}
         onSubmit={onSubmit}
         validationSchema={validationSchema}
         validateOnChange={false}
@@ -270,23 +300,45 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                     showGlobalFilter={false}
                     showPagination={false}
                     data={[
-                      ...Array.from({ length: formik.values.number_of_review_rounds ?? 0 }, (_, i) => ([
-                        {
-                          id: i,
-                          title: `Review round ${i + 1}:`,
-                          questionnaire: ['Sample 1', 'Sample 2', 'Sample 3'],
-                          questionnaire_type: 'dropdown',
-                        },
-                        {
-                          id: i,
-                          title: `Add tag prompts`,
-                          questionnaire_type: 'tag_prompts',
+                      ...(() => {
+                        const rounds = (mode === "update" && formik.values.review_rubric_varies_by_round)
+                          ? derivedReviewRounds
+                          : (formik.values.number_of_review_rounds ?? 0);
+                        if (formik.values.review_rubric_varies_by_round) {
+                          return Array.from({ length: rounds }, (_, i) => ([
+                            {
+                              id: i + 1,
+                              title: `Review round ${i + 1}:`,
+                              questionnaire_options: questionnaireOptions,
+                              selected_questionnaire: roundSelections[i + 1]?.id,
+                              questionnaire_type: 'dropdown',
+                            },
+                            {
+                              id: i + 1,
+                              title: `Add tag prompts`,
+                              questionnaire_type: 'tag_prompts',
+                            }
+                          ])).flat();
                         }
-                      ])).flat(),
+                        return [
+                          {
+                            id: 0,
+                            title: "Review rubric:",
+                            questionnaire_options: questionnaireOptions,
+                            selected_questionnaire: roundSelections[1]?.id,
+                            questionnaire_type: 'dropdown',
+                          },
+                          {
+                            id: 0,
+                            title: "Add tag prompts",
+                            questionnaire_type: 'tag_prompts',
+                          }
+                        ];
+                      })(),
                       {
                         id: formik.values.number_of_review_rounds ?? 0,
                         title: "Author feedback:",
-                        questionnaire: ['Standard author feedback'],
+                        questionnaire_options: [{ label: 'Standard author feedback', value: 'Standard author feedback' }],
                         questionnaire_type: 'dropdown',
                       },
                       {
@@ -297,7 +349,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
                         title: "Teammate review:",
-                        questionnaire: ['Review with Github metrics'],
+                        questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                         questionnaire_type: 'dropdown',
                       },
                       {
@@ -313,8 +365,12 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                       },
                       {
                         cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
-                          <FormSelect controlId={`assignment-questionnaire_${row.original.id}`} name="questionnaire"
-                            options={row.original.questionnaire.map((questionnaire: string) => ({ label: questionnaire, value: questionnaire }))} />}
+                          <FormSelect
+                            controlId={`assignment-questionnaire_${row.original.id}`}
+                            name={`questionnaire_round_${row.original.id}`}
+                            options={row.original.questionnaire_options || []}
+                            // Formik initialValues handles prefill via questionnaire_round_X fields
+                          />}
                           {row.original.questionnaire_type === 'tag_prompts' &&
                             <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
                               <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
