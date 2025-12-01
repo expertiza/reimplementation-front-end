@@ -78,7 +78,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     directory_path: values.directory_path,
     spec_location: values.spec_location,
     private: values.private,
-    show_template_review: values.show_template_review,
+    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz,
     has_badge: values.has_badge,
     staggered_deadline: values.staggered_deadline,
@@ -89,7 +89,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
 
   };
   console.log(assignment);
-  return JSON.stringify( { assignment } );
+  return JSON.stringify({ assignment });
 };
 
 export const transformAssignmentResponse = (assignmentResponse: string) => {
@@ -100,7 +100,7 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     directory_path: assignment.directory_path,
     spec_location: assignment.spec_location,
     private: assignment.private,
-    show_template_review: assignment.show_template_review,
+    show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,
     has_badge: assignment.has_badge,
     staggered_deadline: assignment.staggered_deadline,
@@ -123,6 +123,6 @@ export async function loadAssignment({ params }: any) {
     assignmentData = await userResponse.data;
   }
 
-  return assignmentData;
+  return { ...assignmentData, weights: [] };
 }
 
