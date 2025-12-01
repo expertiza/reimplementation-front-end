@@ -51,9 +51,9 @@ import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertise
 import TeammateReview from './pages/Student Teams/TeammateReview';
 import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
-
 import AssignmentEditPage from "./pages/Assignments/AssignmentEditPage";
 import StudentTasks from "pages/StudentTasks/StudentTasks";
+// import AssignReviewer from "pages/Assignments/AssignReviewer";
 function App() {
   const router = createBrowserRouter([
     {
@@ -147,7 +147,11 @@ function App() {
           //   },
           // ],
         },
-
+        
+        {
+          path: "assignments/edit/:id",
+          element: <ProtectedRoute element={<AssignmentEditPage />} leastPrivilegeRole={ROLE.TA} />,
+        },
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
