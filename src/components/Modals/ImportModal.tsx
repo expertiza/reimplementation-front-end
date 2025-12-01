@@ -10,6 +10,13 @@ import {
   Tooltip,
 } from 'react-bootstrap';
 import useAPI from "../../hooks/useAPI";
+import {
+  IAssignmentFormValues,
+  transformAssignmentRequest,
+} from "../../pages/Assignments/AssignmentUtil";
+import { FormikHelpers } from "formik";
+import { alertActions } from "../../store/slices/alertSlice";
+import { HttpMethod } from "../../utils/httpMethods";
 
 const STANDARD_TEXT: React.CSSProperties = {
   fontFamily: 'verdana, arial, helvetica, sans-serif',
@@ -93,6 +100,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   const [status, setStatus] = useState<string>('');
   // const [loading, setLoading] = useState<boolean>(false);
   const { error, isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
+  const { data: sendImportResponse, error: importError, sendRequest: sendImport } = useAPI();
 
   /* Load metadata from backend when modal opens */
   // useEffect(() => {
@@ -206,6 +214,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       setStatus('Please select a CSV file.');
       return;
     }
+    console.log(file)
 
     setStatus('Importing…');
 
@@ -219,22 +228,33 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         formData.append('ordered_fields', JSON.stringify(selectedFields));
       }
 
-      const res = await fetch(`/import/${modelClass}`, {
-        method: 'POST',
-        body: formData,
+        for (const [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+
+
+
+        let method: HttpMethod = HttpMethod.POST;
+      let url: string = `/import/${modelClass}`;
+
+      sendImport({
+        url: url,
+        method: method,
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (!res.ok) {
-        const errorBody = await res.json();
-        throw new Error(errorBody.error || 'Import failed');
+      if (sendImportResponse) {
+        setStatus(sendImportResponse.data.message);
+      } else {
+        setStatus('Import complete.');
       }
 
-      const body = await res.json();
-      setStatus(body.message || 'Import complete.');
     } catch (err: any) {
       setStatus(err.message || 'An unexpected error occurred.');
     }
   };
+
 
   /* Render */
 
