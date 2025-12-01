@@ -1,5 +1,5 @@
 import {
-  ColumnDef,
+	  ColumnDef,
   ColumnFiltersState,
   ExpandedState,
   flexRender,

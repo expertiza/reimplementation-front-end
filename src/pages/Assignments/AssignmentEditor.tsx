@@ -1,10 +1,5 @@
 import * as Yup from "yup";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { faUserCheck } from '@fortawesome/free-solid-svg-icons';
-import { faClock } from '@fortawesome/free-solid-svg-icons';
-import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import { faChartBar } from '@fortawesome/free-solid-svg-icons';
+
 import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
@@ -26,6 +21,7 @@ import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
 import Table from "../../components/Table/Table";
 import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
+import EtcTab from './tabs/EtcTab';
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -80,7 +76,7 @@ const validationSchema = Yup.object({
   // Add other assignment-specific validation rules
 });
 
-const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
+const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
   const { data: calibrationSubmissionsResponse, error: calibrationSubmissionsError, sendRequest: sendCalibrationSubmissionsRequest } = useAPI();
@@ -90,6 +86,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
+  // authentication state not required in this editor
   const assignmentData: any = useLoaderData();
 
   // Merge backend-loaded assignment data with frontend defaults:
@@ -217,6 +214,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     }
     // to be used to display message when assignment is created
     assignmentData.name = values.name;
+    console.log(values);
     sendRequest({
       url: url,
       method: method,
@@ -821,10 +819,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                     <FormInput controlId="assignment-num_review_of_reviews" label="Number of Review of Reviews" name="num_review_of_reviews" type="number" />
                     <FormInput controlId="assignment-num_review_of_reviewers" label="Number of Review of Reviewers" name="num_review_of_reviewers" type="number" />
                     <FormInput controlId="assignment-num_reviewers" label="Number of Reviewers" name="num_reviewers" type="number" />
-                    <FormCheckbox controlId="assignment-has-teams-modal" label="Has teams?" name="has_teams" />
-                    {formik.values.has_teams && (
-                      <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
-                    )}
+                    <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
                     <FormInput controlId="assignment-days_between_submissions" label="Days Between Submissions" name="days_between_submissions" type="number" />
                     <FormInput controlId="assignment-review_assignment_strategy" label="Review Assignment Strategy" name="review_assignment_strategy" />
                     <FormInput controlId="assignment-max_reviews_per_submission" label="Max Reviews Per Submission" name="max_reviews_per_submission" type="number" />
@@ -870,38 +865,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
             </Formik>
           </Tab>
           <Tab eventKey="etc" title="Etc">
-            <div className="assignment-actions d-flex flex-wrap justify-content-start">
-              <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
-                <FontAwesomeIcon icon={faUser} className="icon" />
-                <span>Add Participant</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
-                <FontAwesomeIcon icon={faUsers} className="icon" />
-                <span>Create Teams</span>
-              </div>
-
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
-                <FontAwesomeIcon icon={faUserCheck} className="icon" />
-                <span>Assign Reviewer</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
-                <FontAwesomeIcon icon={faClipboardList} className="icon" />
-                <span>View Submissions</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewscores`)}>
-                <FontAwesomeIcon icon={faChartBar} className="icon" />
-                <span>View Scores</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
-                <FontAwesomeIcon icon={faFileAlt} className="icon" />
-                <span>View Reports</span>
-              </div>
-              <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
-                <FontAwesomeIcon icon={faClock} className="icon" />
-                <span>View Delayed Jobs</span>
-              </div>
-            </div>
-
+            <EtcTab assignmentId={assignmentData?.id} />
           </Tab>
         </Tabs>
       </Modal.Body>

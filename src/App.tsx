@@ -52,6 +52,8 @@ import TeammateReview from './pages/Student Teams/TeammateReview';
 import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
 
+import AssignmentEditPage from "./pages/Assignments/AssignmentEditPage";
+import StudentTasks from "pages/StudentTasks/StudentTasks";
 function App() {
   const router = createBrowserRouter([
     {
@@ -71,12 +73,6 @@ function App() {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
-
-        {
-          path: "assignments/edit/:id",
-          element: <AssignmentEditor mode="update" />,
-          loader: loadAssignment,
-        },
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
@@ -85,8 +81,9 @@ function App() {
 
         // Assign Reviewer: no route loader (component handles localStorage/URL id) 
         {
-          path: "assignments/edit/:id/responsemappings",
-          element: <ResponseMappings />,
+          path: "assignments/edit/:id/assignreviewer",
+          element: <AssignReviewer />,
+          loader: loadAssignment,
         },
 
         {
@@ -126,7 +123,11 @@ function App() {
           element: <AssignmentEditor mode="create" />,
           loader: loadAssignment,
         },
-
+        
+        {
+          path: "assignments/edit/:id",
+          element: <ProtectedRoute element={<AssignmentEditPage />} leastPrivilegeRole={ROLE.TA} />,
+        },
         {
           path: "assignments/:assignmentId/signup_sheet",
           element: <ProtectedRoute element={<SignupSheet />} />,
@@ -268,6 +269,14 @@ function App() {
           path: "email_the_author",
           element: <Email_the_author />,
         },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
@@ -309,7 +318,10 @@ function App() {
               element: <Roles />,
               loader: loadRoles,
               children: [
-                { path: "new", element: <RoleEditor mode="create" /> },
+                {
+                  path: "new",
+                  element: <RoleEditor mode="create" />,
+                },
                 {
                   id: "edit-role",
                   path: "edit/:id",
@@ -323,7 +335,10 @@ function App() {
               element: <Institutions />,
               loader: loadInstitutions,
               children: [
-                { path: "new", element: <InstitutionEditor mode="create" /> },
+                {
+                  path: "new",
+                  element: <InstitutionEditor mode="create" />,
+                },
                 {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
@@ -336,16 +351,26 @@ function App() {
               element: <ManageUserTypes />,
               loader: loadUsers,
               children: [
-                { path: "new", element: <Navigate to="/users/new" /> },
-                { path: "edit/:id", element: <Navigate to="/users/edit/:id" /> },
+                {
+                  path: "new",
+                  element: <Navigate to="/users/new" />,
+                },
+
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/users/edit/:id" />,
+                },
               ],
             },
-            { path: "questionnaire", element: <Questionnaire /> },
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+            },
           ],
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire /> },
+        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
       ],
     },
   ]);

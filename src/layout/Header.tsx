@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
-import detective from "../assets/detective.png";
+
 
 /**
  * @author Ankur Mundra on May, 2023
@@ -39,7 +39,7 @@ const Header: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <img src={detective} width={25} style={{ marginRight: 4 }} />
+          <img src="../assets/detective.png" width={25} style={{ marginRight: 4 }} />
           <div>Anonymized View</div>
           <button
             style={{
@@ -143,14 +143,13 @@ const Header: React.FC = () => {
                     </NavDropdown.Item>
                   </NavDropdown>
                 )}
-                <Nav.Link as={Link} to="/student_tasks">
-                  Assignments
-                </Nav.Link>
+                {auth.user.role === ROLE.STUDENT.valueOf() && (
+                  <Nav.Link as={Link} to="/student_tasks">
+                    Assignments
+                  </Nav.Link>
+                )}
                 <Nav.Link as={Link} to="/profile">
                   Profile
-                </Nav.Link>
-                <Nav.Link as={Link} to="/student_view">
-                  Student View
                 </Nav.Link>
                 <Nav.Link as={Link} to="/view-team-grades">
                   Grades View
