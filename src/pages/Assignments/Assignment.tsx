@@ -8,9 +8,9 @@ import DeleteAssignment from "./AssignmentDelete";
 import { IAssignmentResponse } from "../../utils/interfaces";
 import { RootState } from "../../store/store";
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "components/Table/Table";
-import { alertActions } from "store/slices/alertSlice";
-import useAPI from "hooks/useAPI";
+import Table from "../../components/Table/Table";
+import { alertActions } from "../../store/slices/alertSlice";
+import useAPI from "../../hooks/useAPI";
 
 
 const Assignments = () => {

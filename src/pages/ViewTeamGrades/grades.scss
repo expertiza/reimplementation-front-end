@@ -1,12 +1,64 @@
+/* ViewTeamGrades Page Typography Guidelines */
+/* Apply font family to the entire page container */
+.p-4 {
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+/* Main headings (h2) */
+.p-4 h2 {
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+/* Subheadings (h5) */
+.p-4 h5 {
+  font-size: 1.2em;
+  line-height: 18px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+/* Standard text elements - excluding review sections */
+.p-4>div:not([class*="review"]) p,
+.p-4>div:not([class*="review"]) span,
+.p-4>div:not([class*="review"]) label,
+.p-4 label {
+  font-size: 13px;
+  line-height: 30px;
+}
+
 /* Set the maximum width of the table container */
 .table-container {
   max-width: 90%;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* Circle around max score number */
 .circle-container {
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* New layout for item number with weight to the right */
+.item-number-with-weight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* keep centered in the cell */
+  gap: 8px;
+  /* space between number and weight */
+}
+
+.item-number {
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.weight-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .circle {
@@ -18,8 +70,8 @@
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  color: rgb(176, 4, 4);;
-  margin-left: -20px; /* Add margin to separate the circle from the text */
+  color: rgb(176, 4, 4);
+  flex-shrink: 0;
 }
 
 .tick {
@@ -27,8 +79,8 @@
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  color: rgb(176, 4, 4);;
-  margin-left: -15px; /* Add margin to separate the circle from the text */
+  color: rgb(176, 4, 4);
+  flex-shrink: 0;
 }
 
 /* Colors used for coloring score cells within the heatgrid for the grades view */
@@ -89,7 +141,7 @@
 .tbl_heat {
   border: 1px solid black;
   width: 100%;
-  font-size: 10px;
+  font-size: 15px;
   text-align: center;
   table-layout: fixed;
   min-width: 600px; // Minimum width before scrolling kicks in
@@ -97,40 +149,119 @@
 
 .tbl_heat td {
   cursor: pointer;
-  padding: 8px;
+  padding: 2px;
   border: 1px black solid;
   width: auto;
-  font-size: 11px;
+  font-size: 15px;
+  line-height: 1.428em;
   table-layout: fixed;
   position: relative;
 }
 
-/* Tooltip display for question text on hover */
+/* Tooltip display for data-question on weight only (or td fallback) */
+.tbl_heat .weight-circle[data-question]:hover::after,
 .tbl_heat td[data-question]:hover::after {
   content: attr(data-question);
   position: absolute;
-  background-color: rgba($color: #000000, $alpha: 1);
+  background-color: rgba(0, 0, 0, 0.95);
   color: #ffffff;
-  padding: 4px;
+  padding: 8px 12px;
   border-radius: 4px;
   bottom: 130%;
   left: 0%;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 400px;
+  width: max-content;
+  z-index: 100;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  word-wrap: break-word;
+}
+
+/* Ensure the tooltip is positioned relative to the weight circle when used */
+.tbl_heat .weight-circle[data-question] {
+  position: relative;
+}
+
+/* Tooltip for item prompt cells */
+.item-prompt-cell[data-tooltip] {
+  position: relative;
+
+  &:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.95);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    bottom: 100%;
+    left: 0;
+    white-space: normal;
+    max-width: 400px;
+    width: max-content;
+    z-index: 100;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    word-wrap: break-word;
+    margin-bottom: 4px;
+  }
 }
 
 /* Styling for table headers */
 .tbl_heat th {
   border: 1px black solid;
-  padding: 10px;
-  font-size: 11px;
+  padding: 3px;
+  font-size: 15px;
+  line-height: 1.428em;
   background-color: #f2f2f2;
   width: auto;
   table-layout: fixed;
 }
 
+/* Sticky Item (prompt) column header - second column */
+.tbl_heat th:nth-child(2) {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+}
+
+/* Left-align item prompt header and cells */
+.item-prompt-header {
+  text-align: left !important;
+  padding: 3px 12px 3px 12px;
+  /* add left/right padding for breathing room */
+}
+
+.item-prompt-cell {
+  text-align: left !important;
+  padding: 6px 12px 6px 12px;
+  /* increase left padding so item text isn't flush to the cell edge */
+}
+
 /* Hides padding for specific rows */
 .hiddenRow {
   padding: 0 !important;
+}
+
+/* Sticky Item (prompt) column cells - second column */
+.tbl_heat td:nth-child(2) {
+  position: sticky;
+  left: 0;
+  z-index: 9;
+  background-color: #ffffff;
+  padding-left: 12px;
+  /* ensure sticky cell retains left padding */
+}
+
+/* Sticky Item (prompt) column in the average row */
+.no-bg td:nth-child(2) {
+  position: sticky;
+  left: 0;
+  z-index: 9;
+  background-color: #ffffff;
 }
 
 /* Tooltip span styling */
@@ -162,7 +293,6 @@
 /* Styling for tag heat grid */
 .tag_heat_grid {
   padding: 0;
-  spacing: 0;
   border: 1px solid black;
   position: relative;
   float: right;
