@@ -1,5 +1,5 @@
 // src/components/ImportModal.tsx
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
 import {
   Modal,
   Button,
@@ -9,6 +9,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from 'react-bootstrap';
+import useAPI from "../../hooks/useAPI";
 
 const STANDARD_TEXT: React.CSSProperties = {
   fontFamily: 'verdana, arial, helvetica, sans-serif',
@@ -90,46 +91,85 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   const [file, setFile] = useState<File | null>(null);
   const [useHeader, setUseHeader] = useState<boolean>(true);
   const [status, setStatus] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false);
+  const { error, isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
 
   /* Load metadata from backend when modal opens */
-  useEffect(() => {
-    if (!show) return;
+  // useEffect(() => {
+  //   if (!show) return;
+  //
+  //   setStatus('');
+  //   setFile(null);
+  //   setUseHeader(true);
 
-    setStatus('');
-    setFile(null);
-    setUseHeader(true);
-
-    const fetchConfig = async () => {
+    const fetchConfig = useCallback(async () => {
       try {
-        setLoading(true);
-        const res = await fetch(`/import/${modelClass}`, { method: 'GET' });
-        console.log("testing result modal", res)
-        if (!res.ok) throw new Error(`Failed to load import metadata for ${modelClass}`);
+        const [importData] = await Promise.all([
+          fetchImports({ url: `/import/${modelClass}` })
+        ]);
 
-        const data: ImportMetadataResponse = await res.json();
-
-        setMandatoryFields(data.mandatory_fields);
-        setOptionalFields(data.optional_fields);
-        setDuplicateActions(data.available_actions_on_dup);
-
-        const defaultOrdered = [
-          ...data.mandatory_fields,
-          ...data.optional_fields,
-        ];
-
-        setSelectedFields(defaultOrdered);
-        setDuplicateAction(data.available_actions_on_dup[0] ?? '');
-      } catch (err: any) {
-        console.error(err);
-        setStatus(err.message || 'Failed to load import configuration.');
-      } finally {
-        setLoading(false);
+        console.log(importData)
+        // Handle the responses as needed
+      } catch (err) {
+        // Handle any errors that occur during the fetch
+        console.error("Error fetching data:", err);
       }
-    };
+    }, [fetchImports]);
 
-    fetchConfig();
-  }, [show, modelClass]);
+    useEffect(() => {
+        fetchConfig();
+    }, [show]);
+
+  useEffect(() => {
+    if (importResponse) {
+      var data = importResponse.data
+      console.log(data)
+
+      setMandatoryFields(data.mandatory_fields);
+      setOptionalFields(data.optional_fields);
+      setDuplicateActions(data.available_actions_on_dup);
+
+      const defaultOrdered = [
+        ...data.mandatory_fields,
+        ...data.optional_fields,
+      ];
+
+      setSelectedFields(defaultOrdered);
+      setDuplicateAction(data.available_actions_on_dup[0] ?? '');
+    }
+  }, [importResponse]);
+
+
+  //   const fetchConfig = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const res = await fetch(`/import/${modelClass}`, { method: 'GET' });
+  //       console.log("testing result modal", res)
+  //       if (!res.ok) throw new Error(`Failed to load import metadata for ${modelClass}`);
+  //
+  //       const data: ImportMetadataResponse = await res.json();
+  //
+  //       setMandatoryFields(data.mandatory_fields);
+  //       setOptionalFields(data.optional_fields);
+  //       setDuplicateActions(data.available_actions_on_dup);
+  //
+  //       const defaultOrdered = [
+  //         ...data.mandatory_fields,
+  //         ...data.optional_fields,
+  //       ];
+  //
+  //       setSelectedFields(defaultOrdered);
+  //       setDuplicateAction(data.available_actions_on_dup[0] ?? '');
+  //     } catch (err: any) {
+  //       console.error(err);
+  //       setStatus(err.message || 'Failed to load import configuration.');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //
+  //   fetchConfig();
+  // }, [show, modelClass]);
 
   /* Field handlers */
 
@@ -215,7 +255,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       </Modal.Header>
 
       <Modal.Body style={{ ...STANDARD_TEXT }}>
-        {loading ? (
+        {isLoading ? (
           <div>Loading…</div>
         ) : (
           <>
@@ -381,7 +421,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         <Button variant="outline-secondary" onClick={onHide}>
           cancel
         </Button>
-        <Button variant="primary" onClick={on_import} disabled={loading}>
+        <Button variant="primary" onClick={on_import} disabled={isLoading}>
           import
         </Button>
       </Modal.Footer>
