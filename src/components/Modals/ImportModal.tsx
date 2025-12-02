@@ -1,15 +1,24 @@
 // src/components/ImportModal.tsx
+
 import React, { useEffect, useState, memo, useCallback, ChangeEvent } from "react";
-import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip, Container } from "react-bootstrap";
-import useAPI from "../../hooks/useAPI";
 import {
-  IAssignmentFormValues,
-  transformAssignmentRequest,
-} from "../../pages/Assignments/AssignmentUtil";
-import { FormikHelpers } from "formik";
-import { alertActions } from "../../store/slices/alertSlice";
+  Modal,
+  Button,
+  Form,
+  Row,
+  Col,
+  OverlayTrigger,
+  Tooltip,
+  Container,
+  CloseButton,
+} from "react-bootstrap";
+
+import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
 
+/* ----------------------------------------
+ *  Shared text styles for consistency
+ * ---------------------------------------- */
 const STANDARD_TEXT: React.CSSProperties = {
   fontFamily: 'verdana, arial, helvetica, sans-serif',
   color: '#333',
@@ -24,28 +33,41 @@ const TABLE_TEXT: React.CSSProperties = {
   lineHeight: '1.428em',
 };
 
-/* Icon utilities */
+/* ----------------------------------------
+ *  Icon utilities — used for tooltip icons
+ * ---------------------------------------- */
 
+/** Helper to resolve asset URLs correctly even under nested routes */
 const getBaseUrl = (): string => {
-  if (typeof document !== 'undefined') {
-    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, '');
+  if (typeof document !== "undefined") {
+    const base = document.querySelector("base[href]") as HTMLBaseElement | null;
+    if (base?.href) return base.href.replace(/\/$/, "");
   }
+
   const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
+  if (typeof fromGlobal === "string") return fromGlobal.replace(/\/$/, "");
+
   const fromProcess =
-    (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
-  return String(fromProcess).replace(/\/$/, '');
+    (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
+
+  return String(fromProcess).replace(/\/$/, "");
 };
 
-const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
+/** Helper for converting relative asset paths to usable URLs */
+const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, "")}`;
 
+/** Asset map */
 const ICONS = {
-  info: 'assets/images/info-icon-16.png',
+  info: "assets/images/info-icon-16.png",
 } as const;
 
+/** Icon Types */
 type IconName = keyof typeof ICONS;
 
+/**
+ * Reusable <Icon /> component.
+ * Wrapped in React.memo to prevent unnecessary re-renders.
+ */
 const Icon: React.FC<{
   name: IconName;
   size?: number;
@@ -59,232 +81,210 @@ const Icon: React.FC<{
     height={size}
     alt={alt ?? name}
     className={className}
-    style={{ verticalAlign: 'middle', ...style }}
+    style={{ verticalAlign: "middle", ...style }}
   />
 ));
-Icon.displayName = 'Icon';
+Icon.displayName = "Icon";
 
-/* Types */
-
-type ImportMetadataResponse = {
-  mandatory_fields: string[];
-  optional_fields: string[];
-  external_fields: string[];
-  available_actions_on_dup: string[];
-};
-
+/* ----------------------------------------
+ *  Props
+ * ---------------------------------------- */
 type ImportModalProps = {
-  show: boolean;
-  onHide: () => void;
-  modelClass: string; // <-- "Team", "User", "Assignment", etc.
+  show: boolean;       // Parent-controlled visible flag
+  onHide: () => void;  // Callback to parent when modal should close
+  modelClass: string;  // "User", "Team", etc.
 };
 
-/* Component */
-
+/* ============================================================================
+ *  ImportModal Component
+ * ============================================================================ */
 const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) => {
+
+  /**
+   * Force-close handler — ALWAYS closes modal instantly.
+   * Then notifies parent so it can update state if needed.
+   */
+  const forceClose = () => {
+    setTimeout(onHide, 10);   // Notify parent AFTER close
+  };
+
+  /* ---------------------------------------------------------
+   * API metadata state
+   * --------------------------------------------------------- */
   const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
   const [optionalFields, setOptionalFields] = useState<string[]>([]);
   const [externalFields, setExternalFields] = useState<string[]>([]);
   const [duplicateActions, setDuplicateActions] = useState<string[]>([]);
 
+  /* CSV parsing & selection state */
   const [csvFirstLine, setCsvFirstLine] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [availableFields, setAvailableFields] = useState<string[]>([]);
 
-  const [duplicateAction, setDuplicateAction] = useState<string>('');
+  const [duplicateAction, setDuplicateAction] = useState<string>("");
 
   const [file, setFile] = useState<File | null>(null);
   const [useHeader, setUseHeader] = useState<boolean>(true);
-  const [status, setStatus] = useState<string>('');
-  // const [loading, setLoading] = useState<boolean>(false);
-  const { error, isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
-  const { data: sendImportResponse, error: importError, sendRequest: sendImport } = useAPI();
+  const [status, setStatus] = useState<string>("");
 
-  /* Load metadata from backend when modal opens */
-  // useEffect(() => {
-  //   if (!show) return;
-  //
-  //   setStatus('');
-  //   setFile(null);
-  //   setUseHeader(true);
+  /* API hooks */
+  const { isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
+  const { data: sendImportResponse, sendRequest: sendImport } = useAPI();
 
-    const fetchConfig = useCallback(async () => {
-      try {
-        const [importData] = await Promise.all([
-          fetchImports({ url: `/import/${modelClass}` })
-        ]);
+  /* ---------------------------------------------------------
+   * Fetch import metadata from backend whenever modal opens
+   * --------------------------------------------------------- */
 
-        console.log(importData)
-        // Handle the responses as needed
-      } catch (err) {
-        // Handle any errors that occur during the fetch
-        console.error("Error fetching data:", err);
-      }
-    }, [fetchImports]);
-
-    useEffect(() => {
-        fetchConfig();
-    }, [show]);
-
-    const transformField = (field: string) => {
-        let field_with_spaces = field.replace(/_/g, ' ')
-        return field_with_spaces.charAt(0).toUpperCase() + field_with_spaces.slice(1);
+  const fetchConfig = useCallback(async () => {
+    try {
+      await fetchImports({ url: `/import/${modelClass}` });
+    } catch (err) {
+      console.error("Error fetching import config:", err);
     }
+  }, [fetchImports, modelClass]);
 
   useEffect(() => {
-    if (importResponse) {
-      const data = importResponse.data
-      console.log(data)
-
-      setMandatoryFields(data.mandatory_fields);
-      setOptionalFields(data.optional_fields);
-      setExternalFields(data.external_fields);
-      setDuplicateActions(data.available_actions_on_dup);
-
-      setAvailableFields([
-          ...data.mandatory_fields,
-          ...data.optional_fields,
-          ...data.external_fields
-      ]);
-
-      setDuplicateAction(data.available_actions_on_dup[0] ?? '');
+    if (show) {
+      setStatus('');
+      setFile(null);
+      setUseHeader(true);
+      fetchConfig();
     }
+  }, [show, fetchConfig]);
+
+  /* ---------------------------------------------------------
+   * Transform "column_name" → "Column name"
+   * --------------------------------------------------------- */
+  const transformField = (field: string) => {
+    let f = field.replace(/_/g, " ");
+    return f.charAt(0).toUpperCase() + f.slice(1);
+  };
+
+  /** Format fields for multiline tooltip display */
+  const formatTooltipList = (fields: string[]) => {
+    return (
+      <div style={{ whiteSpace: 'pre-line' }}>
+        {fields.map((f) => transformField(f)).join("\n")}
+      </div>
+    );
+  };
+
+  /* ---------------------------------------------------------
+   * Once metadata arrives from backend, populate state
+   * --------------------------------------------------------- */
+  useEffect(() => {
+    if (!importResponse) return;
+
+    const data = importResponse.data;
+
+    setMandatoryFields(data.mandatory_fields);
+    setOptionalFields(data.optional_fields);
+    setExternalFields(data.external_fields);
+    setDuplicateActions(data.available_actions_on_dup);
+
+    setAvailableFields([
+      ...data.mandatory_fields,
+      ...data.optional_fields,
+      ...data.external_fields,
+    ]);
+
+    setDuplicateAction(data.available_actions_on_dup[0] ?? "");
   }, [importResponse]);
 
-  /* Field handlers */
+  /* ---------------------------------------------------------
+   * CSV upload handler — extract headers + first content row
+   * --------------------------------------------------------- */
+  const on_file_changed = async (incomingFile: File) => {
+    setFile(incomingFile);
 
-  // const toggleField = (field: string) => {
-  //   setSelectedFields((prev) =>
-  //     prev.includes(field)
-  //       ? prev.filter((f) => f !== field)
-  //       : [...prev, field],
-  //   );
-  // };
+    if (availableFields.length === 0) return;
 
-  // const moveFieldUp = (index: number) => {
-  //   if (index <= 0) return;
-  //   setSelectedFields((prev) => {
-  //     const copy = [...prev];
-  //     [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
-  //     return copy;
-  //   });
-  // };
+    const text = await incomingFile.text();
+    const lines = text.split("\n");
 
-  // const moveFieldDown = (index: number) => {
-  //   setSelectedFields((prev) => {
-  //     if (index >= prev.length - 1) return prev;
-  //     const copy = [...prev];
-  //     [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
-  //     return copy;
-  //   });
-  // };
+    if (lines.length > 0) {
+      const headers = lines[0].split(",");
+      setSelectedFields(new Array(headers.length).fill(availableFields[0]));
 
-  /* Submit import to backend */
-
-    /**
-     * When a file is changed, count the number of columns in the csv and add that amount
-     * of dropdowns to the the list.
-     * @param incomingFile The csv file to count the columns of.
-     */
-    const on_file_changed = async (incomingFile: File) => {
-        setFile(incomingFile);
-
-        if (availableFields.length > 0){
-          var csvFileInText = await incomingFile.text();
-          let csv_lines = csvFileInText.split("\n");
-
-          if (csv_lines.length > 0) {
-            setSelectedFields([]);
-            let csv_headers = csv_lines[0].split(",");
-            setSelectedFields(new Array(csv_headers.length).fill(availableFields[0]));
-
-            if (csv_lines.length > 1) {
-                setCsvFirstLine(csv_lines[1].split(","));
-            }
-          }
-        }
+      if (lines.length > 1) {
+        setCsvFirstLine(lines[1].split(","));
+      }
     }
+  };
 
-    const handleSelectField = (event: ChangeEvent, columnIndex: number) => {
-        console.log(columnIndex, event.target.value)
+  /* Update field selection for each dropdown */
+  const handleSelectField = (event: ChangeEvent, colIndex: number) => {
+    let copy = [...selectedFields];
+    // @ts-ignore
+    copy[colIndex] = event.target.value;
+    setSelectedFields(copy);
+  };
 
-        let fields = [...selectedFields];
-        fields[columnIndex] = event.target.value;
-        setSelectedFields(fields)
+  /* Ensure all selected columns match mandatory fields */
+  const mandatoryFieldsIncluded = () =>
+    selectedFields.every((f) => mandatoryFields.includes(f));
 
-
-        console.log(fields)
-    }
-
-    const mandatoryFieldsIncluded = () => {
-        return selectedFields.every(field => mandatoryFields.includes(field));
-    }
-
+  /* ---------------------------------------------------------
+   * Submit import to backend
+   * --------------------------------------------------------- */
   const on_import = async () => {
     if (!file) {
-      setStatus('Please select a CSV file.');
+      setStatus("Please select a CSV file.");
       return;
     }
 
     if (!mandatoryFieldsIncluded()) {
-        setStatus('Please make sure all mandatory fields are selected')
-        return
+      setStatus("Please make sure all mandatory fields are selected");
+      return;
     }
 
-    setStatus('Importing…');
+    setStatus("Importing…");
 
     try {
       const formData = new FormData();
-      formData.append('csv_file', file);
-      formData.append('use_headers', String(useHeader));
+      formData.append("csv_file", file);
+      formData.append("use_headers", String(useHeader));
 
-      // If not using header row, send explicit ordered field list
       if (!useHeader) {
-        formData.append('ordered_fields', JSON.stringify(selectedFields));
+        formData.append("ordered_fields", JSON.stringify(selectedFields));
       }
 
-        for (const [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
+      let url = `/import/${modelClass}`;
 
-
-
-        let method: HttpMethod = HttpMethod.POST;
-      let url: string = `/import/${modelClass}`;
-
-      sendImport({
-        url: url,
-        method: method,
+      await sendImport({
+        url,
+        method: HttpMethod.POST,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (sendImportResponse) {
+      if (sendImportResponse?.data?.message) {
         setStatus(sendImportResponse.data.message);
       } else {
-        setStatus('Import complete.');
+        setStatus("Import complete.");
       }
-
     } catch (err: any) {
-      setStatus(err.message || 'An unexpected error occurred.');
+      setStatus(err.message || "Unexpected error.");
     }
   };
 
-
-  /* Render */
-
+  /* ============================================================================
+   *  Render
+   * ============================================================================ */
   return (
     <Modal
       show={show}
       onHide={onHide}
       centered
       size="lg"
-      backdrop="static"
       keyboard
+      backdrop={true}
       contentClassName="border border-2"
     >
       <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
-        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>Import {modelClass}</Modal.Title>
+        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
+          Import {modelClass}
+        </Modal.Title>
       </Modal.Header>
 
       <Modal.Body style={{ ...STANDARD_TEXT }}>
@@ -292,30 +292,78 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
           <div>Loading…</div>
         ) : (
           <>
-            {/* Field summary */}
+            {/* ---------------------------------------------------------
+             * FIELD SUMMARY
+             * --------------------------------------------------------- */}
             <Row className="mb-3">
               <Col>
                 <div style={TABLE_TEXT}>
-                  <div>
-                    <strong>Mandatory fields:</strong> {mandatoryFields.join(", ") || "—"}
+
+                  {/* Mandatory fields */}
+                  <div className="d-flex align-items-center">
+                    <strong>Mandatory fields</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="mandatory-fields-tip">
+                          {formatTooltipList(mandatoryFields)}
+                        </Tooltip>
+                      }
+                    >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                    </OverlayTrigger>
                   </div>
-                  <div>
-                    <strong>Optional fields:</strong> {optionalFields.join(", ") || "—"}
+
+                  {/* Optional fields */}
+                  <div className="d-flex align-items-center">
+                    <strong>Optional fields</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="optional-fields-tip">
+                          {formatTooltipList(optionalFields)}
+                        </Tooltip>
+                      }
+                    >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                    </OverlayTrigger>
                   </div>
-                  <div>
-                    <strong>External fields:</strong> {externalFields.join(", ") || "—"}
+
+                  {/* External fields */}
+                  <div className="d-flex align-items-center">
+                    <strong>External fields</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="external-fields-tip">
+                          {formatTooltipList(externalFields)}
+                        </Tooltip>
+                      }
+                    >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                    </OverlayTrigger>
                   </div>
+
                 </div>
               </Col>
             </Row>
 
-            {/* File + header row */}
+            {/* ---------------------------------------------------------
+             * FILE INPUT + HEADER SWITCH
+             * --------------------------------------------------------- */}
             <Row className="mb-3">
               <Col md={7}>
                 <Form.Group controlId="importFile">
                   <Form.Label className="fw-semibold" style={TABLE_TEXT}>
                     CSV file
                   </Form.Label>
+
                   <Form.Control
                     type="file"
                     accept=".csv,text/csv"
@@ -323,6 +371,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                   />
                 </Form.Group>
               </Col>
+
               <Col md={5} className="d-flex align-items-end">
                 <Form.Check
                   type="switch"
@@ -332,6 +381,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                   onChange={(e) => setUseHeader(e.target.checked)}
                   style={TABLE_TEXT}
                 />
+
                 <OverlayTrigger
                   placement="top"
                   overlay={
@@ -340,26 +390,28 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                     </Tooltip>
                   }
                 >
-                  <span
-                    className="ms-2"
-                    style={{ cursor: "help", userSelect: "none", display: "inline-flex" }}
-                  >
+                  <span className="ms-2" style={{ cursor: "help", display: "inline-flex" }}>
                     <Icon name="info" size={16} />
                   </span>
                 </OverlayTrigger>
               </Col>
             </Row>
 
-            {/* Column order */}
+            {/* ---------------------------------------------------------
+             * COLUMN ORDER (only appears when not using header row)
+             * --------------------------------------------------------- */}
             {selectedFields.length > 0 && !useHeader && (
               <Row className="mb-3">
                 <Col>
+
                   <Form.Label className="fw-semibold" style={TABLE_TEXT}>
                     Column order
                   </Form.Label>
+
                   <div style={{ ...TABLE_TEXT, color: "#666", marginBottom: 6 }}>
-                      Select the header for each column. Mandatory fields must be selected, and only selected once.
+                    Select the header for each column. Mandatory fields must be selected.
                   </div>
+
                   <div
                     style={{
                       border: "1px solid #e4e6eb",
@@ -367,79 +419,78 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                       padding: 8,
                       maxHeight: 220,
                       overflowY: "auto",
-                      backgroundColor: "#ffffff",
                     }}
                   >
-                    {selectedFields.length === 0 ? (
-                      <span style={{ ...TABLE_TEXT, color: "#6b7280" }}>No fields selected.</span>
-                    ) : (
-                      selectedFields.map((field, columnIndex) => (
-                        <div
-                          key={`${field}_${columnIndex}`}
-                          className="d-flex align-items-center justify-content-between mb-1"
-                          style={TABLE_TEXT}
-                        >
-                            <Container fluid>
-                            <Row>
-                                <Col xs={6}>
-                                    <Form.Select
-                                        aria-label="Select Column Header"
-                                        defaultValue={availableFields[0]}
-                                        value={selectedFields[columnIndex]}
-                                        onChange={(e) => handleSelectField(e, columnIndex)}
-                                    >
-                                        {availableFields.map((field, fieldIndex) => (
-                                            <option key={fieldIndex} value={field}>
-                                                {transformField(field)}
-                                            </option>
-                                        ))}
-                                    </Form.Select>
-                                </Col>
-                                <Col xs={6}>
-                                    { csvFirstLine[columnIndex] ?
-                                        (`First Row Value: ${csvFirstLine[columnIndex]}`)
-                                    : ('')}
-                                </Col>
-                            </Row>
+                    {selectedFields.map((field, columnIndex) => (
+                      <div
+                        key={`${field}_${columnIndex}`}
+                        className="d-flex align-items-center justify-content-between mb-1"
+                        style={TABLE_TEXT}
+                      >
+                        <Container fluid>
+                          <Row>
+                            {/* Dropdown for selecting header */}
+                            <Col xs={6}>
+                              <Form.Select
+                                aria-label="Select Column Header"
+                                value={selectedFields[columnIndex]}
+                                onChange={(e) => handleSelectField(e, columnIndex)}
+                                className="auto-width-select-import"
+                                style={{
+                                  width: "auto",
+                                  minWidth: "max-content",
+                                  display: "inline-block",
+                                }}
+                              >
+                                {availableFields.map((field, idx) => (
+                                  <option key={idx} value={field}>
+                                    {transformField(field)}
+                                  </option>
+                                ))}
+                              </Form.Select>
+                            </Col>
 
-                            </Container>
-                        </div>
-                      ))
-                    )}
+                            {/* First row preview text */}
+                            <Col xs={6}>
+                              {csvFirstLine[columnIndex]
+                                ? `First Row Value: ${csvFirstLine[columnIndex]}`
+                                : ""}
+                            </Col>
+                          </Row>
+                        </Container>
+                      </div>
+                    ))}
                   </div>
-                </Col>
 
+                </Col>
               </Row>
             )}
 
-            {/* Duplicate handling */}
+            {/* ---------------------------------------------------------
+             * DUPLICATE HANDLING
+             * --------------------------------------------------------- */}
             <Row className="mb-3">
               <Col>
                 <Form.Label className="fw-semibold" style={TABLE_TEXT}>
                   Duplicate handling
                 </Form.Label>
-                <div>
-                  {duplicateActions.length === 0 ? (
-                    <div style={TABLE_TEXT}>No duplicate options.</div>
-                  ) : (
-                    duplicateActions.map((action) => (
-                      <Form.Check
-                        key={action}
-                        type="radio"
-                        id={`dup-${action}`}
-                        name="duplicate_action"
-                        className="mb-1"
-                        style={TABLE_TEXT}
-                        checked={duplicateAction === action}
-                        onChange={() => setDuplicateAction(action)}
-                        label={action}
-                      />
-                    ))
-                  )}
-                </div>
+
+                {duplicateActions.map((action) => (
+                  <Form.Check
+                    key={action}
+                    type="radio"
+                    name="duplicate_action"
+                    className="mb-1"
+                    style={TABLE_TEXT}
+                    checked={duplicateAction === action}
+                    onChange={() => setDuplicateAction(action)}
+                    label={action}
+                  />
+                ))}
               </Col>
             </Row>
 
+            {/* STATUS SECTION */}
             {status && (
               <Row>
                 <Col>
@@ -453,17 +504,18 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         )}
       </Modal.Body>
 
+      {/* FOOTER */}
       <Modal.Footer style={{ ...STANDARD_TEXT }}>
-        <Button variant="outline-secondary" onClick={onHide}>
+        <Button variant="outline-secondary" onClick={forceClose}>
           cancel
         </Button>
         <Button variant="primary" onClick={on_import} disabled={isLoading}>
           import
         </Button>
       </Modal.Footer>
+
     </Modal>
   );
 };
 
 export default ImportModal;
-
