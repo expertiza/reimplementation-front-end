@@ -19,17 +19,18 @@ const ReviewTableau: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   // Get parameters from URL
-  const studentId = searchParams.get('studentId') || '10836';
-  const assignmentId = searchParams.get('assignmentId') || '1'; // Default to assignment 1
-  const participantId = searchParams.get('participantId') || '2'; // Default to participant 2
+  const studentId = searchParams.get('studentId');
+  const assignmentId = searchParams.get('assignmentId');
+  const participantId = searchParams.get('participantId');
 
   // Basic render/mount log to help debug routing/requests
   console.log('ReviewTableau render - params', { studentId, assignmentId, participantId, isLoading, error });
 
   useEffect(() => {
     const fetchData = async () => {
+      // Check for required parameters
       if (!assignmentId || !participantId) {
-        setError('Missing required parameters: assignmentId and participantId');
+        setError('Unauthorized: Missing required parameters. Please provide assignmentId and participantId in the URL.');
         return;
       }
 
@@ -46,13 +47,13 @@ const ReviewTableau: React.FC = () => {
         
         console.log('ReviewTableau: apiResponse received', apiResponse);
         
-        const transformedData = transformReviewTableauData(apiResponse, studentId);
+        const transformedData = transformReviewTableauData(apiResponse, studentId || undefined);
         setData(transformedData);
         
         console.log('ReviewTableau: data transformed and set', transformedData);
       } catch (err: any) {
         console.error('ReviewTableau: error fetching data', err);
-        setError(err.message || 'Failed to fetch review tableau data');
+        setError(err.response?.data?.error || err.message || 'Failed to fetch review tableau data');
       } finally {
         setIsLoading(false);
       }
