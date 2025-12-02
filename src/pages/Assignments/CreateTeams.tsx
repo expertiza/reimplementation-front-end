@@ -1686,6 +1686,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       <ExportModal
         show={showExportTeamsModal}
         onHide={() => setShowExportTeamsModal(false)}
+        modelClass="Team"
       />
 
       {/* Other Modals */}

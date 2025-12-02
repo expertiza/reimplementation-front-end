@@ -1,6 +1,7 @@
 // src/components/ExportTeamsDummyModal.tsx
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState, memo, useCallback } from "react";
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
+import useAPI from "../../hooks/useAPI";
 
 /* =============================================================================
    Shared visual style — same as CreateTeams.tsx
@@ -66,40 +67,67 @@ Icon.displayName = 'Icon';
    Types
 ============================================================================= */
 
-type ExportConfig = {
-  class_name: string;
-  mandatory_fields: string[];
-  optional_fields: string[];
-  default_ordered_fields: string[];
-};
+// type ExportConfig = {
+//   class_name: string;
+//   mandatory_fields: string[];
+//   optional_fields: string[];
+//   default_ordered_fields: string[];
+// };
 
-type ExportTeamsDummyModalProps = {
+type ExportTeams = {
   show: boolean;
   onHide: () => void;
+    modelClass: string;
 };
 
 /* =============================================================================
    Component (dummy mode – no backend)
 ============================================================================= */
 
-const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onHide }) => {
-  const [config, setConfig] = useState<ExportConfig | null>(null);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass }) => {
+    const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
+    const [optionalFields, setOptionalFields] = useState<string[]>([]);
+    const [externalFields, setExternalFields] = useState<string[]>([]);
+    const [allFields, setAllFields] = useState<string[]>([]);
+    const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
+  const { error, isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
+  const { data: sendExportResponse, error: exportError, sendRequest: sendExport } = useAPI();
+
+    const fetchConfig = useCallback(async () => {
+        try {
+            fetchExports({ url: `/export/${modelClass}` });
+            // Handle the responses as needed
+        } catch (err) {
+            // Handle any errors that occur during the fetch
+            console.error("Error fetching data:", err);
+        }
+    }, [fetchExports]);
 
   useEffect(() => {
     if (!show) return;
 
-    const dummyConfig: ExportConfig = {
-      class_name: 'Team',
-      mandatory_fields: ['team_name'],
-      optional_fields: ['mentor', 'member_username'],
-      default_ordered_fields: ['team_name', 'mentor', 'member_username'],
-    };
+    fetchConfig().then(data => {
+        if (exportResponse) {
+          setMandatoryFields(exportResponse.data.mandatory_fields);
+          setOptionalFields(exportResponse.data.optional_fields);
+          setExternalFields(exportResponse.data.external_fields);
 
-    setConfig(dummyConfig);
-    setSelectedFields(dummyConfig.default_ordered_fields);
-    setStatus('');
+          const fields = [
+              ...exportResponse.data.mandatory_fields,
+              ...exportResponse.data.optional_fields,
+              ...exportResponse.data.external_fields
+          ]
+
+          setAllFields(fields)
+          setSelectedFields(exportResponse.data.mandatory_fields)
+
+          setStatus('');
+        }
+    })
+    // setConfig(dummyConfig);
+    // setSelectedFields(dummyConfig.default_ordered_fields);
+
   }, [show]);
 
   const toggleField = (field: string) => {
@@ -127,7 +155,6 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
   };
 
   const on_export = () => {
-    if (!config) return;
     if (selectedFields.length === 0) {
       setStatus('Please select at least one field.');
       return;
@@ -184,7 +211,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
       </Modal.Header>
 
       <Modal.Body style={{ ...STANDARD_TEXT }}>
-        {!config ? (
+        {isLoading ? (
           <div>Loading…</div>
         ) : (
           <>
@@ -193,12 +220,16 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
                 <div style={TABLE_TEXT}>
                   <div>
                     <strong>Mandatory fields:</strong>{' '}
-                    {config.mandatory_fields.join(', ') || '—'}
+                    {mandatoryFields.join(', ') || '—'}
                   </div>
                   <div>
                     <strong>Optional fields:</strong>{' '}
-                    {config.optional_fields.join(', ') || '—'}
+                    {optionalFields.join(', ') || '—'}
                   </div>
+                    <div>
+                        <strong>Optional fields:</strong>{' '}
+                        {externalFields.join(', ') || '—'}
+                    </div>
                 </div>
               </Col>
             </Row>
@@ -226,7 +257,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
                       No fields selected.
                     </span>
                   ) : (
-                    selectedFields.map((field, idx) => (
+                    allFields.map((field, idx) => (
                       <div
                         key={field}
                         className="d-flex align-items-center justify-content-between mb-1"
@@ -238,6 +269,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
                           checked={selectedFields.includes(field)}
                           onChange={() => toggleField(field)}
                           label={field}
+                          disabled={mandatoryFields.includes(field)}
                         />
                         <div className="d-flex gap-1">
                           <Button
@@ -280,7 +312,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeamsDummyModalProps> = ({ show, onH
         <Button variant="outline-secondary" onClick={onHide}>
           cancel
         </Button>
-        <Button variant="primary" onClick={on_export} disabled={!config}>
+        <Button variant="primary" onClick={on_export} disabled={selectedFields.length == 0}>
           export
         </Button>
       </Modal.Footer>
