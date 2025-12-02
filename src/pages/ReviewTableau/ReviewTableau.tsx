@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { ReviewTableauData, ReviewRound, RubricItem, ReviewResponse, Rubric } from '../../types/reviewTableau';
-import useAPI from '../../hooks/useAPI';
+import { getReviewTableauData, transformReviewTableauData } from '../../services/gradesService';
 import { ScoreWidget } from './ScoreWidgets';
 import Table from '../../components/Table/Table';
 import './ReviewTableau.scss';
@@ -15,116 +15,51 @@ import './ReviewTableau.scss';
 const ReviewTableau: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<ReviewTableauData | null>(null);
-  // useAPI hook (follows pattern used in Participants.tsx)
-  const { error: apiError, isLoading: apiLoading, data: apiResponse, sendRequest: fetchGrades } = useAPI();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Get parameters from URL
   const studentId = searchParams.get('studentId') || '10836';
-  const assignmentId = searchParams.get('assignmentId');
-  const participantId = searchParams.get('participantId');
+  const assignmentId = searchParams.get('assignmentId') || '1'; // Default to assignment 1
+  const participantId = searchParams.get('participantId') || '2'; // Default to participant 2
 
   // Basic render/mount log to help debug routing/requests
-  console.log('ReviewTableau render - params', { studentId, assignmentId, participantId, apiLoading, apiError });
+  console.log('ReviewTableau render - params', { studentId, assignmentId, participantId, isLoading, error });
 
   useEffect(() => {
-    console.log('ReviewTableau: requesting grades via useAPI', { studentId, assignmentId, participantId });
-    // sendRequest expects an AxiosRequestConfig-like object
-    fetchGrades({ url: `/grades/2/edit`, method: 'GET' });
-  }, [fetchGrades, studentId, assignmentId, participantId]);
+    const fetchData = async () => {
+      if (!assignmentId || !participantId) {
+        setError('Missing required parameters: assignmentId and participantId');
+        return;
+      }
 
-  // Map apiResponse (AxiosResponse) to local ReviewTableauData state
-  useEffect(() => {
-    if (!apiResponse) return;
-    try {
-      const resp = apiResponse.data;
-      console.log('ReviewTableau: apiResponse received', resp);
+      setIsLoading(true);
+      setError(null);
 
-      const itemsObj = resp?.items || {};
-      const rubrics: Rubric[] = Object.entries(itemsObj).map(([qId, itemsArr]: any) => {
-        const first = Array.isArray(itemsArr) && itemsArr.length > 0 ? itemsArr[0] : null;
-        const name = first?.questionnaire?.name || `Questionnaire ${qId}`;
-        return {
-          id: `q_${qId}`,
-          name,
-          items: (itemsArr || []).map((it: any, idx: number) => ({
-            id: String(it.seq ?? idx + 1),
-            txt: it.txt ?? null,
-            itemType: it.question_type === 'Scale' ? 'Criterion' : (it.question_type === 'Checkbox' ? 'Checkbox' : (it.question_type === 'TextArea' ? 'TextArea' : 'Criterion')),
-            maxScore: it.question_type === 'Scale' ? 5 : undefined,
-          }))
-        } as Rubric;
-      });
+      try {
+        console.log('ReviewTableau: requesting review tableau data', { assignmentId, participantId });
+        
+        const apiResponse = await getReviewTableauData({
+          assignmentId,
+          participantId,
+        });
+        
+        console.log('ReviewTableau: apiResponse received', apiResponse);
+        
+        const transformedData = transformReviewTableauData(apiResponse, studentId);
+        setData(transformedData);
+        
+        console.log('ReviewTableau: data transformed and set', transformedData);
+      } catch (err: any) {
+        console.error('ReviewTableau: error fetching data', err);
+        setError(err.message || 'Failed to fetch review tableau data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      console.log('ReviewTableau: mapped rubrics count', { rubricsCount: rubrics.length });
-
-      // Extract reviews from scores.my_team.reviews_of_our_work
-      const scoresData = resp?.scores || {};
-      const reviewsOfOurWork = scoresData?.my_team?.reviews_of_our_work || {};
-      
-      console.log('ReviewTableau: reviewsOfOurWork structure', { keys: Object.keys(reviewsOfOurWork), data: reviewsOfOurWork });
-
-      // Convert reviews_of_our_work format to ReviewResponse[] format
-      const reviews: ReviewResponse[] = [];
-      Object.entries(reviewsOfOurWork).forEach(([roundKey, reviewsArray]: any) => {
-        // reviewsArray is expected to be an array of review objects per questionnaire
-        if (Array.isArray(reviewsArray)) {
-          // Flatten nested arrays if present (e.g., [[review1, review2], ...])
-          const flatReviews = reviewsArray.flat();
-          const groupedByReviewer = new Map<string, any>();
-
-          flatReviews.forEach((review: any) => {
-            const reviewerName = review.reviewer_name || `Reviewer ${review.id}`;
-            if (!groupedByReviewer.has(reviewerName)) {
-              groupedByReviewer.set(reviewerName, {
-                reviewerId: String(review.id),
-                reviewerName,
-                responses: {},
-              });
-            }
-            const reviewerGroup = groupedByReviewer.get(reviewerName)!;
-            reviewerGroup.responses[review.item_id || review.id] = {
-              score: review.answer !== undefined ? review.answer : undefined,
-              comment: review.comments || undefined,
-            };
-          });
-
-          groupedByReviewer.forEach((reviewerData) => {
-            reviews.push({
-              reviewerId: reviewerData.reviewerId,
-              reviewerName: reviewerData.reviewerName,
-              roundNumber: reviews.length + 1,
-              submissionTime: undefined,
-              responses: reviewerData.responses,
-            });
-          });
-        }
-      });
-
-      console.log('ReviewTableau: extracted reviews count', { reviewsCount: reviews.length });
-
-      const rounds: ReviewRound[] = rubrics.map((r, idx) => ({
-        roundNumber: idx + 1,
-        roundName: `Review Round ${idx + 1}`,
-        rubricId: r.id,
-        reviews: reviews.length > 0 ? reviews : [],
-      }));
-
-      const apiData: ReviewTableauData = {
-        studentId: resp?.participant?.handle ? String(resp.participant.handle) : String(resp?.participant?.id ?? studentId),
-        course: resp?.assignment?.course || '',
-        assignment: resp?.assignment?.name ?? '',
-        rubrics,
-        rounds,
-        assignmentId: assignmentId ?? resp?.assignment?.id,
-        participantId: participantId ?? resp?.participant?.id,
-      };
-
-      setData(apiData);
-      console.log('ReviewTableau: state set with apiData', { studentId: apiData.studentId, rubrics: apiData.rubrics.length, rounds: apiData.rounds.length });
-    } catch (err) {
-      console.error('ReviewTableau: error mapping apiResponse', err);
-    }
-  }, [apiResponse, studentId, assignmentId, participantId]);
+    fetchData();
+  }, [assignmentId, participantId, studentId]);
 
   // Group by round first, then by rubrics within each round
   const roundRubricGroups = useMemo(() => {
@@ -262,7 +197,7 @@ const ReviewTableau: React.FC = () => {
     return <span className="no-response">—</span>;
   };
 
-  if (apiLoading) {
+  if (isLoading) {
     return (
       <div className="review-tableau-loading">
         <div className="loading-spinner">Loading review tableau...</div>
@@ -270,10 +205,10 @@ const ReviewTableau: React.FC = () => {
     );
   }
 
-  if (apiError) {
+  if (error) {
     return (
       <div className="review-tableau-error">
-        <div className="error-message">{apiError}</div>
+        <div className="error-message">{error}</div>
       </div>
     );
   }
