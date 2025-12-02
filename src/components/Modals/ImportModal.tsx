@@ -1,14 +1,6 @@
 // src/components/ImportModal.tsx
-import React, { useEffect, useState, memo, useCallback } from 'react';
-import {
-  Modal,
-  Button,
-  Form,
-  Row,
-  Col,
-  OverlayTrigger,
-  Tooltip,
-} from 'react-bootstrap';
+import React, { useEffect, useState, memo, useCallback, ChangeEvent } from "react";
+import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip, Container } from "react-bootstrap";
 import useAPI from "../../hooks/useAPI";
 import {
   IAssignmentFormValues,
@@ -92,9 +84,15 @@ type ImportModalProps = {
 const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) => {
   const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
   const [optionalFields, setOptionalFields] = useState<string[]>([]);
+  const [externalFields, setExternalFields] = useState<string[]>([]);
   const [duplicateActions, setDuplicateActions] = useState<string[]>([]);
+
+  const [csvFirstLine, setCsvFirstLine] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [availableFields, setAvailableFields] = useState<string[]>([]);
+
   const [duplicateAction, setDuplicateAction] = useState<string>('');
+
   const [file, setFile] = useState<File | null>(null);
   const [useHeader, setUseHeader] = useState<boolean>(true);
   const [status, setStatus] = useState<string>('');
@@ -128,93 +126,110 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         fetchConfig();
     }, [show]);
 
+    const transformField = (field: string) => {
+        let field_with_spaces = field.replace(/_/g, ' ')
+        return field_with_spaces.charAt(0).toUpperCase() + field_with_spaces.slice(1);
+    }
+
   useEffect(() => {
     if (importResponse) {
-      var data = importResponse.data
+      const data = importResponse.data
       console.log(data)
 
       setMandatoryFields(data.mandatory_fields);
       setOptionalFields(data.optional_fields);
+      setExternalFields(data.external_fields);
       setDuplicateActions(data.available_actions_on_dup);
 
-      const defaultOrdered = [
-        ...data.mandatory_fields,
-        ...data.optional_fields,
-      ];
+      setAvailableFields([
+          ...data.mandatory_fields,
+          ...data.optional_fields,
+          ...data.external_fields
+      ]);
 
-      setSelectedFields(defaultOrdered);
       setDuplicateAction(data.available_actions_on_dup[0] ?? '');
     }
   }, [importResponse]);
 
-
-  //   const fetchConfig = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const res = await fetch(`/import/${modelClass}`, { method: 'GET' });
-  //       console.log("testing result modal", res)
-  //       if (!res.ok) throw new Error(`Failed to load import metadata for ${modelClass}`);
-  //
-  //       const data: ImportMetadataResponse = await res.json();
-  //
-  //       setMandatoryFields(data.mandatory_fields);
-  //       setOptionalFields(data.optional_fields);
-  //       setDuplicateActions(data.available_actions_on_dup);
-  //
-  //       const defaultOrdered = [
-  //         ...data.mandatory_fields,
-  //         ...data.optional_fields,
-  //       ];
-  //
-  //       setSelectedFields(defaultOrdered);
-  //       setDuplicateAction(data.available_actions_on_dup[0] ?? '');
-  //     } catch (err: any) {
-  //       console.error(err);
-  //       setStatus(err.message || 'Failed to load import configuration.');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //
-  //   fetchConfig();
-  // }, [show, modelClass]);
-
   /* Field handlers */
 
-  const toggleField = (field: string) => {
-    setSelectedFields((prev) =>
-      prev.includes(field)
-        ? prev.filter((f) => f !== field)
-        : [...prev, field],
-    );
-  };
+  // const toggleField = (field: string) => {
+  //   setSelectedFields((prev) =>
+  //     prev.includes(field)
+  //       ? prev.filter((f) => f !== field)
+  //       : [...prev, field],
+  //   );
+  // };
 
-  const moveFieldUp = (index: number) => {
-    if (index <= 0) return;
-    setSelectedFields((prev) => {
-      const copy = [...prev];
-      [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
-      return copy;
-    });
-  };
+  // const moveFieldUp = (index: number) => {
+  //   if (index <= 0) return;
+  //   setSelectedFields((prev) => {
+  //     const copy = [...prev];
+  //     [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
+  //     return copy;
+  //   });
+  // };
 
-  const moveFieldDown = (index: number) => {
-    setSelectedFields((prev) => {
-      if (index >= prev.length - 1) return prev;
-      const copy = [...prev];
-      [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
-      return copy;
-    });
-  };
+  // const moveFieldDown = (index: number) => {
+  //   setSelectedFields((prev) => {
+  //     if (index >= prev.length - 1) return prev;
+  //     const copy = [...prev];
+  //     [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
+  //     return copy;
+  //   });
+  // };
 
   /* Submit import to backend */
+
+    /**
+     * When a file is changed, count the number of columns in the csv and add that amount
+     * of dropdowns to the the list.
+     * @param incomingFile The csv file to count the columns of.
+     */
+    const on_file_changed = async (incomingFile: File) => {
+        setFile(incomingFile);
+
+        if (availableFields.length > 0){
+          var csvFileInText = await incomingFile.text();
+          let csv_lines = csvFileInText.split("\n");
+
+          if (csv_lines.length > 0) {
+            setSelectedFields([]);
+            let csv_headers = csv_lines[0].split(",");
+            setSelectedFields(new Array(csv_headers.length).fill(availableFields[0]));
+
+            if (csv_lines.length > 1) {
+                setCsvFirstLine(csv_lines[1].split(","));
+            }
+          }
+        }
+    }
+
+    const handleSelectField = (event: ChangeEvent, columnIndex: number) => {
+        console.log(columnIndex, event.target.value)
+
+        let fields = [...selectedFields];
+        fields[columnIndex] = event.target.value;
+        setSelectedFields(fields)
+
+
+        console.log(fields)
+    }
+
+    const mandatoryFieldsIncluded = () => {
+        return selectedFields.every(field => mandatoryFields.includes(field));
+    }
 
   const on_import = async () => {
     if (!file) {
       setStatus('Please select a CSV file.');
       return;
     }
-    console.log(file)
+
+    if (!mandatoryFieldsIncluded()) {
+        setStatus('Please make sure all mandatory fields are selected')
+        return
+    }
 
     setStatus('Importing…');
 
@@ -268,10 +283,8 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       keyboard
       contentClassName="border border-2"
     >
-      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: '#f7f8fa' }}>
-        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Import {modelClass}
-        </Modal.Title>
+      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
+        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>Import {modelClass}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body style={{ ...STANDARD_TEXT }}>
@@ -284,76 +297,120 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
               <Col>
                 <div style={TABLE_TEXT}>
                   <div>
-                    <strong>Mandatory fields:</strong>{' '}
-                    {mandatoryFields.join(', ') || '—'}
+                    <strong>Mandatory fields:</strong> {mandatoryFields.join(", ") || "—"}
                   </div>
                   <div>
-                    <strong>Optional fields:</strong>{' '}
-                    {optionalFields.join(', ') || '—'}
+                    <strong>Optional fields:</strong> {optionalFields.join(", ") || "—"}
+                  </div>
+                  <div>
+                    <strong>External fields:</strong> {externalFields.join(", ") || "—"}
                   </div>
                 </div>
               </Col>
             </Row>
 
-            {/* Column order */}
+            {/* File + header row */}
             <Row className="mb-3">
-              <Col>
-                <Form.Label className="fw-semibold" style={TABLE_TEXT}>
-                  Column order
-                </Form.Label>
-                <div style={{ ...TABLE_TEXT, color: '#666', marginBottom: 6 }}>
-                  Use the checkboxes to include/exclude fields, and ↑ / ↓ to change order.
-                </div>
-                <div
-                  style={{
-                    border: '1px solid #e4e6eb',
-                    borderRadius: 8,
-                    padding: 8,
-                    maxHeight: 220,
-                    overflowY: 'auto',
-                    backgroundColor: '#ffffff',
-                  }}
+              <Col md={7}>
+                <Form.Group controlId="importFile">
+                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
+                    CSV file
+                  </Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={(e) => on_file_changed(e.target.files?.[0] ?? null)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={5} className="d-flex align-items-end">
+                <Form.Check
+                  type="switch"
+                  id="importHeader"
+                  label="First row contains headers"
+                  checked={useHeader}
+                  onChange={(e) => setUseHeader(e.target.checked)}
+                  style={TABLE_TEXT}
+                />
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip id="import-header-tooltip">
+                      In header mode, fields are matched by name.
+                    </Tooltip>
+                  }
                 >
-                  {selectedFields.length === 0 ? (
-                    <span style={{ ...TABLE_TEXT, color: '#6b7280' }}>
-                      No fields selected.
-                    </span>
-                  ) : (
-                    selectedFields.map((field, idx) => (
-                      <div
-                        key={field}
-                        className="d-flex align-items-center justify-content-between mb-1"
-                        style={TABLE_TEXT}
-                      >
-                        <Form.Check
-                          type="checkbox"
-                          id={`import-field-${field}`}
-                          checked={selectedFields.includes(field)}
-                          onChange={() => toggleField(field)}
-                          label={field}
-                        />
-                        <div className="d-flex gap-1">
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => moveFieldUp(idx)}
-                          >
-                            ↑
-                          </Button>
-                          <Button
-                            variant="outline-secondary"
-                            size="sm"
-                            onClick={() => moveFieldDown(idx)}
-                          >
-                            ↓
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                  <span
+                    className="ms-2"
+                    style={{ cursor: "help", userSelect: "none", display: "inline-flex" }}
+                  >
+                    <Icon name="info" size={16} />
+                  </span>
+                </OverlayTrigger>
               </Col>
             </Row>
+
+            {/* Column order */}
+            {selectedFields.length > 0 && !useHeader && (
+              <Row className="mb-3">
+                <Col>
+                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
+                    Column order
+                  </Form.Label>
+                  <div style={{ ...TABLE_TEXT, color: "#666", marginBottom: 6 }}>
+                      Select the header for each column. Mandatory fields must be selected, and only selected once.
+                  </div>
+                  <div
+                    style={{
+                      border: "1px solid #e4e6eb",
+                      borderRadius: 8,
+                      padding: 8,
+                      maxHeight: 220,
+                      overflowY: "auto",
+                      backgroundColor: "#ffffff",
+                    }}
+                  >
+                    {selectedFields.length === 0 ? (
+                      <span style={{ ...TABLE_TEXT, color: "#6b7280" }}>No fields selected.</span>
+                    ) : (
+                      selectedFields.map((field, columnIndex) => (
+                        <div
+                          key={`${field}_${columnIndex}`}
+                          className="d-flex align-items-center justify-content-between mb-1"
+                          style={TABLE_TEXT}
+                        >
+                            <Container fluid>
+                            <Row>
+                                <Col xs={6}>
+                                    <Form.Select
+                                        aria-label="Select Column Header"
+                                        defaultValue={availableFields[0]}
+                                        value={selectedFields[columnIndex]}
+                                        onChange={(e) => handleSelectField(e, columnIndex)}
+                                    >
+                                        {availableFields.map((field, fieldIndex) => (
+                                            <option key={fieldIndex} value={field}>
+                                                {transformField(field)}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Col>
+                                <Col xs={6}>
+                                    { csvFirstLine[columnIndex] ?
+                                        (`First Row Value: ${csvFirstLine[columnIndex]}`)
+                                    : ('')}
+                                </Col>
+                            </Row>
+
+                            </Container>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Col>
+
+              </Row>
+            )}
 
             {/* Duplicate handling */}
             <Row className="mb-3">
@@ -380,47 +437,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                     ))
                   )}
                 </div>
-              </Col>
-            </Row>
-
-            {/* File + header row */}
-            <Row className="mb-3">
-              <Col md={7}>
-                <Form.Group controlId="importFile">
-                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
-                    CSV file
-                  </Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept=".csv,text/csv"
-                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={5} className="d-flex align-items-end">
-                <Form.Check
-                  type="switch"
-                  id="importHeader"
-                  label="First row contains headers"
-                  checked={useHeader}
-                  onChange={(e) => setUseHeader(e.target.checked)}
-                  style={TABLE_TEXT}
-                />
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip id="import-header-tooltip">
-                      In header mode, fields are matched by name.
-                    </Tooltip>
-                  }
-                >
-                  <span
-                    className="ms-2"
-                    style={{ cursor: 'help', userSelect: 'none', display: 'inline-flex' }}
-                  >
-                    <Icon name="info" size={16} />
-                  </span>
-                </OverlayTrigger>
               </Col>
             </Row>
 
