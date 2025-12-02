@@ -140,10 +140,10 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     // validate sum of weights = 100%
     const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
 
-    //if (totalWeight !== 100) {
-      //dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
-      //return;
-    //}
+    if (totalWeight !== 100) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
+      return;
+    }
 
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/assignments";
@@ -172,14 +172,11 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     }
   });
 
-  // Build dropdown options from the questionnaires already linked to this assignment
-  const questionnaireOptions = (assignmentData.assignment_questionnaires || [])
-    .map((aq: any) => aq.questionnaire)
-    .filter((q: any) => q)
-    .map((q: any) => ({ label: q.name, value: q.id }));
-
-  // Use the backend-computed review round count method (num_review_rounds) for existing assignments
-  const derivedReviewRounds = assignmentData.number_of_review_rounds;
+  // Build dropdown options from the questionnaires
+  const questionnaireOptions = (assignmentData.questionnaires || []).map((q: any) => ({
+    label: q.name,
+    value: q.id,
+  }));
 
   // Build initial form values from existing assignment data (update) or defaults (create)
   const formInitialValues: any = mode === "update" ? { ...assignmentData } : { ...initialValues };
@@ -301,9 +298,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                     showPagination={false}
                     data={[
                       ...(() => {
-                        const rounds = (mode === "update" && formik.values.review_rubric_varies_by_round)
-                          ? derivedReviewRounds
-                          : (formik.values.number_of_review_rounds ?? 0);
+                        const rounds = formik.values.number_of_review_rounds ?? 0;
                         if (formik.values.review_rubric_varies_by_round) {
                           return Array.from({ length: rounds }, (_, i) => ([
                             {

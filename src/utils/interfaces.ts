@@ -181,6 +181,7 @@ export interface IAssignmentResponse {
   staggered_deadline:boolean;
   is_calibrated:boolean;
   vary_by_round?: boolean;
+  varying_rubrics_by_round?: boolean;
   rounds_of_reviews?: number;
   due_dates?: { id: number; deadline_type_id: number }[];
   assignment_questionnaires?: {
