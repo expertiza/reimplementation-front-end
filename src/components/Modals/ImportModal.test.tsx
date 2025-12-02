@@ -1,5 +1,11 @@
-import React, { act } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+// src/components/Modals/ImportModal.test.tsx
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  act,
+} from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -20,7 +26,9 @@ type UseAPIResult = {
   sendRequest: ReturnType<typeof vi.fn>;
 };
 
-const makeUseAPIResult = (overrides: Partial<UseAPIResult> = {}): UseAPIResult => ({
+const makeUseAPIResult = (
+  overrides: Partial<UseAPIResult> = {}
+): UseAPIResult => ({
   error: null,
   isLoading: false,
   data: null,
@@ -44,7 +52,7 @@ describe("ImportModal", () => {
   });
 
   it("shows loading state when isLoading is true", async () => {
-    // All useAPI calls in this render return loading=true
+    // Both useAPI calls return loading=true
     mockUseAPI.mockReturnValue(
       makeUseAPIResult({ isLoading: true })
     );
@@ -57,45 +65,52 @@ describe("ImportModal", () => {
   });
 
   it("renders field summary and duplicate options from metadata", async () => {
+    // First and second useAPI calls can share the same mock result
     mockUseAPI.mockReturnValue(
       makeUseAPIResult({ data: { data: IMPORT_METADATA } })
     );
 
     await act(async () => {
-      render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
+      render(<ImportModal show={true} onHide={onHide} modelClass="Item" />);
     });
 
-    // Just assert the section labels exist
+    // Section labels
     await screen.findByText(/Mandatory fields:/i);
     await screen.findByText(/Optional fields:/i);
     await screen.findByText(/External fields:/i);
 
-    // And separately assert the field names are rendered somewhere
+    // Field names are present somewhere in the summary text
     expect(screen.getByText("email")).toBeInTheDocument();
     expect(screen.getByText("name")).toBeInTheDocument();
     expect(screen.getByText("external_id")).toBeInTheDocument();
 
+    // Duplicate handling radios
     const skipRadio = screen.getByLabelText("skip") as HTMLInputElement;
     const overwriteRadio = screen.getByLabelText("overwrite") as HTMLInputElement;
 
     expect(skipRadio).toBeInTheDocument();
     expect(overwriteRadio).toBeInTheDocument();
+    // First option should be selected by default
     expect(skipRadio.checked).toBe(true);
-  });
 
+    // Switching duplicate option should update selection
+    await act(async () => {
+      overwriteRadio.click();
+    });
+
+    expect(overwriteRadio.checked).toBe(true);
+    expect(skipRadio.checked).toBe(false);
+  });
 
   it("shows status when importing with no file selected", async () => {
     const user = userEvent.setup();
 
-    mockUseAPI.mockReturnValue(
-      makeUseAPIResult({ data: { data: IMPORT_METADATA } })
-    );
+    // No metadata needed here; just a basic hook result
+    mockUseAPI.mockReturnValue(makeUseAPIResult());
 
     await act(async () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
     });
-
-    await screen.findByText(/Mandatory fields:/i);
 
     const importButton = screen.getByRole("button", { name: /import/i });
 
@@ -116,14 +131,15 @@ describe("ImportModal", () => {
     );
 
     await act(async () => {
-      render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
+      render(<ImportModal show={true} onHide={onHide} modelClass="Item" />);
     });
 
+    // Wait for metadata to populate
     await screen.findByText(/Mandatory fields:/i);
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
-    // Fake "File" object with a .text() method so ImportModal's on_file_changed works
+    // Fake "File" object with a .text() method
     const fakeFile = {
       name: "test.csv",
       text: vi.fn().mockResolvedValue(
@@ -137,7 +153,7 @@ describe("ImportModal", () => {
       });
     });
 
-    // Turn off header mode
+    // Turn OFF header mode so column mapping UI appears
     const headerSwitch = screen.getByLabelText(
       /First row contains headers/i
     ) as HTMLInputElement;
@@ -148,10 +164,11 @@ describe("ImportModal", () => {
 
     expect(headerSwitch.checked).toBe(false);
 
+    // Column order section should now be visible
     const columnOrderLabel = await screen.findByText(/Column order/i);
     expect(columnOrderLabel).toBeInTheDocument();
 
-    // First-row preview text
+    // First-row previews should show the values from the second CSV line
     await screen.findByText(/First Row Value: user@example\.com/i);
     await screen.findByText(/First Row Value: Test User/i);
   });
@@ -160,6 +177,8 @@ describe("ImportModal", () => {
     const user = userEvent.setup();
     const sendImportSpy = vi.fn();
 
+    // Single hook result used for both fetchImports and sendImport.
+    // sendRequest will act as sendImport here.
     mockUseAPI.mockReturnValue(
       makeUseAPIResult({
         data: { data: IMPORT_METADATA },
@@ -175,10 +194,12 @@ describe("ImportModal", () => {
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
+    // CSV where the header is "email" (the only mandatory field)
+    // so selectedFields will all be "email" and mandatoryFieldsIncluded() will pass.
     const fakeFile = {
       name: "test.csv",
       text: vi.fn().mockResolvedValue(
-        "email,email\nuser1@example.com,user2@example.com"
+        "email\nuser1@example.com"
       ),
     };
 
@@ -194,7 +215,7 @@ describe("ImportModal", () => {
       await user.click(importButton);
     });
 
-    // Don't rely on exact call count; just ensure it was called
+    // fetchConfig also calls sendRequest once; we only care that it was called at least once for import.
     expect(sendImportSpy).toHaveBeenCalled();
   });
 
