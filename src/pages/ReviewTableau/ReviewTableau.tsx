@@ -98,6 +98,7 @@ const ReviewTableau: React.FC = () => {
         id: item.id,
         item: item.txt,
         itemType: item.itemType,
+        questionType: item.questionType,
         maxScore: item.maxScore
       };
 
@@ -146,6 +147,7 @@ const ReviewTableau: React.FC = () => {
               id: row.original.id,
               txt: row.original.item,
               itemType: row.original.itemType,
+              questionType: row.original.questionType,
               maxScore: row.original.maxScore
             };
             
@@ -169,13 +171,37 @@ const ReviewTableau: React.FC = () => {
   const renderReviewCell = (item: RubricItem, response: any) => {
     if (!response) return <span className="no-response">—</span>;
     
-    if (item.itemType === 'Criterion' && response.score !== undefined) {
+    // Handle different question types based on both itemType and questionType
+    const questionType = item.questionType || item.itemType;
+    
+    // Scale and Criterion questions with numeric scores
+    if ((questionType === 'Scale' || questionType === 'Criterion' || item.itemType === 'Criterion') && response.score !== undefined) {
       if (item.maxScore) {
         return <ScoreWidget score={response.score} maxScore={item.maxScore} comment={response.comment} hasComment={!!response.comment} />;
+      } else {
+        // If no max score defined, just show the score value
+        return (
+          <div className="score-simple">
+            <span className="score-value">{response.score}</span>
+            {response.comment && <span className="comment-indicator" title={response.comment}>💬</span>}
+          </div>
+        );
       }
     }
     
-    if (item.itemType === 'Checkbox' && response.checkValue !== undefined) {
+    // Dropdown questions
+    if (questionType === 'Dropdown' && (response.selectedOption !== undefined || response.score !== undefined)) {
+      const displayValue = response.selectedOption || response.score;
+      return (
+        <div className="dropdown-response">
+          <span className="selected-option">{displayValue}</span>
+          {response.comment && <span className="comment-indicator" title={response.comment}>💬</span>}
+        </div>
+      );
+    }
+    
+    // Checkbox questions
+    if ((questionType === 'Checkbox' || item.itemType === 'Checkbox') && response.checkValue !== undefined) {
       return (
         <span className={`check-icon ${response.checkValue ? 'check-true' : 'check-false'}`}>
           {response.checkValue ? (
@@ -187,7 +213,8 @@ const ReviewTableau: React.FC = () => {
       );
     }
     
-    if (item.itemType === 'TextArea' && response.textResponse !== undefined) {
+    // Text-based questions
+    if ((questionType === 'TextArea' || questionType === 'TextField') && response.textResponse !== undefined) {
       return (
         <div className="text-response-cell">
           {response.textResponse || '—'}

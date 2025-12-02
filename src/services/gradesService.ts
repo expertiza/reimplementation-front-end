@@ -15,6 +15,7 @@ export interface ReviewTableauApiResponse {
     [roundId: string]: {
       [itemId: string]: {
         description: string;
+        question_type: string;
         answers: {
           values: number[];
           comments: string[];
@@ -62,7 +63,8 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, st
     const items = Object.entries(roundData).map(([itemId, itemData], index) => ({
       id: itemId,
       txt: itemData.description,
-      itemType: 'Criterion',
+      itemType: itemData.question_type || 'Criterion',
+      questionType: itemData.question_type,
       maxScore: 5, // Default max score, could be dynamic
     }));
     

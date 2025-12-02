@@ -18,6 +18,7 @@ export interface RubricItem {
   id: string;
   txt: string | null;
   itemType: ItemType;
+  questionType?: string;
   questionNumber?: string;
   maxScore?: number;
   minScore?: number;

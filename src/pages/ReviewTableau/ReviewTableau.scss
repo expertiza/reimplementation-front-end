@@ -128,6 +128,21 @@
   justify-content: center;
 }
 
+/* Dropdown response styling */
+.dropdown-response {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.selected-option {
+  background-color: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+}
+
 /* Check/X icons using images */
 .check-icon {
   display: inline-block;
