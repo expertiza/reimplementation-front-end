@@ -105,7 +105,7 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     has_badge: assignment.has_badge,
     staggered_deadline: assignment.staggered_deadline,
     is_calibrated: assignment.is_calibrated,
-    review_rubric_varies_by_round: assignment.vary_by_round,
+    review_rubric_varies_by_round: assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
     number_of_review_rounds: assignment.num_review_rounds,
     due_dates: assignment.due_dates,
     assignment_questionnaires: assignment.assignment_questionnaires,
@@ -115,6 +115,8 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
 
 export async function loadAssignment({ params }: any) {
   let assignmentData = {};
+  let questionnaires = []; // fetch questionnaire list for dropdown window selections in Rubrics tab
+
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
     const userResponse = await axiosClient.get(`/assignments/${params.id}`, {
@@ -123,6 +125,8 @@ export async function loadAssignment({ params }: any) {
     assignmentData = await userResponse.data;
   }
 
-  return { ...assignmentData, weights: [] };
-}
+  const questionnairesRes = await axiosClient.get("/questionnaires");
+  questionnaires = questionnairesRes.data || [];
 
+  return { ...assignmentData, questionnaires, weights: [] };
+}
