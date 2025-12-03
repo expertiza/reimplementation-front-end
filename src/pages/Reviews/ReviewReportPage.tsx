@@ -147,7 +147,7 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
   return (
     <tr className={rowClassName}>
       <td>
-        <Link to={`/users/edit/${review.reviewerId}`}>
+        <Link to={`/users/${review.reviewerId}`}>
           <strong>{review.reviewerName}</strong>
         </Link>
         <br />({review.reviewerUsername})
@@ -182,7 +182,7 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
           "-"
         )}
       </td>
-      <td style={{ minWidth: "150px" }}>
+      <td style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }}>
         {review.rounds && review.rounds.length > 0 ? (
           review.rounds.map((round, i) => (
             <div key={i} className="mb-3">
@@ -391,7 +391,7 @@ const ReviewReportPage: React.FC = () => {
             <th>Reviews Done</th>
             <th style={{ minWidth: "200px" }}>Team reviewed</th>
             <th>Scores Awarded</th>
-            <th style={{ minWidth: "150px" }}>Metrics (Volume)</th>
+            <th style={{ minWidth: "300px" }}>Metrics (Volume)</th>
             <th style={{ minWidth: "250px" }}>Assign grade and write comments</th>
           </tr>
         </thead>
