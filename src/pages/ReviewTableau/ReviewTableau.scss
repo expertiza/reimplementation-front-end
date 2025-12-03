@@ -144,15 +144,28 @@
 
 /* Check/X icons using images */
 .check-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
 }
 
 .check-icon img {
-  width: 100%;
-  height: 100%;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
+}
+
+.check-icon.check-true {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: 3px;
+}
+
+.check-icon.check-false {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 3px;
 }
 
 /* Text response styling */

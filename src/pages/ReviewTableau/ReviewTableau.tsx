@@ -201,16 +201,30 @@ const ReviewTableau: React.FC = () => {
     }
     
     // Checkbox questions
-    if ((questionType === 'Checkbox' || item.itemType === 'Checkbox') && response.checkValue !== undefined) {
-      return (
-        <span className={`check-icon ${response.checkValue ? 'check-true' : 'check-false'}`}>
-          {response.checkValue ? (
-            <img src="/assets/icons/Check-icon.png" alt="✓" />
-          ) : (
-            <img src="/assets/icons/delete-temp.png" alt="✗" />
-          )}
-        </span>
-      );
+    if ((questionType === 'Checkbox' || item.itemType === 'Checkbox')) {
+      // Handle various checkbox value formats
+      let checkValue = response.checkValue;
+      if (checkValue === undefined && response.score !== undefined) {
+        // Sometimes checkbox values come as score (1 for checked, 0 for unchecked)
+        checkValue = response.score === 1 || response.score === true;
+      }
+      if (checkValue === undefined && response.selectedOption !== undefined) {
+        // Handle cases where checkbox comes as selectedOption
+        checkValue = response.selectedOption === 'Yes' || response.selectedOption === 'true' || response.selectedOption === true;
+      }
+      
+      if (checkValue !== undefined) {
+        const isChecked = checkValue === true || checkValue === 1 || checkValue === '1' || checkValue === 'true';
+        return (
+          <span className={`check-icon ${isChecked ? 'check-true' : 'check-false'}`}>
+            {isChecked ? (
+              <img src="/assets/icons/Check-icon.png" alt="✓" title="Checked" />
+            ) : (
+              <img src="/assets/icons/delete-temp.png" alt="✗" title="Not Checked" />
+            )}
+          </span>
+        );
+      }
     }
     
     // Text-based questions
