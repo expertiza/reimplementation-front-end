@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
-import { alertActions } from "store/slices/alertSlice";
-import { HttpMethod } from "utils/httpMethods";
+import { alertActions } from "../../store/slices/alertSlice";
+import { HttpMethod } from "../../utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ITAResponse as ITA } from "../../utils/interfaces";
 

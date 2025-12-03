@@ -1,6 +1,6 @@
 // Importing necessary interfaces and modules
-import { IFormOption } from "components/Form/interfaces";
-import axiosClient from "utils/axios_client";
+import { IFormOption } from "../../components/Form/interfaces";
+import axiosClient from "../../utils/axios_client";
 import { ITA, ITARequest } from "../../utils/interfaces";
 
 /**

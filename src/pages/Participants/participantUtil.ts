@@ -1,4 +1,4 @@
-import { IFormOption } from "components/Form/interfaces";
+import { IFormOption } from "../../components/Form/interfaces";
 import axiosClient from "../../utils/axios_client";
 import { IInstitution, IParticipantRequest, IParticipantResponse, IRole } from "../../utils/interfaces";
 

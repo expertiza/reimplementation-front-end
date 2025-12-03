@@ -1,124 +1,74 @@
 // Statistics.tsx
-import React, { useState, useEffect } from "react";
-import { calculateAverages } from "./utils";
+import React, { useEffect } from "react";
+import { calculateAverages, normalizeReviewDataArray } from "./utils";
 import "./grades.scss";
-import dummyDataRounds from "./Data/heatMapData.json"; // Importing dummy data for rounds
-import dummyauthorfeedback from "./Data/authorFeedback.json"; // Importing dummy data for author feedback
-import teammateData from "./Data/teammateData.json";
 
 //props for statistics component
-interface StatisticsProps {}
+interface StatisticsProps {
+  roundsSource?: any[] | null;
+}
 
 //statistics component
-const Statistics: React.FC<StatisticsProps> = () => {
-  const [sortedData, setSortedData] = useState<any[]>([]);
+const Statistics: React.FC<StatisticsProps> = ({ roundsSource = null }) => {
   useEffect(() => {
-    const { averagePeerReviewScore, columnAverages, sortedData } = calculateAverages(
-      dummyDataRounds[0],
+    // Recompute stats whenever roundsSource changes (so backend-provided rounds are honored)
+    if (!roundsSource || roundsSource.length === 0) {
+      return;
+    }
+
+    // Use the first round as a reference for the stats calculation (legacy behaviour preserved)
+    const firstRound = roundsSource[0] || [];
+    const normalizedData = normalizeReviewDataArray(firstRound);
+    const { sortedData } = calculateAverages(
+      normalizedData,
       "asc"
     );
     const rowAvgArray = sortedData.map((item) => item.RowAvg);
     console.log(rowAvgArray);
-    setSortedData(sortedData.map((item) => item.RowAvg));
-  }, []);
+  }, [roundsSource]);
 
-  const [statisticsVisible, setstatisticsVisible] = useState<boolean>(false);
-  const toggleStatisticsVisibility = () => {
-    setstatisticsVisible(!statisticsVisible);
-  };
-  const [showReviews, setShowReviews] = useState(false);
-  const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
-
-  const [roundSelected, setRoundSelected] = useState(-1);
-
-  const selectRound = (r: number) => {
-    setRoundSelected((prev) => r);
-  };
-
-  // Function to toggle the visibility of ShowReviews component
-  const toggleShowReviews = () => {
-    setShowReviews((prev) => !prev);
-  };
-
-  // Function to toggle the visibility of ShowAuthorFeedback component
-  const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback((prev) => !prev);
-  };
-
-  const headerCellStyle: React.CSSProperties = {
-    padding: "10px",
-    textAlign: "center",
-  };
-
-  //calculation for total reviews recieved
-  let totalReviewsForQuestion1: number = 0;
-  dummyDataRounds.forEach((round) => {
-    round.forEach((question) => {
-      if (question.questionNumber === "1") {
-        totalReviewsForQuestion1 += question.reviews.length;
-      }
-    });
-  });
-  //calculation for total feedback recieved
-  let totalfeedbackForQuestion1: number = 0;
-  dummyauthorfeedback.forEach((round) => {
-    round.forEach((question) => {
-      if (question.questionNumber === "1") {
-        totalfeedbackForQuestion1 += question.reviews.length;
-      }
-    });
-  });
-
-  const subHeaderCellStyle: React.CSSProperties = {
-    padding: "10px",
-    textAlign: "center",
-  };
+  // Statistics component focuses on rendering round summary. No local UI toggles required currently.
+  
+  if (!roundsSource || roundsSource.length === 0) {
+    return null; // Don't render if no data available
+  }
 
   return (
     <div className="table-container mb-6">
-      <h5 className="font-semibold">Round Summary</h5>
+      <h5>Round Summary</h5>
       <table className="tbl_heat">
         <thead>
           <tr>
             <th>Round</th>
-            <th>Submitted Work (Avg)</th>
-            <th>Author Feedback (Avg)</th>
-            <th>Teammate Review (Avg)</th>
-            <th>Final Score</th>
+            <th>Submitted work (avg)</th>
+            <th>Author feedback (avg)</th>
+            <th>Teammate review (avg)</th>
           </tr>
         </thead>
         <tbody>
-          {dummyDataRounds.map((roundData, index) => {
-            // Calculate averages for each category using data from utils or manually.
-            const submittedWorkAvg = calculateAverages(roundData, "asc").averagePeerReviewScore;
-            const authorFeedbackAvg =
-              dummyauthorfeedback[index]?.reduce((acc, item) => {
-                const questionScoreSum = item.reviews.reduce(
-                  (sum, review) => sum + review.score,
-                  0
-                );
-                return acc + questionScoreSum / item.reviews.length;
-              }, 0) / dummyauthorfeedback[index].length;
+          {roundsSource.length > 0 ? (
+            roundsSource.map((roundData: any, index: number) => {
+              // Normalize data to handle both old and new field names
+              const normalizedData = normalizeReviewDataArray(roundData);
+              // Calculate averages for each category using data from utils or manually.
+              const submittedWorkAvg = calculateAverages(normalizedData, "asc").averagePeerReviewScore;
 
-            const teammateReviewAvg =
-              teammateData[index]?.reviews.reduce((acc, review) => acc + review.score, 0) /
-              teammateData[index]?.reviews.length;
-
-            const finalScore = (
-              (Number(submittedWorkAvg) + Number(authorFeedbackAvg) + Number(teammateReviewAvg)) /
-              3
-            ).toFixed(2); // Average of all three categories
-
-            return (
-              <tr key={index}>
-                <td>Round {index + 1}</td>
-                <td>{Number(submittedWorkAvg).toFixed(2)}</td>
-                <td>{authorFeedbackAvg?.toFixed(2) || "N/A"}</td>
-                <td>{teammateReviewAvg?.toFixed(2) || "N/A"}</td>
-                <td>{finalScore}</td>
-              </tr>
-            );
-          })}
+              return (
+                <tr key={index}>
+                  <td>Round {index + 1}</td>
+                  <td>{Number(submittedWorkAvg).toFixed(2)}</td>
+                  <td>N/A</td>
+                  <td>N/A</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>
+                No data available
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

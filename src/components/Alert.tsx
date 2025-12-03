@@ -1,7 +1,7 @@
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 import { useDispatch } from "react-redux";
-import { alertActions } from "store/slices/alertSlice";
+import { alertActions } from "../store/slices/alertSlice";
 
 /**
  * @author Ankur Mundra on May, 2023
