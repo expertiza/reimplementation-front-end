@@ -27,7 +27,7 @@
 
 .advertisementContent {
     padding: 10px 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .section {
@@ -60,13 +60,13 @@
     color: #000;
     min-width: 140px;
     flex-shrink: 0;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .value {
     color: #000;
     word-break: break-word;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .advertisementMessage {
@@ -74,7 +74,7 @@
     border: 1px solid #ddd;
     border-radius: 3px;
     padding: 12px;
-    font-size: 0.85rem;
+    font-size: 1rem;
     line-height: 1.5;
     color: #000;
     white-space: pre-wrap;
@@ -89,7 +89,7 @@
     border: 1px solid #e0e0a0;
     border-radius: 3px;
     color: #333;
-    font-size: 0.85rem;
+    font-size: 1rem;
     display: flex;
     align-items: flex-start;
 }
