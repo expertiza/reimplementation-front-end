@@ -3,7 +3,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .header {
@@ -30,7 +30,7 @@
 .signupTable {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 1rem;
     background-color: white;
 }
 
@@ -44,14 +44,14 @@
     border: 1px solid #ddd;
     padding: 8px;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .signupTable tbody td {
     border: 1px solid #ddd;
     padding: 8px;
     vertical-align: middle;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .narrowColumn {
@@ -72,11 +72,11 @@
 .topicName {
     font-weight: normal;
     color: #000;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .topicDescription {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #666;
     margin-top: 4px;
 }
@@ -136,7 +136,7 @@
 
 .actionButton {
     min-width: 70px;
-    font-size: 0.75rem;
+    font-size: 1rem;
     padding: 4px 8px;
     border-radius: 3px;
     border: 1px solid #000;
@@ -158,14 +158,14 @@
     border: 1px solid #ddd;
     padding: 15px;
     margin-top: 20px;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .legendTitle {
     font-weight: bold;
     color: #000;
     margin-bottom: 10px;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .legendItems {
@@ -178,7 +178,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #000;
 }
 
@@ -197,7 +197,7 @@
     }
 
     .signupTable {
-        font-size: 0.8rem;
+        font-size: 0.95rem;
     }
 
     .signupTable thead th,
