@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   Container,
   Table,
@@ -7,6 +7,7 @@ import {
   Button,
   Form,
   InputGroup,
+  Alert
 } from "react-bootstrap";
 import {
   BarChart,
@@ -15,51 +16,42 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell, // <-- FIX: Added Cell import
+  Cell,
 } from "recharts";
-import "./Reviews.css"; // <-- your CSS goes here
+import axiosClient from "../../utils/axios_client";
+import "./Reviews.css";
 
 // --------------------------------------------------------------------------
 // --- INTERFACES & UTILITIES ---
 // --------------------------------------------------------------------------
 
+interface ReviewRound {
+  round: number;
+  calculatedScore: number | null;
+  maxScore: number | null;
+  reviewVolume: number;
+  reviewCommentCount: number;
+}
+
 interface ReviewData {
+  id: number;
   reviewerName: string;
   reviewerUsername: string;
+  reviewerId: number;
   reviewsCompleted: number;
   reviewsSelected: number;
   teamReviewedName: string;
   teamReviewedStatus: "red" | "blue" | "green" | "purple" | "brown";
   hasConsent: boolean;
-  calculatedScore: number | null; // Score from aggregate_questionnaire_score
-  reviewComment: string | null; // Text for Volume Metric
-  // Grade and comment fields for instructor/TA to input
+  calculatedScore: number | null;
+  maxScore: number | null;
+  rounds: ReviewRound[];
+  reviewComment: string | null;
+  reviewVolume: number;
+  reviewCommentCount: number;
   assignedGrade: number | null;
-  instructorComment: string;
+  instructorComment: string | null;
 }
-
-/**
- * Calculates the 'volume' of a review text, defined as the number of unique words.
- * @param text The review comment text.
- * @returns The count of unique words.
- */
-const calculateVolume = (text: string | null): number => {
-  if (!text) {
-    return 0;
-  }
-
-  // 1. Convert to lowercase and match word boundaries
-  const words = text.toLowerCase().match(/\b\w+\b/g);
-
-  if (!words) {
-    return 0;
-  }
-
-  // 2. Use a Set to get only the unique words.
-  const uniqueWords = new Set(words);
-
-  return uniqueWords.size;
-};
 
 // --------------------------------------------------------------------------
 // --- METRICS CHART COMPONENT (Uses Recharts) ---
@@ -67,11 +59,13 @@ const calculateVolume = (text: string | null): number => {
 
 interface MetricsChartProps {
   reviewVolume: number;
+  reviewCommentCount: number;
   averageVolume: number;
 }
 
 const MetricsChart: React.FC<MetricsChartProps> = ({
   reviewVolume,
+  reviewCommentCount,
   averageVolume,
 }) => {
   const data = [
@@ -80,38 +74,34 @@ const MetricsChart: React.FC<MetricsChartProps> = ({
   ];
 
   return (
-    <div style={{ width: "100%", height: 100 }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div style={{ width: "100%", height: 120 }}>
+      <ResponsiveContainer width="100%" height={100}>
         <BarChart
           data={data}
           layout="vertical"
           margin={{ top: 5, right: 0, left: 5, bottom: 5 }}
         >
-          {/* YAxis shows the comparison label (Review vs. Average) */}
           <YAxis dataKey="name" type="category" stroke="#343a40" fontSize={10} />
-
-          {/* XAxis shows the volume number (unique word count) - Hidden as requested */}
           <XAxis
             type="number"
             hide={true}
             domain={[0, Math.max(reviewVolume, averageVolume) * 1.2]}
           />
-
           <Tooltip
             formatter={(value: number) => [`${value} unique words`, "Volume"]}
           />
-
-          {/* FIX: Use Cell components inside Bar for dynamic coloring */}
-          <Bar dataKey="value"> 
+          <Bar dataKey="value">
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      {/* Optional text showing the raw number comparison */}
       <small style={{ display: "block", textAlign: "center", fontSize: "0.75rem" }}>
         {reviewVolume} words ({averageVolume.toFixed(1)} Avg.)
+      </small>
+      <small style={{ display: "block", textAlign: "center", fontSize: "0.75rem" }}>
+        {reviewCommentCount} comments
       </small>
     </div>
   );
@@ -125,46 +115,54 @@ interface ReviewReportRowProps {
   review: ReviewData;
   index: number;
   averageVolume: number;
+  onSave: (id: number, grade: number | null, comment: string) => void;
+  rowSpan: number;
 }
 
 const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
   review,
   index,
   averageVolume,
+  onSave,
+  rowSpan
 }) => {
-  // Logic for alternating row color (good practice)
-  const rowClassName = index % 2 === 0 ? "table-light" : ""; 
+  const rowClassName = index % 2 === 0 ? "table-light" : "";
+  const [grade, setGrade] = useState<number | string>(review.assignedGrade || "");
+  const [comment, setComment] = useState<string>(review.instructorComment || "");
 
-  const reviewVolume = useMemo(() => calculateVolume(review.reviewComment), [
-    review.reviewComment,
-  ]);
+  const handleSave = () => {
+    const numGrade = grade === "" ? null : Number(grade);
+    onSave(review.id, numGrade, comment);
+  };
 
-  // Determine status display text and class based on colors specified in the legend
   const teamStatusText =
     review.teamReviewedStatus === "red"
-      ? "Not Completed" // red
+      ? "Not Completed"
       : review.teamReviewedStatus === "blue"
-      ? "Completed, No Grade" // blue
-      : review.teamReviewedStatus === "green"
-      ? "No Submitted Work" // green
-      : review.teamReviewedStatus === "purple"
-      ? "No Review" // purple
-      : "Grade Assigned"; // brown
+        ? "Completed, No Grade"
+        : review.teamReviewedStatus === "green"
+          ? "No Submitted Work"
+          : review.teamReviewedStatus === "purple"
+            ? "No Review"
+            : "Grade Assigned";
 
   return (
     <tr className={rowClassName}>
-      {/* Reviewer Column */}
-      <td>
-        <strong>{review.reviewerName}</strong>
-        <br />({review.reviewerUsername})
-      </td>
-
-      {/* Reviews Done Column */}
-      <td>
-        {review.reviewsCompleted}/{review.reviewsSelected}
-      </td>
-
-      {/* Team Reviewed Column (Color Coded, narrower) */}
+      {rowSpan > 0 && (
+        <>
+          <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}>
+            <Link to={`/users/${review.reviewerId}`}>
+              <strong>{review.reviewerName}</strong>
+            </Link>
+            <br />({review.reviewerUsername})
+          </td>
+          <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}>
+            {review.reviewsCompleted}/{review.reviewsSelected}
+            <br />
+            <a href="#">(Summary)</a>
+          </td>
+        </>
+      )}
       <td
         className={`text-${review.teamReviewedStatus}`}
         style={{ maxWidth: "200px" }}
@@ -174,28 +172,48 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
           {teamStatusText} {review.hasConsent && "✔"}
         </small>
       </td>
-
-      {/* Scores Awarded Column */}
-      <td>{review.calculatedScore !== null ? `${review.calculatedScore}/5` : "-"}</td>
-
-      {/* Metrics Column (The new chart) */}
-      <td style={{ minWidth: "150px" }}>
-        {review.calculatedScore !== null && ( // Only show if review is completed
-          <MetricsChart
-            reviewVolume={reviewVolume}
-            averageVolume={averageVolume}
-          />
+      <td>
+        {review.rounds && review.rounds.length > 0 ? (
+          review.rounds.map((round, i) => {
+            const scorePercentage = (round.calculatedScore !== null && round.maxScore && round.maxScore > 0)
+              ? Math.round((round.calculatedScore / round.maxScore) * 100)
+              : 0;
+            return (
+              <div key={i}>
+                Round {round.round}: {round.calculatedScore !== null ? `${scorePercentage}%` : "-"}
+              </div>
+            );
+          })
+        ) : (
+          "-"
         )}
       </td>
-
-      {/* Assign grade and write comments Column (Text Boxes as required) */}
+      <td style={{ minWidth: "150px" }}>
+        {review.rounds && review.rounds.length > 0 ? (
+          review.rounds.map((round, i) => (
+            <div key={i} className="mb-3">
+              <div style={{ fontSize: "0.85rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px" }}>
+                Round {round.round}
+              </div>
+              <MetricsChart
+                reviewVolume={round.reviewVolume}
+                reviewCommentCount={round.reviewCommentCount}
+                averageVolume={averageVolume}
+              />
+            </div>
+          ))
+        ) : (
+          "-"
+        )}
+      </td>
       <td style={{ minWidth: "250px" }}>
         <InputGroup className="mb-2">
           <Form.Control
             type="number"
             placeholder="Grade"
             style={{ width: "80px", display: "inline-block" }}
-            defaultValue={review.assignedGrade || ""}
+            value={grade}
+            onChange={(e) => setGrade(e.target.value)}
           />
           <InputGroup.Text> / 100</InputGroup.Text>
         </InputGroup>
@@ -203,9 +221,10 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
           as="textarea"
           rows={2}
           placeholder="Instructor Comments"
-          defaultValue={review.instructorComment}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
-        <Button size="sm" className="mt-1">
+        <Button size="sm" className="mt-1" onClick={handleSave}>
           Save
         </Button>
       </td>
@@ -214,90 +233,108 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
 };
 
 // --------------------------------------------------------------------------
-// --- MOCK DATA AND MAIN COMPONENT ---
+// --- MAIN COMPONENT ---
 // --------------------------------------------------------------------------
-
-// Sample data structure based on successful seeding
-const mockReviewData: ReviewData[] = [
-  {
-    reviewerName: "E2562 Reviewer 1",
-    reviewerUsername: "e2562_reviewer_1",
-    reviewsCompleted: 1,
-    reviewsSelected: 1,
-    teamReviewedName: "E2562_Target_Team",
-    teamReviewedStatus: "brown",
-    hasConsent: true,
-    calculatedScore: 5,
-    reviewComment:
-      "Excellent and thorough review. Very detailed comments on the architecture and implementation logic. I read every line.",
-    assignedGrade: 90,
-    instructorComment: "High quality review, well articulated. Good score justification.",
-  },
-  {
-    reviewerName: "E2562 Reviewer 2",
-    reviewerUsername: "e2562_reviewer_2",
-    reviewsCompleted: 1,
-    reviewsSelected: 1,
-    teamReviewedName: "E2562_Target_Team",
-    teamReviewedStatus: "blue",
-    hasConsent: false,
-    calculatedScore: 3,
-    reviewComment:
-      "Good review overall. Needs more technical depth and better assessment of the prototype.",
-    assignedGrade: null,
-    instructorComment: "",
-  },
-  {
-    reviewerName: "E2562 Reviewer 3",
-    reviewerUsername: "e2562_reviewer_3",
-    reviewsCompleted: 0,
-    reviewsSelected: 1,
-    teamReviewedName: "E2562_Target_Team",
-    teamReviewedStatus: "red",
-    hasConsent: false,
-    calculatedScore: null,
-    reviewComment: null,
-    assignedGrade: null,
-    instructorComment: "",
-  },
-  {
-    reviewerName: "E2562 Reviewer 4",
-    reviewerUsername: "e2562_reviewer_4",
-    reviewsCompleted: 1,
-    reviewsSelected: 1,
-    teamReviewedName: "E2562_Target_Team",
-    teamReviewedStatus: "brown",
-    hasConsent: true,
-    calculatedScore: 4,
-    reviewComment: "Solid feedback. Just a few words.",
-    assignedGrade: 85,
-    instructorComment: "Completed. A bit brief.",
-  },
-];
 
 const ReviewReportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [reviewData, setReviewData] = useState<ReviewData[]>([]);
+  const [averageVolume, setAverageVolume] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ msg: string, type: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // --- Calculate Average Volume for Metrics Chart ---
-  const { averageVolume, completedReviewsCount } = useMemo(() => {
-    let totalUniqueWords = 0;
-    let completedReviews = 0;
-
-    for (const review of mockReviewData) {
-      if (review.calculatedScore !== null) {
-        totalUniqueWords += calculateVolume(review.reviewComment);
-        completedReviews++;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosClient.get(`/review_reports/${id}`);
+        setReviewData(response.data.reportData);
+        setAverageVolume(response.data.averageVolume);
+        setIsLoading(false);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch data");
+        setIsLoading(false);
       }
+    };
+    fetchData();
+  }, [id]);
+
+  const handleSaveGrade = async (reviewId: number, grade: number | null, comment: string) => {
+    try {
+      await axiosClient.patch(`/review_reports/${reviewId}/update_grade`, {
+        assignedGrade: grade,
+        instructorComment: comment
+      });
+      setNotification({ msg: "Grade updated successfully", type: "success" });
+      setReviewData(prev => prev.map(r => r.id === reviewId ? { ...r, assignedGrade: grade, instructorComment: comment, teamReviewedStatus: "brown" } : r));
+      setTimeout(() => setNotification(null), 3000);
+    } catch (err) {
+      setNotification({ msg: "Failed to update grade", type: "danger" });
+    }
+  };
+
+  const handleExportCSV = () => {
+    const headers = ["Reviewer Name", "Reviewer Username", "Team Reviewed", "Score", "Assigned Grade", "Instructor Comment"];
+    const rows = reviewData.map(r => [
+      `"${r.reviewerName}"`,
+      `"${r.reviewerUsername}"`,
+      `"${r.teamReviewedName}"`,
+      r.calculatedScore,
+      r.assignedGrade,
+      `"${r.instructorComment || ""}"`
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "review_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const sortedData = useMemo(() => {
+    if (!searchTerm) return reviewData;
+    const lowerTerm = searchTerm.toLowerCase();
+    const filtered = reviewData.filter(
+      (r) =>
+        r.reviewerName.toLowerCase().includes(lowerTerm) ||
+        r.reviewerUsername.toLowerCase().includes(lowerTerm)
+    );
+    return filtered.sort((a, b) => a.reviewerName.localeCompare(b.reviewerName));
+  }, [reviewData, searchTerm]);
+
+  const rowSpanMap = useMemo(() => {
+    const spans: { [key: number]: number } = {};
+    if (!sortedData || sortedData.length === 0) return spans;
+
+    let currentReviewerId = -1;
+    let currentStartIndex = -1;
+
+    sortedData.forEach((row, index) => {
+      if (row.reviewerId !== currentReviewerId) {
+        if (currentStartIndex !== -1) {
+          spans[currentStartIndex] = index - currentStartIndex;
+        }
+        currentReviewerId = row.reviewerId;
+        currentStartIndex = index;
+        spans[index] = 0;
+      } else {
+        spans[index] = 0;
+      }
+    });
+
+    if (currentStartIndex !== -1) {
+      spans[currentStartIndex] = sortedData.length - currentStartIndex;
     }
 
-    return {
-      averageVolume: completedReviews > 0 ? totalUniqueWords / completedReviews : 0,
-      completedReviewsCount: completedReviews,
-    };
-  }, []);
-
-  const isLoading = false;
-  const error = null;
+    return spans;
+  }, [sortedData]);
 
   if (isLoading) {
     return (
@@ -311,14 +348,19 @@ const ReviewReportPage: React.FC = () => {
     return (
       <Container>
         <h2 className="text-danger">Error loading report</h2>
-        <p>{(error as Error).message}</p>
+        <p>{error}</p>
       </Container>
     );
   }
 
   return (
     <Container fluid className="p-4">
-      {/* Report Selector and View Button */}
+      {notification && (
+        <Alert variant={notification.type} onClose={() => setNotification(null)} dismissible>
+          {notification.msg}
+        </Alert>
+      )}
+
       <select name="reports" id="report-select">
         <option value="review">Review report</option>
         <option value="summary">Summary report</option>
@@ -331,17 +373,17 @@ const ReviewReportPage: React.FC = () => {
       </h2>
       <a href="#">Back</a>
 
-      {/* Search box */}
       <div style={{ marginTop: "15px" }}>
         <Form.Label>Reviewer's Name</Form.Label>
         <Form.Control
           type="text"
           style={{ width: "250px", display: "inline-block" }}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <Button className="ms-2">Search</Button>
       </div>
 
-      {/* Legend */}
       <div className="legend mt-3">
         <p>
           <strong>**In "Team reviewed” column text in:</strong>
@@ -374,35 +416,29 @@ const ReviewReportPage: React.FC = () => {
         </ul>
       </div>
 
-      {/* Export Button (Functionality needs to be implemented separately) */}
-      <Button className="mb-3">Export Review Scores To CSV File</Button>
+      <Button className="mb-3" onClick={handleExportCSV}>Export Review Scores To CSV File</Button>
 
       <Table bordered className="review-report-table">
         <thead>
           <tr>
-            {/* Reviewer, Reviews Done, and Team reviewed columns (reimplemented as required) */}
             <th>Reviewer</th>
             <th>Reviews Done</th>
             <th style={{ minWidth: "200px" }}>Team reviewed</th>
-            
-            {/* Scores Awarded (single column, AVG Score removed per requirement) */}
             <th>Scores Awarded</th>
-            
-            {/* Metrics Column (Reimplemented with chart) */}
             <th style={{ minWidth: "150px" }}>Metrics (Volume)</th>
-            
-            {/* Assign grade and comments column (reimplemented with input boxes) */}
             <th style={{ minWidth: "250px" }}>Assign grade and write comments</th>
           </tr>
         </thead>
 
         <tbody>
-          {mockReviewData.map((review, index) => (
+          {sortedData.map((review, index) => (
             <ReviewReportRow
-              key={index}
+              key={review.id}
               review={review}
               index={index}
               averageVolume={averageVolume}
+              onSave={handleSaveGrade}
+              rowSpan={rowSpanMap[index] !== undefined ? rowSpanMap[index] : 1}
             />
           ))}
         </tbody>

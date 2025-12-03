@@ -122,6 +122,11 @@ function App() {
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
+            {
+              path: ":id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
           ],
         },
         {
@@ -194,11 +199,11 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         {
           path: "student_tasks",
