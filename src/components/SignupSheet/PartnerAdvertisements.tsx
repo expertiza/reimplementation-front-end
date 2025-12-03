@@ -21,7 +21,7 @@ const PartnerAdvertisements: React.FC = () => {
       
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
       const response = await axios.get(
-        `http://localhost:3002/api/v1/signed_up_teams`,
+        `http://152.7.176.23:3002/api/v1/signed_up_teams`,
         {
           params: { topic_id: topicId },
           headers: { Authorization: `Bearer ${token}` }
@@ -54,7 +54,7 @@ const PartnerAdvertisements: React.FC = () => {
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
       
       await axios.post(
-        'http://localhost:3002/api/v1/join_team_requests',
+        'http://152.7.176.23:3002/api/v1/join_team_requests',
         {
           team_id: teamId,
           assignment_id: advertisements[0]?.sign_up_topic?.assignment_id,
