@@ -128,6 +128,11 @@ function App() {
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
+            {
+              path: ":id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
           ],
         },
 
@@ -218,6 +223,14 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author />,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
         },
         {
           path: "assignments/:id/review",
