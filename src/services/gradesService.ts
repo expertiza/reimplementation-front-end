@@ -13,12 +13,16 @@ export interface GetReviewTableauDataParams {
 export interface ReviewTableauApiResponse {
   responses_by_round: {
     [roundId: string]: {
-      [itemId: string]: {
-        description: string;
-        question_type: string;
-        answers: {
-          values: number[];
-          comments: string[];
+      min_answer_value: number;
+      max_answer_value: number;
+      items: {
+        [itemId: string]: {
+          description: string;
+          question_type: string;
+          answers: {
+            values: number[];
+            comments: string[];
+          };
         };
       };
     };
@@ -60,20 +64,26 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, re
   Object.entries(responses_by_round).forEach(([roundId, roundData]) => {
     const roundNumber = parseInt(roundId) || 1;
     
+    // Extract rubric metadata
+    const { min_answer_value, max_answer_value, items } = roundData;
+    
     // Create rubric items from the round data
-    const items = Object.entries(roundData).map(([itemId, itemData]) => ({
+    const rubricItems = Object.entries(items).map(([itemId, itemData]) => ({
       id: itemId,
       txt: itemData.description,
       itemType: itemData.question_type || 'Criterion',
       questionType: itemData.question_type,
-      maxScore: 5, // Default max score, could be dynamic
+      maxScore: max_answer_value || 5, // Use the actual max value from the rubric
+      minScore: min_answer_value || 1, // Store min value as well
     }));
     
     // Create rubric for this round
     const rubric = {
       id: `rubric_${roundId}`,
       name: `Review Rubric - Round ${roundNumber}`,
-      items,
+      items: rubricItems,
+      maxScore: max_answer_value || 5,
+      minScore: min_answer_value || 1,
     };
     
     rubrics.push(rubric);
@@ -81,14 +91,14 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, re
     // Create reviews for this round
     const reviews: any[] = [];
     const maxResponses = Math.max(
-      ...Object.values(roundData).map(item => item.answers.values.length)
+      ...Object.values(items).map(item => item.answers.values.length)
     );
     
     // Create one review per response (each index represents a different team/student reviewed by THIS reviewer)
     for (let reviewIndex = 0; reviewIndex < maxResponses; reviewIndex++) {
       const responses: any = {};
       
-      Object.entries(roundData).forEach(([itemId, itemData]) => {
+      Object.entries(items).forEach(([itemId, itemData]) => {
         if (itemData.answers.values[reviewIndex] !== undefined) {
           responses[itemId] = {
             score: itemData.answers.values[reviewIndex],
