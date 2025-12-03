@@ -178,6 +178,8 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     value: q.id,
   }));
 
+  const reviewRounds = assignmentData.number_of_review_rounds;
+
   // Build initial form values from existing assignment data (update) or defaults (create)
   const formInitialValues: any = mode === "update" ? { ...assignmentData } : { ...initialValues };
   
@@ -298,7 +300,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                     showPagination={false}
                     data={[
                       ...(() => {
-                        const rounds = formik.values.number_of_review_rounds ?? 0;
+                        const rounds = (mode == "update") ? reviewRounds ?? 0 : formik.values.number_of_review_rounds ?? 0;
                         if (formik.values.review_rubric_varies_by_round) {
                           return Array.from({ length: rounds }, (_, i) => ([
                             {
