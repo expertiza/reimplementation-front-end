@@ -115,4 +115,29 @@ describe('AssignmentEditor', () => {
             expect(screen.getByTestId('checkbox-show_teammate_review')).toBeInTheDocument();
         });
     });
-    
+
+
+    it('renders Review strategy tab with select', () => {
+        renderComponent();
+        const reviewStrategyTab = screen.getByText('Review strategy');
+        fireEvent.click(reviewStrategyTab);
+        expect(screen.getByTestId('select-review_strategy')).toBeInTheDocument();
+    });
+
+    it('renders Due dates tab with number input', () => {
+        renderComponent();
+        const dueDatesTab = screen.getByText('Due dates');
+        fireEvent.click(dueDatesTab);
+        expect(screen.getByTestId('input-number_of_review_rounds')).toBeInTheDocument();
+    });
+
+    it('displays submit button', () => {
+        renderComponent();
+        expect(screen.getByText('Save')).toBeInTheDocument();
+    });
+
+    it('renders Back link', () => {
+        renderComponent();
+        expect(screen.getByText('Back')).toBeInTheDocument();
+    });
+});
