@@ -129,7 +129,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
   /* API hooks */
   const { isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
-  const { data: sendImportResponse, sendRequest: sendImport } = useAPI();
+  const { error: importError, data: sendImportResponse, sendRequest: sendImport } = useAPI();
 
   /* ---------------------------------------------------------
    * Fetch import metadata from backend whenever modal opens
@@ -248,6 +248,10 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       formData.append("csv_file", file);
       formData.append("use_headers", String(useHeader));
 
+      if (duplicateAction) {
+        formData.append("dup_action", duplicateAction)
+      }
+
       if (!useHeader) {
         formData.append("ordered_fields", JSON.stringify(selectedFields));
       }
@@ -261,15 +265,22 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (sendImportResponse?.data?.message) {
-        setStatus(sendImportResponse.data.message);
-      } else {
-        setStatus("Import complete.");
-      }
     } catch (err: any) {
       setStatus(err.message || "Unexpected error.");
     }
   };
+
+  useEffect(() => {
+    if(sendImportResponse) {
+      setStatus(sendImportResponse.data.message);
+
+      if (!importError){
+        setTimeout(forceClose, 1500);
+      }
+    } else if (importError) {
+      setStatus(importError);
+    }
+  }, [sendImportResponse, importError]);
 
   /* ============================================================================
    *  Render
