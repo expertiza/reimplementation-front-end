@@ -85,5 +85,23 @@ $theme-colors: (
           margin-bottom: 10px; // Space between stacked buttons
         }
       }
+
+// Custom styles for assignment tabs
+#assignment-tabs {
+  .nav-link {
+    color: #333; // Default tab text color
+    transition: color 0.2s ease;
+    
+    &:hover {
+      color: #fff; // Hover text color (you can change this to any color)
+    }
+    
+    &.active {
+      color: #333; // Active tab text color (you can change this to any color)
+      font-weight: 600; // Optional: make active tab bold
+    }
+  }
+}
+
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';
