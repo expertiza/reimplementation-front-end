@@ -116,15 +116,13 @@ interface ReviewReportRowProps {
   index: number;
   averageVolume: number;
   onSave: (id: number, grade: number | null, comment: string) => void;
-  rowSpan: number;
 }
 
 const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
   review,
   index,
   averageVolume,
-  onSave,
-  rowSpan
+  onSave
 }) => {
   const rowClassName = index % 2 === 0 ? "table-light" : "";
   const [grade, setGrade] = useState<number | string>(review.assignedGrade || "");
@@ -148,21 +146,17 @@ const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
 
   return (
     <tr className={rowClassName}>
-      {rowSpan > 0 && (
-        <>
-          <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}>
-            <Link to={`/users/${review.reviewerId}`}>
-              <strong>{review.reviewerName}</strong>
-            </Link>
-            <br />({review.reviewerUsername})
-          </td>
-          <td rowSpan={rowSpan} style={{ verticalAlign: "middle" }}>
-            {review.reviewsCompleted}/{review.reviewsSelected}
-            <br />
-            <a href="#">(Summary)</a>
-          </td>
-        </>
-      )}
+      <td>
+        <Link to={`/users/edit/${review.reviewerId}`}>
+          <strong>{review.reviewerName}</strong>
+        </Link>
+        <br />({review.reviewerUsername})
+      </td>
+      <td>
+        {review.reviewsCompleted}/{review.reviewsSelected}
+        <br />
+        <a href="#">(Summary)</a>
+      </td>
       <td
         className={`text-${review.teamReviewedStatus}`}
         style={{ maxWidth: "200px" }}
@@ -298,43 +292,15 @@ const ReviewReportPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const sortedData = useMemo(() => {
+  const filteredData = useMemo(() => {
     if (!searchTerm) return reviewData;
     const lowerTerm = searchTerm.toLowerCase();
-    const filtered = reviewData.filter(
+    return reviewData.filter(
       (r) =>
         r.reviewerName.toLowerCase().includes(lowerTerm) ||
         r.reviewerUsername.toLowerCase().includes(lowerTerm)
     );
-    return filtered.sort((a, b) => a.reviewerName.localeCompare(b.reviewerName));
   }, [reviewData, searchTerm]);
-
-  const rowSpanMap = useMemo(() => {
-    const spans: { [key: number]: number } = {};
-    if (!sortedData || sortedData.length === 0) return spans;
-
-    let currentReviewerId = -1;
-    let currentStartIndex = -1;
-
-    sortedData.forEach((row, index) => {
-      if (row.reviewerId !== currentReviewerId) {
-        if (currentStartIndex !== -1) {
-          spans[currentStartIndex] = index - currentStartIndex;
-        }
-        currentReviewerId = row.reviewerId;
-        currentStartIndex = index;
-        spans[index] = 0;
-      } else {
-        spans[index] = 0;
-      }
-    });
-
-    if (currentStartIndex !== -1) {
-      spans[currentStartIndex] = sortedData.length - currentStartIndex;
-    }
-
-    return spans;
-  }, [sortedData]);
 
   if (isLoading) {
     return (
@@ -431,14 +397,13 @@ const ReviewReportPage: React.FC = () => {
         </thead>
 
         <tbody>
-          {sortedData.map((review, index) => (
+          {filteredData.map((review, index) => (
             <ReviewReportRow
               key={review.id}
               review={review}
               index={index}
               averageVolume={averageVolume}
               onSave={handleSaveGrade}
-              rowSpan={rowSpanMap[index] !== undefined ? rowSpanMap[index] : 1}
             />
           ))}
         </tbody>
