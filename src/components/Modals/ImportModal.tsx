@@ -236,7 +236,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       return;
     }
 
-    if (!mandatoryFieldsIncluded()) {
+    if (!useHeader && !mandatoryFieldsIncluded()) {
       setStatus("Please make sure all mandatory fields are selected");
       return;
     }
