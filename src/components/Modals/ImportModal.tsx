@@ -200,14 +200,17 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
     if (availableFields.length === 0) return;
 
     const text = await incomingFile.text();
-    const lines = text.split("\n");
+    const lines = text.split("\n").filter(Boolean);
 
     if (lines.length > 0) {
       const headers = lines[0].split(",");
+
       setSelectedFields(new Array(headers.length).fill(availableFields[0]));
 
       if (lines.length > 1) {
         setCsvFirstLine(lines[1].split(","));
+      } else {
+        setCsvFirstLine(headers);
       }
     }
   };
@@ -222,7 +225,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
   /* Ensure all selected columns match mandatory fields */
   const mandatoryFieldsIncluded = () =>
-    selectedFields.every((f) => mandatoryFields.includes(f));
+    mandatoryFields.every((f) => selectedFields.includes(f));
 
   /* ---------------------------------------------------------
    * Submit import to backend
