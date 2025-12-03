@@ -77,3 +77,42 @@ const renderComponent = (mode: 'create' | 'update' = 'create') => {
         </Provider>
     );
 };
+
+describe('AssignmentEditor', () => {
+    it('renders without crashing', () => {
+        renderComponent();
+        expect(screen.getByText(/Editing Assignment:/i)).toBeInTheDocument();
+    });
+
+    it('renders all tabs', () => {
+        renderComponent();
+        expect(screen.getByText('General')).toBeInTheDocument();
+        expect(screen.getByText('Topics')).toBeInTheDocument();
+        expect(screen.getByText('Rubrics')).toBeInTheDocument();
+        expect(screen.getByText('Review strategy')).toBeInTheDocument();
+        expect(screen.getByText('Due dates')).toBeInTheDocument();
+        expect(screen.getByText('Etc')).toBeInTheDocument();
+    });
+
+    it('renders form inputs in General tab', () => {
+        renderComponent();
+        expect(screen.getByTestId('input-name')).toBeInTheDocument();
+        expect(screen.getByTestId('input-directory_path')).toBeInTheDocument();
+        expect(screen.getByTestId('input-spec_location')).toBeInTheDocument();
+    });
+
+    it('renders checkboxes in General tab', () => {
+        renderComponent();
+        expect(screen.getByTestId('checkbox-private')).toBeInTheDocument();
+        expect(screen.getByTestId('checkbox-has_teams')).toBeInTheDocument();
+    });
+
+    it('shows team-related checkboxes when has_teams is checked', async () => {
+        renderComponent();
+        const hasTeamsCheckbox = screen.getByTestId('checkbox-has_teams');
+        await userEvent.click(hasTeamsCheckbox);
+        await waitFor(() => {
+            expect(screen.getByTestId('checkbox-show_teammate_review')).toBeInTheDocument();
+        });
+    });
+    
