@@ -47,8 +47,9 @@ export const getReviewTableauData = async (params: GetReviewTableauDataParams): 
 
 /**
  * Transform API response to frontend data structure
+ * The API returns all reviews completed BY the given participant (reviewer) for the assignment
  */
-export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, studentId?: string): ReviewTableauData => {
+export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, reviewerId?: string): ReviewTableauData => {
   const { responses_by_round, participant, assignment } = apiData;
   
   // Transform the API response structure to match the frontend types
@@ -60,7 +61,7 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, st
     const roundNumber = parseInt(roundId) || 1;
     
     // Create rubric items from the round data
-    const items = Object.entries(roundData).map(([itemId, itemData], index) => ({
+    const items = Object.entries(roundData).map(([itemId, itemData]) => ({
       id: itemId,
       txt: itemData.description,
       itemType: itemData.question_type || 'Criterion',
@@ -83,22 +84,22 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, st
       ...Object.values(roundData).map(item => item.answers.values.length)
     );
     
-    // Create one review per response (assuming each index represents a different reviewer)
-    for (let reviewerIndex = 0; reviewerIndex < maxResponses; reviewerIndex++) {
+    // Create one review per response (each index represents a different team/student reviewed by THIS reviewer)
+    for (let reviewIndex = 0; reviewIndex < maxResponses; reviewIndex++) {
       const responses: any = {};
       
       Object.entries(roundData).forEach(([itemId, itemData]) => {
-        if (itemData.answers.values[reviewerIndex] !== undefined) {
+        if (itemData.answers.values[reviewIndex] !== undefined) {
           responses[itemId] = {
-            score: itemData.answers.values[reviewerIndex],
-            comment: itemData.answers.comments[reviewerIndex] || '',
+            score: itemData.answers.values[reviewIndex],
+            comment: itemData.answers.comments[reviewIndex] || '',
           };
         }
       });
       
       reviews.push({
-        reviewerId: `reviewer_${reviewerIndex + 1}`,
-        reviewerName: `Reviewer ${reviewerIndex + 1}`,
+        reviewerId: `review_${reviewIndex + 1}`,
+        reviewerName: `Team ${reviewIndex + 1}`, // We'll improve this later with actual team names
         roundNumber,
         submissionTime: undefined,
         responses,
@@ -115,7 +116,7 @@ export const transformReviewTableauData = (apiData: ReviewTableauApiResponse, st
   });
   
   return {
-    studentId: apiData.participant.user_name || apiData.participant.full_name || `Student ${apiData.participant.id}`,
+    studentId: reviewerId || apiData.participant.user_name || apiData.participant.full_name || `Reviewer ${apiData.participant.id}`,
     course: 'Course Information', // This might need to be fetched separately
     assignment: apiData.assignment.name || 'Assignment Information',
     rubrics,

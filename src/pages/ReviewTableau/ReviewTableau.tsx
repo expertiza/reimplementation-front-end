@@ -8,9 +8,9 @@ import Table from '../../components/Table/Table';
 import './ReviewTableau.scss';
 
 /**
- * Review by Student Page
- * Displays reviews for a single student.
- * Shows each round as a separate section
+ * Review Tableau Page
+ * Displays all reviews completed BY a specific reviewer (participant) for an assignment.
+ * Shows reviews done by this reviewer on different teams/students across different rounds.
  */
 const ReviewTableau: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -19,12 +19,12 @@ const ReviewTableau: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   // Get parameters from URL
-  const studentId = searchParams.get('studentId');
+  const reviewerId = searchParams.get('studentId'); // Optional: if we want to override the display name
   const assignmentId = searchParams.get('assignmentId');
-  const participantId = searchParams.get('participantId');
+  const participantId = searchParams.get('participantId'); // This is the reviewer's participant ID
 
   // Basic render/mount log to help debug routing/requests
-  console.log('ReviewTableau render - params', { studentId, assignmentId, participantId, isLoading, error });
+  console.log('ReviewTableau render - params', { reviewerId, assignmentId, participantId, isLoading, error });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +47,7 @@ const ReviewTableau: React.FC = () => {
         
         console.log('ReviewTableau: apiResponse received', apiResponse);
         
-        const transformedData = transformReviewTableauData(apiResponse, studentId || undefined);
+        const transformedData = transformReviewTableauData(apiResponse, reviewerId || undefined);
         setData(transformedData);
         
         console.log('ReviewTableau: data transformed and set', transformedData);
@@ -60,7 +60,7 @@ const ReviewTableau: React.FC = () => {
     };
 
     fetchData();
-  }, [assignmentId, participantId, studentId]);
+  }, [assignmentId, participantId, reviewerId]);
 
   // Group by round first, then by rubrics within each round
   const roundRubricGroups = useMemo(() => {
@@ -128,14 +128,14 @@ const ReviewTableau: React.FC = () => {
       }
     ];
 
-    // Add reviewer columns for this specific round
+    // Add review columns for this specific round (each column represents a different team/student reviewed)
     round.reviews.forEach((review, index) => {
       columns.push({
         id: `reviewer_${index}`,
         header: () => (
           <div className="reviewer-header-content">
             <div className="reviewer-name">{review.reviewerName}</div>
-            <div className="submission-time">{review.submissionTime || `Round ${review.roundNumber}`}</div>
+            <div className="submission-time">{review.submissionTime || ''}</div>
           </div>
         ),
         accessorKey: `reviewer_${index}`,
@@ -252,7 +252,7 @@ const ReviewTableau: React.FC = () => {
   return (
     <div className="review-by-student-container">
       {/* Header */}
-      <h2 className="main-title">Review By Student, {data.studentId}</h2>
+      <h2 className="main-title">Reviews By {data.studentId}</h2>
       
       {/* Course and Assignment Info */}
       <div className="course-info">
@@ -273,7 +273,6 @@ const ReviewTableau: React.FC = () => {
 
             return (
               <div key={`${roundGroup.roundNumber}_${rubricRound.rubric.id}`} className="rubric-section">
-                <h2 className="rubric-title">{rubricRound.rubric.name}</h2>
                 
                 <div className="review-table-wrapper">
                   <Table

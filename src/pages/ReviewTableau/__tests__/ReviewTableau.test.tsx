@@ -84,7 +84,7 @@ describe('ReviewTableau Component', () => {
     renderWithRouter('?assignmentId=1&participantId=1');
 
     await waitFor(() => {
-      expect(screen.getByText('Review By Student, student1')).toBeInTheDocument();
+      expect(screen.getByText('Reviews By student1')).toBeInTheDocument();
     });
 
     expect(screen.getByText('Course :')).toBeInTheDocument();
@@ -110,7 +110,7 @@ describe('ReviewTableau Component', () => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('Review By Student')).not.toBeInTheDocument();
+    expect(screen.queryByText('Reviews By')).not.toBeInTheDocument();
   });
 
   // TEST 4: Loading State
@@ -190,8 +190,10 @@ describe('ReviewTableau Component', () => {
     renderWithRouter('?assignmentId=1&participantId=1&studentId=student1');
 
     await waitFor(() => {
-      expect(screen.getByText('Mixed Question Types Rubric')).toBeInTheDocument();
+      expect(screen.getByText('Reviews By student1')).toBeInTheDocument();
     });
+    
+    expect(screen.getByText('Mixed Question Types Rubric')).toBeInTheDocument();
     
     expect(screen.getByTestId('mock-table')).toBeInTheDocument();
     

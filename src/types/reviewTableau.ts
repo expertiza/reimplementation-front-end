@@ -62,13 +62,13 @@ export interface Rubric {
 }
 
 export interface ReviewTableauData {
-  studentId?: string;
+  studentId?: string; // Actually the reviewer's name/ID
   course?: string;
   assignment?: string;
   rubrics: Rubric[]; // Multiple rubrics instead of single rubric
   rounds: ReviewRound[];
   assignmentId?: string;
-  participantId?: string;
+  participantId?: string; // The reviewer's participant ID
 }
 
 export interface ScoreWidgetProps {
