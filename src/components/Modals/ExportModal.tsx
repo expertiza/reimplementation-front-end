@@ -1,6 +1,6 @@
 // src/components/ExportTeamsDummyModal.tsx
 import React, { useEffect, useState, memo, useCallback } from "react";
-import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import useAPI from "../../hooks/useAPI";
 
 /* =============================================================================
@@ -38,6 +38,8 @@ const getBaseUrl = (): string => {
 };
 
 const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
+
+
 
 const ICONS = {
   info: 'assets/images/info-icon-16.png',
@@ -103,6 +105,20 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
             console.error("Error fetching data:", err);
         }
     }, [fetchExports]);
+
+  const transformField = (field: string) => {
+    let f = field.replace(/_/g, " ");
+    return f.charAt(0).toUpperCase() + f.slice(1);
+  };
+
+  /** Format fields for multiline tooltip display */
+  const formatTooltipList = (fields: string[]) => {
+    return (
+      <div style={{ whiteSpace: 'pre-line' }}>
+        {fields.map((f) => transformField(f)).join("\n")}
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (!show) return;
@@ -206,7 +222,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
     >
       <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: '#f7f8fa' }}>
         <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Export teams (dummy)
+          Export teams
         </Modal.Title>
       </Modal.Header>
 
@@ -219,16 +235,49 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
               <Col>
                 <div style={TABLE_TEXT}>
                   <div>
-                    <strong>Mandatory fields:</strong>{' '}
-                    {mandatoryFields.join(', ') || '—'}
+                    <strong>Mandatory fields</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="mandatory-fields-tip">
+                          {formatTooltipList(mandatoryFields)}
+                        </Tooltip>
+                      }
+                    >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                    </OverlayTrigger>
                   </div>
                   <div>
-                    <strong>Optional fields:</strong>{' '}
-                    {optionalFields.join(', ') || '—'}
+                    <strong>Optional fields:</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="optional-fields-tip">
+                          {formatTooltipList(optionalFields)}
+                        </Tooltip>
+                      }
+                    >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                    </OverlayTrigger>
                   </div>
                     <div>
-                        <strong>Optional fields:</strong>{' '}
-                        {externalFields.join(', ') || '—'}
+                        <strong>Optional fields:</strong>
+                      <OverlayTrigger
+                        placement="right"
+                        overlay={
+                          <Tooltip id="external-fields-tip">
+                            {formatTooltipList(externalFields)}
+                          </Tooltip>
+                        }
+                      >
+                      <span style={{ cursor: "help", marginLeft: 6 }}>
+                        <Icon name="info" size={16} />
+                      </span>
+                      </OverlayTrigger>
                     </div>
                 </div>
               </Col>
