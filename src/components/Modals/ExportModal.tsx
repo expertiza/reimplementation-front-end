@@ -1,7 +1,8 @@
-// src/components/ExportTeamsDummyModal.tsx
+// src/components/ExportModal.tsx
 import React, { useEffect, useState, memo, useCallback } from "react";
 import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import useAPI from "../../hooks/useAPI";
+import { HttpMethod } from "../../utils/httpMethods";
 
 /* =============================================================================
    Shared visual style — same as CreateTeams.tsx
@@ -76,7 +77,7 @@ Icon.displayName = 'Icon';
 //   default_ordered_fields: string[];
 // };
 
-type ExportTeams = {
+type ExportModal = {
   show: boolean;
   onHide: () => void;
     modelClass: string;
@@ -86,7 +87,7 @@ type ExportTeams = {
    Component (dummy mode – no backend)
 ============================================================================= */
 
-const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass }) => {
+const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
     const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
     const [optionalFields, setOptionalFields] = useState<string[]>([]);
     const [externalFields, setExternalFields] = useState<string[]>([]);
@@ -170,7 +171,36 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
     });
   };
 
-  const on_export = () => {
+  function getFormattedDateTimeForFilename() {
+    const now = new Date();
+
+    // Get year, month, day
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(now.getDate()).padStart(2, '0');
+
+    // Get hours, minutes, seconds
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    // Combine into a string without invalid characters
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  }
+
+  const downloadFile = (file) => {
+    const url = window.URL.createObjectURL(new Blob([file]))
+    const link = document.createElement('a')
+    link.href = url
+
+    const timestamp = Date.now().toLocaleString();
+
+    link.setAttribute('download', `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  }
+  const on_export = async () => {
     if (selectedFields.length === 0) {
       setStatus('Please select at least one field.');
       return;
@@ -178,36 +208,31 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
 
     setStatus('Generating CSV (dummy)…');
 
-    // Dummy rows for demo only
-    const dummyRows = [
-      {
-        team_name: 'sshivas MentoredTeam',
-        mentor: 'Teaching Assistant 10816',
-        member_username: 'Student 10917',
-      },
-      {
-        team_name: 'IronMan2 MentoredTeam',
-        mentor: 'Teaching Assistant 10234',
-        member_username: 'Student 10931',
-      },
-    ];
+    try {
+      const formData = new FormData();
+      formData.append("ordered_fields", JSON.stringify(selectedFields));
 
-    const header = selectedFields.join(',');
-    const body = dummyRows
-      .map((row) => selectedFields.map((f) => (row as any)[f] ?? '').join(','))
-      .join('\n');
+      let url = `/export/${modelClass}`;
 
-    const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'teams-dummy-export.csv';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+      await sendExport({
+        url,
+        method: HttpMethod.POST,
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    setStatus('Export complete (dummy CSV downloaded).');
+
+      console.log(sendExportResponse)
+      if (sendExportResponse?.data?.message) {
+        setStatus(sendExportResponse.data.message);
+        downloadFile(sendExportResponse.data.file)
+      } else {
+        setStatus("Export complete.");
+      }
+    } catch (err: any) {
+      setStatus(err.message || "Unexpected error.");
+    }
+
   };
 
   return (
@@ -222,7 +247,7 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
     >
       <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: '#f7f8fa' }}>
         <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Export teams
+          Export {modelClass}
         </Modal.Title>
       </Modal.Header>
 
@@ -369,4 +394,4 @@ const ExportTeamsDummyModal: React.FC<ExportTeams> = ({ show, onHide, modelClass
   );
 };
 
-export default ExportTeamsDummyModal;
+export default ExportModal;
