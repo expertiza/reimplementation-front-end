@@ -155,7 +155,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
 
   const moveFieldUp = (index: number) => {
     if (index <= 0) return;
-    setSelectedFields((prev) => {
+    setAllFields((prev) => {
       const copy = [...prev];
       [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
       return copy;
@@ -163,7 +163,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
   };
 
   const moveFieldDown = (index: number) => {
-    setSelectedFields((prev) => {
+    setAllFields((prev) => {
       if (index < 0 || index >= prev.length - 1) return prev;
       const copy = [...prev];
       [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
@@ -210,7 +210,10 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
 
     try {
       const formData = new FormData();
-      formData.append("ordered_fields", JSON.stringify(selectedFields));
+
+      const orderedFields = allFields.filter((f) => selectedFields.includes(f));
+
+      formData.append("ordered_fields", JSON.stringify(orderedFields));
 
       let url = `/export/${modelClass}`;
 
