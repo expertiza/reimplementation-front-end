@@ -64,6 +64,8 @@ const Users = () => {
     data?: IUserResponse;
   }>({ visible: false });
 
+
+
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
   }, [fetchUsers, location, showDeleteConfirmation.visible, auth.user.id]);
@@ -96,6 +98,11 @@ const Users = () => {
     () => (isLoading || !userResponse?.data ? [] : userResponse.data),
     [userResponse?.data, isLoading]
   );
+
+  const handleHideImportModal = () => {
+    fetchUsers({ url: `/users/${auth.user.id}/managed` });
+    setShowImportUserModal(false)
+  }
 
   return (
     <>
@@ -140,7 +147,7 @@ const Users = () => {
       {/* Import / Export modals (from separate files) */}
       <ImportModal
         show={showImportUserModal}
-        onHide={() => setShowImportUserModal(false)}
+        onHide={() => handleHideImportModal()}
         modelClass="User"
       />
       <ExportModal

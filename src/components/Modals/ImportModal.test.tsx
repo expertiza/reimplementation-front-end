@@ -40,7 +40,7 @@ const IMPORT_METADATA = {
   mandatory_fields: ["email"],
   optional_fields: ["name"],
   external_fields: ["external_id"],
-  available_actions_on_dup: ["skip", "overwrite"],
+  available_actions_on_dup: ["SkipRecordAction", "UpdateExistingRecordAction"],
 };
 
 describe("ImportModal", () => {
@@ -85,8 +85,8 @@ describe("ImportModal", () => {
     expect(screen.getByText("external_id")).toBeInTheDocument();
 
     // Duplicate handling radios
-    const skipRadio = screen.getByLabelText("skip") as HTMLInputElement;
-    const overwriteRadio = screen.getByLabelText("overwrite") as HTMLInputElement;
+    const skipRadio = screen.getByLabelText("SkipRecordAction") as HTMLInputElement;
+    const overwriteRadio = screen.getByLabelText("UpdateExistingRecordAction") as HTMLInputElement;
 
     expect(skipRadio).toBeInTheDocument();
     expect(overwriteRadio).toBeInTheDocument();

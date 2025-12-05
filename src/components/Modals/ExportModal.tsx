@@ -124,28 +124,27 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
   useEffect(() => {
     if (!show) return;
 
-    fetchConfig().then(data => {
-        if (exportResponse) {
-          setMandatoryFields(exportResponse.data.mandatory_fields);
-          setOptionalFields(exportResponse.data.optional_fields);
-          setExternalFields(exportResponse.data.external_fields);
-
-          const fields = [
-              ...exportResponse.data.mandatory_fields,
-              ...exportResponse.data.optional_fields,
-              ...exportResponse.data.external_fields
-          ]
-
-          setAllFields(fields)
-          setSelectedFields(exportResponse.data.mandatory_fields)
-
-          setStatus('');
-        }
-    })
-    // setConfig(dummyConfig);
-    // setSelectedFields(dummyConfig.default_ordered_fields);
-
+    fetchConfig()
   }, [show]);
+
+  useEffect(() => {
+    if (exportResponse) {
+      setMandatoryFields(exportResponse.data.mandatory_fields);
+      setOptionalFields(exportResponse.data.optional_fields);
+      setExternalFields(exportResponse.data.external_fields);
+
+      const fields = [
+        ...exportResponse.data.mandatory_fields,
+        ...exportResponse.data.optional_fields,
+        ...exportResponse.data.external_fields
+      ]
+
+      setAllFields(fields)
+      setSelectedFields(exportResponse.data.mandatory_fields)
+
+      setStatus('');
+    }
+  }, [exportResponse]);
 
   const toggleField = (field: string) => {
     setSelectedFields((prev) =>
@@ -206,7 +205,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
       return;
     }
 
-    setStatus('Generating CSV (dummy)…');
+    setStatus('Generating CSV…');
 
     try {
       const formData = new FormData();
@@ -226,17 +225,26 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
 
 
       console.log(sendExportResponse)
-      if (sendExportResponse?.data?.message) {
-        setStatus(sendExportResponse.data.message);
-        downloadFile(sendExportResponse.data.file)
-      } else {
-        setStatus("Export complete.");
-      }
+
     } catch (err: any) {
       setStatus(err.message || "Unexpected error.");
     }
 
   };
+
+
+  useEffect(() => {
+    if(sendExportResponse) {
+      setStatus(sendExportResponse.data.message);
+      downloadFile(sendExportResponse.data.file)
+
+      if (!exportError){
+        setTimeout(onHide, 1500);
+      }
+    } else if (exportError) {
+      setStatus(exportError);
+    }
+  }, [sendExportResponse, exportError]);
 
   return (
     <Modal
