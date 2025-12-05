@@ -40,7 +40,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest --config vitest.config.ts"
   },
   "eslintConfig": {
     "extends": [

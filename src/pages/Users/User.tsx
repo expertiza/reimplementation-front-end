@@ -1,7 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "../../components/Table/Table";
 import useAPI from "../../hooks/useAPI";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { BsPersonFillAdd } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,8 @@ import { RootState } from "../../store/store";
 import { IUserResponse, ROLE } from "../../utils/interfaces";
 import DeleteUser from "./UserDelete";
 import { userColumns as USER_COLUMNS } from "./userColumns";
+import ImportModal from "../../components/Modals/ImportModal";
+import ExportModal from "../../components/Modals/ExportModal";
 
 /**
  * @author Ankur Mundra on April, 2023
@@ -21,14 +23,48 @@ const Users = () => {
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
+
+  const [showImportUserModal, setShowImportUserModal] = useState(false);
+  const [showExportUserModal, setShowExportUserModal] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+
+  const STANDARD_TEXT: React.CSSProperties = {
+    fontFamily: 'verdana, arial, helvetica, sans-serif',
+    color: '#333',
+    fontSize: '13px',
+    lineHeight: '30px',
+  };
+
+  const toolbarLinkBase: React.CSSProperties = {
+    ...STANDARD_TEXT,
+    color: '#8b5e3c',
+    background: 'transparent',
+    border: 'none',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
+    textDecoration: 'none',
+  };
+  const pipe: React.CSSProperties = { margin: '0 8px', color: '#8b5e3c' };
+
+  const ToolbarLink: React.FC<{
+    onClick: () => void;
+    children: React.ReactNode;
+  }> = ({ onClick, children }) => (
+    <button style={toolbarLinkBase} onClick={onClick}>
+      {children}
+    </button>
+  );
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: IUserResponse;
   }>({ visible: false });
+
+
 
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
@@ -63,6 +99,11 @@ const Users = () => {
     [userResponse?.data, isLoading]
   );
 
+  const handleHideImportModal = () => {
+    fetchUsers({ url: `/users/${auth.user.id}/managed` });
+    setShowImportUserModal(false)
+  }
+
   return (
     <>
       <Outlet />
@@ -75,6 +116,12 @@ const Users = () => {
             <hr />
           </Row>
           <Row>
+            <Col>
+              <ToolbarLink onClick={() => setShowImportUserModal(true)}>Import users</ToolbarLink>
+              <span style={pipe}>|</span>
+              <ToolbarLink onClick={() => setShowExportUserModal(true)}>Export users</ToolbarLink>
+
+            </Col>
             <Col md={{ span: 1, offset: 11 }}>
               <Button variant="outline-success" onClick={() => navigate("new")}>
                 <BsPersonFillAdd />
@@ -96,6 +143,18 @@ const Users = () => {
           </Row>
         </Container>
       </main>
+
+      {/* Import / Export modals (from separate files) */}
+      <ImportModal
+        show={showImportUserModal}
+        onHide={() => handleHideImportModal()}
+        modelClass="User"
+      />
+      <ExportModal
+        show={showExportUserModal}
+        onHide={() => setShowExportUserModal(false)}
+        modelClass="User"
+      />
     </>
   );
 };

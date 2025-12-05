@@ -6,3 +6,11 @@ html {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
 }
+
+/* Ensure dropdown width matches the longest option text */
+.auto-width-select-import {
+    width: auto !important;
+    min-width: max-content !important;
+    display: inline-block !important;
+    padding-right: 2rem; /* keeps the dropdown arrow visible */
+}
