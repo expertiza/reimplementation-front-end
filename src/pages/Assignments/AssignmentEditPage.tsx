@@ -1,4 +1,4 @@
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Tabs, Tab } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -373,152 +373,20 @@ const AssignmentEditPage = () => {
         </Row>
         
         <div className="tab-container" style={{
-          backgroundColor: '#f8f9fa',
-          border: '1px solid #dee2e6',
+          // backgroundColor: '#f8f9fa',
+          // border: '1px solid #dee2e6',
           borderRadius: '5px',
           padding: '0',
           marginBottom: '20px'
         }}>
-          <div className="d-flex">
-            <button 
-              className={`tab-button ${activeTab === 'general' ? 'active' : ''}`}
-              onClick={() => setActiveTab('general')}
-              style={{
-                backgroundColor: activeTab === 'general' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '5px',
-                borderTopRightRadius: '0px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'general' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              General
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'topics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('topics')}
-              style={{
-                backgroundColor: activeTab === 'topics' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '0px',
-                borderTopRightRadius: '0px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'topics' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              Topics
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'rubrics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('rubrics')}
-              style={{
-                backgroundColor: activeTab === 'rubrics' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '0px',
-                borderTopRightRadius: '0px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'rubrics' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              Rubrics
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'review-strategy' ? 'active' : ''}`}
-              onClick={() => setActiveTab('review-strategy')}
-              style={{
-                backgroundColor: activeTab === 'review-strategy' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '0px',
-                borderTopRightRadius: '0px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'review-strategy' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              Review strategy
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'due-dates' ? 'active' : ''}`}
-              onClick={() => setActiveTab('due-dates')}
-              style={{
-                backgroundColor: activeTab === 'due-dates' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '0px',
-                borderTopRightRadius: '0px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'due-dates' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              Due dates
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'etc' ? 'active' : ''}`}
-              onClick={() => setActiveTab('etc')}
-              style={{
-                backgroundColor: activeTab === 'etc' ? '#ffffff' : '#f8f9fa',
-                border: '1px solid #dee2e6',
-                borderBottom: 'none',
-                borderTopLeftRadius: '0px',
-                borderTopRightRadius: '5px',
-                borderBottomLeftRadius: '0px',
-                borderBottomRightRadius: '0px',
-                padding: '8px 16px',
-                margin: '0',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: activeTab === 'etc' ? '500' : '400',
-                color: '#495057',
-                outline: 'none',
-                flex: '1'
-              }}
-            >
-              Etc.
-            </button>
-          </div>
+          <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k || "topics")} id="assignment-edit-tabs">
+            <Tab eventKey="general" title="General" />
+            <Tab eventKey="topics" title="Topics" />
+            <Tab eventKey="rubrics" title="Rubrics" />
+            <Tab eventKey="review-strategy" title="Review Strategy" />
+            <Tab eventKey="due-dates" title="Due Dates" />
+            <Tab eventKey="etc" title="Etc." />
+          </Tabs>
         </div>
 
         {/* Tab Content */}

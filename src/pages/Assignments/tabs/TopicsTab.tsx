@@ -320,7 +320,7 @@ const TopicsTab = ({
         <h4>Topics for {assignmentName} assignment</h4>
 
         {/* Topic Settings */}
-        <Form>
+        <Form className="topics-settings-form">
               <Form.Check
                 type="checkbox"
                 id="allowTopicSuggestions"
@@ -432,23 +432,6 @@ const TopicsTab = ({
               header: "Waitlisted",
               cell: ({ row }: any) => <span className="d-block text-center">{row.original.waitlistedTeams?.length ?? 0}</span>,
             },
-            ...(topicSettings.allowBookmarks
-              ? [
-                  {
-                    id: "bookmarks",
-                    header: "Bookmarks",
-                    cell: ({ row }: any) => {
-                      const topic = topicsData.find(t => t.id === row.original.id);
-                      const bookmarkCount = topic?.bookmarks?.length || 0;
-                      return (
-                        <span>
-                          {bookmarkCount === 0 ? "None" : `${bookmarkCount} bookmark${bookmarkCount > 1 ? 's' : ''}`}
-                        </span>
-                      );
-                    },
-                  },
-                ]
-              : []),
           ]}
           renderDetails={(row) => (
             <div>
@@ -500,7 +483,7 @@ const TopicsTab = ({
                   aria-label="Edit Topic"
                   className="p-0"
                 >
-                  <img src={process.env.PUBLIC_URL + "/assets/images/edit-icon-24.png"} alt="Edit" style={{ width: "20px", height: "20px" }} />
+                  <img src={"/assets/images/edit-icon-24.png"} alt="Edit" style={{ width: "20px", height: "20px" }} />
                 </Button>
               </OverlayTrigger>
 
@@ -511,7 +494,7 @@ const TopicsTab = ({
                   aria-label="Delete Topic"
                   className="p-0"
                 >
-                  <img src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"} alt="Delete" style={{ width: "20px", height: "20px" }} />
+                  <img src={"/assets/images/delete-icon-24.png"} alt="Delete" style={{ width: "20px", height: "20px" }} />
                 </Button>
               </OverlayTrigger>
 
@@ -528,7 +511,7 @@ const TopicsTab = ({
                     className="p-0"
                   >
                     <img
-                      src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+                      src={"/assets/images/add-ta-24.png"}
                       alt="Apply to partner ad"
                       style={{ width: "20px", height: "20px" }}
                     />
