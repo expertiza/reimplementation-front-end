@@ -18,7 +18,9 @@ import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
-import Questionnaire from "./pages/EditQuestionnaire/Questionnaire";
+import Questionnaire from "./pages/Questionnaires/Questionnaire";
+import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
+import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import Home from "./pages/Home";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -123,7 +125,7 @@ function App() {
           element: <AssignmentEditor mode="create" />,
           loader: loadAssignment,
         },
-        
+
         {
           path: "assignments/edit/:id",
           element: <ProtectedRoute element={<AssignmentEditPage />} leastPrivilegeRole={ROLE.TA} />,
@@ -273,14 +275,14 @@ function App() {
           path: "email_the_author",
           element: <Email_the_author />,
         },
-        {
+{
           path: "student_tasks",
           element: <ProtectedRoute element={<StudentTasks />} />,
         },
         {
           path: "student_tasks/:assignmentId",
           element: <ProtectedRoute element={<StudentTasks />} />,
-        },
+        },        
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
@@ -322,7 +324,7 @@ function App() {
               element: <Roles />,
               loader: loadRoles,
               children: [
-                {
+                 {
                   path: "new",
                   element: <RoleEditor mode="create" />,
                 },
@@ -366,15 +368,31 @@ function App() {
                 },
               ],
             },
-            {
-              path: "questionnaire",
-              element: <Questionnaire />,
-            },
+            { 
+              path: "questionnaire", 
+              element: <Questionnaire />, 
+              loader: loadQuestionnaire, },
           ],
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
+        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+
+        {
+          path: "questionnaires",
+          element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
+        {
+          path: "questionnaires/new",
+          element: <ProtectedRoute element={<QuestionnaireEditor mode="create" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
+        {
+          path: "questionnaires/edit/:id",
+          element: <ProtectedRoute element={<QuestionnaireEditor mode="update" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
       ],
     },
   ]);
