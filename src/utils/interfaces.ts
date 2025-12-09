@@ -20,6 +20,7 @@ export interface IInstitution {
 export interface IInstructor {
   id?: number;
   name: string;
+  email?: string;
 }
 
 export interface ITA {

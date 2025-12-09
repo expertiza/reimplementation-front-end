@@ -131,9 +131,6 @@ const Header: React.FC = () => {
                     <NavDropdown.Item as={Link} to="/questionnaire">
                       Questionnaire
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/edit-questionnaire">
-                      Edit Questionnaire
-                    </NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item as={Link} to="/impersonate">
                       Impersonate User
