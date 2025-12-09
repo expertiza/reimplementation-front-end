@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import RootLayout from "./layout/Root";
@@ -16,7 +17,9 @@ import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
-import Questionnaire from "./pages/EditQuestionnaire/Questionnaire";
+import Questionnaire from "./pages/Questionnaires/Questionnaire";
+import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
+import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import Home from "./pages/Home";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -41,6 +44,9 @@ import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import AssignmentEditPage from "./pages/Assignments/AssignmentEditPage";
+import StudentTasks from "pages/StudentTasks/StudentTasks";
+import AssignReviewer from "pages/Assignments/AssignReviewer";
 function App() {
   const router = createBrowserRouter([
     {
@@ -60,22 +66,16 @@ function App() {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
-
-        {
-          path: "assignments/edit/:id",
-          element: <AssignmentEditor mode="update" />,
-          loader: loadAssignment,
-        },
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id)
         {
-          path: "assignments/edit/:id/responsemappings",
-          element: <ResponseMappings />,
+          path: "assignments/edit/:id/assignreviewer",
+          element: <AssignReviewer />,
+          loader: loadAssignment,
         },
 
         {
@@ -111,6 +111,10 @@ function App() {
           ],
         },
 
+        {
+          path: "assignments/edit/:id",
+          element: <ProtectedRoute element={<AssignmentEditPage />} leastPrivilegeRole={ROLE.TA} />,
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
@@ -216,6 +220,14 @@ function App() {
           path: "email_the_author",
           element: <Email_the_author />,
         },
+{
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },        
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
@@ -257,7 +269,10 @@ function App() {
               element: <Roles />,
               loader: loadRoles,
               children: [
-                { path: "new", element: <RoleEditor mode="create" /> },
+                 {
+                  path: "new",
+                  element: <RoleEditor mode="create" />,
+                },
                 {
                   id: "edit-role",
                   path: "edit/:id",
@@ -271,7 +286,10 @@ function App() {
               element: <Institutions />,
               loader: loadInstitutions,
               children: [
-                { path: "new", element: <InstitutionEditor mode="create" /> },
+                {
+                  path: "new",
+                  element: <InstitutionEditor mode="create" />,
+                },
                 {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
@@ -284,16 +302,42 @@ function App() {
               element: <ManageUserTypes />,
               loader: loadUsers,
               children: [
-                { path: "new", element: <Navigate to="/users/new" /> },
-                { path: "edit/:id", element: <Navigate to="/users/edit/:id" /> },
+                {
+                  path: "new",
+                  element: <Navigate to="/users/new" />,
+                },
+
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/users/edit/:id" />,
+                },
               ],
             },
-            { path: "questionnaire", element: <Questionnaire /> },
+            { 
+              path: "questionnaire", 
+              element: <Questionnaire />, 
+              loader: loadQuestionnaire, },
           ],
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire /> },
+        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+
+        {
+          path: "questionnaires",
+          element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
+        {
+          path: "questionnaires/new",
+          element: <ProtectedRoute element={<QuestionnaireEditor mode="create" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
+        {
+          path: "questionnaires/edit/:id",
+          element: <ProtectedRoute element={<QuestionnaireEditor mode="update" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          loader: loadQuestionnaire,
+        },
       ],
     },
   ]);

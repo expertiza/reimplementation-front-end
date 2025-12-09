@@ -33,7 +33,10 @@ const useAPI = () => {
     let errorMessage = "";
 
     axios(requestConfig)
-      .then((response) => setData(response))
+      .then((response) => {
+        setData(response);
+        setIsLoading(false);
+      })
       .catch((err) => {
         if (err.response) {
           const errors = err.response.data;
@@ -52,8 +55,8 @@ const useAPI = () => {
         }
 
         if (errorMessage) setError(errorMessage);
+        setIsLoading(false);
       });
-    setIsLoading(false);
   }, []);
 
   return { data, setData, isLoading, error, sendRequest };
