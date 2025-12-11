@@ -41,6 +41,9 @@ import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
+import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -122,6 +125,11 @@ function App() {
             },
             {
               path: "edit/:id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+            {
+              path: ":id",
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
@@ -215,6 +223,18 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author />,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "assignments/:id/review",
+          element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
