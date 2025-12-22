@@ -87,6 +87,16 @@ export interface IAssignmentRequest {
   has_badge:boolean,
   staggered_deadline:boolean,
   is_calibrated:boolean,
+  vary_by_round?: boolean,
+  rounds_of_reviews?: number,
+  assignment_questionnaires_attributes?: {
+    id?: number;
+    questionnaire_id: number;
+    used_in_round: number;
+    questionnaire_weight?: number;
+    notification_limit?: number;
+    _destroy?: boolean;
+  }[],
 }
 
 export interface ITAResponse {
@@ -170,6 +180,16 @@ export interface IAssignmentResponse {
   has_badge:boolean;
   staggered_deadline:boolean;
   is_calibrated:boolean;
+  vary_by_round?: boolean;
+  varying_rubrics_by_round?: boolean;
+  rounds_of_reviews?: number;
+  due_dates?: { id: number; deadline_type_id: number }[];
+  assignment_questionnaires?: {
+    id: number;
+    used_in_round?: number;
+    questionnaire?: { id: number; name: string };
+  }[];
+  num_review_rounds?: number;
   
 }
 
@@ -180,4 +200,3 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   // Transform response as needed
   return assignment;
 };
-

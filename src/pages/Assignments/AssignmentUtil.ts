@@ -47,24 +47,49 @@ export interface IAssignmentFormValues {
   teammate_allowed?: boolean[];
   metareview_allowed?: boolean[];
   reminder?: number[];
+  due_dates?: { id: number; deadline_type_id: number; round?: number }[];
+  assignment_questionnaires?: {
+    id: number;
+    used_in_round?: number;
+    questionnaire?: { id: number; name: string };
+  }[];
+  [key: string]: any;
 }
 
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
+  // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
+  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
+  const roundCount = values.number_of_review_rounds ?? 0;
+  for (let i = 1; i <= roundCount; i += 1) {
+    const questionnaireId = values[`questionnaire_round_${i}`];
+    if (questionnaireId) {
+      const existingId = values[`assignment_questionnaire_id_${i}`];
+      assignmentQuestionnaires.push({
+        id: existingId,
+        questionnaire_id: questionnaireId,
+        used_in_round: i,
+      });
+    }
+  }
+
   const assignment: IAssignmentRequest = {
     name: values.name,
     directory_path: values.directory_path,
     spec_location: values.spec_location,
     private: values.private,
-    show_template_review: values.show_template_review,
+    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz,
     has_badge: values.has_badge,
     staggered_deadline: values.staggered_deadline,
     is_calibrated: values.is_calibrated,
+    vary_by_round: values.review_rubric_varies_by_round,
+    rounds_of_reviews: values.number_of_review_rounds,
+    assignment_questionnaires_attributes: assignmentQuestionnaires,
+
   };
-  console.log("Assignment Request:", assignment);
-  // Wrap in 'assignment' key as expected by Rails controller
-  return { assignment };
+  console.log(assignment);
+  return JSON.stringify({ assignment });
 };
 
 export const transformAssignmentResponse = (assignmentResponse: string) => {
@@ -75,18 +100,23 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     directory_path: assignment.directory_path,
     spec_location: assignment.spec_location,
     private: assignment.private,
-    show_template_review: assignment.show_template_review,
+    show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,
     has_badge: assignment.has_badge,
     staggered_deadline: assignment.staggered_deadline,
     is_calibrated: assignment.is_calibrated,
-
+    review_rubric_varies_by_round: assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
+    number_of_review_rounds: assignment.num_review_rounds,
+    due_dates: assignment.due_dates,
+    assignment_questionnaires: assignment.assignment_questionnaires,
   };
   return assignmentValues;
 };
 
 export async function loadAssignment({ params }: any) {
   let assignmentData = {};
+  let questionnaires = []; // fetch questionnaire list for dropdown window selections in Rubrics tab
+
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
     try {
@@ -98,6 +128,8 @@ export async function loadAssignment({ params }: any) {
     }
   }
 
-  return assignmentData;
-}
+  const questionnairesRes = await axiosClient.get("/questionnaires");
+  questionnaires = questionnairesRes.data || [];
 
+  return { ...assignmentData, questionnaires, weights: [] };
+}
