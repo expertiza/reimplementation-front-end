@@ -16,8 +16,8 @@ import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { HttpMethod } from "utils/httpMethods";
 import { RootState } from "../../store/store";
-import { alertActions } from "store/slices/alertSlice";
-import useAPI from "hooks/useAPI";
+import { alertActions } from "../../store/slices/alertSlice";
+import useAPI from "../../hooks/useAPI";
 import FormCheckbox from "components/Form/FormCheckBox";
 import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
@@ -674,31 +674,31 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <Tab eventKey="etc" title="Etc.">
                   <div className="assignment-actions d-flex flex-wrap justify-content-start">
                     <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/add-participant-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/add-participant-24.png'} alt="User Icon" className="icon" />
                       <span>Add Participant</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/create-teams-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/create-teams-24.png'} alt="User Icon" className="icon" />
                       <span>Create Teams</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/assign-reviewers-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/assign-reviewers-24.png'} alt="User Icon" className="icon" />
                       <span>Assign Reviewer</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/view-submissions-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/view-submissions-24.png'} alt="User Icon" className="icon" />
                       <span>View Submissions</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewscores`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/view-scores-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/view-scores-24.png'} alt="User Icon" className="icon" />
                       <span>View Scores</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/view-review-report-24.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/view-review-report-24.png'} alt="User Icon" className="icon" />
                       <span>View Reports</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
-                      <img src={process.env.PUBLIC_URL + '/assets/icons/view-delayed-mailer.png'} alt="User Icon" className="icon" />
+                      <img src={'/assets/icons/view-delayed-mailer.png'} alt="User Icon" className="icon" />
                       <span>View Delayed Jobs</span>
                     </div>
                   </div>
