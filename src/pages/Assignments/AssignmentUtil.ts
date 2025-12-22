@@ -61,10 +61,10 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     has_badge: values.has_badge,
     staggered_deadline: values.staggered_deadline,
     is_calibrated: values.is_calibrated,
-
   };
-  console.log(assignment);
-  return JSON.stringify(assignment);
+  console.log("Assignment Request:", assignment);
+  // Wrap in 'assignment' key as expected by Rails controller
+  return { assignment };
 };
 
 export const transformAssignmentResponse = (assignmentResponse: string) => {
@@ -89,10 +89,13 @@ export async function loadAssignment({ params }: any) {
   let assignmentData = {};
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
-    const userResponse = await axiosClient.get(`/assignments/${params.id}`, {
-      transformResponse: transformAssignmentResponse,
-    });
-    assignmentData = await userResponse.data;
+    try {
+      const userResponse = await axiosClient.get(`/assignments/${params.id}`);
+      assignmentData = userResponse.data;
+    } catch (error) {
+      console.error("Error loading assignment:", error);
+      assignmentData = { id: params.id };
+    }
   }
 
   return assignmentData;
