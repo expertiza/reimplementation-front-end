@@ -119,10 +119,13 @@ export async function loadAssignment({ params }: any) {
 
   // if params contains id, then we are editing a user, so we need to load the user data
   if (params.id) {
-    const userResponse = await axiosClient.get(`/assignments/${params.id}`, {
-      transformResponse: transformAssignmentResponse,
-    });
-    assignmentData = await userResponse.data;
+    try {
+      const userResponse = await axiosClient.get(`/assignments/${params.id}`);
+      assignmentData = userResponse.data;
+    } catch (error) {
+      console.error("Error loading assignment:", error);
+      assignmentData = { id: params.id };
+    }
   }
 
   const questionnairesRes = await axiosClient.get("/questionnaires");

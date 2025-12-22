@@ -11,6 +11,7 @@ import ViewDelayedJobs from "./pages/Assignments/ViewDelayedJobs";
 import ViewReports from "./pages/Assignments/ViewReports";
 import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
+import SubmittedContent from "./pages/Assignments/SubmittedContent";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
@@ -28,6 +29,7 @@ import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
 import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
 import EditProfile from "./pages/Profile/Edit";
 import Reviews from "./pages/Reviews/reviews";
+import ReviewTableau from "./pages/ReviewTableau/ReviewTableau";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import TA from "./pages/TA/TA";
@@ -72,7 +74,7 @@ function App() {
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id)
+        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
         {
           path: "assignments/edit/:id/responsemappings",
           element: <ResponseMappings />,
@@ -81,6 +83,11 @@ function App() {
         {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/submitcontent",
+          element: <SubmittedContent />,
           loader: loadAssignment,
         },
         {
@@ -203,6 +210,10 @@ function App() {
         {
           path: "reviews",
           element: <Reviews />,
+        },
+        {
+          path: "review-tableau",
+          element: <ProtectedRoute element={<ReviewTableau />} />,
         },
         {
           path: "demo/participants",
