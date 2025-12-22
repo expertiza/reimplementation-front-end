@@ -1,0 +1,261 @@
+/* Review by Student Styles - Using Bootstrap Table Component */
+
+.review-by-student-container {
+  padding: 20px;
+  background-color: white;
+  font-family: verdana, arial, helvetica, sans-serif;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Main title */
+.main-title {
+  line-height: 18px;
+  font-weight: bold;
+  margin: 0 0 15px 0;
+  text-align: left;
+}
+
+/* Course and assignment info */
+.course-info {
+  font-size: 1.2em;
+  line-height: 30px;
+}
+
+/* Round sections (main level) */
+.round-section {
+  margin-bottom: 50px;
+}
+
+.round-title-main {
+  font-size: 1.4em;
+  line-height: 22px;
+  font-weight: bold;
+  margin: 30px 0 20px 0;
+  color: #333;
+  padding-bottom: 5px;
+}
+
+/* Rubric sections (within rounds) */
+.rubric-section {
+  margin-bottom: 30px;
+}
+
+.rubric-title {
+  font-size: 1.2em;
+  line-height: 18px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+/* Table wrapper */
+.review-table-wrapper {
+  margin-bottom: 20px;
+}
+
+.review-table-wrapper .table {
+  font-size: 15px;
+  line-height: 1.428em;
+  border: 1px solid #999;
+  margin-bottom: 0;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+.review-table-wrapper .table thead th {
+  background-color: white !important;
+  border: 1px solid #999 !important;
+  padding: 8px !important;
+  text-align: center !important;
+  font-weight: bold !important;
+  font-size: 15px !important;
+  line-height: 1.428em !important;
+  vertical-align: top !important;
+  color: #333 !important;
+}
+
+/* First header cell (Item column) should have beige background */
+.review-table-wrapper .table thead th:first-child {
+  background-color: #c0c0b0 !important;
+}
+
+.review-table-wrapper .table tbody td {
+  border: 1px solid #999 !important;
+  padding: 4px 8px !important;
+  vertical-align: middle !important;
+  font-size: 15px !important;
+  line-height: 1.428em !important;
+}
+
+/* Make sure the first column (ITEM) has beige background */
+.review-table-wrapper .table tbody td:first-child {
+  background-color: #c0c0b0 !important;
+}
+
+/* Reviewer header styling */
+.reviewer-header-content {
+  text-align: center;
+}
+
+.reviewer-name {
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 15px;
+  line-height: 1.428em;
+}
+
+.submission-time {
+  font-size: 13px;
+  line-height: 30px;
+  font-weight: normal;
+  color: #4e4d4d;
+  font-style: italic;
+}
+
+/* Response cell styling */
+.response-cell-content {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Score widgets - match the green circular design */
+.score-widget {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown response styling */
+.dropdown-response {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.selected-option {
+  background-color: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+}
+
+/* Check/X icons using images */
+.check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+}
+
+.check-icon img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.check-icon.check-true {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: 3px;
+}
+
+.check-icon.check-false {
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 3px;
+}
+
+/* Text response styling */
+.text-response-cell {
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* No response placeholder */
+.no-response {
+  color: #ccc;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 30px;
+}
+
+/* Loading and error states */
+.review-tableau-loading,
+.review-tableau-error,
+.review-tableau-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  font-size: 13px;
+  line-height: 30px;
+  color: #666;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+.error-message {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 30px;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loading-spinner::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #b00404;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .review-by-student-container {
+    padding: 10px;
+  }
+  
+  .main-title {
+    font-size: 1.1em;
+    line-height: 16px;
+  }
+  
+  .review-table-wrapper .table {
+    font-size: 13px;
+    line-height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 1em;
+    line-height: 14px;
+  }
+  
+  .review-table-wrapper .table {
+    font-size: 12px;
+    line-height: 1.2em;
+  }
+}
