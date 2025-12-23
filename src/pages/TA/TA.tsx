@@ -12,6 +12,7 @@ import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { ITAResponse, ROLE } from "../../utils/interfaces";
 import { TAColumns as TA_COLUMNS } from "./TAColumns";
+import ColumnButton from "../../components/ColumnButton";
 import DeleteTA from "./TADelete";
 
 /**
@@ -85,26 +86,41 @@ const TAs = () => {
               <hr />
             </Row>
             <Row>
-              <Col md={{ span: 1, offset: 11 }} style={{paddingBottom: "10px"}}>
-                <Button variant="outline-success" onClick={() => navigate("new")}>
-                  <BsPersonFillAdd />
-                </Button>
+              <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
+                <ColumnButton
+                  id="add-ta"
+                  variant="outline-success"
+                  size="lg"
+                  className="ms-sm-2"
+                  onClick={() => navigate("new")}
+                  tooltip="Add TA to this course"
+                  icon={<img
+              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              alt="Assign TA"
+              style={{ width: "20px", height: "20px" }}
+            />}
+                />
               </Col>
-              {showDeleteConfirmation.visible && (
-                <DeleteTA TAData={showDeleteConfirmation.data!} onClose={onDeleteTAHandler} />
-              )}
             </Row>
-            <Row>
-              <Table
-                showGlobalFilter={false}
-                data={tableData}
-                columns={tableColumns}
-                columnVisibility={{
-                  id: false,
-                  institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
-                }}
-              />
-            </Row>
+            {tableData.length === 0 ? (
+              <Row className="mt-md-2 mb-md-2 text-center">
+                <Col>
+                  <h3>No TAs are assigned for this course.</h3>
+                </Col>
+              </Row>
+            ) : (
+              <Row>
+                <Table
+                  showGlobalFilter={false}
+                  data={tableData}
+                  columns={tableColumns}
+                  columnVisibility={{
+                    id: false,
+                    institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                  }}
+                />
+              </Row>
+            )}
           </Container>
         </main>
       </Modal.Body>

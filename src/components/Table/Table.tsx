@@ -80,6 +80,7 @@ const Table: React.FC<TableProps> = ({
           </button>
         );
       },
+	  size: 40,
       enableSorting: false,
       enableColumnFilter: false,
     };
@@ -107,6 +108,7 @@ const Table: React.FC<TableProps> = ({
                 }}
               />
             ),
+			size: 40,
             enableSorting: false,
             enableFilter: false,
           },
@@ -141,6 +143,12 @@ const Table: React.FC<TableProps> = ({
     getExpandedRowModel: getExpandedRowModel(),
   });
 
+
+  //Enable search filters for columns based on page size
+  const totalItems = initialData.length;
+  const pageSize = table.getState().pagination.pageSize;
+  const shouldShowColumnFilters = showColumnFilter && totalItems > pageSize;
+
   const flatRows = table.getSelectedRowModel().flatRows;
 
   useEffect(() => {
@@ -173,22 +181,22 @@ const Table: React.FC<TableProps> = ({
                 <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
               )}
             </Col>
-            <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
+            {/*<span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
               <FaSearch style={{ cursor: "pointer" }} />
               {isGlobalFilterVisible ? " Hide" : " Show"}
-            </span>
+            </span>*/}
           </Row>
         </Container>
       )}
       <Container>
         <Row style={{ flex: 1 }}>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm">
+            <BTable striped hover responsive size="sm" className="custom-table-layout">
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan}>
+                      <th key={header.id} colSpan={header.colSpan} style={{ width: `${header.getSize()}px` }}>
                         {header.isPlaceholder ? null : (
                           <>
                             <div
@@ -205,7 +213,7 @@ const Table: React.FC<TableProps> = ({
                                 desc: " 🔽",
                               }[header.column.getIsSorted() as string] ?? null}
                             </div>
-                            {showColumnFilter && header.column.getCanFilter() ? (
+                            {shouldShowColumnFilters && header.column.getCanFilter() ? (
                               <ColumnFilter column={header.column} />
                             ) : null}
                           </>
@@ -246,6 +254,7 @@ const Table: React.FC<TableProps> = ({
                 setPageSize={table.setPageSize}
                 getPageCount={table.getPageCount}
                 getState={table.getState}
+				totalItems={initialData.length}
               />
             )}
           </Col>

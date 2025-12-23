@@ -1,6 +1,6 @@
-import FormCheckBoxGroup from "../../components/Form/FormCheckBoxGroup";
-import FormInput from "../../components/Form/FormInput";
-import FormSelect from "../../components/Form/FormSelect";
+import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
+import FormInput from "components/Form/FormInput";
+import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
 import useAPI from "../../hooks/useAPI";
 import React, { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice"; // Success message utility
-import { HttpMethod } from "../../utils/httpMethods";
+import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
 import { RootState } from "../../store/store";
 import { IEditor, ROLE } from "../../utils/interfaces";

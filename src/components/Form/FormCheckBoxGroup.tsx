@@ -30,6 +30,7 @@ const FormCheckboxGroup: React.FC<IFormPropsWithOption> = (props) => {
               <Form.Check
                 {...field}
                 key={option.value}
+                id={`${controlId}-${option.value}`}
                 type="checkbox"
                 className="mx-md-2"
                 label={option.label}
