@@ -202,7 +202,9 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
     // validate sum of weights = 100%
     const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
 
-    if (totalWeight !== 100) {
+    const hasWeights = (values.weights?.length ?? 0) > 0;
+
+    if (hasWeights && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
       return;
     }
@@ -267,38 +269,12 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
       }
       <Formik
         initialValues={formInitialValues}
-        onSubmit={()=>{}}
+        onSubmit={onSubmit}
         validationSchema={validationSchema}
         validateOnChange={false}
         enableReinitialize={true}
       >
         {(formik) => {
-          const handleSave = () => {
-            // Validate sum of weights = 100%
-            const totalWeight = formik.values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
-            if (totalWeight !== 100) {
-              dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
-              return;
-            }
-
-            let method: HttpMethod = HttpMethod.POST;
-            let url: string = "/assignments";
-            if (mode === "update") {
-              url = `/assignments/${formik.values.id}`;
-              method = HttpMethod.PATCH;
-            }
-            // to be used to display message when assignment is created
-            assignmentData.name = formik.values.name;
-
-            console.log("Sending assignment data:", formik.values);
-
-            sendRequest({
-              url: url,
-              method: method,
-              data: formik.values,
-            });
-          };
-        
         return (
           <Form>
             <Tabs defaultActiveKey="general" id="assignment-tabs">
@@ -622,7 +598,14 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                       columns={[
                         { accessorKey: "deadline_type", header: "Deadline type", enableSorting: false, enableColumnFilter: false },
                         {
-                          cell: ({ row }) => <><FormDatePicker controlId={`assignment-date_time_${row.original.id}`} name={`date_time[${row.original.id}]`} /></>,
+                          cell: ({ row }) => (
+                            <>
+                              <FormDatePicker
+                                controlId={`assignment-date_time_${row.original.id}`}
+                                name={`date_time.${row.original.id}`}
+                              />
+                            </>
+                          ),
                           accessorKey: "date_time", header: "Date & Time", enableSorting: false, enableColumnFilter: false
                         },
                         {
@@ -640,7 +623,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                         },
                         {
                           cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                            <FormSelect controlId={`assignment-review_allowed_${row.original.id}`} name={`review_allowed[${row.original.id}]`} options={[
                               { label: "Yes", value: "yes" },
                               { label: "No", value: "no" },
                             ]} />
@@ -649,7 +632,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                         },
                         {
                           cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                            <FormSelect controlId={`assignment-teammate_allowed_${row.original.id}`} name={`teammate_allowed[${row.original.id}]`} options={[
                               { label: "Yes", value: "yes" },
                               { label: "No", value: "no" },
                             ]} />
@@ -658,7 +641,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                         },
                         {
                           cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                            <FormSelect controlId={`assignment-metareview_allowed_${row.original.id}`} name={`metareview_allowed[${row.original.id}]`} options={[
                               { label: "Yes", value: "yes" },
                               { label: "No", value: "no" },
                             ]} />
@@ -667,7 +650,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                         },
                         {
                           cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
+                            <FormSelect controlId={`assignment-reminder_${row.original.id}`} name={`reminder[${row.original.id}]`} options={[
                               { label: "1", value: "1" },
                               { label: "2", value: "2" },
                               { label: "3", value: "3" },
@@ -798,7 +781,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
 
             {/* Submit button */}
               <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
-                <Button type="submit" variant="outline-secondary" onClick={handleSave}>
+                <Button type="submit" variant="outline-secondary">
                   Save
                 </Button> |
                 <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
