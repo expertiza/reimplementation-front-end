@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import RootLayout from "./layout/Root";
@@ -43,6 +44,7 @@ import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import AssignReviewer from "./pages/Assignments/AssignReviewer";
 function App() {
   const router = createBrowserRouter([
     {
@@ -81,6 +83,12 @@ function App() {
         },
 
         {
+          path: "assignments/edit/:id/assignreviewer",
+          element: <AssignReviewer />,
+          loader: loadAssignment,
+        },
+
+        {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
           loader: loadAssignment,
@@ -107,15 +115,21 @@ function App() {
         },
 
         {
+          path: "assignments/new",
+          element: <AssignmentEditor mode="create" />,
+          loader: loadAssignment,
+        },
+
+        {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
-          children: [
-            {
-              path: "new",
-              element: <AssignmentEditor mode="create" />,
-              loader: loadAssignment,
-            },
-          ],
+          // children: [
+          //   {
+          //     path: "new",
+          //     element: <AssignmentEditor mode="create" />,
+          //     loader: loadAssignment,
+          //   },
+          // ],
         },
 
         {

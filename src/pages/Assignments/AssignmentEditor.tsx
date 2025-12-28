@@ -30,6 +30,8 @@ import ToolTip from "../../components/ToolTip";
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
+  instructor_id: 1,
+  course_id: 1,
   // dir: "",
   spec_location: "",
   private: false,
@@ -61,6 +63,7 @@ const initialValues: IAssignmentFormValues = {
   use_signup_deadline: false,
   use_drop_topic_deadline: false,
   use_team_formation_deadline: false,
+  allow_tag_prompts: false,
   weights: [],
   notification_limits: [],
   use_date_updater: [],
@@ -80,12 +83,36 @@ const validationSchema = Yup.object({
 const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
+  const { data: calibrationSubmissionsResponse, error: calibrationSubmissionsError, sendRequest: sendCalibrationSubmissionsRequest } = useAPI();
   const [courses, setCourses] = useState<any[]>([]);
+  const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
   const assignmentData: any = useLoaderData();
+
+  // Merge backend-loaded assignment data with frontend defaults:
+  // for any field that is null/undefined in assignmentData, fall back to initialValues.
+  const getInitialValues = (): IAssignmentFormValues => {
+    if (mode !== "update" || !assignmentData) {
+      return initialValues;
+    }
+
+    const merged: any = { ...assignmentData };
+
+    (Object.keys(initialValues) as (keyof IAssignmentFormValues)[]).forEach(
+      (key) => {
+        const value = merged[key];
+        if (value === null || value === undefined) {
+          merged[key] = initialValues[key];
+        }
+      }
+    );
+
+    return merged as IAssignmentFormValues;
+  };
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +158,41 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
   useEffect(() => {
     coursesError && dispatch(alertActions.showAlert({ variant: "danger", message: coursesError }));
   }, [coursesError, dispatch]);
+
+  // Load calibration submissions on component mount
+  useEffect(() => {
+    // sendCalibrationSubmissionsRequest({
+    //   url: `/calibration_submissions/get_instructor_calibration_submissions/${assignmentData.id}`,
+    //   method: HttpMethod.GET,
+    // });
+    setCalibrationSubmissions([
+      {
+        id: 1,
+        participant_name: "Participant 1",
+        review_status: "not_started",
+        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
+      },
+      {
+        id: 2,
+        participant_name: "Participant 2",
+        review_status: "in_progress",
+        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
+      },
+    ]);
+  }, []);
+
+  // Handle calibration submissions response
+  useEffect(() => {
+    if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
+      setCalibrationSubmissions(calibrationSubmissionsResponse.data || []);
+    }
+  }, [calibrationSubmissionsResponse]);
+
+  // Show calibration submissions error message
+  useEffect(() => {
+    calibrationSubmissionsError && dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
+  }, [calibrationSubmissionsError, dispatch]);
+
 
   const onSubmit = (
     values: IAssignmentFormValues,
@@ -181,8 +243,10 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
   const reviewRounds = assignmentData.number_of_review_rounds;
 
   // Build initial form values from existing assignment data (update) or defaults (create)
-  const formInitialValues: any = mode === "update" ? { ...assignmentData } : { ...initialValues };
-  
+  const formInitialValues: IAssignmentFormValues & Record<string, any> = {
+    ...getInitialValues(),
+  };
+
   if (mode === "update") {
     // Prefill per-round questionnaire selections and ids
     (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
@@ -195,16 +259,47 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
 
   return (
     <div style={{ padding: '30px' }}>
-      <h1>Editing Assignment: {assignmentData.name}</h1>
-
+      {
+        mode === "update" && <h1>Editing Assignment: {assignmentData.name}</h1>
+      }
+      {
+        mode === "create" && <h1>Creating Assignment</h1>
+      }
       <Formik
         initialValues={formInitialValues}
-        onSubmit={onSubmit}
+        onSubmit={()=>{}}
         validationSchema={validationSchema}
         validateOnChange={false}
         enableReinitialize={true}
       >
-        {(formik) => (
+        {(formik) => {
+          const handleSave = () => {
+            // Validate sum of weights = 100%
+            const totalWeight = formik.values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
+            if (totalWeight !== 100) {
+              dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
+              return;
+            }
+
+            let method: HttpMethod = HttpMethod.POST;
+            let url: string = "/assignments";
+            if (mode === "update") {
+              url = `/assignments/${formik.values.id}`;
+              method = HttpMethod.PATCH;
+            }
+            // to be used to display message when assignment is created
+            assignmentData.name = formik.values.name;
+
+            console.log("Sending assignment data:", formik.values);
+
+            sendRequest({
+              url: url,
+              method: method,
+              data: formik.values,
+            });
+          };
+        
+        return (
           <Form>
             <Tabs defaultActiveKey="general" id="assignment-tabs">
               {/* General Tab */}
@@ -293,14 +388,23 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
 
-                <div style={{ marginTop: '20px'}}>
+                <div style={{ marginTop: '20px' }}>
                   <Table
                     showColumnFilter={false}
                     showGlobalFilter={false}
                     showPagination={false}
                     data={[
                       ...(() => {
-                        const rounds = (mode == "update") ? reviewRounds ?? 0 : formik.values.number_of_review_rounds ?? 0;
+                        // Determine how many review rounds to show in the Rubrics table.
+                        // For "vary by round", if the count is 0/undefined, still show one round
+                        // so the user can configure at least the first round's rubric.
+                        const baseRounds =
+                          (mode === "update"
+                            ? reviewRounds
+                            : formik.values.number_of_review_rounds) ?? 0;
+                        const rounds = formik.values.review_rubric_varies_by_round
+                          ? (baseRounds || 1)
+                          : baseRounds;
                         if (formik.values.review_rubric_varies_by_round) {
                           return Array.from({ length: rounds }, (_, i) => ([
                             {
@@ -366,7 +470,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                             controlId={`assignment-questionnaire_${row.original.id}`}
                             name={`questionnaire_round_${row.original.id}`}
                             options={row.original.questionnaire_options || []}
-                            // Formik initialValues handles prefill via questionnaire_round_X fields
+                          // Formik initialValues handles prefill via questionnaire_round_X fields
                           />}
                           {row.original.questionnaire_type === 'tag_prompts' &&
                             <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
@@ -374,8 +478,36 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                         accessorKey: "questionnaire", header: "Questionnaire", enableSorting: false, enableColumnFilter: false
                       },
                       {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-weight_${row.original.id}`} name={`weights[${row.original.id}]`} type="number" />%</div></>}</div>,
+                        cell: ({ row }) => {
+                          if (row.original.questionnaire_type !== 'dropdown') {
+                            return <div style={{ marginRight: '10px' }} />;
+                          }
+
+                          // Use distinct indices in the weights array so that
+                          // different rows (review rubric, author feedback,
+                          // teammate review, etc.) do not overwrite each other.
+                          let weightIndex: number;
+                          if (row.original.title === "Author feedback:") {
+                            weightIndex = 100; // separate slot for author feedback
+                          } else if (row.original.title === "Teammate review:") {
+                            weightIndex = 101; // separate slot for teammate review
+                          } else {
+                            weightIndex = row.original.id;
+                          }
+
+                          return (
+                            <div style={{ marginRight: '10px' }}>
+                              <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                                <FormInput
+                                  controlId={`assignment-weight_${row.original.id}`}
+                                  name={`weights[${weightIndex}]`}
+                                  type="number"
+                                />
+                                %
+                              </div>
+                            </div>
+                          );
+                        },
                         accessorKey: `weights`, header: "Weight", enableSorting: false, enableColumnFilter: false
                       },
                       {
@@ -452,7 +584,7 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
                 <Button variant="outline-secondary" style={{ marginTop: '10px', marginBottom: '10px' }}>Show/Hide date updater</Button>
 
                 <div>
-                  <div style={{marginTop: '30px' }}>
+                  <div style={{ marginTop: '30px' }}>
                     <Table
                       showColumnFilter={false}
                       showGlobalFilter={false}
@@ -567,50 +699,113 @@ const AssignmentEditor = ({ mode }: { mode: "create" | "update" }) => {
 
               </Tab>
 
-              {/* Etc Tab */}
-              <Tab eventKey="etc" title="Etc">
-                <div className="assignment-actions d-flex flex-wrap justify-content-start">
-                  <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
-                    <FontAwesomeIcon icon={faUser} className="icon" />
-                    <span>Add Participant</span>
+              {/* Calibration Tab */}
+                <Tab eventKey="calibration" title="Calibration">
+                  <h3>Submit reviews for calibration</h3>
+                  <div>
+                    <div style={{ display: 'ruby', marginTop: '30px' }}>
+                      <Table
+                        showColumnFilter={false}
+                        showGlobalFilter={false}
+                        showPagination={false}
+                        data={[
+                          ...calibrationSubmissions.map((calibrationSubmission: any) => ({
+                            id: calibrationSubmission.id,
+                            participant_name: calibrationSubmission.participant_name,
+                            review_status: calibrationSubmission.review_status,
+                            submitted_content: calibrationSubmission.submitted_content,
+                          })),
+                        ]}
+                        columns={[
+                          {
+                            accessorKey: "participant_name", header: "Participant name", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            cell: ({ row }) => {
+                              if (row.original.review_status === "not_started") {
+                                return <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Begin</a>;
+                              } else {
+                                return <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
+                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>View</a>
+                                  |
+                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Edit</a>
+                                </div>;
+                              }
+                            },
+                            accessorKey: "action", header: "Action", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            cell: ({ row }) => <>
+                              <div>Hyperlinks:</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                {
+                                  row.original.submitted_content.hyperlinks.map((item: any, index: number) => {
+                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  })
+                                }
+                              </div>
+                              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column' }}>Files:</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                {
+                                  row.original.submitted_content.files.map((item: any, index: number) => {
+                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  })
+                                }
+                              </div>
+                            </>,
+                            accessorKey: "submitted_content", header: "Submitted items(s)", enableSorting: false, enableColumnFilter: false
+                          },
+                        ]}
+                      />
+                    </div>
                   </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
-                    <FontAwesomeIcon icon={faUsers} className="icon" />
-                    <span>Create Teams</span>
+                </Tab>
+
+                {/* Etc Tab */}
+                <Tab eventKey="etc" title="Etc.">
+                  <div className="assignment-actions d-flex flex-wrap justify-content-start">
+                    <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
+                      <img src={'/assets/icons/add-participant-24.png'} alt="User Icon" className="icon" />
+                      <span>Add Participant</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
+                      <img src={'/assets/icons/create-teams-24.png'} alt="User Icon" className="icon" />
+                      <span>Create Teams</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
+                      <img src={'/assets/icons/assign-reviewers-24.png'} alt="User Icon" className="icon" />
+                      <span>Assign Reviewer</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
+                      <img src={'/assets/icons/view-submissions-24.png'} alt="User Icon" className="icon" />
+                      <span>View Submissions</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewscores`)}>
+                      <img src={'/assets/icons/view-scores-24.png'} alt="User Icon" className="icon" />
+                      <span>View Scores</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
+                      <img src={'/assets/icons/view-review-report-24.png'} alt="User Icon" className="icon" />
+                      <span>View Reports</span>
+                    </div>
+                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
+                      <img src={'/assets/icons/view-delayed-mailer.png'} alt="User Icon" className="icon" />
+                      <span>View Delayed Jobs</span>
+                    </div>
                   </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
-                    <FontAwesomeIcon icon={faUserCheck} className="icon" />
-                    <span>Assign Reviewer</span>
-                  </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
-                    <FontAwesomeIcon icon={faClipboardList} className="icon" />
-                    <span>View Submissions</span>
-                  </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewscores`)}>
-                    <FontAwesomeIcon icon={faChartBar} className="icon" />
-                    <span>View Scores</span>
-                  </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
-                    <FontAwesomeIcon icon={faFileAlt} className="icon" />
-                    <span>View Reports</span>
-                  </div>
-                  <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
-                    <FontAwesomeIcon icon={faClock} className="icon" />
-                    <span>View Delayed Jobs</span>
-                  </div>
-                </div>
-              </Tab>
-            </Tabs>
+                </Tab>
+              </Tabs>
 
             {/* Submit button */}
-            <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
-              <Button type="submit" variant="outline-secondary">
-                Save
-              </Button> |
-              <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
-            </div>
-          </Form>
+              <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
+                <Button type="submit" variant="outline-secondary" onClick={handleSave}>
+                  Save
+                </Button> |
+                <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
+              </div>
+            </Form>
         )}
+        }
       </Formik>
     </div >
 
