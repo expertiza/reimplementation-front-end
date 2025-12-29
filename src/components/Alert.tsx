@@ -18,9 +18,15 @@ const AlertMessage: React.FC<IAlertProps> = (props) => {
   const hideAlertHandler = () => dispatch(alertActions.hideAlert());
 
   return (
-    <Alert variant={props.variant} onClose={hideAlertHandler} dismissible>
-      {props.title && <Alert.Heading>{props.title}</Alert.Heading>}
-      <p>{props.message}</p>
+    <Alert
+      variant={props.variant}
+      onClose={hideAlertHandler}
+      dismissible
+      className="mb-0 text-left"
+      style={{ borderRadius: 0, width: "100%", whiteSpace: "nowrap" }}
+    >
+      {props.title && <strong>{props.title}: </strong>}
+      {props.message}
     </Alert>
   );
 };
