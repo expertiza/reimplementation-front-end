@@ -13,7 +13,7 @@
 
     useEffect(() => {
           
-            fetchItemTypes({ url: "/question_types" });
+            fetchItemTypes({ url: "/item_types" });
           console.log(itemTypes?.data);
         }, [fetchItemTypes]);
       

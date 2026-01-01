@@ -13,6 +13,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
+import { IItem } from "./QuestionnaireUtils";
 
 interface Props {
   values: any;
@@ -35,7 +36,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
   return (
     <FieldArray name="items">
-      {({ push, remove, move }: FieldArrayRenderProps) => (
+      {({ push, remove, move, form }: FieldArrayRenderProps) => {
+    const { setFieldValue } = form;
+      return(
         <>
         
           <DragDropContext
@@ -48,10 +51,10 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                   {values.items.length > 0 &&
-                    values.items.map((item: any, index: number) => (
+                    values.items.map((item: IItem, index: number) => ({ item, index })).filter(({ item }: { item: IItem }) => !item._destroy).map(({ item, index }: { item: IItem; index: number }) => (
                       <Draggable
-                        key={index.toString()}
-                        draggableId={index.toString()}
+                      key={item.id ?? `new-${index}`}
+                      draggableId={(item.id ?? `new-${index}`).toString()}
                         index={index}
                       >
                         {(provided, snapshot) => (
@@ -116,10 +119,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
-      values.items[index]._destroy = true;
-    } else {
-      remove(index);
-    }
+      setFieldValue(`items[${index}]._destroy`, true);
+    } else{
+      remove(index);}
   }}
             aria-label="Remove Item"
             className="p-0"
@@ -158,7 +160,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+      setFieldValue(`items[${index}]._destroy`, true);
+    } 
+      else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -209,7 +218,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+      setFieldValue(`items[${index}]._destroy`, true);
+    } 
+      else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -233,7 +249,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+     setFieldValue(`items[${index}]._destroy`, true);
+    } 
+     else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -264,7 +287,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+      setFieldValue(`items[${index}]._destroy`, true);
+    } 
+      else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -294,7 +324,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+      setFieldValue(`items[${index}]._destroy`, true);
+    } 
+      else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -315,7 +352,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
-            onClick={() => remove(index)}
+            onClick={() => {
+    const item = values.items[index];
+    if (item.id) {
+      setFieldValue(`items[${index}]._destroy`, true);
+    } 
+      else{
+      remove(index);}
+  }}
             aria-label="Remove Item"
             className="p-0"
           >
@@ -421,7 +465,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             </div>
           </div>
         </>
-      )}
+      )}}
     </FieldArray>
   );
 };
