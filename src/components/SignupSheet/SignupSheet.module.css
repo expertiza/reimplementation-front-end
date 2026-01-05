@@ -1,0 +1,254 @@
+.signupSheetContainer {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-size: 1rem;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: normal;
+    color: #000;
+}
+
+.tableWrapper {
+    margin-bottom: 20px;
+}
+
+.signupTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.signupTable thead {
+    background-color: #f0f0f0;
+}
+
+.signupTable thead th {
+    font-weight: normal;
+    color: #000;
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.signupTable tbody td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: middle;
+    font-size: 1rem;
+}
+
+.narrowColumn {
+    width: 60px;
+    text-align: center;
+}
+
+.actionsColumn {
+    width: 100px;
+    text-align: center;
+}
+
+.advertisementColumn {
+    width: 120px;
+    text-align: center;
+}
+
+.topicName {
+    font-weight: normal;
+    color: #000;
+    font-size: 1rem;
+}
+
+.topicDescription {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 4px;
+}
+
+.advertisementCell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.trumpetButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 1.3rem;
+    color: #ff8c00;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+
+.trumpetButton:hover {
+    opacity: 0.7;
+}
+
+.trumpetIcon {
+    font-style: normal;
+    font-size: 1.2rem;
+}
+
+.countBadge {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    background-color: #17a2b8;
+    color: white;
+    border-radius: 3px;
+    display: inline-block;
+    margin-left: 3px;
+}
+
+.iconButton {
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    color: #000;
+    text-decoration: none;
+    background: none;
+    border: none;
+}
+
+.iconButton:hover {
+    opacity: 0.7;
+}
+
+.actionButton {
+    min-width: 70px;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid #000;
+    background-color: transparent;
+    color: #000;
+}
+
+.actionButton:hover {
+    background-color: #f0f0f0;
+}
+
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.legend {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 1rem;
+}
+
+.legendTitle {
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.legendItems {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    color: #000;
+}
+
+.legendItem i {
+    font-size: 1.1rem;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .signupSheetContainer {
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .signupTable {
+        font-size: 0.95rem;
+    }
+
+    .signupTable thead th,
+    .signupTable tbody td {
+        padding: 6px 4px;
+    }
+}
+
+@media (max-width: 768px) {
+    .legendItems {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Toast notification animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+:global(.slideInRight) {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.linkButton {
+    text-decoration: none;
+    padding: 0;
+    margin: 0px 5px;
+    color: #99570c;
+    font-size: 1rem;
+    align-self: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.linkButton:disabled {
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.linkButton:hover {
+    color: #7a460a;
+    text-decoration: underline;
+}

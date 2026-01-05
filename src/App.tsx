@@ -45,6 +45,13 @@ import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import StudentTeams from "pages/Student Teams/StudentTeamView";
+import StudentTeamView from "pages/Student Teams/StudentTeamView";
+import NewTeammateAdvertisement from 'pages/Student Teams/NewTeammateAdvertisement';
+import TeammateReview from 'pages/Student Teams/TeammateReview';
+import SignupSheet from 'components/SignupSheet/SignupSheet';
+import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -121,6 +128,14 @@ function App() {
         },
 
         {
+          path: "assignments/:assignmentId/signup_sheet",
+          element: <ProtectedRoute element={<SignupSheet />} />,
+        },
+        {
+          path: "topics/:topicId/partner_advertisements",
+          element: <ProtectedRoute element={<PartnerAdvertisements />} />,
+        },
+        {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
           // children: [
@@ -132,6 +147,18 @@ function App() {
           // ],
         },
 
+        {
+          path: "student_teams/view",
+          element: <ProtectedRoute element={<StudentTeamView />} />,
+        },
+        {
+          path: "advertise_for_partner",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,

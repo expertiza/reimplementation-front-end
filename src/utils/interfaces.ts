@@ -259,6 +259,104 @@ export interface IAssignmentResponse {
   
 }
 
+export interface StudentTeamsProps { }
+
+// Define the structure of a team member object
+export interface TeamMember {
+  username: string;
+  fullName: string;
+  email: string;
+}
+
+// Define the structure of the team details object
+export interface TeamDetails {
+  id: string;
+  projectName: string;
+  teamName: string;
+  teamMembers: TeamMember[];
+}
+
+export interface Invitation {
+  assignment_id: number;
+  username: string;
+  fullName?: string;
+  status?: string;
+}
+
+// SignupSheet interfaces
+export interface SignUpTopic {
+  id: number;
+  topic_name: string;
+  topic_identifier: string;
+  assignment_id: number;
+  max_choosers: number;
+  category: string;
+  description?: string;
+  micropayment?: number;
+  private_to?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SignedUpTeam {
+  id: number;
+  sign_up_topic_id: number;
+  team_id: number;
+  is_waitlisted: boolean;
+  preference_priority_number?: number;
+  comments_for_advertisement?: string;
+  advertise_for_partner: boolean;
+  created_at: string;
+  updated_at: string;
+  team?: {
+    id: number;
+    name: string;
+    team_size: number;
+    max_size?: number;
+    parent_id: number;
+    users?: Array<{
+      id: number;
+      name: string;
+      full_name: string;
+    }>;
+  };
+  sign_up_topic?: SignUpTopic;
+}
+
+export interface TopicWithTeams {
+  topic: SignUpTopic;
+  signedUpTeams: SignedUpTeam[];
+  availableSlots: number;
+  waitlistCount: number;
+}
+
+export interface AdvertisementDetails {
+  signedUpTeam: SignedUpTeam;
+  topic: SignUpTopic;
+}
+
+export interface JoinTeamRequest {
+  id: number;
+  comments: string;
+  reply_status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  created_at: string;
+  updated_at: string;
+  participant: {
+    id: number;
+    user_id: number;
+    user_name: string;
+    user_email: string;
+    handle: string;
+  };
+  team: {
+    id: number;
+    name: string;
+    type: string;
+    team_size: number;
+    max_size: number | null;
+    is_full: boolean;
+  };
+}
 
 // Assuming that your transformation function for assignment responses might look like this
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentResponse => {

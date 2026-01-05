@@ -1,0 +1,101 @@
+.adContainer {
+    /* max-width: 700px; */
+    width: 50%;
+    /* margin: 40px auto; */
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.adList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.adListItem {
+    display: flex;
+    justify-content: space-between;
+    width: fit-content;
+    align-items: center;
+    background: #f3f3f3;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    /* border: 2px solid red; */
+}
+
+.adRemoveBtn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
+
+.container {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    font-size: 1rem;
+}
+
+.header {
+    text-align: center;
+    font-size: 2rem;
+}
+
+.formLabel {
+    text-align: center;
+    font-size: 1rem;
+}
+
+.submitButton {
+    background-color: transparent;
+    border-color: #000;
+    color: #000;
+    font-size: 1rem;
+    padding: 2px 5px;
+    border-radius: 0px;
+    text-decoration: none;
+}
+
+.createAdButton {
+    background-color: transparent;
+    padding: 2px;
+    margin: 0px auto;
+    color: #99570c;
+    font-size: 1rem;
+    border: none;
+    width: fit-content;
+}
+
+.adRemoveBtn:hover,
+.submitButton:hover {
+    cursor: pointer;
+    background-color: inherit;
+    scale: 0.99;
+    text-decoration: underline;
+}
+
+.createAdButton:hover {
+    background-color: inherit;
+    text-decoration: underline;
+}

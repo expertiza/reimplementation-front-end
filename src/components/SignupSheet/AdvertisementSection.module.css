@@ -1,0 +1,139 @@
+.container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.advertisementContent {
+    padding: 10px 0;
+    font-size: 1rem;
+}
+
+.section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.infoRow {
+    display: flex;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.infoRow:last-child {
+    margin-bottom: 0;
+}
+
+.label {
+    font-weight: bold;
+    color: #000;
+    min-width: 140px;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.value {
+    color: #000;
+    word-break: break-word;
+    font-size: 1rem;
+}
+
+.advertisementMessage {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 12px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #000;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 50px;
+}
+
+.infoBox {
+    margin-top: 15px;
+    padding: 10px 12px;
+    background-color: #fffbcc;
+    border: 1px solid #e0e0a0;
+    border-radius: 3px;
+    color: #333;
+    font-size: 1rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .infoRow {
+        flex-direction: column;
+    }
+
+    .label {
+        min-width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+.linkButton {
+    text-decoration: none;
+    padding: 0;
+    margin: 0px 5px;
+    color: #99570c;
+    font-size: 1rem;
+    align-self: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.linkButton:disabled {
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.linkButton:hover {
+    color: #7a460a;
+    text-decoration: underline;
+}

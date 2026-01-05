@@ -1,0 +1,161 @@
+.studentTeamContainer {
+    font-family: Arial, sans-serif;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    font-size: 0.85rem;
+}
+
+.studentTeamHeader {
+    font-style: bold;
+    font-size: 2rem;
+}
+
+.studentTeamNameSection {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+.studentTeamInviteSection {
+    margin: 20px 0px;
+}
+
+.studentTeamInviteInputGroup {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.studentTeamInviteLabel {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.studentTeamLabel {
+    font-size: 1rem;
+}
+
+.studentTeamInviteInput {
+    margin-bottom: 0px !important;
+    width: 450px !important;
+    font-size: 1rem;
+    border-color: black;
+    border-radius: 3px;
+    margin: 0;
+}
+
+.studentTeamInviteButton {
+    background-color: transparent;
+    border-color: #000;
+    border-style: solid;
+    border-radius: 0;
+    color: #000;
+    font-size: 1rem;
+    padding: 2px 5px;
+    margin: 0;
+}
+
+.studentTeamInviteButton:hover {
+    background-color: inherit;
+    scale: 0.99;
+}
+
+.studentTeamAdvertisementSection {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.studentTeamFormLabel {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.studentTeamFormControl {
+    font-size: 1rem;
+}
+
+.studentTeamTable {
+    width: inherit;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    table-layout: fixed;
+}
+
+.studentTeamTableCell {
+    padding: 0.2rem;
+    height: 30px;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.studentTeamTableHeader {
+    background-color: #f8f9fa;
+    color: #212529;
+    font-size: 1rem;
+}
+
+.studentTeamTableCellHeader {
+    padding: 0.2rem;
+    font-size: 1rem;
+}
+
+.studentTeamButtonLink {
+    text-decoration: none;
+    padding: 0;
+    margin: 0px 5px;
+    color: #99570c;
+    font-size: 1rem;
+    align-self: center;
+}
+
+.studentTeamButtonLink:disabled {
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.studentTeamAlert {
+    background-color: rgb(251, 221, 221);
+    color: darkred;
+}
+
+.studentTeamLeaveButtonLink {
+    text-decoration: none;
+    color: #99570c;
+    font-size: 1rem;
+    padding: 0;
+}
+
+.studentTeamErrorMessage {
+    background-color: #fdd;
+    color: #510;
+    padding: 15px;
+    margin: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.studentTeamDetailsSection {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 20px 0px;
+}
+
+.adList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.adListItem {
+    display: flex;
+    justify-content: space-between;
+    width: fit-content;
+    align-items: center;
+    background: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    /* border: 2px solid red; */
+}

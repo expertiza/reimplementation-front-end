@@ -1,0 +1,41 @@
+[
+    {
+      "id": "52353",
+      "projectName": "Team Information for Final project (and design doc)",
+      "teamName": "E2433 team",
+      "teamMembers": [
+        {
+          "username": "smandav",
+          "fullName": "Sreenitya Mandava",
+          "email": "smandav@ncsu.edu"
+        },
+        {
+          "username": "ssheva",
+          "fullName": "Sree Tulasi Sheva",
+          "email": "ssheva@ncsu.edu"
+        },
+        {
+          "username": "yseela",
+          "fullName": "Yogitha Seela",
+          "email": "yseela@ncsu.edu"
+        }
+      ]
+    },
+    {
+      "id": "12345",
+      "projectName": "Team Information for OSS project & documentation",
+      "teamName": "D1234 team",
+      "teamMembers": [
+        {
+          "username": "jdoe",
+          "fullName": "John Doe",
+          "email": "jdoe@ncsu.edu"
+        },
+        {
+          "username": "asmith",
+          "fullName": "Alice Smith",
+          "email": "asmith@ncsu.edu"
+        }
+      ]
+    }
+  ]  
