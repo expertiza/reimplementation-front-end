@@ -1,5 +1,5 @@
-import { IFormOption } from "components/Form/interfaces";
-import { getPrivilegeFromID, hasAllPrivilegesOf } from "utils/util";
+import { IFormOption } from "../../components/Form/interfaces";
+import { getPrivilegeFromID, hasAllPrivilegesOf } from "../../utils/util";
 import axiosClient from "../../utils/axios_client";
 import { ICourseRequest, ICourseResponse, IInstitution, IInstitutionResponse,IInstructorResponse, IInstructor, IUserRequest, ROLE } from "../../utils/interfaces";
 

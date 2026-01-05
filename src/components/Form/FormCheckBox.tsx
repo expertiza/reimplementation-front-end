@@ -28,6 +28,7 @@ const FormCheckbox: React.FC<IFormProps> = (props) => {
             <InputGroup>
               <Form.Check
                 {...field}
+                checked={field.value}
                 className="mx-md-2"
                 type="checkbox"
                 disabled={disabled}

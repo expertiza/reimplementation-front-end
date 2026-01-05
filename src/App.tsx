@@ -62,7 +62,7 @@ function App() {
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
-        // Add the ViewTeamGrades route
+
         {
           path: "view-team-grades",
           element: <ProtectedRoute element={<ReviewTable />} />,
@@ -71,10 +71,22 @@ function App() {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
+
+        {
+          path: "assignments/edit/:id",
+          element: <AssignmentEditor mode="update" />,
+          loader: loadAssignment,
+        },
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
           loader: loadAssignment,
+        },
+
+        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
+        {
+          path: "assignments/edit/:id/responsemappings",
+          element: <ResponseMappings />,
         },
 
         {
@@ -82,9 +94,15 @@ function App() {
           element: <AssignReviewer />,
           loader: loadAssignment,
         },
+
         {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/submitcontent",
+          element: <SubmittedContent />,
           loader: loadAssignment,
         },
         {
@@ -102,6 +120,13 @@ function App() {
           element: <ViewDelayedJobs />,
           loader: loadAssignment,
         },
+
+        {
+          path: "assignments/new",
+          element: <AssignmentEditor mode="create" />,
+          loader: loadAssignment,
+        },
+
         {
           path: "assignments/:assignmentId/signup_sheet",
           element: <ProtectedRoute element={<SignupSheet />} />,
@@ -113,19 +138,15 @@ function App() {
         {
           path: "assignments",
           element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
-          children: [
-            {
-              path: "new",
-              element: <AssignmentEditor mode="create" />,
-              loader: loadAssignment,
-            },
-            {
-              path: "edit/:id",
-              element: <AssignmentEditor mode="update" />,
-              loader: loadAssignment,
-            },
-          ],
+          // children: [
+          //   {
+          //     path: "new",
+          //     element: <AssignmentEditor mode="create" />,
+          //     loader: loadAssignment,
+          //   },
+          // ],
         },
+
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
@@ -154,6 +175,7 @@ function App() {
             },
           ],
         },
+
         {
           path: "student_tasks/participants",
           element: <Participants type="student_tasks" id={1} />,
@@ -170,10 +192,12 @@ function App() {
             },
           ],
         },
+
         {
           path: "profile",
           element: <ProtectedRoute element={<EditProfile />} />,
         },
+
         {
           path: "assignments/edit/:assignmentId/participants",
           element: <Participants type="student_tasks" id={1} />,
@@ -190,6 +214,7 @@ function App() {
             },
           ],
         },
+
         {
           path: "student_tasks/edit/:assignmentId/participants",
           element: <Participants type="student_tasks" id={1} />,
@@ -206,6 +231,7 @@ function App() {
             },
           ],
         },
+
         {
           path: "courses/participants",
           element: <Participants type="courses" id={1} />,
@@ -224,11 +250,23 @@ function App() {
         },
         {
           path: "reviews",
-          element: <Reviews/>,
+          element: <Reviews />,
+        },
+        {
+          path: "review-tableau",
+          element: <ProtectedRoute element={<ReviewTableau />} />,
+        },
+        {
+          path: "demo/participants",
+          element: <ParticipantsDemo />,
+        },
+        {
+          path: "participants",
+          element: <ProtectedRoute element={<ParticipantsAPI />} />,
         },
         {
           path: "email_the_author",
-          element: <Email_the_author/>,
+          element: <Email_the_author />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
@@ -258,6 +296,7 @@ function App() {
             },
           ],
         },
+
         {
           path: "administrator",
           element: (
@@ -270,10 +309,7 @@ function App() {
               element: <Roles />,
               loader: loadRoles,
               children: [
-                {
-                  path: "new",
-                  element: <RoleEditor mode="create" />,
-                },
+                { path: "new", element: <RoleEditor mode="create" /> },
                 {
                   id: "edit-role",
                   path: "edit/:id",
@@ -287,10 +323,7 @@ function App() {
               element: <Institutions />,
               loader: loadInstitutions,
               children: [
-                {
-                  path: "new",
-                  element: <InstitutionEditor mode="create" />,
-                },
+                { path: "new", element: <InstitutionEditor mode="create" /> },
                 {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
@@ -303,25 +336,16 @@ function App() {
               element: <ManageUserTypes />,
               loader: loadUsers,
               children: [
-                {
-                  path: "new",
-                  element: <Navigate to="/users/new" />,
-                },
-
-                {
-                  path: "edit/:id",
-                  element: <Navigate to="/users/edit/:id" />,
-                },
+                { path: "new", element: <Navigate to="/users/new" /> },
+                { path: "edit/:id", element: <Navigate to="/users/edit/:id" /> },
               ],
             },
-            {
-              path: "questionnaire",
-              element: <Questionnaire />,
-            },
+            { path: "questionnaire", element: <Questionnaire /> },
           ],
         },
+
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire /> }, // Added the Questionnaire route
+        { path: "questionnaire", element: <Questionnaire /> },
       ],
     },
   ]);

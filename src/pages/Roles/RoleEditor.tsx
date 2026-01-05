@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { Button, InputGroup, Modal } from "react-bootstrap";
-import FormInput from "components/Form/FormInput";
-import { alertActions } from "store/slices/alertSlice";
+import FormInput from "../../components/Form/FormInput";
+import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate, useRouteLoaderData } from "react-router-dom";
-import { HttpMethod } from "utils/httpMethods";
-import useAPI from "hooks/useAPI";
+import { HttpMethod } from "../../utils/httpMethods";
+import useAPI from "../../hooks/useAPI";
 import * as Yup from "yup";
 import axiosClient from "../../utils/axios_client";
 import { IEditor, IRole } from "../../utils/interfaces";

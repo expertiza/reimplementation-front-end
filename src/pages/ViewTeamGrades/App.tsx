@@ -1,11 +1,26 @@
 import React from 'react';
 import ReviewTable from './ReviewTable'; // Importing the ReviewTable component
 
+// Interface defining the structure of a team member
+export interface TeamMember {
+  name: string;
+  username: string;
+}
+
 // Interface defining the structure of ReviewData
 export interface ReviewData {
-  questionNumber: string;
-  questionText: string;
-  reviews: { score: number; comment?: string }[]; // Array of objects with score and optional comment
+  itemNumber: string;
+  itemText: string;
+  itemType?: string; // Type of item (Scale, Criterion, TextArea, etc.)
+  reviews: {
+    score?: number;
+    comment?: string;
+    textResponse?: string; // For TextArea/TextField
+    selections?: string[]; // For Checkbox/MultipleChoice
+    selectedOption?: string; // For Dropdown/Radio
+    fileName?: string; // For file uploads
+    fileUrl?: string;
+  }[];
   RowAvg: number; // Average score for the row
   maxScore: number; // Maximum possible score
 }

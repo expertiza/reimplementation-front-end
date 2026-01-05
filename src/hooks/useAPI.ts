@@ -6,6 +6,7 @@ import { getAuthToken } from "../utils/auth";
  * @author Ankur Mundra on April, 2023
  */
 
+
 axios.defaults.baseURL = "http://localhost:3002";
 axios.defaults.headers.common["Accept"] = "application/json";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -19,13 +20,20 @@ const useAPI = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Learn about Axios Request Config at https://github.com/axios/axios#request-config
-  const sendRequest = useCallback((requestConfig: AxiosRequestConfig) => {
+  const sendRequest = useCallback((requestConfig: AxiosRequestConfig & { transformRequest?: (data: any) => any }) => {
     const token = getAuthToken();
     if (token) {
       requestConfig.headers = {
         ...requestConfig.headers,
         Authorization: `Bearer ${token}`,
       };
+    }
+
+    // Apply transformRequest if provided
+    if (requestConfig.transformRequest && requestConfig.data) {
+      requestConfig.data = requestConfig.transformRequest(requestConfig.data);
+      // Remove the transformRequest from config after using it
+      delete requestConfig.transformRequest;
     }
 
     setIsLoading(true);

@@ -1,6 +1,23 @@
 {
   "team": "Straw Hat Pirates",
-  "members": ["Aniket Singh Shaktawat", "Pankhi Saini", "Siddharth Shah", "Riya Gori"],
+  "members": [
+    {
+      "name": "Aniket Singh Shaktawat",
+      "username": "ashaktaw"
+    },
+    {
+      "name": "Pankhi Saini",
+      "username": "psaini"
+    },
+    {
+      "name": "Siddharth Shah",
+      "username": "sshah"
+    },
+    {
+      "name": "Riya Gori",
+      "username": "rgori"
+    }
+  ],
   "grade": "Grade for submission",
   "comment": "Comment for submission",
   "late_penalty": 0

@@ -20,17 +20,17 @@ const Filters: React.FC<FiltersProps> = ({
   useEffect(() => {
     if (firstDropdownSelection === "Reviews") {
       toggleShowReviews();
-    } else if (firstDropdownSelection === "Author Feedback") {
+    } else if (firstDropdownSelection === "Author feedback") {
       toggleAuthorFeedback();
     }
-    selectRound(-1); // Set "All Rounds" as default round
+    selectRound(-1); // Set "All rounds" as default round
   }, []);
 
   // Handle the selection from the first dropdown
   const handleFirstDropdownSelect = (eventKey: string | null) => {
     if (eventKey) {
       setFirstDropdownSelection((prev) => {
-        if (prev === "Author Feedback") {
+        if (prev === "Author feedback") {
           toggleAuthorFeedback();
         } else if (prev === "Reviews") {
           toggleShowReviews();
@@ -40,8 +40,8 @@ const Filters: React.FC<FiltersProps> = ({
     }
 
     // Show or hide the second dropdown based on the selection
-    if (eventKey === "Author Feedback" || eventKey === "Reviews") {
-      if (eventKey === "Author Feedback") {
+    if (eventKey === "Author feedback" || eventKey === "Reviews") {
+      if (eventKey === "Author feedback") {
         toggleAuthorFeedback();
       }
       if (eventKey === "Reviews") {
@@ -50,7 +50,7 @@ const Filters: React.FC<FiltersProps> = ({
       setShowSecondDropdown(true);
     } else {
       setShowSecondDropdown(false);
-      setSecondDropdownSelection("Select Round"); // Reset the second dropdown text when hidden
+      setSecondDropdownSelection("Select round"); // Reset the second dropdown text when hidden
     }
   };
 
@@ -58,7 +58,7 @@ const Filters: React.FC<FiltersProps> = ({
   const handleSecondDropdownSelect = (eventKey: string | null) => {
     if (eventKey) {
       setSecondDropdownSelection((prev) => {
-        if (eventKey === "All Rounds") {
+        if (eventKey === "All rounds") {
           selectRound(-1);
         } else if (eventKey === "Round 1") {
           selectRound(1);
@@ -85,8 +85,8 @@ const Filters: React.FC<FiltersProps> = ({
             {firstDropdownSelection}
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item eventKey="Author Feedback" href="#/action-2">
-              Author Feedback
+            <Dropdown.Item eventKey="Author feedback" href="#/action-2">
+              Author feedback
             </Dropdown.Item>
             <Dropdown.Item eventKey="Reviews" href="#/action-3">
               Reviews
@@ -109,7 +109,7 @@ const Filters: React.FC<FiltersProps> = ({
               {secondDropdownSelection}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item eventKey="All Rounds" href="#/all-rounds">
+              <Dropdown.Item eventKey="All rounds" href="#/all-rounds">
                 All rounds
               </Dropdown.Item>
               <Dropdown.Item eventKey="Round 1" href="#/round-1">
