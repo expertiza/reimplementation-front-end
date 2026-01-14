@@ -45,10 +45,10 @@ import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
-import StudentTeams from "pages/Student Teams/StudentTeamView";
-import StudentTeamView from "pages/Student Teams/StudentTeamView";
-import NewTeammateAdvertisement from 'pages/Student Teams/NewTeammateAdvertisement';
-import TeammateReview from 'pages/Student Teams/TeammateReview';
+import StudentTeams from "./pages/Student Teams/StudentTeamView";
+import StudentTeamView from "./pages/Student Teams/StudentTeamView";
+import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
+import TeammateReview from './pages/Student Teams/TeammateReview';
 import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
 

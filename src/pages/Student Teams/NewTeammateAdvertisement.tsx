@@ -1,6 +1,6 @@
 import React, { useState, FC, useEffect } from 'react';
 import styles from "./NewTeammateAdvertisement.module.css"
-import useAPI from 'hooks/useAPI';
+import useAPI from '../../hooks/useAPI';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, Spinner } from 'react-bootstrap';
 

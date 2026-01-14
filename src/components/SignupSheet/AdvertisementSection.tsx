@@ -12,7 +12,8 @@ interface AdvertisementSectionProps {
   onShowAlert: (message: string, type: 'success' | 'danger') => void;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://152.7.176.23:3002/api/v1';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
 
 const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   advertisementData,

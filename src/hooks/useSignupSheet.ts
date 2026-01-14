@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { SignUpTopic, SignedUpTeam, TopicWithTeams, IAssignmentResponse } from '../utils/interfaces';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://152.7.176.23:3002/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
 
 export const useSignupSheet = (assignmentId: string) => {
   const [topics, setTopics] = useState<TopicWithTeams[]>([]);
