@@ -1,5 +1,5 @@
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "../../components/Table/Table";
+import Table from "components/Table/Table";
 import useAPI from "../../hooks/useAPI";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
@@ -24,10 +24,12 @@ const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const { data: InstructorResponse, sendRequest: fetchInstructors } = useAPI();
+  const { data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
   );
+  const currUserRole = auth.user.role.valueOf();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -49,11 +51,13 @@ const Courses = () => {
       fetchCourses({ url: `/courses` });
       fetchInstitutions({ url: `/institutions` });
       fetchInstructors({ url: `/users` });
+      fetchAssignments({ url: `/assignments` });
     }
   }, [
     fetchCourses,
     fetchInstitutions,
     fetchInstructors,
+    fetchAssignments,
     location,
     showDeleteConfirmation.visible,
     auth.user.id,
@@ -108,8 +112,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
   }, []);
 
   const tableColumns = useMemo(
-    () =>
-      COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
     [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
   );
 
@@ -154,6 +157,11 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
         CourseResponse.instructor_id === auth.user.id
     );
   }, [mergedTableData, loggedInUserRole]);
+
+  const coursesWithAssignments = useMemo(() => {
+    if (!assignmentResponse?.data) return new Set();
+    return new Set(assignmentResponse.data.map((a: any) => a.course_id));
+  }, [assignmentResponse?.data]);
 
   return (
     <>
@@ -204,8 +212,12 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
               columns={tableColumns}
               columnVisibility={{
                 id: false,
-                institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
-                instructor: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),
+                institution:
+                  auth.user.role === ROLE.SUPER_ADMIN.valueOf() ||
+                  auth.user.role === ROLE.ADMIN.valueOf(),
+                instructor:
+                  auth.user.role === ROLE.SUPER_ADMIN.valueOf() ||
+                  auth.user.role === ROLE.ADMIN.valueOf(),
               }}
               renderSubComponent={renderSubComponent}
               getRowCanExpand={() => true}

@@ -38,11 +38,15 @@ const useAPI = () => {
 
     setIsLoading(true);
     setError("");
-    let errorMessage = "";
 
-    axios(requestConfig)
-      .then((response) => setData(response))
+    return axios(requestConfig)
+      .then((response) => {
+        setData(response);
+        return response;
+      })
       .catch((err) => {
+        let errorMessage = "";
+
         if (err.response) {
           const errors = err.response.data;
           const messages = Object.entries(errors).flatMap(([field, messages]) => {
@@ -60,6 +64,8 @@ const useAPI = () => {
         }
 
         if (errorMessage) setError(errorMessage);
+        // Re-throw so callers using `await` can handle it
+        throw new Error(errorMessage || "Something went wrong!");
         if (err.status) setErrorStatus(err.status)
       })
       .finally(() => {

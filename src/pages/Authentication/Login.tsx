@@ -34,6 +34,8 @@ const Login: React.FC = () => {
       .then((response) => {
         const payload = setAuthToken(response.data.token);
 
+        localStorage.setItem("session", JSON.stringify({ user: payload }));
+
         dispatch(
           authenticationActions.setAuthentication({
             authToken: response.data.token,

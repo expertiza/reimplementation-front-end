@@ -27,6 +27,7 @@ export interface IUserFormValues {
   parent_id?: number | null;
   institution_id: number;
   emailPreferences: Array<PermittedEmailPreferences>;
+  date_format_pref?: string; 
 }
 
 export const emailOptions: IFormOption[] = [
@@ -35,10 +36,7 @@ export const emailOptions: IFormOption[] = [
     label: "When someone else submits work I am assigned to review",
     value: EmailPreference.EMAIL_ON_SUBMISSION,
   },
-  {
-    label: "When someone else reviews one of my reviews (meta-reviews my work)",
-    value: EmailPreference.EMAIL_ON_META_REVIEW,
-  },
+
 ];
 
 export const transformInstitutionsResponse = (institutionsList: string) => {
@@ -51,7 +49,7 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
 };
 
 export const transformRolesResponse = (rolesList: string) => {
-  let rolesData: IFormOption[] = [{ label: "Select a Role", value: "" }];
+  let rolesData: IFormOption[] = [{ label: "Select a role", value: "" }];
   let roles: IRole[] = JSON.parse(rolesList);
   roles.forEach((role) => rolesData.push({ label: role.name, value: role.id! }));
   return rolesData;
@@ -71,6 +69,7 @@ export const transformUserRequest = (values: IUserFormValues) => {
     email_on_review_of_review: values.emailPreferences.includes(
       EmailPreference.EMAIL_ON_META_REVIEW
     ),
+    date_format_pref: values.date_format_pref,
   };
   return JSON.stringify(user);
 };
@@ -89,6 +88,7 @@ export const transformUserResponse = (userResponse: string) => {
     parent_id: parent_id,
     institution_id: institution_id,
     emailPreferences: [],
+    date_format_pref: user.date_format_pref,
   };
   if (user.email_on_review) {
     userValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
@@ -114,7 +114,7 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
   });
-  const rolesResponse = await axiosClient.get("/roles/subordinate_roles", {
+  const rolesResponse = await axiosClient.get("/roles", {
     transformResponse: transformRolesResponse,
   });
 

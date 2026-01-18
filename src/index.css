@@ -6,3 +6,63 @@ html {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
 }
+
+.custom-table-layout {
+  /* This forces the table to use a fixed layout algorithm. */
+  /* Column widths are determined by the table's width, not content. */
+  table-layout: fixed;
+  width: 100%;
+}
+
+.custom-table-layout th,
+.custom-table-layout td {
+  /* This adds consistent, reasonable spacing inside all headers and cells. */
+  padding: 0.75rem 1rem;
+
+  /* This allows long text to wrap, preventing it from stretching the column. */
+  word-wrap: break-word;
+
+  /* This vertically aligns content in the middle, which looks cleaner. */
+  vertical-align: middle;
+}
+
+/* Make checkbox group readable on dark or busy backgrounds */
+/* .checkbox-contrast .form-check {
+  background-color: #ffffff;            
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+} */
+
+/* Bigger, clearer boxes */
+.checkbox-contrast .form-check-input {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid black;            /* Bootstrap primary */
+  box-shadow: none;
+  margin-top: 0.25rem;                   /* aligns with label text */
+}
+
+/* Solid “checked” state */
+.checkbox-contrast .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Make labels bold & darker for readability */
+/* .checkbox-contrast .form-check-label {
+  font-weight: 700;
+  color: #0b1324;                        
+} */
+
+/* Optional: clearer focus outline for keyboard users */
+/* .checkbox-contrast .form-check-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+} */
+
+.custom-table-layout {
+    table-layout: auto;
+    width: 100%;
+}

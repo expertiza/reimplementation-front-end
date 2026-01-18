@@ -38,6 +38,9 @@ export interface IUserResponse {
   role: { id: number; name: string };
   parent: { id: number | null; name: string | null };
   institution: { id: number | null; name: string | null };
+  date_format_pref: string;
+  created_at: string;
+  updated_at: string;
 }
 
 
@@ -64,6 +67,7 @@ export interface IUserRequest {
   email_on_review?: boolean;
   email_on_submission?: boolean;
   email_on_review_of_review?: boolean;
+  date_format_pref?: string;
 }
 
 export interface IParticipantRequest {
@@ -202,6 +206,7 @@ export interface ICourseResponse{
   instructor_id: number;
   institution: { id: number | null; name: string | null };
   instructor: { id: number | null; name: string | null };
+  date_format_pref: string;
 }
 
 export interface ICourseRequest{

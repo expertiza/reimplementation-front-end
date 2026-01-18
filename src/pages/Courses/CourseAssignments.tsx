@@ -1,5 +1,5 @@
 import { Row as TRow } from "@tanstack/react-table";
-import Table from "../../components/Table/Table";
+import Table from "components/Table/Table";
 import React from 'react';
 import useAPI from "../../hooks/useAPI";
 import { useCallback, useEffect, useState } from "react";
@@ -146,8 +146,8 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   const columns = getAssignmentColumns(actionHandlers);
 
   return (
-    <div className="px-4 py-2 bg-light">
-      <h5 className="mb-3">Assignments for {courseName}</h5>
+    <div className="px-4 bg-light">
+      {/* <h5 className="mb-3">Assignments for {courseName}</h5> */}
       <Table
         data={assignments}
         columns={columns}
