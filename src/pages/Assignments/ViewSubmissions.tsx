@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
-import { useLoaderData } from 'react-router-dom';
 
 interface ISubmission {
   id: number;
@@ -13,8 +12,8 @@ interface ISubmission {
 const columnHelper = createColumnHelper<ISubmission>();
 
 const ViewSubmissions: React.FC = () => {
-  const assignment: any = useLoaderData();
-  // const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   // Dummy data for submissions
   const submissions = useMemo(() => [
@@ -55,19 +54,18 @@ const ViewSubmissions: React.FC = () => {
       </div>
       <Row className="mt-md-2 mb-md-2">
         <Col className="text-center">
-          <h1>View Submissions - {assignment.name}</h1>
+          <h1>View Submissions</h1>
         </Col>
         <hr />
       </Row>
-      <Row>
-        <Col>
-          <Table
-            data={submissions}
-            columns={columns}
-            columnVisibility={{
-              id: false,
-            }}
-          />
+      <Row className="mt-3">
+        <Col className="d-flex gap-2">
+          <Button 
+            variant="primary" 
+            onClick={() => navigate(`/assignments/edit/${id}/submitcontent`)}
+          >
+            Submit Content
+          </Button>
         </Col>
       </Row>
       {/* <Row>

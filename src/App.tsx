@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import RootLayout from "./layout/Root";
@@ -11,6 +12,7 @@ import ViewDelayedJobs from "./pages/Assignments/ViewDelayedJobs";
 import ViewReports from "./pages/Assignments/ViewReports";
 import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
+import SubmittedContent from "./pages/Assignments/SubmittedContent";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
@@ -28,6 +30,7 @@ import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
 import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
 import EditProfile from "./pages/Profile/Edit";
 import Reviews from "./pages/Reviews/reviews";
+import ReviewTableau from "./pages/ReviewTableau/ReviewTableau";
 import RoleEditor, { loadAvailableRole } from "./pages/Roles/RoleEditor";
 import Roles, { loadRoles } from "./pages/Roles/Roles";
 import TA from "./pages/TA/TA";
@@ -41,6 +44,14 @@ import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
+import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import StudentTeams from "./pages/Student Teams/StudentTeamView";
+import StudentTeamView from "./pages/Student Teams/StudentTeamView";
+import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
+import TeammateReview from './pages/Student Teams/TeammateReview';
+import SignupSheet from 'components/SignupSheet/SignupSheet';
+import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -72,15 +83,26 @@ function App() {
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id)
+        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
         {
           path: "assignments/edit/:id/responsemappings",
           element: <ResponseMappings />,
         },
 
         {
+          path: "assignments/edit/:id/assignreviewer",
+          element: <AssignReviewer />,
+          loader: loadAssignment,
+        },
+
+        {
           path: "assignments/edit/:id/viewsubmissions",
           element: <ViewSubmissions />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/submitcontent",
+          element: <SubmittedContent />,
           loader: loadAssignment,
         },
         {
@@ -100,17 +122,43 @@ function App() {
         },
 
         {
-          path: "assignments",
-          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
-          children: [
-            {
-              path: "new",
-              element: <AssignmentEditor mode="create" />,
-              loader: loadAssignment,
-            },
-          ],
+          path: "assignments/new",
+          element: <AssignmentEditor mode="create" />,
+          loader: loadAssignment,
         },
 
+        {
+          path: "assignments/:assignmentId/signup_sheet",
+          element: <ProtectedRoute element={<SignupSheet />} />,
+        },
+        {
+          path: "topics/:topicId/partner_advertisements",
+          element: <ProtectedRoute element={<PartnerAdvertisements />} />,
+        },
+        {
+          path: "assignments",
+          element: <ProtectedRoute element={<Assignment />} leastPrivilegeRole={ROLE.TA} />,
+          // children: [
+          //   {
+          //     path: "new",
+          //     element: <AssignmentEditor mode="create" />,
+          //     loader: loadAssignment,
+          //   },
+          // ],
+        },
+
+        {
+          path: "student_teams/view",
+          element: <ProtectedRoute element={<StudentTeamView />} />,
+        },
+        {
+          path: "advertise_for_partner",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
+        },
         {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
@@ -203,6 +251,10 @@ function App() {
         {
           path: "reviews",
           element: <Reviews />,
+        },
+        {
+          path: "review-tableau",
+          element: <ProtectedRoute element={<ReviewTableau />} />,
         },
         {
           path: "demo/participants",

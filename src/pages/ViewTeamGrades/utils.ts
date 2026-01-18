@@ -82,12 +82,17 @@ export const convertBackendRoundArray = (backendRounds: any[][]): ReviewData[][]
 export const getColorClass = (score: number, maxScore: number) => {
   let scoreColor = score;
  
+  // Calculate the percentage of how far from max score (inverted so lower scores = higher percentage)
   scoreColor = ((maxScore - scoreColor) / maxScore) * 100;
-  if (scoreColor >= 80) return 'c1';
-  else if (scoreColor >= 60 && scoreColor < 80) return 'c2';
-  else if (scoreColor >= 40 && scoreColor < 60) return 'c3';
-  else if (scoreColor >= 20 && scoreColor < 40) return 'c4';
-  else if (scoreColor >= 0 && scoreColor < 20) return 'c5';
+  
+  // Use dynamic intervals that work for any scale (1-3, 1-5, 1-10, etc.)
+  const interval = 100 / 5; // 20% intervals for 5 color gradients
+  
+  if (scoreColor >= interval * 4) return 'c1';        // Bottom quintile (worst 20%)
+  else if (scoreColor >= interval * 3) return 'c2';   // 4th quintile (60-80% from max)
+  else if (scoreColor >= interval * 2) return 'c3';   // Middle quintile (40-60% from max)
+  else if (scoreColor >= interval * 1) return 'c4';   // 2nd quintile (20-40% from max)
+  else if (scoreColor >= 0) return 'c5';              // Top quintile (best 20%)
   else return 'cf';
 };
 

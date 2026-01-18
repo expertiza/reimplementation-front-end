@@ -1,0 +1,141 @@
+/* Partner Advertisements page - Expertiza style */
+
+.container {
+    padding: 15px 20px;
+    font-family: Arial, sans-serif;
+    font-size: 0.85rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.noAds {
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    text-align: center;
+    color: #666;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    background-color: #fff;
+}
+
+.table thead {
+    background-color: #f0f0f0;
+}
+
+.table th,
+.table td {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.table th {
+    font-weight: bold;
+    color: #333;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.requestButton {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    background-color: #fff;
+    border: 1px solid #999;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.requestButton:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.requestButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #e0e0e0;
+}
+
+.infoIcon {
+    font-size: 0.9rem;
+    cursor: help;
+}
+
+.actions {
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.backButton {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background-color: #fff;
+    border: 1px solid #999;
+    cursor: pointer;
+}
+
+.backButton:hover {
+    background-color: #f0f0f0;
+}
+
+.footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+}
+
+.link {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.linkButton {
+    text-decoration: none;
+    padding: 0;
+    margin: 0px 5px;
+    color: #99570c;
+    font-size: 1rem;
+    align-self: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.linkButton:disabled {
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.linkButton:hover {
+    color: #7a460a;
+    text-decoration: underline;
+}
