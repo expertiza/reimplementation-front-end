@@ -39,10 +39,10 @@ const useAPI = () => {
     setIsLoading(true);
     setError("");
 
-    return axios(requestConfig)
+    axios(requestConfig)
       .then((response) => {
         setData(response);
-        return response;
+        setIsLoading(false);
       })
       .catch((err) => {
         let errorMessage = "";

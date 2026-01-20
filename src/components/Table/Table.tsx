@@ -30,6 +30,7 @@ interface TableProps {
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
+  onRowClick?: (row: any) => void;
   renderSubComponent?: (props: { row: any }) => React.ReactNode;
   getRowCanExpand?: (row: any) => boolean;
 }
@@ -42,6 +43,7 @@ const Table: React.FC<TableProps> = ({
   showColumnFilter = true,
   showPagination = true,
   onSelectionChange,
+  onRowClick,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
   renderSubComponent,
@@ -181,22 +183,22 @@ const Table: React.FC<TableProps> = ({
                 <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
               )}
             </Col>
-            {/*<span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
+            <span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
               <FaSearch style={{ cursor: "pointer" }} />
               {isGlobalFilterVisible ? " Hide" : " Show"}
-            </span>*/}
+            </span>
           </Row>
         </Container>
       )}
       <Container>
         <Row style={{ flex: 1 }}>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm" className="custom-table-layout">
+            <BTable striped hover responsive size="sm">
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} style={{ width: `${header.getSize()}px` }}>
+                      <th key={header.id} colSpan={header.colSpan}>
                         {header.isPlaceholder ? null : (
                           <>
                             <div
@@ -213,7 +215,7 @@ const Table: React.FC<TableProps> = ({
                                 desc: " 🔽",
                               }[header.column.getIsSorted() as string] ?? null}
                             </div>
-                            {shouldShowColumnFilters && header.column.getCanFilter() ? (
+                            {showColumnFilter && header.column.getCanFilter() ? (
                               <ColumnFilter column={header.column} />
                             ) : null}
                           </>
@@ -226,13 +228,23 @@ const Table: React.FC<TableProps> = ({
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                    <tr>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
+                    <tr
+						className={row.original.isSelected ? 'selected-topic-row' : ''}
+						onClick={() => onRowClick?.(row.original)}
+						style={{ 
+						  cursor: onRowClick ? 'pointer' : 'default',
+						  backgroundColor: row.original.isSelected ? '#fff3cd' : undefined 
+						}}
+					  >
+						{row.getVisibleCells().map((cell) => {
+						  const selected = !!row.original.isSelected;
+						  return (
+							<td key={cell.id} style={selected ? { backgroundColor: '#fff3cd' } : undefined}>
+							  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+							</td>
+						  );
+						})}
+					  </tr>
                     {row.getIsExpanded() && renderSubComponent && (
                       <tr>
                         <td colSpan={row.getVisibleCells().length}>
