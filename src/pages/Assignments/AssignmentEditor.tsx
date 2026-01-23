@@ -4,9 +4,9 @@ import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
+import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
 import FormSelect from "../../components/Form/FormSelect";
 import { HttpMethod } from "../../utils/httpMethods";
@@ -22,6 +22,35 @@ import Table from "../../components/Table/Table";
 import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
+import TopicsTab from "./tabs/TopicsTab";
+
+interface TopicSettings {
+  allowTopicSuggestions: boolean;
+  enableBidding: boolean;
+  enableAuthorsReview: boolean;
+  allowReviewerChoice: boolean;
+  allowBookmarks: boolean;
+  allowBiddingForReviewers: boolean;
+  allowAdvertiseForPartners: boolean;
+}
+
+interface TopicData {
+  id: string;
+  databaseId: number;
+  name: string;
+  url?: string;
+  description?: string;
+  category?: string;
+  assignedTeams: any[];
+  waitlistedTeams: any[];
+  questionnaire: string;
+  numSlots: number;
+  availableSlots: number;
+  bookmarks: any[];
+  partnerAd?: any;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -82,6 +111,16 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: calibrationSubmissionsResponse, error: calibrationSubmissionsError, sendRequest: sendCalibrationSubmissionsRequest } = useAPI();
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
+
+  const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
+  const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
+  const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
+  const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
+  const { data: updateTopicResponse, error: updateTopicError, sendRequest: updateTopic } = useAPI();
+  const { data: dropTeamResponse, error: dropTeamError, sendRequest: dropTeamRequest } = useAPI();
+
+ 
+
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -113,6 +152,246 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const [assignmentName, setAssignmentName] = useState("");
+
+
+   useEffect(() => {
+    if (assignmentResponse?.data) {
+      setAssignmentName(assignmentResponse.data.name || "");
+      // Load allow_bookmarks setting from backend
+      if (assignmentResponse.data.allow_bookmarks !== undefined && assignmentResponse.data.advertising_for_partners_allowed !== undefined) {
+        setTopicSettings(prev => ({ ...prev, allowBookmarks: assignmentResponse.data.allow_bookmarks,allowAdvertiseForPartners: assignmentResponse.data.advertising_for_partners_allowed }));
+      }
+    }
+  }, [assignmentResponse]);
+
+  useEffect(() => {
+    if (assignmentError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: assignmentError }));
+    }
+  }, [assignmentError, dispatch]);
+
+  useEffect(() => {
+    if (updateResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Bookmark setting saved successfully" }));
+    }
+  }, [updateResponse, dispatch]);
+
+  useEffect(() => {
+    if (updateError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: updateError }));
+    }
+  }, [updateError, dispatch]);
+
+  useEffect(() => {
+    if (deleteResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [deleteResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (deleteError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: deleteError }));
+    }
+  }, [deleteError, dispatch]);
+
+  useEffect(() => {
+    if (createResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [createResponse, dispatch, id, fetchTopics]);
+
+   useEffect(() => {
+    if (createError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: createError }));
+    }
+  }, [createError, dispatch]);
+
+  useEffect(() => {
+    if (updateTopicResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
+      // Refresh topics data
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [updateTopicResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (updateTopicError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: updateTopicError }));
+    }
+  }, [updateTopicError, dispatch]);
+
+  useEffect(() => {
+    if (dropTeamResponse) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
+      if (id) {
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }
+  }, [dropTeamResponse, dispatch, id, fetchTopics]);
+
+  useEffect(() => {
+    if (dropTeamError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: dropTeamError }));
+    }
+  }, [dropTeamError, dispatch]);
+
+  // Load topics for this assignment
+    useEffect(() => {
+      if (id) {
+        setTopicsLoading(true);
+        setTopicsError(null);
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+      }
+    }, [id, fetchTopics]);
+
+     // Process topics response
+      useEffect(() => {
+        if (topicsResponse?.data) {
+          const transformedTopics: TopicData[] = (topicsResponse.data || []).map((topic: any) => ({
+            id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
+            databaseId: Number(topic.id),
+            name: topic.topic_name,
+            url: topic.link,
+            description: topic.description,
+            category: topic.category,
+            assignedTeams: topic.confirmed_teams || [],
+            waitlistedTeams: topic.waitlisted_teams || [],
+            questionnaire: "Default rubric",
+            numSlots: topic.max_choosers,
+            availableSlots: topic.available_slots || 0,
+            bookmarks: [],
+            partnerAd: undefined,
+            createdAt: topic.created_at,
+            updatedAt: topic.updated_at,
+          }));
+          setTopicsData(transformedTopics);
+          setTopicsLoading(false);
+        }
+      }, [topicsResponse]);
+    
+      // Handle topics API errors
+      useEffect(() => {
+        if (topicsApiError) {
+          setTopicsError(topicsApiError);
+          setTopicsLoading(false);
+        }
+      }, [topicsApiError]);
+     const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
+        setTopicSettings((prev) => ({ ...prev, [setting]: value }));
+        
+        // Save allow_bookmarks setting to backend immediately
+        if (setting === 'allowBookmarks' && id) {
+          updateAssignment({
+            url: `/assignments/${id}`,
+            method: 'PATCH',
+            data: {
+              assignment: {
+                allow_bookmarks: value
+              }
+            }
+          });
+        }
+        // Save advertising_for_partners_allowed setting to backend immediately
+        if (setting === 'allowAdvertiseForPartners' && id) {
+          updateAssignment({
+            url: `/assignments/${id}`,
+            method: 'PATCH',
+            data: {
+              assignment: {
+                advertising_for_partners_allowed: value
+              }
+            }
+          });
+        }
+    
+      }, [id, updateAssignment]);
+    
+
+        const handleDropTeam = useCallback((topicId: string, teamId: string) => {
+          if (!topicId || !teamId) return;
+          dropTeamRequest({
+            url: `/signed_up_teams/drop_team_from_topic`,
+            method: 'DELETE',
+            params: {
+              topic_id: topicId,
+              team_id: teamId,
+            },
+          });
+        }, [dropTeamRequest]);
+      
+        const handleDeleteTopic = useCallback((topicIdentifier: string) => {
+          console.log(`Delete topic ${topicIdentifier}`);
+          if (id) {
+            deleteTopic({
+              url: `/project_topics`,
+              method: 'DELETE',
+              params: {
+                assignment_id: Number(id),
+                'topic_ids[]': [topicIdentifier]
+              }
+            });
+          }
+        }, [id, deleteTopic]);
+      
+        const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
+          console.log(`Edit topic DB id ${dbId}`, updatedData);
+          updateTopic({
+            url: `/project_topics/${dbId}`,
+            method: 'PATCH',
+            data: {
+              project_topic: {
+                topic_identifier: updatedData.topic_identifier,
+                topic_name: updatedData.topic_name,
+                category: updatedData.category,
+                max_choosers: updatedData.max_choosers,
+                assignment_id: id,
+                description: updatedData.description,
+                link: updatedData.link
+              }
+            }
+          });
+        }, [id, updateTopic]);
+      
+        const handleCreateTopic = useCallback((topicData: any) => {
+          console.log(`Create topic`, topicData);
+          if (id) {
+            createTopic({
+              url: `/project_topics`,
+              method: 'POST',
+              data: {
+                project_topic: {
+                  topic_identifier: topicData.topic_identifier || topicData.id,
+                  topic_name: topicData.topic_name || topicData.name,
+                  category: topicData.category,
+                  max_choosers: topicData.max_choosers ?? topicData.numSlots,
+                  assignment_id: id,
+                  description: topicData.description,
+                  link: topicData.link
+                },
+                micropayment: topicData.micropayment ?? 0
+              }
+            });
+          }
+        }, [id, createTopic]);
+      
+        const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
+          console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
+          // TODO: Implement partner ad application logic
+        }, []);
+      
+
 
   // Close the modal if the assignment is updated successfully and navigate to the assignments page
   useEffect(() => {
@@ -257,6 +536,25 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     });
   }
 
+
+  // Topic settings state
+    const [topicSettings, setTopicSettings] = useState<TopicSettings>({
+      allowTopicSuggestions: false,
+      enableBidding: false,
+      enableAuthorsReview: true,
+      allowReviewerChoice: true,
+      allowBookmarks: false,
+      allowBiddingForReviewers: false,
+      allowAdvertiseForPartners: false,
+    });
+  
+    // Topics data state
+    const [topicsData, setTopicsData] = useState<TopicData[]>([]);
+    const [topicsLoading, setTopicsLoading] = useState(false);
+    const [topicsError, setTopicsError] = useState<string | null>(null);
+
+
+
   return (
     <div style={{ padding: '30px' }}>
       {
@@ -336,23 +634,21 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
               {/* Topics Tab */}
               <Tab eventKey="topics" title="Topics">
-                <div style={{ fontSize: '1.5rem', color: '#333', marginTop: '20px', marginBottom: '20px' }}>Topics for {assignmentData.name}</div>
-                <FormCheckbox controlId="assignment-allow_topic_suggestions_from_students" label="Allow topic suggestions from students?" name="allow_topic_suggestion_from_students" />
-                <FormCheckbox controlId="assignment-enable_bidding_for_topics" label="Enable bidding for topics?" name="enable_bidding_for_topics" />
-                <FormCheckbox controlId="assignment-enable_bidding_for_reviews" label="Enable bidding for reviews?" name="enable_bidding_for_reviews" />
-                <FormCheckbox controlId="assignment-enable_authors_to_review_others" label="Enable authors to review others working on same topic?" name="enable_authors_to_review_other_topics" />
-                <FormCheckbox controlId="assignment-allow_reviewer_to_choose_topic_to_review" label="Allow reviewer to choose which topic to review?" name="allow_reviewer_to_choose_topic_to_review" />
-                <FormCheckbox controlId="assignment-allow_participants_to_create_bookmarks" label="Allow participants to create bookmarks?" name="allow_participants_to_create_bookmarks" />
-
-                {/* TODO: Add topics table here */}
-
-                <div className="d-flex justify-content-start gap-2" style={{ alignItems: 'center', marginTop: '20px' }}>
-                  <a href="#" style={{ color: '#a4a366', textDecoration: 'none' }}>New topic</a> |
-                  <a href="#" style={{ color: '#a4a366', textDecoration: 'none' }}>Import topics</a> |
-                  <Button variant="outline-secondary">Delete selected topics</Button> |
-                  <Button variant="outline-secondary">Delete all topics</Button> |
-                  <a href="#" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
-                </div>
+                <TopicsTab
+                  assignmentName={assignmentName}
+            assignmentId={id!}
+            topicSettings={topicSettings}
+            topicsData={topicsData}
+            topicsLoading={topicsLoading}
+            topicsError={topicsError}
+            onTopicSettingChange={handleTopicSettingChange}
+            onDropTeam={handleDropTeam}
+            onDeleteTopic={handleDeleteTopic}
+            onEditTopic={handleEditTopic}
+            onCreateTopic={handleCreateTopic}
+            onApplyPartnerAd={handleApplyPartnerAd}
+            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
+                />
               </Tab>
 
               {/* Rubrics Tab */}
