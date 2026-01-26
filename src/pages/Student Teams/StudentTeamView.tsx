@@ -103,9 +103,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
     const newInvite: Invitation = {
       assignment_id: team?.data.assignment.id,
-      username: userLogin,
+      username: userLogin.trim(),
     };
     sendInvite(newInvite.username, newInvite.assignment_id);
+    setUserLogin("")
   }, [userLogin, team, sendInvite]);
 
   const handleNameSubmit = useCallback(
@@ -436,6 +437,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
             <thead>
               <tr>
                 <th className={styles.studentTeamTableCellHeader}>Team</th>
+                <th className={styles.studentTeamTableCellHeader}>Sender</th>
                 <th className={styles.studentTeamTableCellHeader}>Action</th>
               </tr>
             </thead>
@@ -443,7 +445,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
               {
                 receivedInvitations.data.map((invite: any) => (
                   <tr key={invite.id}>
-                    <td className={styles.studentTeamTableCell}>{invite.from_team.name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.from_participant.team.name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.from_participant.user.name}</td>
                     <td className={styles.studentTeamTableCell}>
                       {invite.reply_status === 'W' ?
                         <>
@@ -452,7 +455,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             size="sm"
                             className={styles.studentTeamButtonLink}
                             onClick={() => {
-                              if (window.confirm(`You are accepting invite from ${invite.from_team.name}. Are you sure?`)) {
+                              if (window.confirm(`You are accepting invite from ${invite.from_participant.team.name}. Are you sure?`)) {
                                 updateInvite(invite.id, "A");
                               }
                             }}
@@ -465,7 +468,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             size="sm"
                             className={styles.studentTeamButtonLink}
                             onClick={() => {
-                              if (window.confirm(`You are declining invite from ${invite.from_team.name}. Are you sure?`)) {
+                              if (window.confirm(`You are declining invite from ${invite.from_participant.name}. Are you sure?`)) {
                                 updateInvite(invite.id, "D");
                               }
                             }}
