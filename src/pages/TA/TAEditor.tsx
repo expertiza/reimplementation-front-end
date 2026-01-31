@@ -1,13 +1,13 @@
 // Importing necessary interfaces and modules
-import FormSelect from "components/Form/FormSelect";
+import FormSelect from "../../components/Form/FormSelect";
 import { Form, Formik, FormikHelpers } from "formik";
-import useAPI from "hooks/useAPI";
+import useAPI from "../../hooks/useAPI";
 import React, { useEffect } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
-import { alertActions } from "store/slices/alertSlice";
-import { HttpMethod } from "utils/httpMethods";
+import { alertActions } from "../../store/slices/alertSlice";
+import { HttpMethod } from "../../utils/httpMethods";
 import * as Yup from "yup";
 import { IEditor } from "../../utils/interfaces";
 import { ITAFormValues, transformTARequest } from "./TAUtil";

@@ -10,6 +10,9 @@ export const useStudentTeam = (studentId: string) => {
     const fetchSentInvitationsByTeamAPI = useAPI();
     const fetchSentInvitationsByParticipantAPI = useAPI();
     const fetchReceivedInvitationsAPI = useAPI();
+    const fetchJoinTeamRequestsAPI = useAPI();
+    const acceptJoinRequestAPI = useAPI();
+    const declineJoinRequestAPI = useAPI();
 
     const fetchTeam = () =>
         teamAPI.sendRequest({ url: `/student_teams/view?student_id=${studentId}` });
@@ -63,6 +66,20 @@ export const useStudentTeam = (studentId: string) => {
         url: `/invitations/sent_to/${studentId}`
     })
 
+    const fetchJoinTeamRequests = (teamId: number) => fetchJoinTeamRequestsAPI.sendRequest({
+        url: `/join_team_requests/for_team/${teamId}`
+    })
+
+    const acceptJoinRequest = (requestId: number) => acceptJoinRequestAPI.sendRequest({
+        url: `/join_team_requests/${requestId}/accept`,
+        method: "PATCH"
+    })
+
+    const declineJoinRequest = (requestId: number) => declineJoinRequestAPI.sendRequest({
+        url: `/join_team_requests/${requestId}/decline`,
+        method: "PATCH"
+    })
+
     return {
         teamAPI,
         inviteAPI,
@@ -83,5 +100,11 @@ export const useStudentTeam = (studentId: string) => {
         fetchSentInvitationsByParticipant,
         fetchReceivedInvitations,
         leaveTeam,
+        fetchJoinTeamRequestsAPI,
+        acceptJoinRequestAPI,
+        declineJoinRequestAPI,
+        fetchJoinTeamRequests,
+        acceptJoinRequest,
+        declineJoinRequest,
     };
 };

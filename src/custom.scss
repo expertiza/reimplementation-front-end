@@ -85,5 +85,40 @@ $theme-colors: (
           margin-bottom: 10px; // Space between stacked buttons
         }
       }
+
+#assignment-tabs {
+  .nav-link {
+    color: #333; // Default tab text color
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #fff; // Hover text color (you can change this to any color)
+    }
+
+    &.active {
+      color: #333; // Active tab text color (you can change this to any color)
+      font-weight: 600; // Optional: make active tab bold
+    }
+  }
+}
+      // Custom tab hover styling
+      .nav-tabs .nav-link {
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: #e9ecef;
+          border-color: #dee2e6;
+        }
+      }
+
+// Remove the gray background under the topics checkboxes
+.topics-settings-form {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 1rem !important;
+}
+
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';

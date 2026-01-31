@@ -31,6 +31,9 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     leaveAPI,
     fetchSentInvitationsByParticipantAPI,
     fetchReceivedInvitationsAPI,
+    fetchJoinTeamRequestsAPI,
+    acceptJoinRequestAPI,
+    declineJoinRequestAPI,
     fetchTeam,
     createTeam,
     updateName,
@@ -38,7 +41,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     updateInvite,
     leaveTeam,
     fetchSentInvitationsByParticipant,
-    fetchReceivedInvitations
+    fetchReceivedInvitations,
+    fetchJoinTeamRequests,
+    acceptJoinRequest,
+    declineJoinRequest
   } = useStudentTeam(studentId);
 
   const [editMode, setEditMode] = useState(false);
@@ -52,9 +58,12 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const { error: updateNameError, data: updateNameResponse, reset: resetUpdateName } = updateTeamNameAPI;
   const { data: sentInvitations } = fetchSentInvitationsByParticipantAPI;
   const { data: receivedInvitations } = fetchReceivedInvitationsAPI;
+  const { data: joinTeamRequests } = fetchJoinTeamRequestsAPI;
   const { error: sendInviteError, data: sendInviteResponse, reset: resetSendInvite } = inviteAPI;
   const { error: updateInviteError, data: updateInviteResponse, reset: resetUpdateInvite } = updateInviteAPI;
   const { error: leaveTeamError, data: leaveTeamResponse, reset: resetLeaveTeam } = leaveAPI;
+  const { error: acceptJoinRequestError, data: acceptJoinRequestResponse, reset: resetAcceptJoinRequest } = acceptJoinRequestAPI;
+  const { error: declineJoinRequestError, data: declineJoinRequestResponse, reset: resetDeclineJoinRequest } = declineJoinRequestAPI;
 
   useEffect(() => {
     if (errorStatus != "403")
@@ -62,9 +71,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   }, [updateInviteResponse]);
 
   useEffect(() => {
-    if (team?.data.team) setTeamName(team.data.team.name);
     if (team?.data.team) {
+      setTeamName(team.data.team.name);
       fetchSentInvitationsByParticipant(parseInt(studentId));
+      fetchJoinTeamRequests(team.data.team.id);
       if (team.data.team.signed_up_team && team.data.team.signed_up_team.advertise_for_partner) {
         setAdExist(true);
         const { comments_for_advertisement } = team.data.team.signed_up_team;
@@ -72,7 +82,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
         setItems(skills);
       }
     }
-  }, [team, sendInviteResponse]);
+  }, [team, sendInviteResponse, acceptJoinRequestResponse, declineJoinRequestResponse]);
 
   // Toggle between edit and view mode for team name
   const handleEditNameToggle = () => {
@@ -123,21 +133,38 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     [updateName, teamName]
   );
 
-  useEffect(() => {
-    const updateToastMessage = (response: any) => {
-      if (response.data.success) {
-        setShowAlert(false);
-      } else {
-        setShowAlert(true)
-      }
 
+  const updateToastMessage = (response: any) => {
+    if (response.data.success) {
+      setShowAlert(false);
+    } else {
+      setShowAlert(true)
+    }
+
+    setToastMessage(response.data.message);
+    const timeout = setTimeout(() => {
+      setToastMessage("");
+      setShowAlert(false);
+      resetAllLogs(false, true);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }
+
+
+  const handleAcceptJoinRequest = (requestId: number) => {
+    acceptJoinRequest(requestId);
+    setToastMessage("Join request accepted successfully!");
+  };
+
+  const handleDeclineJoinRequest = (requestId: number) => {
+    declineJoinRequest(requestId);
+    setToastMessage("Join request declined.");
+  };
+
+  useEffect(() => {
+    const showFeedback = (response: any) => {
       setToastMessage(response.data.message);
-      const timeout = setTimeout(() => {
-        setToastMessage("");
-        setShowAlert(false);
-        resetAllLogs(false, true);
-      }, 3000);
-      return () => clearTimeout(timeout);
+      resetAllLogs(false, true);
     }
     if (updateNameResponse) {
       if (updateNameResponse.data.success) {
@@ -160,6 +187,22 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     }
     if (createTeamResponse) {
       updateToastMessage(createTeamResponse)
+      showFeedback(updateNameResponse);
+    }
+
+    if (sendInviteResponse) {
+      showFeedback(sendInviteResponse)
+    }
+
+    if (updateInviteResponse) {
+      showFeedback(updateInviteResponse)
+    }
+
+    if (leaveTeamResponse) {
+      showFeedback(leaveTeamResponse)
+    }
+    if (createTeamResponse) {
+      showFeedback(createTeamResponse)
     }
 
   }, [updateNameResponse, sendInviteResponse, updateInviteResponse, leaveTeamResponse, createTeamResponse]);
@@ -170,6 +213,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     resetSendInvite?.(error, data);
     resetLeaveTeam?.(error, data);
     resetUpdateInvite?.(error, data);
+    resetAcceptJoinRequest?.(error, data);
+    resetDeclineJoinRequest?.(error, data);
   };
 
   // Combine all hook errors into one derived variable
@@ -179,6 +224,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     sendInviteError ||
     leaveTeamError ||
     updateInviteError ||
+    acceptJoinRequestError ||
+    declineJoinRequestError ||
     null;
 
   useEffect(() => {
@@ -201,10 +248,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   }, [studentId]);
 
   useEffect(() => {
-    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success) {
+    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success || acceptJoinRequestResponse || declineJoinRequestResponse) {
       fetchTeam();
     }
-  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse])
+  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse, acceptJoinRequestResponse, declineJoinRequestResponse])
 
 
   if (isLoading)
@@ -225,12 +272,14 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   return (
     <div className={styles.studentTeamContainer}>
       <div>
-        {toastMessage && (
-          <Alert className={showAlert ? "flash_note alert alert-warning" : "flash_note alert alert-success"}>
-            {toastMessage}
-          </Alert>
-        )}
-      </div>
+        {
+          toastMessage && (
+            <Alert className={showAlert ? "flash_note alert alert-warning" : "flash_note alert alert-success"}>
+              {toastMessage}
+            </Alert>
+          )
+        }
+      </div >
       {team && !team.data.team ?
         (<div>
           <h1>Team Information for {team.data.assignment.name}</h1>
@@ -344,149 +393,221 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                 <button onClick={handleInvite} className={styles.studentTeamInviteButton}>
                   Invite
                 </button>
-              </div>
-            </Form> :
+              </div >
+            </Form > :
               <h6>You cannot invite new members as there is no room on your team. </h6>}
-          </div>
+          </div >
 
-          {team.data.team.sign_up_topic && team.data.team.signed_up_team && <div className={styles.studentTeamAdvertisementSection}>
-            <h3 className={styles.studentTeamFormLabel}>Advertise for teammates</h3>
-            {adExist ?
-              <div>
-                <Table striped bordered hover className={styles.studentTeamTable}>
-                  <thead>
-                    <tr className={styles.studentTeamTableHeader}>
-                      <th className={styles.studentTeamTableCellHeader}>Topic</th>
-                      <th className={styles.studentTeamTableCellHeader}>Desired Qualifications</th>
-                      <th className={styles.studentTeamTableCellHeader}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className={styles.studentTeamTableCell}>{team.data.team.sign_up_topic.topic_name}</td>
+          {
+            team.data.team.sign_up_topic && team.data.team.signed_up_team && <div className={styles.studentTeamAdvertisementSection}>
+              <h3 className={styles.studentTeamFormLabel}>Advertise for teammates</h3>
+              {adExist ?
+                <div>
+                  <Table striped bordered hover className={styles.studentTeamTable}>
+                    <thead>
+                      <tr className={styles.studentTeamTableHeader}>
+                        <th className={styles.studentTeamTableCellHeader}>Topic</th>
+                        <th className={styles.studentTeamTableCellHeader}>Desired Qualifications</th>
+                        <th className={styles.studentTeamTableCellHeader}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className={styles.studentTeamTableCell}>{team.data.team.sign_up_topic.topic_name}</td>
+                        <td className={styles.studentTeamTableCell}>
+                          <div className={styles.adList}>
+                            {items.map((item, index) => (
+                              <div className={styles.adListItem} key={index}>
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                        <td className={styles.studentTeamTableCell}>
+                          <Link to={`/advertise_for_partner?team_id=${team.data.team.signed_up_team.id}`} className={styles.studentTeamButtonLink}>
+                            Manage Advertisement
+                          </Link>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </div> :
+                <Link to={`/advertise_for_partner?team_id=${team.data.team.signed_up_team.id}`} className={styles.studentTeamButtonLink}>
+                  Create advertisement
+                </Link>}
+            </div>
+          }
+
+        </div >}
+
+      {
+        sentInvitations && sentInvitations.data.length > 0 && <div>
+          <h3 className={styles.studentTeamFormLabel}>Sent invitations</h3>
+          {sentInvitations && sentInvitations.data.length > 0 && (
+            <Table striped bordered hover className={styles.studentTeamTable}>
+              <thead>
+                <tr>
+                  <th className={styles.studentTeamTableCellHeader}>Username</th>
+                  <th className={styles.studentTeamTableCellHeader}>Name</th>
+                  <th className={styles.studentTeamTableCellHeader}>Email address</th>
+                  <th className={styles.studentTeamTableCellHeader}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  sentInvitations.data.map((invite: any) => (
+                    <tr key={invite.id}>
+                      <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.name}</td>
+                      <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.full_name}</td>
+                      <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.email}</td>
                       <td className={styles.studentTeamTableCell}>
-                        <div className={styles.adList}>
-                          {items.map((item, index) => (
-                            <div className={styles.adListItem} key={index}>
-                              <span>{item}</span>
-                            </div>
-                          ))}
-                        </div>
+                        {invite.reply_status === 'W' ?
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className={styles.studentTeamButtonLink}
+                            onClick={() => {
+                              if (window.confirm(`You are retracting invite to ${invite.to_participant?.user?.name}. Are you sure?`)) {
+                                updateInvite(invite.id, "R")
+                              }
+                            }}
+                          >
+                            Retract
+                          </Button> :
+                          replyStatus(invite.reply_status)}
                       </td>
+                    </tr >
+                  ))
+                }
+              </tbody >
+            </Table >
+          )}
+        </div >}
+      {
+        receivedInvitations && receivedInvitations.data.length > 0 && <div style={{ marginTop: "2rem" }}>
+          <h3 className={styles.studentTeamFormLabel}>Received invitations</h3>
+          {receivedInvitations && receivedInvitations.data.length > 0 && (
+            <Table striped bordered hover className={styles.studentTeamTable}>
+              <thead>
+                <tr>
+                  <th className={styles.studentTeamTableCellHeader}>Team</th>
+                  <th className={styles.studentTeamTableCellHeader}>Sender</th>
+                  <th className={styles.studentTeamTableCellHeader}>Action</th>
+                </tr >
+              </thead >
+              <tbody>
+                {
+                  receivedInvitations.data.map((invite: any) => (
+                    <tr key={invite.id}>
+                      <td className={styles.studentTeamTableCell}>{invite.from_participant?.team?.name}</td>
+                      <td className={styles.studentTeamTableCell}>{invite.from_participant?.user?.name}</td>
                       <td className={styles.studentTeamTableCell}>
-                        <Link to={`/advertise_for_partner?team_id=${team.data.team.signed_up_team.id}`} className={styles.studentTeamButtonLink}>
-                          Manage Advertisement
-                        </Link>
+                        {invite.reply_status === 'W' ?
+                          <>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className={styles.studentTeamButtonLink}
+                              onClick={() => {
+                                if (window.confirm(`You are accepting invite from ${invite.from_participant?.team?.name}. Are you sure?`)) {
+                                  updateInvite(invite.id, "A");
+                                }
+                              }}
+                            >
+                              Accept
+                            </Button>
+                            <span> | </span>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className={styles.studentTeamButtonLink}
+                              onClick={() => {
+                                if (window.confirm(`You are declining invite from ${invite.from_participant?.name}. Are you sure?`)) {
+                                  updateInvite(invite.id, "D");
+                                }
+                              }}
+                            >
+                              Decline
+                            </Button>
+                          </> :
+                          replyStatus(invite.reply_status)
+                        }
                       </td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </div> :
-              <Link to={`/advertise_for_partner?team_id=${team.data.team.signed_up_team.id}`} className={styles.studentTeamButtonLink}>
-                Create advertisement
-              </Link>}
-          </div>}
+                    </tr >
+                  ))
+                }
+              </tbody >
+            </Table >
+          )}
+        </div >}
 
-        </div>}
-
-      {sentInvitations && sentInvitations.data.length > 0 && <div>
-        <h3 className={styles.studentTeamFormLabel}>Sent invitations</h3>
-        {sentInvitations && sentInvitations.data.length > 0 && (
+      {/* Received Requests (Join Team Requests) */}
+      {joinTeamRequests && joinTeamRequests.data && joinTeamRequests.data.length > 0 && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3 className={styles.studentTeamFormLabel}>Received Requests</h3>
           <Table striped bordered hover className={styles.studentTeamTable}>
             <thead>
               <tr>
-                <th className={styles.studentTeamTableCellHeader}>Username</th>
                 <th className={styles.studentTeamTableCellHeader}>Name</th>
-                <th className={styles.studentTeamTableCellHeader}>Email address</th>
-                <th className={styles.studentTeamTableCellHeader}>Action</th>
+                <th className={styles.studentTeamTableCellHeader}>Comments</th>
+                <th className={styles.studentTeamTableCellHeader} style={{ paddingLeft: "calc(0.2rem + 5px)" }}>Action</th>
+
               </tr>
             </thead>
             <tbody>
-              {
-                sentInvitations.data.map((invite: any) => (
-                  <tr key={invite.id}>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.full_name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.email}</td>
+              {joinTeamRequests.data.map((request: any) => {
+                const isTeamFull = request.team?.is_full || false;
+
+
+                return (
+                  <tr key={request.id}>
+                    <td className={styles.studentTeamTableCell}>{request.participant.user_name}</td>
+                    <td className={styles.studentTeamTableCell}>{request.comments}</td>
                     <td className={styles.studentTeamTableCell}>
-                      {invite.reply_status === 'W' ?
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className={styles.studentTeamButtonLink}
-                          onClick={() => {
-                            if (window.confirm(`You are retracting invite to ${invite.to_participant?.user?.name}. Are you sure?`)) {
-                              updateInvite(invite.id, "R")
-                            }
-                          }}
-                        >
-                          Retract
-                        </Button> :
-                        replyStatus(invite.reply_status)}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </Table>
-        )}
-      </div>}
-      {receivedInvitations && receivedInvitations.data.length > 0 && <div style={{ marginTop: "2rem" }}>
-        <h3 className={styles.studentTeamFormLabel}>Received invitations</h3>
-        {receivedInvitations && receivedInvitations.data.length > 0 && (
-          <Table striped bordered hover className={styles.studentTeamTable}>
-            <thead>
-              <tr>
-                <th className={styles.studentTeamTableCellHeader}>Team</th>
-                <th className={styles.studentTeamTableCellHeader}>Sender</th>
-                <th className={styles.studentTeamTableCellHeader}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                receivedInvitations.data.map((invite: any) => (
-                  <tr key={invite.id}>
-                    <td className={styles.studentTeamTableCell}>{invite.from_participant?.team?.name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.from_participant?.user?.name}</td>
-                    <td className={styles.studentTeamTableCell}>
-                      {invite.reply_status === 'W' ?
+                      {request.reply_status === 'PENDING' ? (
                         <>
                           <Button
                             variant="link"
                             size="sm"
                             className={styles.studentTeamButtonLink}
+                            disabled={isTeamFull}
                             onClick={() => {
-                              if (window.confirm(`You are accepting invite from ${invite.from_participant?.team?.name}. Are you sure?`)) {
-                                updateInvite(invite.id, "A");
+                              if (window.confirm(`Accept ${request.participant.user_name}'s request to join team?`)) {
+                                handleAcceptJoinRequest(request.id);
                               }
                             }}
+                            title={isTeamFull ? "Team is full" : "Invite this user to join the team"}
                           >
                             Accept
                           </Button>
-                          <span> | </span>
+                          {' | '}
                           <Button
                             variant="link"
                             size="sm"
                             className={styles.studentTeamButtonLink}
                             onClick={() => {
-                              if (window.confirm(`You are declining invite from ${invite.from_participant?.name}. Are you sure?`)) {
-                                updateInvite(invite.id, "D");
+                              if (window.confirm(`Decline join request from ${request.participant.user_name}?`)) {
+                                handleDeclineJoinRequest(request.id);
                               }
                             }}
                           >
                             Decline
                           </Button>
-                        </> :
-                        replyStatus(invite.reply_status)
-                      }
+                        </>
+                      ) : (
+                        <span>{request.reply_status}</span>
+                      )}
                     </td>
+
                   </tr>
-                ))}
+                );
+              })}
             </tbody>
           </Table>
-        )}
-      </div>}
-    </div>
+        </div>
+      )}
+    </div >
   );
-};
+}
 
 export default StudentTeamView;

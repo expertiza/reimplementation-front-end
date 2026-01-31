@@ -1,6 +1,7 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button, Tooltip, OverlayTrigger, Badge } from "react-bootstrap";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
+import { formatDate } from "../../utils/util";
 
 
 type Fn = (row: Row<ICourse>) => void;
@@ -35,6 +36,7 @@ export const courseColumns = (
 
   columnHelper.accessor("institution.name", {
     id: "institution",
+    size: 250,
     header: () => (
       <span
         className="text-start fw-bold"
@@ -92,6 +94,7 @@ export const courseColumns = (
   }),
 
   columnHelper.accessor("created_at", {
+    size: 200,
     header: () => (
       <span
         className="text-start fw-bold"
@@ -102,10 +105,7 @@ export const courseColumns = (
     ),
     cell: (info) => (
       <div className="text-start py-2">
-        <span>
-          {new Date(info.getValue()).toLocaleDateString() || (
-            <Badge bg="secondary">N/A</Badge>
-          )}
+        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}
         </span>
       </div>
     ),
@@ -115,6 +115,7 @@ export const courseColumns = (
   }),
 
   columnHelper.accessor("updated_at", {
+    size: 200,
     header: () => (
       <span
         className="text-start fw-bold"
@@ -125,10 +126,7 @@ export const courseColumns = (
     ),
     cell: (info) => (
       <div className="text-start py-2">
-        <span>
-          {new Date(info.getValue()).toLocaleDateString() || (
-            <Badge bg="secondary">N/A</Badge>
-          )}
+        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}
         </span>
       </div>
     ),
@@ -157,9 +155,9 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/edit-icon-24.png"}
+              src={"/assets/images/edit-icon-24.png"}
               alt="Edit"
-              style={{ width: "25px", height: "20px" }}
+              style={{ width: "20px", height: "20px" }}
             />
           </Button>
         </OverlayTrigger>
@@ -172,9 +170,9 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              src={"/assets/images/delete-icon-24.png"}
               alt="Delete"
-              style={{ width: "25px", height: "20px" }}
+              style={{ width: "20px", height: "20px" }}
             />
           </Button>
         </OverlayTrigger>
@@ -187,9 +185,9 @@ export const courseColumns = (
             className="p-0"
           >
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              src={"/assets/images/add-ta-24.png"}
               alt="Assign TA"
-              style={{ width: "25px", height: "20px" }}
+              style={{ width: "20px", height: "20px" }}
             />
           </Button>
         </OverlayTrigger>
@@ -204,7 +202,7 @@ export const courseColumns = (
             <img
               src={"/assets/images/Copy-icon-24.png"}
               alt="Copy"
-              style={{ width: "35px", height: "25px" }}
+              style={{ width: "25px", height: "25px" }}
             />
           </Button>
         </OverlayTrigger>
