@@ -66,7 +66,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const { error: declineJoinRequestError, data: declineJoinRequestResponse, reset: resetDeclineJoinRequest } = declineJoinRequestAPI;
 
   useEffect(() => {
-    if (errorStatus != "403")
+    if (errorStatus != '403')
       fetchReceivedInvitations();
   }, [updateInviteResponse]);
 
@@ -259,7 +259,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
       <Spinner />
     </div>);
 
-  if (errorStatus == "403")
+  if (errorStatus === '403')
     return (
       <>
         <Alert variant="danger" className="flash_note alert alert-danger">
@@ -267,7 +267,6 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
         </Alert>
       </>
     );
-
 
   return (
     <div className={styles.studentTeamContainer}>

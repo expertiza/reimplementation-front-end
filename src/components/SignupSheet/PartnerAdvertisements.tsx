@@ -18,10 +18,10 @@ const PartnerAdvertisements: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
       const response = await axios.get(
-        `http://152.7.176.23:3002/api/v1/signed_up_teams`,
+        `http://localhost:3002/signed_up_teams`,
         {
           params: { topic_id: topicId },
           headers: { Authorization: `Bearer ${token}` }
@@ -52,7 +52,7 @@ const PartnerAdvertisements: React.FC = () => {
   const handleRequestToJoin = async (teamId: number, teamName: string) => {
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-      
+
       await axios.post(
         'http://152.7.176.23:3002/api/v1/join_team_requests',
         {

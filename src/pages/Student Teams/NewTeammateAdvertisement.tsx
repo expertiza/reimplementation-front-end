@@ -2,7 +2,7 @@ import React, { useState, FC, useEffect } from 'react';
 import useAPI from 'hooks/useAPI';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, Spinner } from 'react-bootstrap';
-import "./NewTeammateAdvertisement.scss"
+import styles from "./NewTeammateAdvertisement.module.css"
 
 const NewTeammateAdvertisement: FC = () => {
   const [toastMessage, setToastMessage] = useState("");
@@ -142,18 +142,18 @@ const NewTeammateAdvertisement: FC = () => {
           </Alert>
         )}
       </div>
-      <div className="container">
+      <div className={styles.container}>
         <div>
-          <h1 className="header">Teammate Advertisement</h1>
-          <p className="formLabel">Please describe the qualifications you are looking for in a teammate.</p>
+          <h1 className={styles.header}>Teammate Advertisement</h1>
+          <p className={styles.formLabel}>Please describe the qualifications you are looking for in a teammate.</p>
         </div>
-        <div className="adContainer">
+        <div className={styles.adContainer}>
           {/* List */}
-          <div className="adList">
+          <div className={styles.adList}>
             {items.map((item, index) => (
-              <div className="adListItem" key={index}>
+              <div className={styles.adListItem} key={index}>
                 <span>{item}</span>
-                <button className="adRemoveBtn" onClick={() => handleRemove(index)}>
+                <button className={styles.adRemoveBtn} onClick={() => handleRemove(index)}>
                   ✕
                 </button>
               </div>
@@ -167,19 +167,19 @@ const NewTeammateAdvertisement: FC = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type the skills/qualifications you require..."
           ></textarea>
-          <button onClick={handleAdd} disabled={input.trim().length === 0} className="submitButton">Add</button>
+          <button onClick={handleAdd} disabled={input.trim().length === 0} className={styles.submitButton}>Add</button>
         </div>
 
         <div>
-          <button className="createAdButton" onClick={() => window.history.back()}>
+          <button className={styles.createAdButton} onClick={() => window.history.back()}>
             Back
           </button>
 
-          <button className="createAdButton" style={{ marginLeft: "15px" }} onClick={handleSubmit} disabled={items.length === 0}>
+          <button className={styles.createAdButton} style={{ marginLeft: "15px" }} onClick={handleSubmit} disabled={items.length === 0}>
             {adExist ? "Update advertisement" : "Create advertisement"}
           </button>
 
-          {adExist && <button className="createAdButton" style={{ marginLeft: "15px" }} onClick={handleDelete} disabled={items.length === 0}>
+          {adExist && <button className={styles.createAdButton} style={{ marginLeft: "15px" }} onClick={handleDelete} disabled={items.length === 0}>
             Delete advertisement
           </button>}
         </div>
