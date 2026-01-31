@@ -2,6 +2,7 @@ import React, { useState, FC, useEffect } from 'react';
 import useAPI from 'hooks/useAPI';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, Spinner } from 'react-bootstrap';
+import "./NewTeammateAdvertisement.scss"
 
 const NewTeammateAdvertisement: FC = () => {
   const [toastMessage, setToastMessage] = useState("");
