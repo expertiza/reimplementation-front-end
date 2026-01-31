@@ -93,7 +93,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     }
 
     const isMember = team?.data.team.members.some(
-      (m: any) => m.user.username === userLogin.trim() ||  m.user.email === userLogin.trim()
+      (m: any) => m.user.username === userLogin.trim() || m.user.email === userLogin.trim()
     );
     if (isMember) {
       setShowAlert(true);
@@ -405,9 +405,9 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
               {
                 sentInvitations.data.map((invite: any) => (
                   <tr key={invite.id}>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant.user.name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant.user.full_name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.to_participant.user.email}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.full_name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.to_participant?.user?.email}</td>
                     <td className={styles.studentTeamTableCell}>
                       {invite.reply_status === 'W' ?
                         <Button
@@ -415,7 +415,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                           size="sm"
                           className={styles.studentTeamButtonLink}
                           onClick={() => {
-                            if (window.confirm(`You are retracting invite to ${invite.to_participant.user.name}. Are you sure?`)) {
+                            if (window.confirm(`You are retracting invite to ${invite.to_participant?.user?.name}. Are you sure?`)) {
                               updateInvite(invite.id, "R")
                             }
                           }}
@@ -445,8 +445,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
               {
                 receivedInvitations.data.map((invite: any) => (
                   <tr key={invite.id}>
-                    <td className={styles.studentTeamTableCell}>{invite.from_participant.team.name}</td>
-                    <td className={styles.studentTeamTableCell}>{invite.from_participant.user.name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.from_participant?.team?.name}</td>
+                    <td className={styles.studentTeamTableCell}>{invite.from_participant?.user?.name}</td>
                     <td className={styles.studentTeamTableCell}>
                       {invite.reply_status === 'W' ?
                         <>
@@ -455,7 +455,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             size="sm"
                             className={styles.studentTeamButtonLink}
                             onClick={() => {
-                              if (window.confirm(`You are accepting invite from ${invite.from_participant.team.name}. Are you sure?`)) {
+                              if (window.confirm(`You are accepting invite from ${invite.from_participant?.team?.name}. Are you sure?`)) {
                                 updateInvite(invite.id, "A");
                               }
                             }}
@@ -468,7 +468,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             size="sm"
                             className={styles.studentTeamButtonLink}
                             onClick={() => {
-                              if (window.confirm(`You are declining invite from ${invite.from_participant.name}. Are you sure?`)) {
+                              if (window.confirm(`You are declining invite from ${invite.from_participant?.name}. Are you sure?`)) {
                                 updateInvite(invite.id, "D");
                               }
                             }}
