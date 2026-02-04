@@ -1,13 +1,12 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Container,
-  Table,
   Spinner,
   Button,
   Form,
   InputGroup,
-  Alert
+  Alert,
 } from "react-bootstrap";
 import {
   BarChart,
@@ -18,8 +17,24 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { createColumnHelper } from "@tanstack/react-table";
+import Table from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
 import "./Reviews.css";
+
+const columnHelper = createColumnHelper<ReviewData>();
+
+function getTeamStatusText(status: ReviewData["teamReviewedStatus"]): string {
+  return status === "red"
+    ? "Not Completed"
+    : status === "blue"
+      ? "Completed, No Grade"
+      : status === "green"
+        ? "No Submitted Work"
+        : status === "purple"
+          ? "No Review"
+          : "Grade Assigned";
+}
 
 // --------------------------------------------------------------------------
 // --- INTERFACES & UTILITIES ---
@@ -108,123 +123,158 @@ const MetricsChart: React.FC<MetricsChartProps> = ({
 };
 
 // --------------------------------------------------------------------------
-// --- TABLE ROW COMPONENT ---
+// --- GRADE/COMMENT CELL ---
 // --------------------------------------------------------------------------
 
-interface ReviewReportRowProps {
+const GradeCommentCell: React.FC<{
   review: ReviewData;
-  index: number;
-  averageVolume: number;
   onSave: (id: number, grade: number | null, comment: string) => void;
-}
-
-const ReviewReportRow: React.FC<ReviewReportRowProps> = ({
-  review,
-  index,
-  averageVolume,
-  onSave
-}) => {
-  const rowClassName = index % 2 === 0 ? "table-light" : "";
-  const [grade, setGrade] = useState<number | string>(review.assignedGrade || "");
-  const [comment, setComment] = useState<string>(review.instructorComment || "");
+}> = ({ review, onSave }) => {
+  const [grade, setGrade] = useState<number | string>(review.assignedGrade ?? "");
+  const [comment, setComment] = useState<string>(review.instructorComment ?? "");
 
   const handleSave = () => {
-    const numGrade = grade === "" ? null : Number(grade);
-    onSave(review.id, numGrade, comment);
+    onSave(review.id, grade === "" ? null : Number(grade), comment);
   };
 
-  const teamStatusText =
-    review.teamReviewedStatus === "red"
-      ? "Not Completed"
-      : review.teamReviewedStatus === "blue"
-        ? "Completed, No Grade"
-        : review.teamReviewedStatus === "green"
-          ? "No Submitted Work"
-          : review.teamReviewedStatus === "purple"
-            ? "No Review"
-            : "Grade Assigned";
-
   return (
-    <tr className={rowClassName}>
-      <td>
-        <Link to={`/users/${review.reviewerId}`}>
-          <strong>{review.reviewerName}</strong>
-        </Link>
-        <br />({review.reviewerUsername})
-      </td>
-      <td>
-        {review.reviewsCompleted}/{review.reviewsSelected}
-        <br />
-        <a href="#">(Summary)</a>
-      </td>
-      <td
-        className={`text-${review.teamReviewedStatus}`}
-        style={{ maxWidth: "200px" }}
-      >
-        {review.teamReviewedName} <br />
-        <small>
-          {teamStatusText} {review.hasConsent && "✔"}
-        </small>
-      </td>
-      <td>
-        {review.rounds && review.rounds.length > 0 ? (
-          review.rounds.map((round, i) => {
-            const scorePercentage = (round.calculatedScore !== null && round.maxScore && round.maxScore > 0)
-              ? Math.round((round.calculatedScore / round.maxScore) * 100)
-              : 0;
-            return (
-              <div key={i}>
-                Round {round.round}: {round.calculatedScore !== null ? `${scorePercentage}%` : "-"}
-              </div>
-            );
-          })
-        ) : (
-          "-"
-        )}
-      </td>
-      <td style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }}>
-        {review.rounds && review.rounds.length > 0 ? (
-          review.rounds.map((round, i) => (
-            <div key={i} className="mb-3">
-              <div style={{ fontSize: "0.85rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px" }}>
-                Round {round.round}
-              </div>
-              <MetricsChart
-                reviewVolume={round.reviewVolume}
-                reviewCommentCount={round.reviewCommentCount}
-                averageVolume={averageVolume}
-              />
-            </div>
-          ))
-        ) : (
-          "-"
-        )}
-      </td>
-      <td style={{ minWidth: "250px" }}>
-        <InputGroup className="mb-2">
-          <Form.Control
-            type="number"
-            placeholder="Grade"
-            style={{ width: "80px", display: "inline-block" }}
-            value={grade}
-            onChange={(e) => setGrade(e.target.value)}
-          />
-          <InputGroup.Text> / 100</InputGroup.Text>
-        </InputGroup>
+    <>
+      <InputGroup className="mb-2">
         <Form.Control
-          as="textarea"
-          rows={2}
-          placeholder="Instructor Comments"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          type="number"
+          placeholder="Grade"
+          style={{ width: "80px", display: "inline-block" }}
+          value={grade}
+          onChange={(e) => setGrade(e.target.value)}
         />
-        <Button size="sm" className="mt-1" onClick={handleSave}>
-          Save
-        </Button>
-      </td>
-    </tr>
+        <InputGroup.Text> / 100</InputGroup.Text>
+      </InputGroup>
+      <Form.Control
+        as="textarea"
+        rows={2}
+        placeholder="Instructor Comments"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+      <Button size="sm" className="mt-1" onClick={handleSave}>
+        Save
+      </Button>
+    </>
   );
 };
+
+// --------------------------------------------------------------------------
+// --- COLUMN DEFINITIONS ---
+// --------------------------------------------------------------------------
+
+function buildColumns(
+  averageVolume: number,
+  onSave: (id: number, grade: number | null, comment: string) => void
+) {
+  return [
+    columnHelper.accessor("reviewerName", {
+      header: "Reviewer",
+      cell: ({ row }) => (
+        <>
+          <Link to={`/users/${row.original.reviewerId}`}>
+            <strong>{row.original.reviewerName}</strong>
+          </Link>
+          <br />({row.original.reviewerUsername})
+        </>
+      ),
+    }),
+    columnHelper.accessor("reviewsCompleted", {
+      header: "Reviews Done",
+      cell: ({ row }) => (
+        <>
+          {row.original.reviewsCompleted}/{row.original.reviewsSelected}
+          <br />
+          <a href="#">(Summary)</a>
+        </>
+      ),
+    }),
+    columnHelper.accessor("teamReviewedName", {
+      header: "Team reviewed",
+      cell: ({ row }) => {
+        const r = row.original;
+        return (
+          <span className={`text-${r.teamReviewedStatus}`} style={{ maxWidth: "200px" }}>
+            {r.teamReviewedName} <br />
+            <small>
+              {getTeamStatusText(r.teamReviewedStatus)} {r.hasConsent && "✔"}
+            </small>
+          </span>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: "scoresAwarded",
+      header: "Scores Awarded",
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.rounds?.[0]?.calculatedScore ?? -1;
+        const b = rowB.original.rounds?.[0]?.calculatedScore ?? -1;
+        return a - b;
+      },
+      cell: ({ row }) => {
+        const rounds = row.original.rounds;
+        if (!rounds?.length) return "-";
+        return (
+          <>
+            {rounds.map((round, i) => {
+              const pct =
+                round.calculatedScore !== null && round.maxScore && round.maxScore > 0
+                  ? Math.round((round.calculatedScore / round.maxScore) * 100)
+                  : 0;
+              return (
+                <div key={i}>
+                  Round {round.round}: {round.calculatedScore !== null ? `${pct}%` : "-"}
+                </div>
+              );
+            })}
+          </>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: "metrics",
+      header: "Metrics (Volume)",
+      size: 220,
+      minSize: 200,
+      maxSize: 240,
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.rounds?.[0]?.reviewVolume ?? rowA.original.reviewVolume ?? 0;
+        const b = rowB.original.rounds?.[0]?.reviewVolume ?? rowB.original.reviewVolume ?? 0;
+        return a - b;
+      },
+      cell: ({ row }) => {
+        const rounds = row.original.rounds;
+        if (!rounds?.length) return "-";
+        return (
+          <div style={{ width: "100%", maxWidth: "220px" }}>
+            {rounds.map((round, i) => (
+              <div key={i} className="mb-3">
+                <div style={{ fontSize: "0.85rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px" }}>
+                  Round {round.round}
+                </div>
+                <MetricsChart
+                  reviewVolume={round.reviewVolume}
+                  reviewCommentCount={round.reviewCommentCount}
+                  averageVolume={averageVolume}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      },
+    }),
+    columnHelper.accessor("assignedGrade", {
+      header: "Assign grade and write comments",
+      size: 320,
+      minSize: 300,
+      cell: ({ row }) => <GradeCommentCell review={row.original} onSave={onSave} />,
+    }),
+  ];
+}
 
 // --------------------------------------------------------------------------
 // --- MAIN COMPONENT ---
@@ -254,7 +304,7 @@ const ReviewReportPage: React.FC = () => {
     fetchData();
   }, [id]);
 
-  const handleSaveGrade = async (reviewId: number, grade: number | null, comment: string) => {
+  const handleSaveGrade = useCallback(async (reviewId: number, grade: number | null, comment: string) => {
     try {
       await axiosClient.patch(`/review_reports/${reviewId}/update_grade`, {
         assignedGrade: grade,
@@ -266,7 +316,7 @@ const ReviewReportPage: React.FC = () => {
     } catch (err) {
       setNotification({ msg: "Failed to update grade", type: "danger" });
     }
-  };
+  }, []);
 
   const handleExportCSV = () => {
     const headers = ["Reviewer Name", "Reviewer Username", "Team Reviewed", "Score", "Assigned Grade", "Instructor Comment"];
@@ -301,6 +351,11 @@ const ReviewReportPage: React.FC = () => {
         r.reviewerUsername.toLowerCase().includes(lowerTerm)
     );
   }, [reviewData, searchTerm]);
+
+  const tableColumns = useMemo(
+    () => buildColumns(averageVolume, handleSaveGrade),
+    [averageVolume, handleSaveGrade]
+  );
 
   if (isLoading) {
     return (
@@ -384,30 +439,15 @@ const ReviewReportPage: React.FC = () => {
 
       <Button className="mb-3" onClick={handleExportCSV}>Export Review Scores To CSV File</Button>
 
-      <Table bordered className="review-report-table">
-        <thead>
-          <tr>
-            <th>Reviewer</th>
-            <th>Reviews Done</th>
-            <th style={{ minWidth: "200px" }}>Team reviewed</th>
-            <th>Scores Awarded</th>
-            <th style={{ minWidth: "300px" }}>Metrics (Volume)</th>
-            <th style={{ minWidth: "250px" }}>Assign grade and write comments</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredData.map((review, index) => (
-            <ReviewReportRow
-              key={review.id}
-              review={review}
-              index={index}
-              averageVolume={averageVolume}
-              onSave={handleSaveGrade}
-            />
-          ))}
-        </tbody>
-      </Table>
+      <div className="review-report-table-wrapper">
+        <Table
+          data={filteredData}
+          columns={tableColumns}
+          showGlobalFilter={false}
+          showColumnFilter={false}
+          showPagination={filteredData.length >= 10}
+        />
+      </div>
     </Container>
   );
 };

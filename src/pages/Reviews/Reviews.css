@@ -102,3 +102,12 @@ body {
   display: flex;
   gap: 5px;
 }
+
+.review-report-table-wrapper .container {
+  max-width: none;
+  width: 100%;
+}
+
+.review-report-table-wrapper .custom-table-layout {
+  table-layout: fixed;
+}
