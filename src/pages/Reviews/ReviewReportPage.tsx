@@ -18,9 +18,31 @@ import {
   Cell,
 } from "recharts";
 import { createColumnHelper } from "@tanstack/react-table";
+import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 import Table from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
 import "./Reviews.css";
+
+function SortableHeader({ label, column, isSortable = true }: { label: string; column: { getCanSort: () => boolean; getIsSorted: () => false | "asc" | "desc" }; isSortable?: boolean }) {
+  const canSort = isSortable; // Show icons if explicitly marked as sortable
+  return (
+    <span className="review-report-th">
+      {label}
+      {canSort && (
+        <span className="ms-1 review-report-sort-icon" style={{ verticalAlign: "middle" }}>
+          {column.getIsSorted() === "asc" && <BsCaretUpFill />}
+          {column.getIsSorted() === "desc" && <BsCaretDownFill />}
+          {!column.getIsSorted() && (
+            <span className="review-report-sort-unsorted">
+              <BsCaretUpFill style={{ opacity: 0.6 }} />
+              <BsCaretDownFill style={{ opacity: 0.6 }} />
+            </span>
+          )}
+        </span>
+      )}
+    </span>
+  );
+}
 
 const columnHelper = createColumnHelper<ReviewData>();
 
@@ -173,7 +195,7 @@ function buildColumns(
 ) {
   return [
     columnHelper.accessor("reviewerName", {
-      header: "Reviewer",
+      header: ({ column }) => <SortableHeader label="Reviewer" column={column} />,
       cell: ({ row }) => (
         <>
           <Link to={`/users/${row.original.reviewerId}`}>
@@ -184,7 +206,7 @@ function buildColumns(
       ),
     }),
     columnHelper.accessor("reviewsCompleted", {
-      header: "Reviews Done",
+      header: ({ column }) => <SortableHeader label="Reviews Done" column={column} />,
       cell: ({ row }) => (
         <>
           {row.original.reviewsCompleted}/{row.original.reviewsSelected}
@@ -194,7 +216,7 @@ function buildColumns(
       ),
     }),
     columnHelper.accessor("teamReviewedName", {
-      header: "Team reviewed",
+      header: ({ column }) => <SortableHeader label="Team reviewed" column={column} />,
       cell: ({ row }) => {
         const r = row.original;
         return (
@@ -209,7 +231,8 @@ function buildColumns(
     }),
     columnHelper.display({
       id: "scoresAwarded",
-      header: "Scores Awarded",
+      header: ({ column }) => <SortableHeader label="Scores Awarded" column={column} isSortable={true} />,
+      enableSorting: true,
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.rounds?.[0]?.calculatedScore ?? -1;
         const b = rowB.original.rounds?.[0]?.calculatedScore ?? -1;
@@ -237,7 +260,8 @@ function buildColumns(
     }),
     columnHelper.display({
       id: "metrics",
-      header: "Metrics (Volume)",
+      header: ({ column }) => <SortableHeader label="Metrics (Volume)" column={column} isSortable={true} />,
+      enableSorting: true,
       size: 220,
       minSize: 200,
       maxSize: 240,
@@ -268,9 +292,10 @@ function buildColumns(
       },
     }),
     columnHelper.accessor("assignedGrade", {
-      header: "Assign grade and write comments",
+      header: () => <span className="review-report-th">Assign grade and write comments</span>,
       size: 320,
       minSize: 300,
+      enableSorting: false,
       cell: ({ row }) => <GradeCommentCell review={row.original} onSave={onSave} />,
     }),
   ];
@@ -375,7 +400,7 @@ const ReviewReportPage: React.FC = () => {
   }
 
   return (
-    <Container fluid className="p-4">
+    <Container fluid className="p-4 review-report-page">
       {notification && (
         <Alert variant={notification.type} onClose={() => setNotification(null)} dismissible>
           {notification.msg}
@@ -390,7 +415,7 @@ const ReviewReportPage: React.FC = () => {
       <button type="button">View</button>
 
       <h2 style={{ textAlign: "left" }}>
-        Review report for Final project (and design doc)
+        Review Report for Final Project (and Design Doc)
       </h2>
       <a href="#">Back</a>
 

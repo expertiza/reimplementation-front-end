@@ -111,3 +111,42 @@ body {
 .review-report-table-wrapper .custom-table-layout {
   table-layout: fixed;
 }
+
+/* Sort icons: use our SortableHeader icons; hide Table’s appended Unicode so only black icons show */
+.review-report-table-wrapper .custom-table-layout thead th div.cursor-pointer {
+  color: transparent;
+  font-weight: 600;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th {
+  color: #000;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th svg {
+  color: #000;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon,
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-unsorted {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 0.6;
+}
+
+.review-report-page {
+  font-family: inherit;
+  font-size: 1rem;
+  color: #333;
+}
+
+.review-report-page h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
