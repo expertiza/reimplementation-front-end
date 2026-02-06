@@ -1,4 +1,4 @@
-import useAPI from "../hooks/useAPI";
+import useAPI from "hooks/useAPI";
 
 export const useStudentTeam = (studentId: string) => {
     const teamAPI = useAPI();

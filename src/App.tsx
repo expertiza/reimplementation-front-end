@@ -1,4 +1,3 @@
-import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import RootLayout from "./layout/Root";
@@ -151,6 +150,24 @@ function App() {
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
+        },
+        {
+          path: "advertise_for_partner",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
+        },
+        {
+          path: "student_teams",
+          element: <ProtectedRoute element={<StudentTeams />} />,
+          children: [
+            {
+              path: "view",
+              element: <StudentTeamView />,
+            },
+          ],
         },
         {
           path: "advertise_for_partner",
