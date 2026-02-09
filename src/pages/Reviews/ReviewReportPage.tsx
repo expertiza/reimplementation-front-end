@@ -178,7 +178,7 @@ const GradeCommentCell: React.FC<{
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
-      <Button size="sm" className="mt-1" onClick={handleSave}>
+      <Button className="btn btn-md mt-1" variant="outline-secondary" onClick={handleSave}>
         Save
       </Button>
     </>
@@ -277,9 +277,11 @@ function buildColumns(
           <div style={{ width: "100%", maxWidth: "220px" }}>
             {rounds.map((round, i) => (
               <div key={i} className="mb-3">
-                <div style={{ fontSize: "0.85rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px" }}>
-                  Round {round.round}
-                </div>
+                {rounds.length > 1 && (
+                  <div style={{ fontSize: "0.85rem", fontWeight: "bold", textAlign: "center", marginBottom: "5px" }}>
+                    Round {round.round}
+                  </div>
+                )}
                 <MetricsChart
                   reviewVolume={round.reviewVolume}
                   reviewCommentCount={round.reviewCommentCount}
@@ -402,32 +404,35 @@ const ReviewReportPage: React.FC = () => {
   return (
     <Container fluid className="p-4 review-report-page">
       {notification && (
-        <Alert variant={notification.type} onClose={() => setNotification(null)} dismissible>
+        <Alert className={`flash_note alert alert-${notification.type}`} variant={notification.type} onClose={() => setNotification(null)} dismissible>
           {notification.msg}
         </Alert>
       )}
 
-      <select name="reports" id="report-select">
-        <option value="review">Review report</option>
-        <option value="summary">Summary report</option>
-        <option value="detailed">Detailed report</option>
-      </select>
-      <button type="button">View</button>
+      <div className="review-report-selector">
+        <select name="reports" id="report-select">
+          <option value="review">Review report</option>
+          <option value="summary">Summary report</option>
+          <option value="detailed">Detailed report</option>
+        </select>
+        <Button variant="outline-secondary" type="button">View</Button>
+      </div>
 
       <h2 style={{ textAlign: "left" }}>
         Review Report for Final Project (and Design Doc)
       </h2>
-      <a href="#">Back</a>
+      <a href="#" className="review-report-back-link">Back</a>
 
-      <div style={{ marginTop: "15px" }}>
-        <Form.Label>Reviewer's Name</Form.Label>
-        <Form.Control
-          type="text"
-          style={{ width: "250px", display: "inline-block" }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button className="ms-2">Search</Button>
+      <div className="review-report-search-row">
+        <Form.Label className="mb-0">Reviewer's Name</Form.Label>
+        <div className="review-report-search-group">
+          <Form.Control
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button variant="outline-secondary">Search</Button>
+        </div>
       </div>
 
       <div className="legend mt-3">
@@ -462,7 +467,7 @@ const ReviewReportPage: React.FC = () => {
         </ul>
       </div>
 
-      <Button className="mb-3" onClick={handleExportCSV}>Export Review Scores To CSV File</Button>
+      <Button className="btn btn-md mb-3" variant="outline-secondary" onClick={handleExportCSV}>Export Review Scores To CSV File</Button>
 
       <div className="review-report-table-wrapper">
         <Table
