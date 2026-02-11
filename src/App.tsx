@@ -52,6 +52,8 @@ import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertise
 import TeammateReview from './pages/Student Teams/TeammateReview';
 import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
+import Duties from "./pages/Duties/Duties";
+import DutyEditor from "./pages/Duties/DutyEditor";
 function App() {
   const router = createBrowserRouter([
     {
@@ -285,6 +287,14 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author />,
+        },
+        {
+          path: "duties",
+          element: <ProtectedRoute element={<Duties />} leastPrivilegeRole={ROLE.TA} />,
+          children: [
+            { path: "new", element: <DutyEditor mode="create" /> },
+            { path: "edit/:id", element: <DutyEditor mode="update" /> },
+          ],
         },
         // Fixed the missing comma and added an opening curly brace
         {
