@@ -65,3 +65,198 @@
     padding-bottom: 10px;
     padding-top: 10px;
 }
+
+body {
+  background: #f7f7f7;
+}
+
+.legend {
+  font-size: 13px;
+  line-height: 30px;
+}
+
+.legend li {
+  margin-bottom: 4px;
+}
+
+.legend-red { color: red; }
+.legend-blue { color: blue; }
+.legend-green { color: green; }
+.legend-purple { color: purple; }
+.legend-brown { color: brown; }
+
+.row-highlight {
+  background: #f5f2d8;
+}
+
+.metrics-chart {
+  width: 160px;
+  height: 140px;
+  background: #eee;
+}
+
+.reviewer-name {
+  color: #005bbb;
+}
+
+.grade-box {
+  display: flex;
+  gap: 5px;
+}
+
+.review-report-back-link {
+  color: #333;
+  text-decoration: none;
+}
+
+.review-report-back-link:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.review-report-back-link:visited {
+  color: #333;
+}
+
+.review-report-search-row {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-report-search-row .form-label {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 30px;
+}
+
+.review-report-search-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.review-report-search-group .form-control {
+  width: 250px;
+  height: 32px;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 30px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  margin: 0;
+}
+
+.review-report-search-group .btn {
+  height: 32px;
+  padding: 4px 12px;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #fff !important;
+  color: #212529 !important;
+}
+
+.review-report-search-group .btn:hover,
+.review-report-search-group .btn:focus,
+.review-report-search-group .btn:active {
+  background-color: #f8f9fa !important;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+}
+
+.review-report-selector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 15px;
+}
+
+.review-report-selector #report-select {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+  background-color: #fff;
+  font-size: 14px;
+  height: 38px;
+}
+
+.review-report-selector .btn {
+  height: 38px;
+  padding: 6px 12px;
+  border-radius: 0 4px 4px 0;
+  border-left: 1px solid #ced4da;
+  border-right: 1px solid #ced4da;
+  border-top: 1px solid #ced4da;
+  border-bottom: 1px solid #ced4da;
+  color: #212529;
+  background-color: #fff;
+  border-color: #ced4da;
+}
+
+.review-report-selector .btn:hover,
+.review-report-selector .btn:focus,
+.review-report-selector .btn:active {
+  color: #212529 !important;
+  background-color: #fff !important;
+  border-color: #ced4da !important;
+}
+
+.review-report-table-wrapper .container {
+  max-width: none;
+  width: 100%;
+}
+
+.review-report-table-wrapper .custom-table-layout {
+  table-layout: auto;
+}
+
+.review-report-table-wrapper .custom-table-layout tbody td {
+  font-size: 15px;
+  line-height: 1.428em;
+}
+
+/* Sort icons: use our SortableHeader icons; hide Table’s appended Unicode so only black icons show */
+.review-report-table-wrapper .custom-table-layout thead th div.cursor-pointer {
+  color: transparent;
+  font-weight: 600;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th {
+  color: #000;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th svg {
+  color: #000;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon,
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-unsorted {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 0.6;
+}
+
+.review-report-page {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 30px;
+  color: #333;
+}
+
+.review-report-page h2 {
+  font-size: 1.5rem;
+  color: #333;
+}

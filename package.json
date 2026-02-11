@@ -26,6 +26,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^2.7.4",
     "react-chartjs-2": "^5.2.0",
+    "react-charts": "^3.0.0-beta.57",
     "react-datepicker": "^4.11.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^13.0.0",

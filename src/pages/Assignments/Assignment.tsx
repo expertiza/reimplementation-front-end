@@ -55,9 +55,14 @@ const Assignments = () => {
     []
   );
 
+  const handleReview = useCallback(
+    (row: TRow<IAssignmentResponse>) => navigate(`/assignments/${row.original.id}/review`),
+    [navigate]
+  );
+
   const tableColumns = useMemo(
-    () => assignmentColumns(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
+    () => assignmentColumns(onEditHandle, onDeleteHandle, handleReview),
+    [onDeleteHandle, onEditHandle, handleReview]
   );
 
   const tableData = useMemo(
