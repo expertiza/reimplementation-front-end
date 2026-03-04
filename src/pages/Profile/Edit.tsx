@@ -2,7 +2,8 @@ import React, {useState, useEffect} from "react";
 import * as Yup from 'yup';
 import './Edit.css';
 import { Button, Form } from 'react-bootstrap';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosClient from '../../utils/axios_client';
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
@@ -71,11 +72,7 @@ const Edit: React.FC = () => {
 
   // Fetch user profile
   useEffect(() => {
-    axios.get(`http://localhost:3002/api/v1/users/${auth.user.id}/get_profile`, {
-      headers: {
-        Authorization: `Bearer ${auth.authToken}`
-      }
-    })
+    axiosClient.get(`/api/v1/users/${auth.user.id}/get_profile`)
         .then((res) => {
           // Normalize data to fit form structure
           const data = {
@@ -108,11 +105,7 @@ const Edit: React.FC = () => {
   }, [auth.user.id, reset, dispatch]);
 
   useEffect(() => {
-    axios.get(`http://localhost:3002/api/v1/institutions`, {
-      headers: {
-        Authorization: `Bearer ${auth.authToken}`
-      }
-    })
+    axiosClient.get('/api/v1/institutions')
         .then(res => {
           const names = res.data.map((institution: any) => ({id: institution.id, name: institution.name}));
           setInstitutions([{id: 0, name: 'Other'}, ...names]);
@@ -129,21 +122,14 @@ const Edit: React.FC = () => {
   const onSubmit = async (data: any) => {
     try {
       // Update profile
-      await axios.patch(`http://localhost:3002/api/v1/users/${auth.user.id}`, data, {
-        headers: {
-          Authorization: `Bearer ${auth.authToken}`
-        },
-      });
+      await axiosClient.patch(`/api/v1/users/${auth.user.id}`, data);
 
       // Update password if provided
       if (data.password) {
-        await axios.post(`http://localhost:3002/api/v1/users/${auth.user.id}/update_password`, {
+        await axiosClient.post(`/api/v1/users/${auth.user.id}/update_password`, {
           password: data.password,
           confirmPassword: data.confirmPassword,
-        },{
-          headers: {
-            Authorization: `Bearer ${auth.authToken}`
-        }});
+        });
       }
       dispatch(alertActions.showAlert({
         variant: "success",
