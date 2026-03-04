@@ -88,7 +88,7 @@ const DutyEditor: React.FC<DutyEditorProps> = ({ mode, initial, onClose, fetchDu
                     validationSchema={schema}
                     onSubmit={onSubmit}
                 >
-                    {({ values, handleChange, handleSubmit, isSubmitting }) => (
+                    {({ values, handleChange, handleSubmit, handleBlur, isSubmitting, errors, touched }) => (
                         <form onSubmit={handleSubmit}>
                             <div className="mb-3">
                                 <label htmlFor="name" className="form-label">
@@ -98,10 +98,14 @@ const DutyEditor: React.FC<DutyEditorProps> = ({ mode, initial, onClose, fetchDu
                                     type="text"
                                     id="name"
                                     name="name"
-                                    className="form-control"
+                                    className={`form-control${errors.name && touched.name ? " is-invalid" : ""}`}
                                     value={values.name}
                                     onChange={handleChange}
+                                    onBlur={handleBlur}
                                 />
+                                {errors.name && touched.name && (
+                                    <div className="invalid-feedback">{errors.name}</div>
+                                )}
                             </div>
                             <div className="mb-3 form-check">
                                 <input
