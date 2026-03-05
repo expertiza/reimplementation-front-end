@@ -40,7 +40,7 @@ const ResetPassword = () => {
     else {
       try {
         // Send password reset request to the backend
-        await axios.put(`${API_BASE_URL}/api/v1/password_resets/${token}`, {
+        await axios.put(`${API_BASE_URL}/password_resets/${token}`, {
           user: { password },
         });
 

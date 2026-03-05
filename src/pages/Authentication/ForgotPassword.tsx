@@ -3,6 +3,8 @@ import axios, { AxiosError } from 'axios';
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+
 const ForgotPassword = () =>{
 
   const [email, setEmail] = useState('');
@@ -11,7 +13,7 @@ const ForgotPassword = () =>{
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
 
     try {
-      await axios.post("http://localhost:3002/api/v1/password_resets", { email });
+      await axios.post(`${API_BASE_URL}/password_resets`, { email });
 
       dispatch(
         alertActions.showAlert({
