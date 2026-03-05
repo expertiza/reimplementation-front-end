@@ -4,6 +4,8 @@ import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const ResetPassword = () => {
     else {
       try {
         // Send password reset request to the backend
-        await axios.put(`http://localhost:3002/api/v1/password_resets/${token}`, {
+        await axios.put(`${API_BASE_URL}/api/v1/password_resets/${token}`, {
           user: { password },
         });
 
