@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Button, Col, Container, Form } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
@@ -82,32 +83,37 @@ const ResetPassword = () => {
   };
 
   return (
-    <div style={{padding: "20px"}}>
-      <div>
-        <h2>Reset Your Password</h2>
-      </div>
-      Password:
-      <br />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        style={{marginTop: '5px', marginBottom: '5px', height: '20px', border: '1px solid black'}}
-      />
-      <br />
-      Confirm Password:
-      <br />
-      <input
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-        style={{marginTop: '5px', marginBottom: '5px', height: '20px', border: '1px solid black'}}
-      />
-      <br />
-      <button type="submit" onClick={handleSubmit} style={{marginTop: '5px', marginBottom: '5px', border: '1px solid black'}}>Reset Password</button>
-    </div>
+    <Container className="d-flex justify-content-center mt-xxl-5">
+      <Col xs={12} md={6} lg={4}>
+        <h1 className="text-center">Reset Your Password</h1>
+        <Form.Group className="mb-2" controlId="reset-password">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-2" controlId="reset-confirm-password">
+          <Form.Label>Confirm Password</Form.Label>
+          <Form.Control
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </Form.Group>
+        <Button
+          style={{ width: "100%" }}
+          variant="primary"
+          type="submit"
+          onClick={handleSubmit}
+        >
+          Reset Password
+        </Button>
+      </Col>
+    </Container>
   );
 };
 
