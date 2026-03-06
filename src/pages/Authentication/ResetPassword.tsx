@@ -44,14 +44,14 @@ const ResetPassword = () => {
           user: { password },
         });
 
-        navigate("/login")
-
         dispatch(
           alertActions.showAlert({
             variant: "success",
             message: `Password Successfully Updated`,
           })
         );
+
+        navigate("/login");
 
       } catch (error) {
         if (error instanceof AxiosError && error.response && error.response.data) {
