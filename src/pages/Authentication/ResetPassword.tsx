@@ -1,17 +1,32 @@
-import React, { useState, useEffect } from "react";
-import { Button, Col, Container, Form } from "react-bootstrap";
+import React, { useEffect } from "react";
+import { Button, Col, Container } from "react-bootstrap";
+import { Form, Formik, FormikHelpers } from "formik";
+import FormInput from "../../components/Form/FormInput";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
-import { API_BASE_URL } from '@/constants/Api';
+import { API_BASE_URL } from "../../constants/Api";
+import * as Yup from "yup";
+
+interface IResetPasswordFormValues {
+  password: string;
+  confirmPassword: string;
+}
+
+const validationSchema = Yup.object({
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords do not match")
+    .required("Required"),
+});
 
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
 
@@ -28,90 +43,73 @@ const ResetPassword = () => {
     }
   }, []);
 
-  // Handle form submission
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-
-
-    if (password.length < 6) {
+  const onSubmit = async (
+    values: IResetPasswordFormValues,
+    submitProps: FormikHelpers<IResetPasswordFormValues>
+  ) => {
+    try {
+      // Send password reset request to the backend
+      await axios.put(`${API_BASE_URL}/password_resets/${token}`, {
+        user: { password: values.password },
+      });
       dispatch(
         alertActions.showAlert({
-          variant: "danger",
-          message: "Password should be at least 6 letters long."
+          variant: "success",
+          message: "Password Successfully Updated",
         })
       );
-      return;
-    }
-    else if (password !== confirmPassword) {
-      dispatch(
-        alertActions.showAlert({
-          variant: "danger",
-          message: "Passwords do not match."
-        })
-      );
-      return;
-    }
-    else {
-      try {
-        // Send password reset request to the backend
-        await axios.put(`${API_BASE_URL}/password_resets/${token}`, {
-          user: { password },
-        });
-
-        dispatch(
-          alertActions.showAlert({
-            variant: "success",
-            message: `Password Successfully Updated`,
-          })
-        );
-
-        navigate("/login");
-
-      } catch (error) {
-        if (error instanceof AxiosError && error.response && error.response.data) {
-          const { error: errorMessage} = error.response.data;
-          if (errorMessage) {
-            dispatch(
-              alertActions.showAlert({
-                variant: "danger",
-                message: errorMessage,
-              })
-            );
-          }
+      navigate("/login");
+    } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.data) {
+        const { error: errorMessage } = error.response.data;
+        if (errorMessage) {
+          dispatch(
+            alertActions.showAlert({
+              variant: "danger",
+              message: errorMessage,
+            })
+          );
         }
       }
     }
+    submitProps.setSubmitting(false);
   };
 
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
       <Col xs={12} md={6} lg={4}>
         <h1 className="text-center">Reset Your Password</h1>
-        <Form.Group className="mb-2" controlId="reset-password">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-2" controlId="reset-confirm-password">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Button
-          style={{ width: "100%" }}
-          variant="primary"
-          type="submit"
-          onClick={handleSubmit}
+        <Formik
+          initialValues={{ password: "", confirmPassword: "" }}
+          onSubmit={onSubmit}
+          validationSchema={validationSchema}
+          validateOnChange={false}
         >
-          Reset Password
-        </Button>
+          {(formik) => (
+            <Form>
+              <FormInput
+                controlId="reset-password"
+                label="Password"
+                name="password"
+                type="password"
+              />
+              <FormInput
+                controlId="reset-confirm-password"
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+              />
+              <Button
+                style={{ width: "100%", marginTop: "8px" }}
+                variant="primary"
+                type="submit"
+                disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+              >
+                Reset Password
+              </Button>
+            </Form>
+          )}
+        </Formik>
       </Col>
     </Container>
   );

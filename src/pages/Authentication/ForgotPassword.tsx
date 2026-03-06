@@ -1,29 +1,39 @@
-import React, {useState} from "react";
-import { Button, Col, Container, Form } from "react-bootstrap";
-import axios, { AxiosError } from 'axios';
+import React from "react";
+import { Button, Col, Container } from "react-bootstrap";
+import { Form, Formik, FormikHelpers } from "formik";
+import FormInput from "../../components/Form/FormInput";
+import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
-import { API_BASE_URL } from '@/constants/Api';
+import { API_BASE_URL } from "../../constants/Api";
+import * as Yup from "yup";
 
-const ForgotPassword = () =>{
+interface IForgotPasswordFormValues {
+  email: string;
+}
 
-  const [email, setEmail] = useState('');
+const validationSchema = Yup.object({
+  email: Yup.string().email("Invalid email address").required("Required"),
+});
+
+const ForgotPassword = () => {
   const dispatch = useDispatch();
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-
+  const onSubmit = async (
+    values: IForgotPasswordFormValues,
+    submitProps: FormikHelpers<IForgotPasswordFormValues>
+  ) => {
     try {
-      await axios.post(`${API_BASE_URL}/password_resets`, { email });
-
+      await axios.post(`${API_BASE_URL}/password_resets`, { email: values.email });
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `A link to reset your password has been sent to your e-mail address.`,
+          message: "A link to reset your password has been sent to your e-mail address.",
         })
       );
     } catch (error) {
       if (error instanceof AxiosError && error.response && error.response.data) {
-        const { error: errorMessage} = error.response.data;
+        const { error: errorMessage } = error.response.data;
         if (errorMessage) {
           dispatch(
             alertActions.showAlert({
@@ -34,35 +44,42 @@ const ForgotPassword = () =>{
         }
       }
     }
+    submitProps.setSubmitting(false);
   };
-
 
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
       <Col xs={12} md={6} lg={4}>
         <h1 className="text-center">Forgotten Your Password?</h1>
         <p className="text-center">Enter the e-mail address associated with your account</p>
-        <Form.Group className="mb-2" controlId="forgot-password-email">
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Button
-          style={{ width: "100%" }}
-          variant="primary"
-          type="submit"
-          onClick={handleSubmit}
+        <Formik
+          initialValues={{ email: "" }}
+          onSubmit={onSubmit}
+          validationSchema={validationSchema}
+          validateOnChange={false}
         >
-          Request Password Reset
-        </Button>
+          {(formik) => (
+            <Form>
+              <FormInput
+                controlId="forgot-password-email"
+                label="Email Address"
+                name="email"
+                type="email"
+              />
+              <Button
+                style={{ width: "100%" }}
+                variant="primary"
+                type="submit"
+                disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+              >
+                Request Password Reset
+              </Button>
+            </Form>
+          )}
+        </Formik>
       </Col>
     </Container>
   );
-
 };
 
 export default ForgotPassword;
