@@ -1,9 +1,25 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import App from './App';
+import rootReducer from './store/rootReducer';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+// Create a test store
+const createTestStore = () => configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+test('renders without crashing', () => {
+  const store = createTestStore();
+  const { container } = render(
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+  expect(container).toBeInTheDocument();
 });

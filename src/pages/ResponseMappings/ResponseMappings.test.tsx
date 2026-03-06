@@ -81,7 +81,7 @@ const APITeamData = [
 
 
 // Mock the useAPI hook to return mock assignments
-jest.mock("hooks/useAPI", () => () => ({
+vi.mock("hooks/useAPI", () => () => ({
   error: null,
   isLoading: false,
   data: {

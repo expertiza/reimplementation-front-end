@@ -1,7 +1,7 @@
 import axios from 'axios';
 import SubmittedContentService from '../SubmittedContentService';
 
-jest.mock('axios');
+vi.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('SubmittedContentService', () => {

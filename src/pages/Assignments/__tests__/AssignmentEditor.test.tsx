@@ -2,8 +2,8 @@ import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi, beforeEach, describe, expect, it } from "vitest";
-import AssignmentEditor from "./AssignmentEditor";
-import { transformAssignmentRequest, IAssignmentFormValues } from "./AssignmentUtil";
+import AssignmentEditor from "../AssignmentEditor";
+import { transformAssignmentRequest, IAssignmentFormValues } from "../AssignmentUtil";
 
 // Mock useAPI to avoid real network calls
 const sendRequestMock = vi.fn();

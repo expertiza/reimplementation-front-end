@@ -1,15 +1,24 @@
 import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import ReviewTable from '../ReviewTable';
 
 // Mock axios client and react-redux hooks used by ReviewTable
-jest.mock('../../utils/axios_client', () => ({ get: jest.fn(), post: jest.fn() }));
-jest.mock('react-redux', () => ({ useSelector: () => ({ user: { id: 1, role: 'Student' } }) }));
+vi.mock('utils/axios_client', () => ({
+  default: { get: vi.fn(), post: vi.fn() }
+}));
+vi.mock('react-redux', () => ({
+  useSelector: () => ({ user: { id: 1, role: 'Student' } })
+}));
 
 describe('ReviewTable top-level behaviors', () => {
   it('uses "item prompts" wording for the toggle and shows team members with username', () => {
-    render(<ReviewTable />);
+    render(
+      <BrowserRouter>
+        <ReviewTable />
+      </BrowserRouter>
+    );
 
     // Toggle label should show Show item prompts initially
     const label = screen.getByLabelText(/toggleQuestion/i);

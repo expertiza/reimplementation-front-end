@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { render, screen, within } from "@testing-library/react";
-import CreateTeams from "./CreateTeams";
-import {Team, LoaderPayload, Participant, ContextType} from "./CreateTeams"
+import CreateTeams from "../CreateTeams";
+import {Team, LoaderPayload, Participant, ContextType} from "../CreateTeams"
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -42,14 +42,16 @@ const assignmentContext = {
 }
 
 // Mock the useAPI hook to return mock assignments
-jest.mock("hooks/useAPI", () => () => ({
-    error: null,
-    isLoading: false,
-    data: {
-        initialTeams: teamData,
-        initialUnassigned: participantData
-    },
-    sendRequest: jest.fn(),
+vi.mock("hooks/useAPI", () => ({
+    default: () => ({
+        error: null,
+        isLoading: false,
+        data: {
+            initialTeams: teamData,
+            initialUnassigned: participantData
+        },
+        sendRequest: vi.fn(),
+    })
 }));
 
 const renderWithRouter = (component: React.ReactNode, contextType: ContextType, contextName: string) => {
@@ -147,6 +149,7 @@ describe("Test Create Teams Displays Correctly", () => {
 
 describe("Test Create Teams Functions Correctly", () => {
     it("Test Adding a Student to a Team", async () => {
+      const user = userEvent.setup();
       await act(async () => {
         renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
       });
@@ -158,24 +161,23 @@ describe("Test Create Teams Functions Correctly", () => {
 
       const firstRow = screen.getAllByTestId("team-row")[0]
 
-      // Click Add Button and Select student in modal dropdown
-      act(() => {
-        const addButton = within(firstRow).getByRole('button', {name: "add"})
-        addButton.click()
-      });
+      // Click Add Button
+      const addButton = within(firstRow).getByRole('button', {name: "add"})
+      await user.click(addButton);
 
-      act(() => {
-        const dropdown = screen.getByRole('combobox')
-        userEvent.selectOptions(dropdown, String(participantData[0].id))
+      // Select student in modal dropdown
+      const dropdown = screen.getByRole('combobox')
+      await user.selectOptions(dropdown, String(participantData[0].id))
 
-        within(screen.getByRole('dialog')).getByRole('button', {name: "add"}).click()
-      })
+      const addInModal = within(screen.getByRole('dialog')).getByRole('button', {name: "add"})
+      await user.click(addInModal);
 
       // Check student on page
-      expect(within(teamTabPanel).getByText(participantData[0].username)).toBeInTheDocument()
+      expect(within(teamTabPanel).queryByText(participantData[0].username)).toBeInTheDocument()
     });
 
     it("Test Edit Team Name", async () => {
+      const user = userEvent.setup();
       await act(async () => {
         renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
       });
@@ -186,19 +188,16 @@ describe("Test Create Teams Functions Correctly", () => {
       expect(team).toBeInTheDocument()
 
       // Click Edit Button
-      act(() => {
-        if (!team.parentElement?.parentElement) fail()
-        const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "edit"})
-        editButton.click()
-      });
+      const editButton = within(team.parentElement?.parentElement!).getByRole('button', {name: "edit"})
+      await user.click(editButton);
 
       // Type in new team name
-      act(() => {
-        var textBox = screen.getByRole('textbox', {name: "Team name"})
-        userEvent.type(textBox, "{selectall}{backspace}")
-        userEvent.type(textBox, "New Team Name", {});
-        screen.getByRole('button', {name: "save"}).click()
-      })
+      const textBox = screen.getByRole('textbox', {name: "Team name"})
+      await user.clear(textBox);
+      await user.type(textBox, "New Team Name");
+      
+      const saveButton = screen.getByRole('button', {name: "save"})
+      await user.click(saveButton);
 
       // Check new team name
       const teamNewName = await screen.findByText("New Team Name")
