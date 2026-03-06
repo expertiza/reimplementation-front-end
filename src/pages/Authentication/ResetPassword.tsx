@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
@@ -14,6 +14,19 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
+
+  // Ensure the token is present when the component mounts
+  useEffect(() => {
+    if (!token) {
+      dispatch(
+        alertActions.showAlert({
+          variant: "danger",
+          message: "Invalid or missing token.",
+        })
+      );
+      navigate("/login");
+    }
+  }, []);
 
   // Handle form submission
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
