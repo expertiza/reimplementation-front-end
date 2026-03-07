@@ -41,7 +41,7 @@ const ResetPassword = () => {
       );
       navigate("/login");
     }
-  }, []);
+  }, [token, dispatch, navigate]);
 
   const onSubmit = async (
     values: IResetPasswordFormValues,
