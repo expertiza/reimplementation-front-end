@@ -62,14 +62,19 @@ const ResetPassword = () => {
     } catch (error) {
       if (error instanceof AxiosError && error.response && error.response.data) {
         const { error: errorMessage } = error.response.data;
-        if (errorMessage) {
-          dispatch(
-            alertActions.showAlert({
-              variant: "danger",
-              message: errorMessage,
-            })
-          );
-        }
+        dispatch(
+          alertActions.showAlert({
+            variant: "danger",
+            message: errorMessage || "An error occurred. Please try again.",
+          })
+        );
+      } else {
+        dispatch(
+          alertActions.showAlert({
+            variant: "danger",
+            message: "An error occurred. Please try again.",
+          })
+        );
       }
     }
     submitProps.setSubmitting(false);
