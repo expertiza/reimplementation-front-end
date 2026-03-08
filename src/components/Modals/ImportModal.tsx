@@ -1,6 +1,6 @@
 // src/components/ImportModal.tsx
 
-import React, { useEffect, useState, memo, useCallback, ChangeEvent } from "react";
+import React, { useEffect, useState, memo, useCallback, ChangeEvent, useMemo } from "react";
 import {
   Modal,
   Button,
@@ -15,6 +15,8 @@ import {
 
 import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
+import PreviewTable from "../Table/Table";
+import { ColumnDef } from "@tanstack/react-table";
 
 /* ----------------------------------------
  *  Shared text styles for consistency
@@ -120,12 +122,15 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   const [csvFirstLine, setCsvFirstLine] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [availableFields, setAvailableFields] = useState<string[]>([]);
+  const [csvData, setCsvData] = useState<string[][]>([]);  // All CSV rows for preview
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);  // CSV headers
 
   const [duplicateAction, setDuplicateAction] = useState<string>("");
 
   const [file, setFile] = useState<File | null>(null);
   const [useHeader, setUseHeader] = useState<boolean>(true);
   const [status, setStatus] = useState<string>("");
+  const [showConfirmation, setShowConfirmation] = useState<boolean>(false);  // Show confirmation modal
 
   /* API hooks */
   const { isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
@@ -192,7 +197,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   }, [importResponse]);
 
   /* ---------------------------------------------------------
-   * CSV upload handler — extract headers + first content row
+   * CSV upload handler — extract headers + all content rows
    * --------------------------------------------------------- */
   const on_file_changed = async (incomingFile: File) => {
     setFile(incomingFile);
@@ -204,14 +209,22 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
     if (lines.length > 0) {
       const headers = lines[0].split(",");
+      setCsvHeaders(headers);
 
-      setSelectedFields(new Array(headers.length).fill(availableFields[0]));
+      setSelectedFields(new Array(headers.length).fill(""));
+
+      // Parse all data rows
+      const dataRows = useHeader ? lines.slice(1) : lines;
+      const parsedData = dataRows.map(line => line.split(","));
+      setCsvData(parsedData);
 
       if (lines.length > 1) {
         setCsvFirstLine(lines[1].split(","));
       } else {
         setCsvFirstLine(headers);
       }
+      console.log("Headers:", csvHeaders);
+      console.log("Data rows:", csvData);
     }
   };
 
@@ -236,16 +249,23 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       return;
     }
 
-    if (!useHeader && !mandatoryFieldsIncluded()) {
-      setStatus("Please make sure all mandatory fields are selected");
-      return;
-    }
+    // if (!useHeader && !mandatoryFieldsIncluded()) {
+    //   setStatus("Please make sure all mandatory fields are selected");
+    //   return;
+    // }
 
+    // Show confirmation modal before importing
+    setShowConfirmation(true);
+  };
+
+  /* Confirm and send import to backend */
+  const confirmImport = async () => {
+    setShowConfirmation(false);
     setStatus("Importing…");
 
     try {
       const formData = new FormData();
-      formData.append("csv_file", file);
+      formData.append("csv_file", file!);
       formData.append("use_headers", String(useHeader));
 
       if (duplicateAction) {
@@ -282,10 +302,59 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
     }
   }, [sendImportResponse, importError]);
 
+  const previewHeaders = useMemo(() => (useHeader ? csvHeaders : selectedFields), [useHeader, csvHeaders, selectedFields]);
+
+  const previewData = useMemo(() => {
+    return csvData.map((row) => {
+      const obj: Record<string, any> = {};
+      previewHeaders.forEach((h, i) => {
+        const key = h || `col_${i}`;
+        obj[key] = row[i] ?? "";
+      });
+      return obj;
+    });
+  }, [csvData, previewHeaders]);
+
+  const getAvailableOptions = useCallback((colIndex: number) => {
+    const selected = new Set(selectedFields.filter((_, idx) => idx !== colIndex));
+    return availableFields.filter(field => !selected.has(field));
+  }, [selectedFields, availableFields]);
+
+  const previewColumns = useMemo<ColumnDef<any, any>[]>(() => {
+    return previewHeaders.map((header, idx) => ({
+      id: `col_${idx}`,
+      header: !useHeader ? (
+        <Form.Select
+          aria-label="Select Column Header"
+          value={selectedFields[idx] || ""}
+          onChange={(e) => handleSelectField(e, idx)}
+          size="sm"
+          style={{
+            width: "100%",
+            fontSize: "12px",
+            padding: "4px 6px",
+          }}
+        >
+          <option value="">-- Select Field --</option>
+          {getAvailableOptions(idx).map((field, fieldIdx) => (
+            <option key={fieldIdx} value={field}>
+              {transformField(field)}
+            </option>
+          ))}
+        </Form.Select>
+      ) : (
+        transformField(header)
+      ),
+      accessorKey: header || `col_${idx}`,
+      cell: (info: any) => info.getValue() ?? "—",
+    }));
+  }, [previewHeaders, useHeader, selectedFields, availableFields]);
+
   /* ============================================================================
    *  Render
    * ============================================================================ */
   return (
+    <>
     <Modal
       show={show}
       onHide={onHide}
@@ -411,74 +480,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
               </Col>
             </Row>
 
-            {/* ---------------------------------------------------------
-             * COLUMN ORDER (only appears when not using header row)
-             * --------------------------------------------------------- */}
-            {selectedFields.length > 0 && !useHeader && (
-              <Row className="mb-3">
-                <Col>
 
-                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
-                    Column order
-                  </Form.Label>
-
-                  <div style={{ ...TABLE_TEXT, color: "#666", marginBottom: 6 }}>
-                    Select the header for each column. Mandatory fields must be selected.
-                  </div>
-
-                  <div
-                    style={{
-                      border: "1px solid #e4e6eb",
-                      borderRadius: 8,
-                      padding: 8,
-                      maxHeight: 220,
-                      overflowY: "auto",
-                    }}
-                  >
-                    {selectedFields.map((field, columnIndex) => (
-                      <div
-                        key={`${field}_${columnIndex}`}
-                        className="d-flex align-items-center justify-content-between mb-1"
-                        style={TABLE_TEXT}
-                      >
-                        <Container fluid>
-                          <Row>
-                            {/* Dropdown for selecting header */}
-                            <Col xs={6}>
-                              <Form.Select
-                                aria-label="Select Column Header"
-                                value={selectedFields[columnIndex]}
-                                onChange={(e) => handleSelectField(e, columnIndex)}
-                                className="auto-width-select-import"
-                                style={{
-                                  width: "auto",
-                                  minWidth: "max-content",
-                                  display: "inline-block",
-                                }}
-                              >
-                                {availableFields.map((field, idx) => (
-                                  <option key={idx} value={field}>
-                                    {transformField(field)}
-                                  </option>
-                                ))}
-                              </Form.Select>
-                            </Col>
-
-                            {/* First row preview text */}
-                            <Col xs={6}>
-                              {csvFirstLine[columnIndex]
-                                ? `First Row Value: ${csvFirstLine[columnIndex]}`
-                                : ""}
-                            </Col>
-                          </Row>
-                        </Container>
-                      </div>
-                    ))}
-                  </div>
-
-                </Col>
-              </Row>
-            )}
 
             {/* ---------------------------------------------------------
              * DUPLICATE HANDLING
@@ -489,18 +491,42 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                   Duplicate handling
                 </Form.Label>
 
-                {duplicateActions.map((action) => (
-                  <Form.Check
-                    key={action}
-                    type="radio"
-                    name="duplicate_action"
-                    className="mb-1"
-                    style={TABLE_TEXT}
-                    checked={duplicateAction === action}
-                    onChange={() => setDuplicateAction(action)}
-                    label={action}
-                  />
-                ))}
+                {duplicateActions.map((action) => {
+                  let tooltipText = "";
+                  
+                  if (action === "SkipRecordAction") {
+                    tooltipText = "Skip importing records that already exist in the system.";
+                  } else if (action === "UpdateExistingRecordAction") {
+                    tooltipText = "Update existing records with new data from the import file.";
+                  } else if (action === "ChangeOffendingFieldAction") {
+                    tooltipText = "Modify the conflicting field to make the record unique before importing.";
+                  }
+
+                  return (
+                    <div key={action} className="d-flex align-items-center mb-1">
+                      <Form.Check
+                        type="radio"
+                        name="duplicate_action"
+                        style={TABLE_TEXT}
+                        checked={duplicateAction === action}
+                        onChange={() => setDuplicateAction(action)}
+                        label={action}
+                      />
+                      <OverlayTrigger
+                        placement="right"
+                        overlay={
+                          <Tooltip id={`duplicate-action-${action}-tip`}>
+                            {tooltipText}
+                          </Tooltip>
+                        }
+                      >
+                        <span style={{ cursor: "help", marginLeft: 6 }}>
+                          <Icon name="info" size={14} />
+                        </span>
+                      </OverlayTrigger>
+                    </div>
+                  );
+                })}
               </Col>
             </Row>
 
@@ -521,14 +547,67 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       {/* FOOTER */}
       <Modal.Footer style={{ ...STANDARD_TEXT }}>
         <Button variant="outline-secondary" onClick={forceClose}>
-          cancel
+          Cancel
         </Button>
         <Button variant="primary" onClick={on_import} disabled={isLoading}>
-          import
+          Import
         </Button>
       </Modal.Footer>
 
     </Modal>
+
+    {/* CONFIRMATION MODAL */}
+    <Modal
+      show={showConfirmation}
+      onHide={() => setShowConfirmation(false)}
+      centered
+      size="xl"
+      contentClassName="border border-2"
+    >
+      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
+        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
+          Confirm Import - {modelClass}
+        </Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body style={{ ...STANDARD_TEXT }}>
+        <div style={{ marginBottom: 12 }}>
+          <strong>Preview of data to be imported:</strong>
+        </div>
+
+        <div
+          style={{
+            overflowX: "auto",
+            border: "1px solid #e4e6eb",
+            borderRadius: 8,
+            maxHeight: 400,
+            overflowY: "auto",
+            padding: 8,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <PreviewTable
+            data={previewData}
+            columns={previewColumns}
+            showPagination={true}
+            showGlobalFilter={false}
+            showColumnFilter={false}
+            disableGlobalFilter={true}
+          />
+        </div>
+
+      </Modal.Body>
+
+      <Modal.Footer style={{ ...STANDARD_TEXT }}>
+        <Button variant="outline-secondary" onClick={() => setShowConfirmation(false)}>
+          Back
+        </Button>
+        <Button variant="primary" onClick={confirmImport}>
+          Confirm & Import
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    </>
   );
 };
 

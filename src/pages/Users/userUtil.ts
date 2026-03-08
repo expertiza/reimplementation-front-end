@@ -114,7 +114,7 @@ export async function loadUserDataRolesAndInstitutions({ params }: any) {
   const institutionsResponse = await axiosClient.get("/institutions", {
     transformResponse: transformInstitutionsResponse,
   });
-  const rolesResponse = await axiosClient.get("/roles/subordinate_roles", {
+  const rolesResponse = await axiosClient.get("/roles", {
     transformResponse: transformRolesResponse,
   });
 
