@@ -1,4 +1,3 @@
-import React from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import AdministratorLayout from "./layout/Administrator";
 import RootLayout from "./layout/Root";
@@ -47,12 +46,14 @@ import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
 import TeammateReview from './pages/Student Teams/TeammateReview';
 import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
+import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -161,6 +162,24 @@ function App() {
           element: <ProtectedRoute element={<TeammateReview />} />,
         },
         {
+          path: "student_teams",
+          element: <ProtectedRoute element={<StudentTeams />} />,
+          children: [
+            {
+              path: "view",
+              element: <StudentTeamView />,
+            },
+          ],
+        },
+        {
+          path: "advertise_for_partner",
+          element: <ProtectedRoute element={<NewTeammateAdvertisement />} />,
+        },
+        {
+          path: "response/new",
+          element: <ProtectedRoute element={<TeammateReview />} />,
+        },
+        {
           path: "users",
           element: <ProtectedRoute element={<Users />} leastPrivilegeRole={ROLE.TA} />,
           children: [
@@ -171,6 +190,11 @@ function App() {
             },
             {
               path: "edit/:id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
+            {
+              path: ":id",
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
@@ -268,6 +292,18 @@ function App() {
         {
           path: "email_the_author",
           element: <Email_the_author />,
+        },
+        {
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "assignments/:id/review",
+          element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
         {

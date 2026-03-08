@@ -120,5 +120,42 @@ $theme-colors: (
   margin-bottom: 1rem !important;
 }
 
+      body {
+  background: #f7f7f7;
+    }
+
+    .legend {
+      font-size: 14px;
+    }
+
+    .legend li {
+      margin-bottom: 4px;
+    }
+
+    .legend-red { color: red; }
+    .legend-blue { color: blue; }
+    .legend-green { color: green; }
+    .legend-purple { color: purple; }
+    .legend-brown { color: brown; }
+
+    .row-highlight {
+      background: #f5f2d8;
+    }
+
+    .metrics-chart {
+      width: 160px;
+      height: 140px;
+      background: #eee;
+    }
+
+    .reviewer-name {
+      color: #005bbb;
+    }
+
+    .grade-box {
+      display: flex;
+      gap: 5px;
+    }
+
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';

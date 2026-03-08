@@ -1,11 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getAuthToken } from "../utils/auth";
 
 /**
  * @author Ankur Mundra on April, 2023
  */
-
 
 axios.defaults.baseURL = "http://localhost:3002";
 axios.defaults.headers.common["Accept"] = "application/json";
@@ -16,7 +15,7 @@ axios.defaults.headers.patch["Content-Type"] = "application/json";
 const useAPI = () => {
   const [data, setData] = useState<AxiosResponse>();
   const [error, setError] = useState<string | null>("");
-  const [errorStatus, setErrorStatus] = useState<string | null>("");
+  const [errorStatus, setErrorStatus] = useState<string | null>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Learn about Axios Request Config at https://github.com/axios/axios#request-config
@@ -48,6 +47,7 @@ const useAPI = () => {
         let errorMessage = "";
 
         if (err.response) {
+          console.log(err.response)
           const errors = err.response.data;
           const messages = Object.entries(errors).flatMap(([field, messages]) => {
             if (Array.isArray(messages)) return messages.map((m) => `${field} ${m}`);
@@ -62,11 +62,9 @@ const useAPI = () => {
           console.log("Error", err.message);
           errorMessage = err.message || "Something went wrong!";
         }
-
+        const { status } = err.response
         if (errorMessage) setError(errorMessage);
-        // Re-throw so callers using `await` can handle it
-        throw new Error(errorMessage || "Something went wrong!");
-        if (err.status) setErrorStatus(err.status)
+        if (status) setErrorStatus(status.toString())
       })
       .finally(() => {
         setIsLoading(false);
@@ -81,6 +79,7 @@ const useAPI = () => {
       setData(undefined);
     }
   };
+  // console.log(errorStatus)
 
   return { data, setData, isLoading, error, sendRequest, reset, errorStatus };
 };
