@@ -8,6 +8,21 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { IAssignmentResponse } from "../../utils/interfaces";
 import AssignmentDelete from "../Assignments/AssignmentDelete";
 
+const formatDateTime = (value: string | Date | null | undefined): string => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+};
+
 interface ActionHandler {
   icon: string;
   label: string;
@@ -143,34 +158,52 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   }, [fetchAssignments, showDeleteConfirmation.visible]);
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
-    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col => 
-      !['edit', 'delete', 'actions'].includes(String(col.id))
+    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col =>
+      !["edit", "delete", "actions"].includes(String(col.id))
     );
-    baseColumns = baseColumns.filter(col => col.header !== 'Course Name');
+    baseColumns = baseColumns
+      .filter(col => col.header !== "Course Name")
+      .map((col) => {
+        const columnKey = String((col as any).id ?? (col as any).accessorKey ?? "");
+        if (columnKey === "created_at" || columnKey === "updated_at") {
+          return {
+            ...col,
+            cell: ({ row }: { row: TRow<IAssignmentResponse> }) => (
+              <span style={{ color: "#000000" }}>
+                {formatDateTime(
+                  row.original[columnKey as "created_at" | "updated_at"] as unknown as string
+                )}
+              </span>
+            ),
+          };
+        }
+
+        return col;
+      });
 
     const actionsColumn = {
-    id: 'actions',
-    header: 'Actions',
-    cell: ({ row }: { row: TRow<any> }) => (
-      <div className="d-flex gap-1" style={{ minWidth: 'max-content' }}>
-      {actions.map((action, index) => (
-        <button
-        key={index}
-        onClick={() => action.handler(row)}
-        className="btn btn-link p-0"
-        title={action.label}
-        style={{ lineHeight: 0 }}
-        >
-        <img 
-          src={action.icon} 
-          alt={action.label} 
-          width="21" 
-          height="21"
-        />
-        </button>
-      ))}
-      </div>
-    )
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: { row: TRow<any> }) => (
+        <div className="d-flex gap-1" style={{ minWidth: "max-content" }}>
+          {actions.map((action, index) => (
+            <button
+              key={index}
+              onClick={() => action.handler(row)}
+              className="btn btn-link p-0"
+              title={action.label}
+              style={{ lineHeight: 0 }}
+            >
+              <img
+                src={action.icon}
+                alt={action.label}
+                width="21"
+                height="21"
+              />
+            </button>
+          ))}
+        </div>
+      )
     };
     return [...baseColumns, actionsColumn];
   };
