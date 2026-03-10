@@ -1,101 +1,117 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { Button, Col, Container } from "react-bootstrap";
+import { Form, Formik, FormikHelpers } from "formik";
+import FormInput from "../../components/Form/FormInput";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
+import { API_BASE_URL } from "../../constants/Api";
+import * as Yup from "yup";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+interface IResetPasswordFormValues {
+  password: string;
+  confirmPassword: string;
+}
+
+const validationSchema = Yup.object({
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords do not match")
+    .required("Required"),
+});
 
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get("token");
 
-  // Handle form submission
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-
-
-    if (password.length < 6) {
+  // Ensure the token is present when the component mounts
+  useEffect(() => {
+    if (!token) {
       dispatch(
         alertActions.showAlert({
           variant: "danger",
-          message: "Password should be at least 6 letters long."
+          message: "Invalid or missing token.",
         })
       );
-      return;
+      navigate("/login");
     }
-    else if (password !== confirmPassword) {
+  }, [token, dispatch, navigate]);
+
+  const onSubmit = async (
+    values: IResetPasswordFormValues,
+    submitProps: FormikHelpers<IResetPasswordFormValues>
+  ) => {
+    try {
+      // Send password reset request to the backend
+      await axios.put(`${API_BASE_URL}/password_resets/${token}`, {
+        user: { password: values.password },
+      });
       dispatch(
         alertActions.showAlert({
-          variant: "danger",
-          message: "Passwords do not match."
+          variant: "success",
+          message: "Password Successfully Updated",
         })
       );
-      return;
-    }
-    else {
-      try {
-        // Send password reset request to the backend
-        await axios.put(`${API_BASE_URL}/password_resets/${token}`, {
-          user: { password },
-        });
-
-        navigate("/login")
-
-        dispatch(
-          alertActions.showAlert({
-            variant: "success",
-            message: `Password Successfully Updated`,
-          })
-        );
-
-      } catch (error) {
-        if (error instanceof AxiosError && error.response && error.response.data) {
-          const { error: errorMessage} = error.response.data;
-          if (errorMessage) {
-            dispatch(
-              alertActions.showAlert({
-                variant: "danger",
-                message: errorMessage,
-              })
-            );
-          }
-        }
+      navigate("/login");
+    } catch (error) {
+      let errorFallback = "An error occurred. Please try again.";
+      if (error instanceof AxiosError && error.response && error.response.data) {
+        const { error: errorMessage } = error.response.data;
+        errorFallback = errorMessage || errorFallback;
       }
+      dispatch(
+        alertActions.showAlert({
+          variant: "danger",
+          message: errorFallback,
+        })
+      );
     }
+    submitProps.setSubmitting(false);
   };
 
   return (
-    <div style={{padding: "20px"}}>
-      <div>
-        <h2>Reset Your Password</h2>
-      </div>
-      Password:
-      <br />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        style={{marginTop: '5px', marginBottom: '5px', height: '20px', border: '1px solid black'}}
-      />
-      <br />
-      Confirm Password:
-      <br />
-      <input
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-        style={{marginTop: '5px', marginBottom: '5px', height: '20px', border: '1px solid black'}}
-      />
-      <br />
-      <button type="submit" onClick={handleSubmit} style={{marginTop: '5px', marginBottom: '5px', border: '1px solid black'}}>Reset Password</button>
-    </div>
+    <Container className="d-flex justify-content-center mt-xxl-5">
+      <Col xs={12} md={6} lg={4}>
+        <h1 className="text-center">Reset Your Password</h1>
+        <Formik
+          initialValues={{ password: "", confirmPassword: "" }}
+          onSubmit={onSubmit}
+          validationSchema={validationSchema}
+          validateOnChange={false}
+        >
+          {(formik) => (
+            <Form>
+              <FormInput
+                controlId="reset-password"
+                label="Password"
+                name="password"
+                type="password"
+              />
+              <FormInput
+                controlId="reset-confirm-password"
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+              />
+              <Button
+                style={{ width: "100%", marginTop: "8px" }}
+                variant="primary"
+                type="submit"
+                disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+              >
+                Reset Password
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </Col>
+    </Container>
   );
 };
 
