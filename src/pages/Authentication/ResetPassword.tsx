@@ -60,22 +60,17 @@ const ResetPassword = () => {
       );
       navigate("/login");
     } catch (error) {
+      let errorFallback = "An error occurred. Please try again.";
       if (error instanceof AxiosError && error.response && error.response.data) {
         const { error: errorMessage } = error.response.data;
-        dispatch(
-          alertActions.showAlert({
-            variant: "danger",
-            message: errorMessage || "An error occurred. Please try again.",
-          })
-        );
-      } else {
-        dispatch(
-          alertActions.showAlert({
-            variant: "danger",
-            message: "An error occurred. Please try again.",
-          })
-        );
+        errorFallback = errorMessage || errorFallback;
       }
+      dispatch(
+        alertActions.showAlert({
+          variant: "danger",
+          message: errorFallback,
+        })
+      );
     }
     submitProps.setSubmitting(false);
   };
