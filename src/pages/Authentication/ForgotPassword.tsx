@@ -50,7 +50,7 @@ const ForgotPassword = () => {
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
       <Col xs={12} md={6} lg={4}>
-        <h1 className="text-center">Forgotten Your Password?</h1>
+        <h2 className="text-center">Forgotten Your Password?</h2>
         <p className="text-center">Enter the e-mail address associated with your account</p>
         <Formik
           initialValues={{ email: "" }}
