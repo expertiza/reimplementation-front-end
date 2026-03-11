@@ -78,7 +78,7 @@ const ResetPassword = () => {
   return (
     <Container className="d-flex justify-content-center mt-xxl-5">
       <Col xs={12} md={6} lg={4}>
-        <h1 className="text-center">Reset Your Password</h1>
+        <h2 className="text-center">Reset Your Password</h2>
         <Formik
           initialValues={{ password: "", confirmPassword: "" }}
           onSubmit={onSubmit}
