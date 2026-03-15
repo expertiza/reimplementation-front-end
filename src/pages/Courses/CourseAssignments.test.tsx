@@ -4,30 +4,34 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock the useAPI hook to return mock assignments
-jest.mock('hooks/useAPI', () => () => ({
-  error: null,
-  isLoading: false,
-  data: {
-    data: [
-      {
-        id: 1,
-        name: 'Assignment 1',
-        courseName: 'Test Course',
-        description: 'Description 1',
-        created_at: '2023-01-01',
-        updated_at: '2023-01-02',
-      },
-      {
-        id: 2,
-        name: 'Assignment 2',
-        courseName: 'Test Course',
-        description: 'Description 2',
-        created_at: '2023-01-03',
-        updated_at: '2023-01-04',
-      },
-    ],
-  },
-  sendRequest: jest.fn(),
+vi.mock('hooks/useAPI', () => ({
+  default: () => ({
+    error: null,
+    isLoading: false,
+    data: {
+      data: [
+        {
+          id: 1,
+          name: 'Assignment 1',
+          course_id: 101,
+          courseName: 'Test Course',
+          description: 'Description 1',
+          created_at: '2023-01-01',
+          updated_at: '2023-01-02',
+        },
+        {
+          id: 2,
+          name: 'Assignment 2',
+          course_id: 101,
+          courseName: 'Test Course',
+          description: 'Description 2',
+          created_at: '2023-01-03',
+          updated_at: '2023-01-04',
+        },
+      ],
+    },
+    sendRequest: vi.fn(),
+  }),
 }));
 
 import CourseAssignments from './CourseAssignments';
@@ -46,9 +50,9 @@ describe('CourseAssignments', () => {
 
   it('renders the component correctly', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
-    expect(screen.getByText(`Assignments for ${mockCourseName}`)).toBeInTheDocument();
     const table = screen.getByRole('table');
     expect(table).toBeInTheDocument();
+    expect(screen.getByText('Actions')).toBeInTheDocument();
   });
 
   it('renders assignments in the table', () => {
@@ -60,7 +64,7 @@ describe('CourseAssignments', () => {
   });
 
   it('triggers edit and delete actions correctly', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
     const editButtons = screen.getAllByRole('button', { name: /edit/i });
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
