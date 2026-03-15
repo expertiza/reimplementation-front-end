@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect, useCallback } from "react";
 import { Button, Form, Table, FormControl, Alert, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { StudentTeamsProps, Invitation } from "../../utils/interfaces";
-import { useStudentTeam } from "hooks/useStudentTeam";
+import { useStudentTeam } from "../../hooks/useStudentTeam";
 import styles from "./StudentTeamView.module.css";
 
 export const replyStatus = (status: string): string => {

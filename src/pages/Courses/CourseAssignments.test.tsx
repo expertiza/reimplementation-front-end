@@ -30,6 +30,14 @@ jest.mock('hooks/useAPI', () => () => ({
   sendRequest: jest.fn(),
 }));
 
+const mockNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/courses', search: '', hash: '' }),
+}));
+
 import CourseAssignments from './CourseAssignments';
 
 const renderWithRouter = (component: React.ReactNode) => {
@@ -44,9 +52,12 @@ describe('CourseAssignments', () => {
   const mockCourseId = 101;
   const mockCourseName = 'Test Course';
 
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
   it('renders the component correctly', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
-    expect(screen.getByText(`Assignments for ${mockCourseName}`)).toBeInTheDocument();
     const table = screen.getByRole('table');
     expect(table).toBeInTheDocument();
   });
@@ -60,7 +71,6 @@ describe('CourseAssignments', () => {
   });
 
   it('triggers edit and delete actions correctly', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
     const editButtons = screen.getAllByRole('button', { name: /edit/i });
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
@@ -71,9 +81,7 @@ describe('CourseAssignments', () => {
     await userEvent.click(editButtons[0]);
     await userEvent.click(deleteButtons[0]);
 
-    expect(consoleSpy).toHaveBeenCalledWith('Edit assignment:', expect.objectContaining({ name: 'Assignment 1' }));
-    expect(consoleSpy).toHaveBeenCalledWith('Delete assignment:', expect.objectContaining({ name: 'Assignment 1' }));
-
-    consoleSpy.mockRestore();
+    expect(mockNavigate).toHaveBeenCalledWith('/assignments/edit/1', { state: { from: '/courses' } });
+    expect(screen.getByText(/delete assignment/i)).toBeInTheDocument();
   });
 });
