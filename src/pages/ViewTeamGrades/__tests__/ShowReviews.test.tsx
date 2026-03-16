@@ -4,13 +4,13 @@ import ShowReviews from '../ShowReviews';
 import '@testing-library/jest-dom';
 
 // Mock axios client to avoid importing ESM axios during tests
-jest.mock('../../utils/axios_client', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+vi.mock('../../utils/axios_client', () => ({
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 // Mock react-redux hooks so we don't need redux-mock-store
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useSelector: () => ({ user: { role: 'Instructor', id: 1 }, isAuthenticated: true }),
   useDispatch: () => () => {},
 }));
