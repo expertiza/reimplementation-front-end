@@ -13,7 +13,7 @@ interface IForgotPasswordFormValues {
 }
 
 const validationSchema = Yup.object({
-  email: Yup.string().email("Invalid email address").required("Required"),
+  email: Yup.string().trim().email("Invalid email address").required("Required"),
 });
 
 const ForgotPassword = () => {
