@@ -70,3 +70,73 @@ describe("Test Reset Password Displays Correctly", () => {
   });
 });
 
+const validPassword = "validpassword";
+
+describe("Test Reset Password Form Validations", () => {
+  it("does not submit form when password is too short", async () => {
+    const user = userEvent.setup();
+    renderComponent();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const submitButton = screen.getByRole("button", { name: /reset password/i });
+
+    await user.type(passwordInput, "abc");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(screen.getByText(/password must be at least 6 characters/i)).toBeInTheDocument();
+    });
+    expect(submitButton).toBeDisabled();
+    expect(axios.put).not.toHaveBeenCalled();
+  });
+
+  it("does not submit form when passwords do not match", async () => {
+    const user = userEvent.setup();
+    renderComponent();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmInput = screen.getByLabelText(/confirm password/i);
+    const submitButton = screen.getByRole("button", { name: /reset password/i });
+
+    await user.type(passwordInput, validPassword);
+    await user.type(confirmInput, "differentpassword");
+    await user.tab(); // Simulates pressing tab to trigger validation with both fields filled
+
+    await waitFor(() => {
+      expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    });
+    expect(submitButton).toBeDisabled();
+    expect(axios.put).not.toHaveBeenCalled();
+  });
+});
+
+describe("Test Successful Password Reset", () => {
+  it("submits form successfully", async () => {
+    const user = userEvent.setup();
+    (axios.put as any).mockResolvedValue({
+      status: 200,
+      data: { message: "Password Successfully Updated" },
+    });
+
+    renderComponent();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmInput = screen.getByLabelText(/confirm password/i);
+    const submitButton = screen.getByRole("button", { name: /reset password/i });
+
+    await user.type(passwordInput, validPassword);
+    await user.type(confirmInput, validPassword);
+    await user.tab(); // simulates pressing tab to trigger validation with both fields filled
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledWith(
+        expect.stringContaining("/password_resets/valid-token"),
+        { user: { password: validPassword } }
+      );
+      const state = mockStore.getState();
+      expect(state.alert.variant).toBe("success");
+      expect(state.alert.message).toBe("Password Successfully Updated");
+    });
+  });
+});
