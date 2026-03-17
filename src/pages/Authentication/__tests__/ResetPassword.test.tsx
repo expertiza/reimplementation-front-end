@@ -140,3 +140,34 @@ describe("Test Successful Password Reset", () => {
     });
   });
 });
+
+describe("Test Reset Password Api Error", () => {
+  it("handles API unavailable", async () => {
+    const user = userEvent.setup();
+    (axios.put as any).mockRejectedValue(
+      new AxiosError("Network Error", "ERR_NETWORK")
+    );
+
+    renderComponent();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmInput = screen.getByLabelText(/confirm password/i);
+    const submitButton = screen.getByRole("button", { name: /reset password/i });
+
+    await user.type(passwordInput, validPassword);
+    await user.type(confirmInput, validPassword);
+    await user.tab(); // Simulates pressing tab to trigger validation with both fields filled
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      const state = mockStore.getState();
+      expect(state.alert.message).toBe("An error occurred. Please try again.");
+      expect(state.alert.variant).toBe("danger");
+    });
+
+    expect(axios.put).toHaveBeenCalledWith(
+      expect.stringContaining("/password_resets/valid-token"),
+      { user: { password: validPassword } }
+    );
+  });
+});
