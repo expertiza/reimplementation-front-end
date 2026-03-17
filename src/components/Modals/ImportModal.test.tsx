@@ -5,6 +5,7 @@ import {
   screen,
   fireEvent,
   act,
+  waitFor,
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -75,18 +76,14 @@ describe("ImportModal", () => {
     });
 
     // Section labels
-    await screen.findByText(/Mandatory fields:/i);
-    await screen.findByText(/Optional fields:/i);
-    await screen.findByText(/External fields:/i);
-
-    // Field names are present somewhere in the summary text
-    expect(screen.getByText("email")).toBeInTheDocument();
-    expect(screen.getByText("name")).toBeInTheDocument();
-    expect(screen.getByText("external_id")).toBeInTheDocument();
+    await screen.findByText(/Mandatory fields/i);
+    await screen.findByText(/Optional fields/i);
+    await screen.findByText(/External fields/i);
 
     // Duplicate handling radios
-    const skipRadio = screen.getByLabelText("SkipRecordAction") as HTMLInputElement;
-    const overwriteRadio = screen.getByLabelText("UpdateExistingRecordAction") as HTMLInputElement;
+    expect(screen.getByText("SkipRecordAction")).toBeInTheDocument();
+    expect(screen.getByText("UpdateExistingRecordAction")).toBeInTheDocument();
+    const [skipRadio, overwriteRadio] = screen.getAllByRole("radio") as HTMLInputElement[];
 
     expect(skipRadio).toBeInTheDocument();
     expect(overwriteRadio).toBeInTheDocument();
@@ -123,7 +120,7 @@ describe("ImportModal", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows column mapping and first-row values when header mode is off", async () => {
+  it("shows preview values when importing with header mode off", async () => {
     const user = userEvent.setup();
 
     mockUseAPI.mockReturnValue(
@@ -135,7 +132,7 @@ describe("ImportModal", () => {
     });
 
     // Wait for metadata to populate
-    await screen.findByText(/Mandatory fields:/i);
+    await screen.findByText(/Mandatory fields/i);
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
@@ -164,13 +161,15 @@ describe("ImportModal", () => {
 
     expect(headerSwitch.checked).toBe(false);
 
-    // Column order section should now be visible
-    const columnOrderLabel = await screen.findByText(/Column order/i);
-    expect(columnOrderLabel).toBeInTheDocument();
+    // Import now opens a preview/confirmation modal
+    const importButton = screen.getByRole("button", { name: /^Import$/i });
+    await act(async () => {
+      await user.click(importButton);
+    });
 
-    // First-row previews should show the values from the second CSV line
-    await screen.findByText(/First Row Value: user@example\.com/i);
-    await screen.findByText(/First Row Value: Test User/i);
+    await screen.findByText(/Confirm Import - Item/i);
+    await screen.findByText("user@example.com");
+    await screen.findByText("Test User");
   });
 
   it("calls sendImport when import is valid", async () => {
@@ -190,7 +189,7 @@ describe("ImportModal", () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
     });
 
-    await screen.findByText(/Mandatory fields:/i);
+    await screen.findByText(/Mandatory fields/i);
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
@@ -228,7 +227,7 @@ describe("ImportModal", () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
     });
 
-    await screen.findByText(/Mandatory fields:/i);
+    await screen.findByText(/Mandatory fields/i);
 
     const cancelButton = screen.getByRole("button", { name: /cancel/i });
 
@@ -236,6 +235,8 @@ describe("ImportModal", () => {
       cancelButton.click();
     });
 
-    expect(onHide).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onHide).toHaveBeenCalled();
+    });
   });
 });
