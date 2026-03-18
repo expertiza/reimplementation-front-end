@@ -39,7 +39,21 @@ const renderComponent = (token: string | null = "valid-token") => {
   );
 };
 
-// Test for password reset form rendering and validation
+describe("Test Reset Password Missing Token", () => {
+  it("redirects to login and shows error when token is missing", async () => {
+    renderComponent(null);
+
+    await waitFor(() => {
+      const state = mockStore.getState();
+      expect(state.alert.variant).toBe("danger");
+      expect(state.alert.message).toBe("Invalid or missing token.");
+    });
+
+    // The component should have navigated away — login page is rendered instead
+    expect(screen.getByText(/login page/i)).toBeInTheDocument();
+  });
+});
+
 describe("Test Reset Password Displays Correctly", () => {
   it("renders the component correctly", () => {
     renderComponent();
