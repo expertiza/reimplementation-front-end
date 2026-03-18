@@ -184,4 +184,34 @@ describe("Test Reset Password Api Error", () => {
       { user: { password: validPassword } }
     );
   });
+
+  it("shows server error message when API returns one", async () => {
+    const user = userEvent.setup();
+    const serverError = new AxiosError("Token has expired.", "ERR_BAD_REQUEST");
+    (serverError as any).response = {
+      status: 422,
+      statusText: "Unprocessable Entity",
+      data: { error: "Token has expired." },
+      headers: {},
+      config: {} as any,
+    };
+    (axios.put as any).mockRejectedValue(serverError);
+
+    renderComponent();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmInput = screen.getByLabelText(/confirm password/i);
+    const submitButton = screen.getByRole("button", { name: /reset password/i });
+
+    await user.type(passwordInput, validPassword);
+    await user.type(confirmInput, validPassword);
+    await user.tab();
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      const state = mockStore.getState();
+      expect(state.alert.message).toBe("Token has expired.");
+      expect(state.alert.variant).toBe("danger");
+    });
+  });
 });
