@@ -53,7 +53,7 @@ describe("Test Reset Password Missing Token", () => {
     });
 
     // The component should have navigated away — login page is rendered instead
-    expect(screen.getByText(/login page/i)).toBeInTheDocument();
+    expect(await screen.findByText(/login page/i)).toBeInTheDocument();
   });
 });
 
