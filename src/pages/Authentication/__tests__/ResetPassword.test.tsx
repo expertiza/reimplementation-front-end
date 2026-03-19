@@ -16,18 +16,20 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// Simulate arriving from a password-reset email link.
-const mockStore = configureStore({
-  reducer: {
-    alert: alertReducer,
-  },
-});
+const makeMockStore = () =>
+  configureStore({
+    reducer: {
+      alert: alertReducer,
+    },
+  });
 
 // Renders ResetPassword inside the required Provider + Router context.
+// Returns the store so each test can inspect its own isolated alert state.
 const renderComponent = (token: string | null = "valid-token") => {
+  const store = makeMockStore();
   const search = token ? `?token=${token}` : "";
-  return render(
-    <Provider store={mockStore}>
+  render(
+    <Provider store={store}>
       <MemoryRouter initialEntries={[`/reset-password${search}`]}>
         <Routes>
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -37,14 +39,15 @@ const renderComponent = (token: string | null = "valid-token") => {
       </MemoryRouter>
     </Provider>
   );
+  return store;
 };
 
 describe("Test Reset Password Missing Token", () => {
   it("redirects to login and shows error when token is missing", async () => {
-    renderComponent(null);
+    const store = renderComponent(null);
 
     await waitFor(() => {
-      const state = mockStore.getState();
+      const state = store.getState();
       expect(state.alert.variant).toBe("danger");
       expect(state.alert.message).toBe("Invalid or missing token.");
     });
@@ -132,7 +135,7 @@ describe("Test Successful Password Reset", () => {
       data: { message: "Password Successfully Updated" },
     });
 
-    renderComponent();
+    const store = renderComponent();
 
     const passwordInput = screen.getByLabelText(/^password$/i);
     const confirmInput = screen.getByLabelText(/confirm password/i);
@@ -148,7 +151,7 @@ describe("Test Successful Password Reset", () => {
         expect.stringContaining("/password_resets/valid-token"),
         { user: { password: validPassword } }
       );
-      const state = mockStore.getState();
+      const state = store.getState();
       expect(state.alert.variant).toBe("success");
       expect(state.alert.message).toBe("Password Successfully Updated");
     });
@@ -162,7 +165,7 @@ describe("Test Reset Password Api Error", () => {
       new AxiosError("Network Error", "ERR_NETWORK")
     );
 
-    renderComponent();
+    const store = renderComponent();
 
     const passwordInput = screen.getByLabelText(/^password$/i);
     const confirmInput = screen.getByLabelText(/confirm password/i);
@@ -174,7 +177,7 @@ describe("Test Reset Password Api Error", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      const state = mockStore.getState();
+      const state = store.getState();
       expect(state.alert.message).toBe("An error occurred. Please try again.");
       expect(state.alert.variant).toBe("danger");
     });
@@ -197,7 +200,7 @@ describe("Test Reset Password Api Error", () => {
     };
     (axios.put as any).mockRejectedValue(serverError);
 
-    renderComponent();
+    const store = renderComponent();
 
     const passwordInput = screen.getByLabelText(/^password$/i);
     const confirmInput = screen.getByLabelText(/confirm password/i);
@@ -209,7 +212,7 @@ describe("Test Reset Password Api Error", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      const state = mockStore.getState();
+      const state = store.getState();
       expect(state.alert.message).toBe("Token has expired.");
       expect(state.alert.variant).toBe("danger");
     });
