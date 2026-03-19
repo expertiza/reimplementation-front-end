@@ -5,8 +5,9 @@ import FormInput from "../../components/Form/FormInput";
 import axios, { AxiosError } from "axios";
 import { alertActions } from "../../store/slices/alertSlice";
 import { useDispatch } from "react-redux";
-import { API_BASE_URL } from "../../constants/Api";
 import * as Yup from "yup";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002";
 
 interface IForgotPasswordFormValues {
   email: string;
