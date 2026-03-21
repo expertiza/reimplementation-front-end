@@ -1086,7 +1086,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
                 {/* Calibration Tab */}
                 <Tab eventKey="calibration" title="Calibration">
-                  {/* Small username search box (will trigger backend search) */}
                   <Field name="calibration_username_search">
                     {({ field, form }: any) => {
                       return (
@@ -1133,7 +1132,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   </Field>
                   <h3>Select participants for submitting calibration artifacts</h3>
 
-                  {/* Calibration instructions removed - only username search remains */}
                   <div>
                     <div style={{ display: 'ruby', marginTop: '30px' }}>
                       <Table
@@ -1246,7 +1244,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 </Tab>
               </Tabs>
 
-              {/* Submit button */}
               <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
                 <Button type="submit" variant="outline-secondary">
                   Save
