@@ -218,14 +218,14 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                   }
                 />
                 <Modal.Footer>
-                  <Button variant="outline-secondary" onClick={handleClose}>
+                  <Button type="button" variant="outline-secondary" onClick={handleClose}>
                     Close
                   </Button>
 
                   <Button
                     variant="outline-success"
                     type="submit"
-                    disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+                    disabled={!formik.dirty || formik.isSubmitting}
                   >
                     {mode === "update" ? "Update User" : "Create User"}
                   </Button>
