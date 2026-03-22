@@ -34,12 +34,16 @@ vi.mock('hooks/useAPI', () => ({
   }),
 }));
 
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
   useNavigate: () => mockNavigate,
   useLocation: () => ({ pathname: '/courses', search: '', hash: '' }),
+}));
+
+vi.mock('../Assignments/AssignmentDelete', () => ({
+  default: () => <div>Delete Assignment</div>,
 }));
 
 import CourseAssignments from './CourseAssignments';
