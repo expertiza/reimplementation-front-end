@@ -83,7 +83,6 @@ const ResetPassword = () => {
           initialValues={{ password: "", confirmPassword: "" }}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
-          validateOnChange={false}
         >
           {(formik) => (
             <Form>
