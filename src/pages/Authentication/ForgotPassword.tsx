@@ -55,7 +55,6 @@ const ForgotPassword = () => {
           initialValues={{ email: "" }}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
-          validateOnChange={false}
         >
           {(formik) => (
             <Form>
