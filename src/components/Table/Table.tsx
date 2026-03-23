@@ -198,28 +198,32 @@ const Table: React.FC<TableProps> = ({
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} style={{ width: `${header.getSize()}px` }}>
+                      <th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        style={ header.getSize() && header.getSize() > 0 ? { width: `${header.getSize()}px` } : undefined }
+                      >
                         {header.isPlaceholder ? null : (
-                          <>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick: header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                            {shouldShowColumnFilters && header.column.getCanFilter() ? (
-                              <ColumnFilter column={header.column} />
-                            ) : null}
-                          </>
-                        )}
+                              <>
+                                <div
+                                  {...{
+                                    className: header.column.getCanSort()
+                                      ? "cursor-pointer select-none"
+                                      : "",
+                                    onClick: header.column.getToggleSortingHandler(),
+                                  }}
+                                >
+                                  {flexRender(header.column.columnDef.header, header.getContext())}
+                                  {{
+                                    asc: " 🔼",
+                                    desc: " 🔽",
+                                  }[header.column.getIsSorted() as string] ?? null}
+                                </div>
+                                {shouldShowColumnFilters && header.column.getCanFilter() ? (
+                                  <ColumnFilter column={header.column} />
+                                ) : null}
+                              </>
+                            )}
                       </th>
                     ))}
                   </tr>
