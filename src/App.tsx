@@ -46,6 +46,7 @@ import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import CalibrationReview from "./pages/Assignments/CalibrationReview";
 import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
@@ -95,6 +96,11 @@ function App() {
           path: "assignments/edit/:id/assignreviewer",
           element: <AssignReviewer />,
           loader: loadAssignment,
+        },
+
+        {
+          path: "assignments/edit/:id/calibration/:teamId",
+          element: <ProtectedRoute element={<CalibrationReview />} />,
         },
 
         {

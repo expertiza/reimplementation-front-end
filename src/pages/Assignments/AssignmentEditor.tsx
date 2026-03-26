@@ -1171,12 +1171,12 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           {
                             cell: ({ row }) => {
                               if (row.original.review_status === "not_started") {
-                                return <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Begin</a>;
+                                return <div onClick={() => navigate(`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`)} style={{ color: '#986633', cursor: 'pointer' }}>Begin</div>;
                               } else {
                                 return <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>View</a>
+                                  <div onClick={() => navigate(`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`)} style={{ color: '#986633', cursor: 'pointer' }}>View</div>
                                   |
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Edit</a>
+                                  <div onClick={() => navigate(`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`)} style={{ color: '#986633', cursor: 'pointer' }}>Edit</div>
                                 </div>;
                               }
                             },
