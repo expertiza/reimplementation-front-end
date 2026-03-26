@@ -144,18 +144,13 @@ export interface IAssignmentRequest {
   metareview_allowed?: any[];
   reminder?: any[];
 
-  // Misc flags matching tabs
-  allow_tag_prompts?: boolean;
-  has_quizzes?: boolean;
-  calibration_for_training?: boolean;
-  available_to_students?: boolean;
-  allow_topic_suggestion_from_students?: boolean;
-  enable_bidding_for_topics?: boolean;
-  enable_bidding_for_reviews?: boolean;
-  enable_authors_to_review_other_topics?: boolean;
-  allow_reviewer_to_choose_topic_to_review?: boolean;
-  allow_participants_to_create_bookmarks?: boolean;
-  staggered_deadline_assignment?: boolean;
+  // Misc flags that exist in the schema
+  availability_flag?: boolean;
+  allow_suggestions?: boolean;
+  use_bookmark?: boolean;
+  can_review_same_topic?: boolean;
+  can_choose_topic_to_review?: boolean;
+  allow_selecting_additional_reviews_after_1st_round?: boolean;
 
   // Per-round rubric configuration
   vary_by_round?: boolean;

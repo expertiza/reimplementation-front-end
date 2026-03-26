@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
 import { Container, Spinner, Alert, Row, Col } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useAPI from "../../hooks/useAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -18,7 +18,53 @@ interface Topic {
   isWaitlisted?: boolean;
 }
 
+interface ReviewerPersistParticipant {
+  id: number;
+  user_id: number;
+  parent_id: number;
+  team_id?: number | null;
+}
+
+interface ReviewerPersistResponseMap {
+  id: number;
+  reviewer_id: number;
+  reviewee_id: number;
+  reviewed_object_id: number;
+  reviewee_team_id?: number | null;
+}
+
+interface ReviewerPersistResponse {
+  id: number;
+  map_id: number;
+  is_submitted: boolean | 0 | 1;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+interface ReviewerPersistTeam {
+  id: number;
+  name: string;
+}
+
+interface ReviewerPersist {
+  participants?: ReviewerPersistParticipant[];
+  response_maps?: ReviewerPersistResponseMap[];
+  responses?: ReviewerPersistResponse[];
+  teams?: ReviewerPersistTeam[];
+}
+
+interface AssignedReviewRow {
+  mapId: number;
+  responseId?: number;
+  teamName: string;
+  status: "Not saved" | "Saved" | "Submitted";
+  questionnaireType: "Review" | "Teammate Review";
+  questionnaireId?: number;
+  questionnaireName: string;
+}
+
 const StudentTasks: React.FC = () => {
+  const navigate = useNavigate();
   const { assignmentId } = useParams<{ assignmentId?: string }>();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
@@ -47,7 +93,7 @@ const StudentTasks: React.FC = () => {
 
   const fetchTopics = useCallback((assignmentId: number) => {
     if (!assignmentId) return;
-    fetchTopicsAPI({ url: `/project_topics?assignment_id=${assignmentId}`, method: 'GET' });
+    fetchTopicsAPI({ url: `/sign_up_topics?assignment_id=${assignmentId}`, method: 'GET' });
   }, [fetchTopicsAPI]);
 
   useEffect(() => {
@@ -241,6 +287,134 @@ const StudentTasks: React.FC = () => {
     }
   }, [assignmentResponse]);
 
+  const resolvedAssignmentId = useMemo(() => {
+    if (assignmentId) return parseInt(assignmentId, 10);
+    if (!assignmentResponse?.data) return undefined;
+    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+      return Number(assignmentResponse.data[0].id);
+    }
+    return Number(assignmentResponse.data.id);
+  }, [assignmentId, assignmentResponse]);
+
+  const assignedReviews = useMemo<AssignedReviewRow[]>(() => {
+    if (!currentUser?.id || !resolvedAssignmentId) return [];
+
+    const assignmentData = Array.isArray(assignmentResponse?.data)
+      ? assignmentResponse?.data?.[0]
+      : assignmentResponse?.data;
+
+    const questionnaires = Array.isArray(assignmentData?.questionnaires) ? assignmentData.questionnaires : [];
+    const isTeammateQuestionnaire = (questionnaire: any) => {
+      const questionnaireType = String(questionnaire?.questionnaire_type || "");
+      const questionnaireName = String(questionnaire?.name || "");
+      return (
+        /teammatereview/i.test(questionnaireType)
+        || /teammate\s*review/i.test(questionnaireType)
+        || /teammate\s*review/i.test(questionnaireName)
+      );
+    };
+
+    const teammateQuestionnaire = questionnaires.find((questionnaire: any) => isTeammateQuestionnaire(questionnaire));
+    const normalReviewQuestionnaire = questionnaires.find((questionnaire: any) => !isTeammateQuestionnaire(questionnaire));
+
+    // Fallback: read from localStorage (demo / instructor-assigned data not yet persisted to DB)
+    try {
+      const raw = localStorage.getItem(`assignreviewer:${resolvedAssignmentId}`);
+      if (!raw) return [];
+
+      const parsed = JSON.parse(raw) as ReviewerPersist;
+      const participants = Array.isArray(parsed.participants) ? parsed.participants : [];
+      const responseMaps = Array.isArray(parsed.response_maps) ? parsed.response_maps : [];
+      const responses = Array.isArray(parsed.responses) ? parsed.responses : [];
+      const teams = Array.isArray(parsed.teams) ? parsed.teams : [];
+
+      const participantIds = new Set(
+        participants
+          .filter((participant) =>
+            Number(participant.user_id) === Number(currentUser.id)
+            && Number(participant.parent_id) === Number(resolvedAssignmentId)
+          )
+          .map((participant) => participant.id)
+      );
+
+      const currentParticipant = participants.find((participant) =>
+        Number(participant.user_id) === Number(currentUser.id)
+        && Number(participant.parent_id) === Number(resolvedAssignmentId)
+      );
+      const currentUserTeamId = currentParticipant?.team_id ? Number(currentParticipant.team_id) : undefined;
+
+      if (participantIds.size === 0) return [];
+
+      const latestByMapId = new Map<number, ReviewerPersistResponse>();
+      responses.forEach((response) => {
+        const mapId = Number(response.map_id);
+        const timestamp = new Date(response.updated_at ?? response.created_at ?? "").getTime() || 0;
+        const previous = latestByMapId.get(mapId);
+        const previousTs = previous
+          ? (new Date(previous.updated_at ?? previous.created_at ?? "").getTime() || 0)
+          : -1;
+        if (!previous || timestamp > previousTs) {
+          latestByMapId.set(mapId, response);
+        }
+      });
+
+      return responseMaps
+        .filter((map) =>
+          Number(map.reviewed_object_id) === Number(resolvedAssignmentId)
+          && participantIds.has(Number(map.reviewer_id))
+        )
+        .map((map) => {
+          const teamId = Number(map.reviewee_team_id ?? map.reviewee_id);
+          const teamName = teams.find((team) => Number(team.id) === teamId)?.name ?? `Team #${teamId}`;
+          const latestResponse = latestByMapId.get(Number(map.id));
+          const isTeammateReview = Boolean(currentUserTeamId) && Number(currentUserTeamId) === Number(teamId);
+
+          const selectedQuestionnaire = isTeammateReview
+            ? (teammateQuestionnaire ?? normalReviewQuestionnaire)
+            : (normalReviewQuestionnaire ?? teammateQuestionnaire);
+
+          let status: AssignedReviewRow["status"] = "Not saved";
+          if (latestResponse) {
+            const submitted = typeof latestResponse.is_submitted === "boolean"
+              ? latestResponse.is_submitted
+              : Number(latestResponse.is_submitted) === 1;
+            status = submitted ? "Submitted" : "Saved";
+          }
+
+          return {
+            mapId: Number(map.id),
+            responseId: latestResponse ? Number(latestResponse.id) : undefined,
+            teamName,
+            status,
+            questionnaireType: isTeammateReview ? "Teammate Review" : "Review",
+            questionnaireId: selectedQuestionnaire?.id ? Number(selectedQuestionnaire.id) : undefined,
+            questionnaireName: selectedQuestionnaire?.name || (isTeammateReview ? "Teammate Review Questionnaire" : "Review Questionnaire")
+          };
+        });
+    } catch {
+      return [];
+    }
+  }, [currentUser?.id, resolvedAssignmentId, assignmentResponse?.data]);
+
+  const handleOpenReview = useCallback((review: AssignedReviewRow) => {
+    const params = new URLSearchParams({
+      assignment_id: String(resolvedAssignmentId),
+      map_id: String(review.mapId),
+      questionnaire_type: review.questionnaireType,
+      questionnaire_name: review.questionnaireName,
+      team_name: review.teamName,
+    });
+
+    if (review.questionnaireId) {
+      params.set("questionnaire_id", String(review.questionnaireId));
+    }
+    if (review.responseId) {
+      params.set("response_id", String(review.responseId));
+    }
+
+    navigate(`/response/new?${params.toString()}`);
+  }, [navigate, resolvedAssignmentId]);
+
   // Check if bookmarks are allowed for this assignment
   const allowBookmarks = useMemo(() => {
     if (!assignmentResponse?.data) return false;
@@ -428,6 +602,38 @@ const StudentTasks: React.FC = () => {
               ? userSelectedTopics.map((topic) => topic.isWaitlisted ? `${topic.name} (waitlisted)` : topic.name).join(", ")
               : "No topics selected yet"}
           </p>
+        </Col>
+      </Row>
+
+      <Row className="mb-4">
+        <Col xs={12}>
+          <h5 className="mb-2">Assigned Reviews</h5>
+          {assignedReviews.length === 0 ? (
+            <Alert variant="light" className="mb-0">
+              No reviews currently assigned to you for this assignment.
+            </Alert>
+          ) : (
+            <Alert variant="info" className="mb-0">
+              {assignedReviews.map((review) => (
+                <div key={review.mapId} className="d-flex justify-content-between">
+                  <span>
+                    {review.teamName}
+                    <small className="ms-2 text-muted">({review.questionnaireType})</small>
+                  </span>
+                  <div className="d-flex align-items-center gap-3">
+                    <strong>{review.status}</strong>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => handleOpenReview(review)}
+                    >
+                      {review.responseId ? "Open Review" : "Start Review"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </Alert>
+          )}
         </Col>
       </Row>
 
