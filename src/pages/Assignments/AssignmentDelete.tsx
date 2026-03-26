@@ -42,6 +42,7 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
           message: `Assignment ${assignmentData.name} deleted successfully!`, 
         })
       );
+      if (onSuccess) onSuccess();
       onClose();
     }
   }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name]); 
