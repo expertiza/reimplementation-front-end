@@ -4,9 +4,10 @@ import { Button, Modal, Form as RBForm, InputGroup } from "react-bootstrap";
 import { Form, Formik, FormikHelpers, Field } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import type { AxiosResponse } from "axios";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
 import FormSelect from "../../components/Form/FormSelect";
 import { HttpMethod } from "../../utils/httpMethods";
@@ -106,6 +107,61 @@ const validationSchema = Yup.object({
   // Add other assignment-specific validation rules
 });
 
+/** Rails returns a JSON array; guard against wrapped shapes or accidental objects. */
+function calibrationMapsPayloadToArray(resData: unknown): any[] {
+  if (Array.isArray(resData)) return resData;
+  if (resData && typeof resData === "object" && Array.isArray((resData as { data?: unknown }).data)) {
+    return (resData as { data: any[] }).data;
+  }
+  return [];
+}
+
+function parseAssignmentIdFromCalibrationAddRequest(res: AxiosResponse): string | null {
+  const base = res.config?.baseURL ?? "";
+  const path = res.config?.url ?? "";
+  const full = `${base}${path}`;
+  const m = full.match(/\/assignments\/([^/?#]+)\/(?:add_calibration_participant|calibration_response_maps)(?:\?|$|#)/);
+  return m ? m[1] : null;
+}
+
+function reviewedObjectIdFromAddBody(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  const rm = (b.response_map ?? b.responseMap) as Record<string, unknown> | undefined;
+  if (!rm || typeof rm !== "object") return null;
+  const rid = rm.reviewed_object_id ?? rm.reviewedObjectId;
+  if (rid == null) return null;
+  return String(rid);
+}
+
+function calibrationTableRowFromAddBody(body: unknown, fallbackUsername: string): Record<string, unknown> | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  const rm = (b.response_map ?? b.responseMap) as Record<string, unknown> | undefined;
+  const mapId = rm?.id;
+  if (mapId == null) return null;
+  const p = b.participant as Record<string, unknown> | undefined;
+  const u = (p?.user as Record<string, unknown> | undefined) ?? undefined;
+  const participantName =
+    (u?.full_name as string) ||
+    (u?.fullName as string) ||
+    (u?.name as string) ||
+    (p?.name as string) ||
+    fallbackUsername ||
+    "Unknown";
+  const team = b.team as Record<string, unknown> | undefined;
+  const sc = b.submitted_content as Record<string, unknown> | undefined;
+  return {
+    id: mapId,
+    participant_name: participantName,
+    review_status: (rm.review_status as string) || (rm.reviewStatus as string) || "not_started",
+    submitted_content: {
+      hyperlinks: (Array.isArray(team?.hyperlinks) ? team?.hyperlinks : sc?.hyperlinks) || [],
+      files: (Array.isArray(sc?.files) ? sc.files : []) || [],
+    },
+  };
+}
+
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
@@ -115,6 +171,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
   const [usernameSearch, setUsernameSearch] = useState<string>("");
+  /** Set when Add is clicked so we accept the matching POST response even if URL/body shape varies. */
+  const pendingCalibrationAddForAssignmentIdRef = useRef<string | null>(null);
+  const lastCalibrationUsernameRef = useRef<string>("");
 
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
@@ -452,9 +511,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   // Handle calibration submissions response
   useEffect(() => {
     if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
-      const normalizedData = (calibrationSubmissionsResponse.data || []).map((raw: any) => {
+      const rows = calibrationMapsPayloadToArray(calibrationSubmissionsResponse.data);
+      const normalizedData = rows.map((raw: any) => {
         const participantName =
           raw?.participant_name ||
+          raw?.reviewee?.user?.full_name ||
           raw?.reviewee?.user?.name ||
           raw?.reviewee?.user?.fullName ||
           raw?.reviewee?.user?.username ||
@@ -486,16 +547,15 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     calibrationSubmissionsError && dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
   }, [calibrationSubmissionsError, dispatch]);
 
-  // Explicit search handler - call backend only when Add is clicked
-  const submittedUsername = useRef("");
+  // Explicit search handler — call backend only when Add is clicked
   const handleAddClick = useCallback(() => {
     if (!id) return;
-    const username = usernameSearch;
+    const username = usernameSearch.trim();
 
     if (!username) return; // button should be disabled, but guard anyway
 
-    // POST to create/add calibration participant for this assignment
-    submittedUsername.current = username;
+    pendingCalibrationAddForAssignmentIdRef.current = String(id);
+    lastCalibrationUsernameRef.current = username;
     sendAddParticipantRequest({
       url: `/assignments/${id}/add_calibration_participant`,
       method: HttpMethod.POST,
@@ -505,70 +565,55 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     });
   }, [id, usernameSearch, sendAddParticipantRequest]);
 
-  // When add participant returns, show toast and refresh submissions list
+  // After Add: merge row from POST when possible, then always reload list from GET (source of truth).
   useEffect(() => {
-    if (addParticipantResponse && addParticipantResponse.status >= 200 && addParticipantResponse.status < 300) {
-      dispatch(alertActions.showAlert({ variant: 'success', message: 'Calibration participant added successfully' }));
-      // Refresh the calibration submissions list
-      // If the POST returned the created submission, append it locally to avoid calling a potentially missing endpoint.
-      if (addParticipantResponse.data) {
-        try {
-          const raw = addParticipantResponse.data;
-          // Debug log raw response shape for troubleshooting
-          // eslint-disable-next-line no-console
-          console.log("[DEBUG] addParticipantResponse.raw:", raw);
-
-          const participantName =
-            raw?.participant?.user?.name ||
-            raw?.participant?.user?.fullName ||
-            raw?.participant?.user?.username ||
-            raw?.participant?.name ||
-            raw?.participant_name ||
-            raw?.username ||
-            raw?.name ||
-            raw?.fullName ||
-            raw?.user?.username ||
-            raw?.user?.name ||
-            submittedUsername.current ||
-            "Unknown";
-
-          const normalized = {
-            id: raw?.response_map?.id ?? raw?.id ?? raw?.participant?.id ?? Math.random(),
-            participant_name: participantName,
-            review_status: raw?.response_map?.review_status ?? raw?.review_status ?? "not_started",
-            submitted_content: {
-              hyperlinks: raw?.team?.hyperlinks || raw?.submitted_content?.hyperlinks || [],
-              files: raw?.submitted_content?.files || []
-            },
-          };
-          setCalibrationSubmissions((prev) => {
-            const exists = prev.some((p) =>
-              (normalized.id && p.id === normalized.id) ||
-              p.participant_name === normalized.participant_name
-            );
-            if (exists) {
-              return prev;
-            }
-            return [normalized, ...prev];
-          });
-        } catch (e) {
-          // ignore and fall back to GET below
-        }
-      } else if (id) {
-        // Fallback: attempt to refresh from server. If your backend uses a different endpoint,
-        // replace this URL with the correct one or remove the fallback.
-        sendCalibrationSubmissionsRequest({
-          url: `/assignments/${id}/calibration_response_maps`,
-          method: HttpMethod.GET,
-        });
-      }
-      // clear local search
-      setUsernameSearch('');
+    if (!addParticipantResponse || addParticipantResponse.status < 200 || addParticipantResponse.status >= 300) {
+      return;
     }
+    if (!id) return;
+
+    const pending = pendingCalibrationAddForAssignmentIdRef.current;
+    const urlAid = parseAssignmentIdFromCalibrationAddRequest(addParticipantResponse);
+    const bodyAid = reviewedObjectIdFromAddBody(addParticipantResponse.data);
+
+    const userInitiatedThisAssignment = pending === String(id);
+
+    if (!userInitiatedThisAssignment) {
+      return;
+    }
+    if (urlAid != null && String(urlAid) !== String(id)) {
+      return;
+    }
+    if (bodyAid != null && bodyAid !== String(id)) {
+      return;
+    }
+
+    pendingCalibrationAddForAssignmentIdRef.current = null;
+
+    const merged = calibrationTableRowFromAddBody(
+      addParticipantResponse.data,
+      lastCalibrationUsernameRef.current
+    );
+    if (merged) {
+      setCalibrationSubmissions((prev) => {
+        if (prev.some((p) => String(p.id) === String(merged.id))) {
+          return prev;
+        }
+        return [merged, ...prev];
+      });
+    }
+
+    dispatch(alertActions.showAlert({ variant: 'success', message: 'Calibration participant added successfully' }));
+    sendCalibrationSubmissionsRequest({
+      url: `/assignments/${id}/calibration_response_maps`,
+      method: HttpMethod.GET,
+    });
+    setUsernameSearch('');
   }, [addParticipantResponse, dispatch, id, sendCalibrationSubmissionsRequest]);
 
   useEffect(() => {
     if (addParticipantError) {
+      pendingCalibrationAddForAssignmentIdRef.current = null;
       dispatch(alertActions.showAlert({ variant: 'danger', message: addParticipantError }));
     }
   }, [addParticipantError, dispatch]);
@@ -1170,17 +1215,34 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           },
                           {
                             cell: ({ row }) => {
+                              const calLink = `/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`;
+                              const linkStyle = { color: '#986633', textDecoration: 'none' } as const;
                               if (row.original.review_status === "not_started") {
-                                return <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Begin</a>;
+                                return <Link style={linkStyle} to={calLink}>Begin</Link>;
                               } else {
                                 return <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>View</a>
+                                  <Link style={linkStyle} to={calLink}>View</Link>
                                   |
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Edit</a>
+                                  <Link style={linkStyle} to={calLink}>Edit</Link>
                                 </div>;
                               }
                             },
-                            accessorKey: "action", header: "Action", enableSorting: false, enableColumnFilter: false
+                            accessorKey: "action", header: "Review", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            cell: ({ row }) => {
+                              const reportLink = `/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`;
+                              const linkStyle = { color: '#986633', textDecoration: 'none' } as const;
+                              return (
+                                <Link style={linkStyle} to={reportLink}>
+                                  View review report
+                                </Link>
+                              );
+                            },
+                            accessorKey: "calibration_report",
+                            header: "Report",
+                            enableSorting: false,
+                            enableColumnFilter: false
                           },
                           {
                             cell: ({ row }) => <>

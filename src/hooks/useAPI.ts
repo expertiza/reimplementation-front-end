@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { getAuthToken } from "../utils/auth";
 
 /**
@@ -17,6 +17,8 @@ const useAPI = () => {
   const [error, setError] = useState<string | null>("");
   const [errorStatus, setErrorStatus] = useState<string | null>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  /** Ignore axios callbacks from superseded requests (e.g. overlapping GETs). */
+  const requestGenerationRef = useRef(0);
 
   // Learn about Axios Request Config at https://github.com/axios/axios#request-config
   const sendRequest = useCallback((requestConfig: AxiosRequestConfig & { transformRequest?: (data: any) => any }) => {
@@ -35,15 +37,17 @@ const useAPI = () => {
       delete requestConfig.transformRequest;
     }
 
+    const generation = ++requestGenerationRef.current;
     setIsLoading(true);
     setError("");
 
     axios(requestConfig)
       .then((response) => {
+        if (generation !== requestGenerationRef.current) return;
         setData(response);
-        setIsLoading(false);
       })
       .catch((err) => {
+        if (generation !== requestGenerationRef.current) return;
         let errorMessage = "";
 
         if (err.response) {
@@ -62,12 +66,14 @@ const useAPI = () => {
           console.log("Error", err.message);
           errorMessage = err.message || "Something went wrong!";
         }
-        const { status } = err.response
+        const status = err.response?.status;
         if (errorMessage) setError(errorMessage);
         if (status) setErrorStatus(status.toString())
       })
       .finally(() => {
-        setIsLoading(false);
+        if (generation === requestGenerationRef.current) {
+          setIsLoading(false);
+        }
       });
   }, []);
 

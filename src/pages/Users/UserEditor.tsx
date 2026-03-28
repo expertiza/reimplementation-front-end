@@ -26,6 +26,7 @@ const initialValues: IUserFormValues = {
   role_id: -1,
   institution_id: -1,
   emailPreferences: [],
+  email_on_review_of_review: false,
   date_format_pref: "MM/DD/YYYY",
 };
 
@@ -166,7 +167,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                 <div className="checkbox-contrast">
                   <FormCheckBoxGroup
                     controlId="email-pref"
-                    label="Email preferences"
+                    label="When to send me emails"
                     name="emailPreferences"
                     options={emailOptions}
                   />

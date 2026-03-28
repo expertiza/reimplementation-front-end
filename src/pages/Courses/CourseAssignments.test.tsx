@@ -1,10 +1,17 @@
 import '@testing-library/jest-dom';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { store } from '../../store/store';
 
-// Mock the useAPI hook to return mock assignments
-vi.mock('hooks/useAPI', () => ({
+const { mockNavigate } = vi.hoisted(() => ({
+  mockNavigate: vi.fn(),
+}));
+
+vi.mock('../../hooks/useAPI', () => ({
   default: () => ({
     error: null,
     isLoading: false,
@@ -34,21 +41,22 @@ vi.mock('hooks/useAPI', () => ({
   }),
 }));
 
-const mockNavigate = jest.fn();
-
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/courses', search: '', hash: '' }),
-}));
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({ pathname: '/courses', search: '', hash: '' }),
+  };
+});
 
 import CourseAssignments from './CourseAssignments';
 
 const renderWithRouter = (component: React.ReactNode) => {
   return render(
-    <BrowserRouter>
-      {component}
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </Provider>
   );
 };
 
@@ -70,7 +78,7 @@ describe('CourseAssignments', () => {
   it('renders assignments in the table', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
     const rows = screen.getAllByRole('row');
-    expect(rows.length).toBeGreaterThan(1); // Header + assignment rows
+    expect(rows.length).toBeGreaterThan(1);
     expect(screen.getByText('Assignment 1')).toBeInTheDocument();
     expect(screen.getByText('Assignment 2')).toBeInTheDocument();
   });
@@ -88,6 +96,7 @@ describe('CourseAssignments', () => {
     await userEvent.click(deleteButtons[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith('/assignments/edit/1', { state: { from: '/courses' } });
-    expect(screen.getByText(/delete assignment/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/delete assignment/i).length).toBeGreaterThan(0);
+    consoleSpy.mockRestore();
   });
 });
