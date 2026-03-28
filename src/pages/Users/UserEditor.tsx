@@ -72,8 +72,9 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
   const location = useLocation();
 
   // logged-in user is the parent of the user being created and the institution is the same as the parent's
-  initialValues.parent_id = auth.user.id;
-  initialValues.institution_id = auth.user.institution_id;
+  const sessionUser = auth.user;
+  initialValues.parent_id = sessionUser?.id ?? undefined;
+  initialValues.institution_id = sessionUser?.institution_id ?? -1;
 
   // Close the modal if the user is updated successfully and navigate to the users page
   useEffect(() => {
@@ -81,12 +82,12 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `User ${userData.name} ${mode}d successfully!`,
+          message: `User ${(userData as { name?: string })?.name ?? ""} ${mode}d successfully!`,
         })
       );
       navigate(location.state?.from ? location.state.from : "/users");
     }
-  }, [dispatch, mode, navigate, userData.name, userResponse, location.state?.from]);
+  }, [dispatch, mode, navigate, userData?.name, userResponse, location.state?.from]);
 
   // Show the error message if the user is not updated successfully
   useEffect(() => {
@@ -103,7 +104,9 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
     }
 
     // to be used to display message when user is created
-    userData.name = values.name;
+    if (userData && typeof userData === "object") {
+      (userData as { name?: string }).name = values.name;
+    }
     sendRequest({
       url: url,
       method: method,
@@ -212,7 +215,7 @@ const UserEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormSelect
                   controlId="user-institution"
                   name="institution_id"
-                  disabled={mode === "update" || auth.user.role !== ROLE.SUPER_ADMIN.valueOf()}
+                  disabled={mode === "update" || sessionUser?.role !== ROLE.SUPER_ADMIN.valueOf()}
                   options={safeInstitutions}
                   inputGroupPrepend={
                     <InputGroup.Text id="user-inst-prep">Institution</InputGroup.Text>

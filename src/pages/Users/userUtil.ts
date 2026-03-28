@@ -70,15 +70,19 @@ export const transformUserRequest = (values: IUserFormValues) => {
 
 export const transformUserResponse = (userResponse: string) => {
   const user: IUserResponse = JSON.parse(userResponse);
-  const parent_id = user.parent.id ? user.parent.id : null;
-  const institution_id = user.institution.id ? user.institution.id : -1;
+  const parent_id = user.parent?.id != null ? user.parent.id : null;
+  const institution_id = user.institution?.id != null ? user.institution.id : -1;
+  const full = user.full_name ?? "";
+  const nameParts = full.split(",");
+  const lastName = nameParts[0]?.trim() ?? "";
+  const firstName = nameParts.length > 1 ? nameParts[1].trim() : full.trim();
   const userValues: IUserFormValues = {
     id: user.id,
     name: user.name,
     email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
-    role_id: user.role.id,
+    firstName,
+    lastName,
+    role_id: user.role?.id ?? -1,
     parent_id: parent_id,
     institution_id: institution_id,
     emailPreferences: [],
