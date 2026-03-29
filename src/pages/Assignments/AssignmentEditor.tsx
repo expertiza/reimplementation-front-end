@@ -23,6 +23,8 @@ import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
 import TopicsTab from "./tabs/TopicsTab";
+import axiosClient from "../../utils/axios_client";
+import { IFormOption } from "../../components/Form/interfaces";
 
 interface TopicSettings {
   allowTopicSuggestions: boolean;
@@ -50,13 +52,44 @@ interface TopicData {
   partnerAd?: any;
   createdAt?: string;
   updatedAt?: string;
+  rubricAssignments: TopicRubricAssignment[];
+}
+
+interface TopicRubricAssignment {
+  usedInRound: number | null;
+  questionnaireId: number | null;
+  questionnaireName?: string | null;
+  effectiveQuestionnaireId: number | null;
+  effectiveQuestionnaireName?: string | null;
+  hasSpecificRubric: boolean;
+}
+
+interface AvailableRubric {
+  id: number;
+  name: string;
+}
+
+interface DefaultRubric {
+  used_in_round: number | null;
+  questionnaire_id: number | null;
+  questionnaire_name?: string | null;
 }
 
 interface TopicRubricPayload {
+  vary_by_topic: boolean;
+  vary_by_round: boolean;
+  rounds: Array<number | null>;
+  available_rubrics: AvailableRubric[];
+  default_rubrics: DefaultRubric[];
   topics: Array<{
     id: number;
     rubric_assignments: Array<{
+      used_in_round: number | null;
+      questionnaire_id: number | null;
+      questionnaire_name?: string | null;
       effective_questionnaire_name?: string | null;
+      effective_questionnaire_id: number | null;
+      has_specific_rubric: boolean;
     }>;
   }>;
 }
@@ -118,31 +151,95 @@ const buildTopicData = (topics: any[], topicRubricPayload: TopicRubricPayload | 
   const rubricTopics = new Map(
     (topicRubricPayload?.topics || []).map((topic) => [
       Number(topic.id),
-      topic.rubric_assignments
-        .map((assignment) => assignment.effective_questionnaire_name)
-        .filter(Boolean)
-        .join(", "),
+      topic.rubric_assignments.map((assignment) => ({
+        usedInRound: assignment.used_in_round ?? null,
+        questionnaireId: assignment.questionnaire_id ?? null,
+        questionnaireName: assignment.questionnaire_name ?? null,
+        effectiveQuestionnaireId: assignment.effective_questionnaire_id ?? null,
+        effectiveQuestionnaireName: assignment.effective_questionnaire_name ?? null,
+        hasSpecificRubric: assignment.has_specific_rubric ?? false,
+      })),
     ])
   );
 
-  return (topics || []).map((topic: any) => ({
-    id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
-    databaseId: Number(topic.id),
-    name: topic.topic_name,
-    url: topic.link,
-    description: topic.description,
-    category: topic.category,
-    assignedTeams: topic.confirmed_teams || [],
-    waitlistedTeams: topic.waitlisted_teams || [],
-    questionnaire: rubricTopics.get(Number(topic.id)) || "Default rubric",
-    numSlots: topic.max_choosers,
-    availableSlots: topic.available_slots || 0,
-    bookmarks: [],
-    partnerAd: undefined,
-    createdAt: topic.created_at,
-    updatedAt: topic.updated_at,
-  }));
+  return (topics || []).map((topic: any) => {
+    const rubricAssignments = rubricTopics.get(Number(topic.id)) || [];
+    const questionnaireSummary = rubricAssignments
+      .map((assignment) => assignment.effectiveQuestionnaireName)
+      .filter(Boolean)
+      .join(", ");
+
+    return {
+      id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
+      databaseId: Number(topic.id),
+      name: topic.topic_name,
+      url: topic.link,
+      description: topic.description,
+      category: topic.category,
+      assignedTeams: topic.confirmed_teams || [],
+      waitlistedTeams: topic.waitlisted_teams || [],
+      questionnaire: questionnaireSummary || "Default rubric",
+      numSlots: topic.max_choosers,
+      availableSlots: topic.available_slots || 0,
+      bookmarks: [],
+      partnerAd: undefined,
+      createdAt: topic.created_at,
+      updatedAt: topic.updated_at,
+      rubricAssignments,
+    };
+  });
 };
+
+const upsertTopicRubricAssignment = (
+  topics: TopicData[],
+  topicDatabaseId: number,
+  usedInRound: number | null,
+  questionnaireId: number | null,
+  questionnaireName?: string | null
+) => topics.map((topic) => {
+  if (topic.databaseId !== topicDatabaseId) return topic;
+
+  const assignmentIndex = topic.rubricAssignments.findIndex(
+    (assignment) => assignment.usedInRound === usedInRound
+  );
+
+  const nextAssignment: TopicRubricAssignment = {
+    usedInRound,
+    questionnaireId,
+    questionnaireName: questionnaireName ?? null,
+    effectiveQuestionnaireId: questionnaireId,
+    effectiveQuestionnaireName: questionnaireName ?? null,
+    hasSpecificRubric: Boolean(questionnaireId),
+  };
+
+  const rubricAssignments =
+    assignmentIndex >= 0
+      ? topic.rubricAssignments.map((assignment, index) => (index === assignmentIndex ? { ...assignment, ...nextAssignment } : assignment))
+      : [...topic.rubricAssignments, nextAssignment];
+
+  const questionnaire = rubricAssignments
+    .map((assignment) => assignment.effectiveQuestionnaireName)
+    .filter(Boolean)
+    .join(", ");
+
+  return {
+    ...topic,
+    questionnaire: questionnaire || "Default rubric",
+    rubricAssignments,
+  };
+});
+
+const buildTopicRubricMappings = (
+  topics: TopicData[],
+  activeRounds: Array<number | null>
+) => topics.flatMap((topic) => activeRounds.map((round) => {
+  const assignment = topic.rubricAssignments.find((entry) => entry.usedInRound === round);
+  return {
+    topic_id: topic.databaseId,
+    questionnaire_id: assignment?.questionnaireId ?? null,
+    used_in_round: round,
+  };
+}));
 
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
@@ -196,6 +293,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentName, setAssignmentName] = useState("");
   const [rawTopics, setRawTopics] = useState<any[]>([]);
   const [topicRubricPayload, setTopicRubricPayload] = useState<TopicRubricPayload | null>(null);
+  const [topicRubricSaving, setTopicRubricSaving] = useState(false);
 
   const refreshTopics = useCallback(() => {
     if (!id) return;
@@ -549,7 +647,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   });
 
   // Build dropdown options from the questionnaires
-  const questionnaireOptions = (assignmentData.questionnaires || []).map((q: any) => ({
+  const questionnaireOptions: IFormOption[] = (assignmentData.questionnaires || []).map((q: any) => ({
     label: q.name,
     value: q.id,
   }));
@@ -587,6 +685,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     const [topicsData, setTopicsData] = useState<TopicData[]>([]);
     const [topicsLoading, setTopicsLoading] = useState(false);
     const [topicsError, setTopicsError] = useState<string | null>(null);
+    const availableRubrics = topicRubricPayload?.available_rubrics || [];
+    const persistedDefaultRubrics = topicRubricPayload?.default_rubrics || [];
 
 
 
@@ -606,6 +706,70 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         enableReinitialize={true}
       >
         {(formik) => {
+          const activeRubricRounds = formik.values.review_rubric_varies_by_round
+            ? Array.from(
+                { length: Math.max(Number(formik.values.number_of_review_rounds || topicRubricPayload?.rounds?.length || 1), 1) },
+                (_, index) => index + 1
+              )
+            : [null];
+
+          const getQuestionnaireNameById = (questionnaireId: number | null | undefined) => {
+            if (!questionnaireId) return null;
+
+            const availableRubric = availableRubrics.find((rubric) => Number(rubric.id) === Number(questionnaireId));
+            if (availableRubric) return availableRubric.name;
+
+            const assignmentQuestionnaire = questionnaireOptions.find((questionnaire) => Number(questionnaire.value) === Number(questionnaireId));
+            return assignmentQuestionnaire?.label ?? null;
+          };
+
+          const getDefaultRubricLabel = (round: number | null) => {
+            const fieldKey = round ? `questionnaire_round_${round}` : "questionnaire_round_0";
+            const selectedQuestionnaireId = formik.values[fieldKey] ?? (round === null ? formik.values.questionnaire_round_1 : null);
+            const selectedQuestionnaireName = getQuestionnaireNameById(selectedQuestionnaireId);
+            if (selectedQuestionnaireName) return selectedQuestionnaireName;
+
+            const persistedDefault = persistedDefaultRubrics.find((rubric) => rubric.used_in_round === round);
+            return persistedDefault?.questionnaire_name || "No default rubric";
+          };
+
+          const handleTopicRubricChange = async (topicDatabaseId: number, usedInRound: number | null, questionnaireId: number | null) => {
+            if (!id) return;
+
+            const questionnaireName = getQuestionnaireNameById(questionnaireId);
+            const nextTopicsData = upsertTopicRubricAssignment(
+              topicsData,
+              topicDatabaseId,
+              usedInRound,
+              questionnaireId,
+              questionnaireName
+            );
+
+            setTopicsData(nextTopicsData);
+            setTopicRubricSaving(true);
+
+            try {
+              await axiosClient.patch(`/assignments/${id}/topics/rubrics`, {
+                assignment: {
+                  vary_by_topic: formik.values.review_rubric_varies_by_topic ?? false,
+                  vary_by_round: formik.values.review_rubric_varies_by_round ?? false,
+                },
+                rubric_mappings: buildTopicRubricMappings(nextTopicsData, activeRubricRounds),
+              });
+              refreshTopics();
+            } catch (error) {
+              dispatch(
+                alertActions.showAlert({
+                  variant: "danger",
+                  message: "Unable to save topic-specific rubrics. Please try again.",
+                })
+              );
+              refreshTopics();
+            } finally {
+              setTopicRubricSaving(false);
+            }
+          };
+
         return (
           <Form>
             <Tabs defaultActiveKey="general" id="assignment-tabs">
@@ -674,15 +838,21 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             assignmentId={id!}
             topicSettings={topicSettings}
             topicsData={topicsData}
-            topicsLoading={topicsLoading}
+            topicsLoading={topicsLoading || topicRubricSaving}
             topicsError={topicsError}
+            availableRubrics={availableRubrics}
+            varyByTopic={formik.values.review_rubric_varies_by_topic ?? false}
+            varyByRound={formik.values.review_rubric_varies_by_round ?? false}
+            rubricRounds={activeRubricRounds}
+            getDefaultRubricLabel={getDefaultRubricLabel}
+            onTopicRubricChange={handleTopicRubricChange}
             onTopicSettingChange={handleTopicSettingChange}
             onDropTeam={handleDropTeam}
             onDeleteTopic={handleDeleteTopic}
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
-            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
+            onTopicsChanged={refreshTopics}
                 />
               </Tab>
 

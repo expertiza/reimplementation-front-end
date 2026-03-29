@@ -54,6 +54,19 @@ interface TopicData {
   partnerAd?: PartnerAd; // Optional partner advertisement details
   createdAt?: string;
   updatedAt?: string;
+  rubricAssignments: Array<{
+    usedInRound: number | null;
+    questionnaireId: number | null;
+    questionnaireName?: string | null;
+    effectiveQuestionnaireId: number | null;
+    effectiveQuestionnaireName?: string | null;
+    hasSpecificRubric: boolean;
+  }>;
+}
+
+interface RubricOption {
+  id: number;
+  name: string;
 }
 
 // Same as before
@@ -74,6 +87,12 @@ interface TopicsTabProps {
   topicsData: TopicData[]; // Ensure the data passed matches the updated TopicData interface
   topicsLoading?: boolean;
   topicsError?: string | null;
+  availableRubrics: RubricOption[];
+  varyByTopic: boolean;
+  varyByRound: boolean;
+  rubricRounds: Array<number | null>;
+  getDefaultRubricLabel: (round: number | null) => string;
+  onTopicRubricChange: (topicDatabaseId: number, usedInRound: number | null, questionnaireId: number | null) => void;
   onTopicSettingChange: (setting: string, value: boolean) => void;
   // Add handlers for actions like drop team, delete topic, edit topic, create bookmark etc.
   onDropTeam: (topicId: string, teamId: string) => void;
@@ -94,6 +113,12 @@ const TopicsTab = ({
   topicsData,
   topicsLoading = false,
   topicsError = null,
+  availableRubrics,
+  varyByTopic,
+  varyByRound,
+  rubricRounds,
+  getDefaultRubricLabel,
+  onTopicRubricChange,
   onTopicSettingChange,
   onDropTeam,
   onDeleteTopic,
@@ -307,9 +332,37 @@ const TopicsTab = ({
     window.history.back();
   };
 
-  // Check if questionnaire varies across topics
-  const questionnaireVaries = topicsData.length > 0 &&
-    topicsData.some(t => t.questionnaire !== topicsData[0].questionnaire);
+  const rubricColumns = varyByTopic
+    ? rubricRounds.map((round) => ({
+        id: round === null ? "topic-rubric" : `topic-rubric-${round}`,
+        header: round === null ? "Review Rubric" : `Round ${round} Rubric`,
+        cell: ({ row }: any) => {
+          const topic = topicsData.find((entry) => entry.id === row.original.id);
+          if (!topic) return null;
+
+          const rubricAssignment = topic.rubricAssignments.find((assignment) => assignment.usedInRound === round);
+          const selectedQuestionnaireId = rubricAssignment?.questionnaireId ?? "";
+
+          return (
+            <Form.Select
+              size="sm"
+              value={selectedQuestionnaireId}
+              onChange={(event) => {
+                const nextQuestionnaireId = event.target.value ? Number(event.target.value) : null;
+                onTopicRubricChange(topic.databaseId, round, nextQuestionnaireId);
+              }}
+            >
+              <option value="">Default: {getDefaultRubricLabel(round)}</option>
+              {availableRubrics.map((rubric) => (
+                <option key={rubric.id} value={rubric.id}>
+                  {rubric.name}
+                </option>
+              ))}
+            </Form.Select>
+          );
+        },
+      }))
+    : [];
 
   // --- Render Helper Functions ---
   // removed: renderTeamMembers (moved to TopicsTable renderDetails inline rendering)
@@ -408,15 +461,7 @@ const TopicsTab = ({
           onToggleAll={handleSelectAll}
           onToggleRow={handleSelectTopic}
           extraColumns={[
-            ...(questionnaireVaries //displays the questionnaire column only if it varies across the topics
-              ? [
-                  {
-                    id: "questionnaire",
-                    header: "Questionnaire",
-                    cell: ({ row }: any) => <span>{(topicsData.find(t => t.id === row.original.id)?.questionnaire) || "--Default rubric--"}</span>,
-                  },
-                ]
-              : []),
+            ...rubricColumns,
             {
               id: "numSlots",
               header: "Num. of Slots",
