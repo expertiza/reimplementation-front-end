@@ -1750,11 +1750,13 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
           refreshAssignmentTeams();
         }}
         modelClass="Team"
+        contextParams={{ assignment_id: assignmentId }}
       />
       <ExportModal
         show={showExportTeamsModal}
         onHide={() => setShowExportTeamsModal(false)}
         modelClass="Team"
+        contextParams={{ assignment_id: assignmentId }}
       />
 
       {/* Other Modals */}

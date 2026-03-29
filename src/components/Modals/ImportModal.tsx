@@ -9,8 +9,6 @@ import {
   Col,
   OverlayTrigger,
   Tooltip,
-  Container,
-  CloseButton,
 } from "react-bootstrap";
 
 import useAPI from "../../hooks/useAPI";
@@ -95,12 +93,13 @@ type ImportModalProps = {
   show: boolean;       // Parent-controlled visible flag
   onHide: () => void;  // Callback to parent when modal should close
   modelClass: string;  // "User", "Team", etc.
+  contextParams?: Record<string, string | number | undefined>;
 };
 
 /* ============================================================================
  *  ImportModal Component
  * ============================================================================ */
-const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) => {
+const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, contextParams }) => {
 
   /**
    * Force-close handler — ALWAYS closes modal instantly.
@@ -119,7 +118,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   const [duplicateActions, setDuplicateActions] = useState<string[]>([]);
 
   /* CSV parsing & selection state */
-  const [csvFirstLine, setCsvFirstLine] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [availableFields, setAvailableFields] = useState<string[]>([]);
   const [csvData, setCsvData] = useState<string[][]>([]);  // All CSV rows for preview
@@ -142,11 +140,19 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
   const fetchConfig = useCallback(async () => {
     try {
-      await fetchImports({ url: `/import/${modelClass}` });
+      const params = new URLSearchParams();
+      Object.entries(contextParams || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          params.append(key, String(value));
+        }
+      });
+
+      const url = params.toString() ? `/import/${modelClass}?${params.toString()}` : `/import/${modelClass}`;
+      await fetchImports({ url });
     } catch (err) {
       console.error("Error fetching import config:", err);
     }
-  }, [fetchImports, modelClass]);
+  }, [contextParams, fetchImports, modelClass]);
 
   useEffect(() => {
     if (show) {
@@ -218,13 +224,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       const parsedData = dataRows.map(line => line.split(","));
       setCsvData(parsedData);
 
-      if (lines.length > 1) {
-        setCsvFirstLine(lines[1].split(","));
-      } else {
-        setCsvFirstLine(headers);
-      }
-      console.log("Headers:", csvHeaders);
-      console.log("Data rows:", csvData);
     }
   };
 
@@ -235,10 +234,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
     copy[colIndex] = event.target.value;
     setSelectedFields(copy);
   };
-
-  /* Ensure all selected columns match mandatory fields */
-  const mandatoryFieldsIncluded = () =>
-    mandatoryFields.every((f) => selectedFields.includes(f));
 
   /* ---------------------------------------------------------
    * Submit import to backend
@@ -275,11 +270,14 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       if (!useHeader) {
         formData.append("ordered_fields", JSON.stringify(selectedFields));
       }
-
-      let url = `/import/${modelClass}`;
+      Object.entries(contextParams || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, String(value));
+        }
+      });
 
       await sendImport({
-        url,
+        url: `/import/${modelClass}`,
         method: HttpMethod.POST,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
@@ -291,18 +289,21 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   };
 
   useEffect(() => {
-    if(sendImportResponse) {
+    if (sendImportResponse) {
       setStatus(sendImportResponse.data.message);
 
-      if (!importError){
+      if (!importError) {
         setTimeout(forceClose, 1500);
       }
     } else if (importError) {
       setStatus(importError);
     }
-  }, [sendImportResponse, importError]);
+  }, [forceClose, importError, sendImportResponse]);
 
-  const previewHeaders = useMemo(() => (useHeader ? csvHeaders : selectedFields), [useHeader, csvHeaders, selectedFields]);
+  const previewHeaders = useMemo(
+    () => (useHeader ? csvHeaders : selectedFields),
+    [csvHeaders, selectedFields, useHeader]
+  );
 
   const previewData = useMemo(() => {
     return csvData.map((row) => {
@@ -314,6 +315,22 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       return obj;
     });
   }, [csvData, previewHeaders]);
+
+  const teamRowsWithoutParticipants = useMemo(() => {
+    if (modelClass !== "Team") return 0;
+
+    return previewData.filter((row) => {
+      const teamName = String(row.name ?? "").trim();
+      if (!teamName) return false;
+
+      const participantValues = Object.entries(row)
+        .filter(([key]) => key.startsWith("participant_"))
+        .map(([, value]) => String(value ?? "").trim())
+        .filter(Boolean);
+
+      return participantValues.length === 0;
+    }).length;
+  }, [modelClass, previewData]);
 
   const getAvailableOptions = useCallback((colIndex: number) => {
     const selected = new Set(selectedFields.filter((_, idx) => idx !== colIndex));
@@ -574,6 +591,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         <div style={{ marginBottom: 12 }}>
           <strong>Preview of data to be imported:</strong>
         </div>
+        {teamRowsWithoutParticipants > 0 && (
+          <div style={{ ...TABLE_TEXT, marginBottom: 12, color: "#8b5e3c" }}>
+            Note: {teamRowsWithoutParticipants} team{teamRowsWithoutParticipants === 1 ? "" : "s"} will be imported without participants.
+          </div>
+        )}
 
         <div
           style={{
