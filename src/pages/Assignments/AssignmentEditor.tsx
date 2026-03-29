@@ -52,6 +52,15 @@ interface TopicData {
   updatedAt?: string;
 }
 
+interface TopicRubricPayload {
+  topics: Array<{
+    id: number;
+    rubric_assignments: Array<{
+      effective_questionnaire_name?: string | null;
+    }>;
+  }>;
+}
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -105,6 +114,36 @@ const validationSchema = Yup.object({
   // Add other assignment-specific validation rules
 });
 
+const buildTopicData = (topics: any[], topicRubricPayload: TopicRubricPayload | null): TopicData[] => {
+  const rubricTopics = new Map(
+    (topicRubricPayload?.topics || []).map((topic) => [
+      Number(topic.id),
+      topic.rubric_assignments
+        .map((assignment) => assignment.effective_questionnaire_name)
+        .filter(Boolean)
+        .join(", "),
+    ])
+  );
+
+  return (topics || []).map((topic: any) => ({
+    id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
+    databaseId: Number(topic.id),
+    name: topic.topic_name,
+    url: topic.link,
+    description: topic.description,
+    category: topic.category,
+    assignedTeams: topic.confirmed_teams || [],
+    waitlistedTeams: topic.waitlisted_teams || [],
+    questionnaire: rubricTopics.get(Number(topic.id)) || "Default rubric",
+    numSlots: topic.max_choosers,
+    availableSlots: topic.available_slots || 0,
+    bookmarks: [],
+    partnerAd: undefined,
+    createdAt: topic.created_at,
+    updatedAt: topic.updated_at,
+  }));
+};
+
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
@@ -113,6 +152,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
 
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
+  const { data: topicRubricsResponse, error: topicRubricsError, sendRequest: fetchTopicRubrics } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
   const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
   const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
@@ -154,6 +194,17 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [assignmentName, setAssignmentName] = useState("");
+  const [rawTopics, setRawTopics] = useState<any[]>([]);
+  const [topicRubricPayload, setTopicRubricPayload] = useState<TopicRubricPayload | null>(null);
+
+  const refreshTopics = useCallback(() => {
+    if (!id) return;
+
+    setTopicsLoading(true);
+    setTopicsError(null);
+    fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+    fetchTopicRubrics({ url: `/assignments/${id}/topics/rubrics` });
+  }, [id, fetchTopics, fetchTopicRubrics]);
 
 
    useEffect(() => {
@@ -187,12 +238,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (deleteResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
-      // Refresh topics data
-      if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
-      }
+      refreshTopics();
     }
-  }, [deleteResponse, dispatch, id, fetchTopics]);
+  }, [deleteResponse, dispatch, refreshTopics]);
 
   useEffect(() => {
     if (deleteError) {
@@ -203,12 +251,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (createResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
-      // Refresh topics data
-      if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
-      }
+      refreshTopics();
     }
-  }, [createResponse, dispatch, id, fetchTopics]);
+  }, [createResponse, dispatch, refreshTopics]);
 
    useEffect(() => {
     if (createError) {
@@ -219,12 +264,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (updateTopicResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
-      // Refresh topics data
-      if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
-      }
+      refreshTopics();
     }
-  }, [updateTopicResponse, dispatch, id, fetchTopics]);
+  }, [updateTopicResponse, dispatch, refreshTopics]);
 
   useEffect(() => {
     if (updateTopicError) {
@@ -235,11 +277,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (dropTeamResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
-      if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
-      }
+      refreshTopics();
     }
-  }, [dropTeamResponse, dispatch, id, fetchTopics]);
+  }, [dropTeamResponse, dispatch, refreshTopics]);
 
   useEffect(() => {
     if (dropTeamError) {
@@ -249,37 +289,26 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Load topics for this assignment
     useEffect(() => {
-      if (id) {
-        setTopicsLoading(true);
-        setTopicsError(null);
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
-      }
-    }, [id, fetchTopics]);
+      refreshTopics();
+    }, [refreshTopics]);
 
      // Process topics response
       useEffect(() => {
         if (topicsResponse?.data) {
-          const transformedTopics: TopicData[] = (topicsResponse.data || []).map((topic: any) => ({
-            id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
-            databaseId: Number(topic.id),
-            name: topic.topic_name,
-            url: topic.link,
-            description: topic.description,
-            category: topic.category,
-            assignedTeams: topic.confirmed_teams || [],
-            waitlistedTeams: topic.waitlisted_teams || [],
-            questionnaire: "Default rubric",
-            numSlots: topic.max_choosers,
-            availableSlots: topic.available_slots || 0,
-            bookmarks: [],
-            partnerAd: undefined,
-            createdAt: topic.created_at,
-            updatedAt: topic.updated_at,
-          }));
-          setTopicsData(transformedTopics);
+          setRawTopics(topicsResponse.data || []);
           setTopicsLoading(false);
         }
       }, [topicsResponse]);
+
+      useEffect(() => {
+        if (topicRubricsResponse?.data) {
+          setTopicRubricPayload(topicRubricsResponse.data as TopicRubricPayload);
+        }
+      }, [topicRubricsResponse]);
+
+      useEffect(() => {
+        setTopicsData(buildTopicData(rawTopics, topicRubricPayload));
+      }, [rawTopics, topicRubricPayload]);
     
       // Handle topics API errors
       useEffect(() => {
@@ -288,6 +317,12 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           setTopicsLoading(false);
         }
       }, [topicsApiError]);
+
+      useEffect(() => {
+        if (topicRubricsError) {
+          dispatch(alertActions.showAlert({ variant: "danger", message: topicRubricsError }));
+        }
+      }, [topicRubricsError, dispatch]);
      const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
         setTopicSettings((prev) => ({ ...prev, [setting]: value }));
         
