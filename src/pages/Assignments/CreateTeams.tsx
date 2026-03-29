@@ -1319,8 +1319,8 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const ctxName = contextName || loader.contextName || 'Program';
 
   // Initial data
-  const baseTeams = loader.initialTeams || sampleTeams;
-  const baseUnassigned = loader.initialUnassigned || sampleUnassigned;
+  const baseTeams = loader.initialTeams || [];
+  const baseUnassigned = loader.initialUnassigned || [];
 
   // Compute initial unassigned list excluding already-assigned members
   const initialUnassigned = useMemo(() => {
@@ -1355,6 +1355,13 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const [copyTarget, setCopyTarget] = useState('');
   const [copySource, setCopySource] = useState('');
 
+  const mapUserToParticipant = useCallback((user: any, teamName = ''): Participant => ({
+    id: user.id,
+    username: user.name || user.username || user.full_name || user.fullName || `User ${user.id}`,
+    fullName: user.full_name || user.fullName || user.name || user.username,
+    teamName,
+  }), []);
+
   const refreshAssignmentTeams = useCallback(async () => {
     if (ctxType !== 'assignment' || !assignmentId) return;
 
@@ -1365,16 +1372,14 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       ]);
 
       const fetchedTeams: Team[] = (Array.isArray(teamsResponse.data) ? teamsResponse.data : [])
-        .filter((team: any) => String(team.assignment_id) === assignmentId)
+        .filter((team: any) =>
+          String(team.assignment_id ?? team.parent_id) === assignmentId &&
+          ['AssignmentTeam', 'MentoredTeam'].includes(team.type),
+        )
         .map((team: any) => ({
           id: team.id,
           name: team.name,
-          members: (team.users || []).map((user: any) => ({
-            id: user.id,
-            username: user.name || user.full_name || `User ${user.id}`,
-            fullName: user.full_name || user.name,
-            teamName: team.name,
-          })),
+          members: (team.users || []).map((user: any) => mapUserToParticipant(user, team.name)),
         }));
 
       const assignedIds = new Set(
@@ -1387,8 +1392,8 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       )
         .map((participant: any) => ({
           id: participant.user?.id ?? participant.id,
-          username: participant.user?.name || participant.user?.full_name || `User ${participant.user?.id ?? participant.id}`,
-          fullName: participant.user?.full_name || participant.user?.name,
+          username: participant.user?.name || participant.user?.username || participant.user?.fullName || participant.user?.full_name || `User ${participant.user?.id ?? participant.id}`,
+          fullName: participant.user?.fullName || participant.user?.full_name || participant.user?.name,
           teamName: '',
         }))
         .filter((participant: Participant) => !assignedIds.has(String(participant.id)));
@@ -1399,7 +1404,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     } catch (error) {
       console.error('Error loading assignment teams:', error);
     }
-  }, [assignmentId, ctxType]);
+  }, [assignmentId, ctxType, mapUserToParticipant]);
 
   useEffect(() => {
     refreshAssignmentTeams();
@@ -1448,38 +1453,36 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     setShowAddModal(true);
   }, []);
 
-  const confirmAddMember = useCallback(() => {
+  const confirmAddMember = useCallback(async () => {
     if (!selectedTeam || !selectedParticipantId) return;
-    const member = unassigned.find((u) => String(u.id) === selectedParticipantId);
-    if (!member) return;
-
-    setUnassigned((prev) => prev.filter((u) => String(u.id) !== selectedParticipantId));
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === selectedTeam.id
-          ? { ...t, members: [...t.members, { ...member, teamName: t.name }] }
-          : t,
-      ),
-    );
-    setShowAddModal(false);
-  }, [selectedParticipantId, selectedTeam, unassigned]);
+    try {
+      await axiosClient.post(`/teams/${selectedTeam.id}/members`, {
+        team_participant: { user_id: selectedParticipantId },
+      });
+      setShowAddModal(false);
+      setSelectedParticipantId('');
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error adding member to team:', error);
+    }
+  }, [refreshAssignmentTeams, selectedParticipantId, selectedTeam]);
 
   const removeMemberFromTeam = useCallback(
-    (teamId: Team['id'], memberId: Participant['id']) => {
+    async (teamId: Team['id'], memberId: Participant['id']) => {
       const team = teams.find((t) => t.id === teamId);
       if (!team) return;
 
       const member = team.members.find((m) => m.id === memberId);
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t,
-        ),
-      );
-      if (member) {
-        setUnassigned((prev) => [...prev, { ...member, teamName: '' }]);
+      if (!member) return;
+
+      try {
+        await axiosClient.delete(`/teams/${teamId}/members/${member.id}`);
+        refreshAssignmentTeams();
+      } catch (error) {
+        console.error('Error removing member from team:', error);
       }
     },
-    [teams],
+    [refreshAssignmentTeams, teams],
   );
 
   const removeMentor = useCallback((teamId: Team['id']) => {
@@ -1498,50 +1501,60 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     setShowEditModal(true);
   }, []);
 
-  const confirmEditTeamName = useCallback(() => {
+  const confirmEditTeamName = useCallback(async () => {
     if (!selectedTeam || !editTeamName.trim()) return;
-    const newName = editTeamName.trim();
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id !== selectedTeam.id
-          ? t
-          : {
-            ...t,
-            name: newName,
-            members: t.members.map((m) => ({ ...m, teamName: newName })),
-          },
-      ),
-    );
-    setShowEditModal(false);
-  }, [editTeamName, selectedTeam]);
+    try {
+      await axiosClient.patch(`/teams/${selectedTeam.id}`, {
+        team: { name: editTeamName.trim() },
+      });
+      setShowEditModal(false);
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error updating team:', error);
+    }
+  }, [editTeamName, refreshAssignmentTeams, selectedTeam]);
 
   const deleteTeam = useCallback(
-    (teamId: Team['id']) => {
-      const team = teams.find((t) => t.id === teamId);
-      setTeams((prev) => prev.filter((t) => t.id !== teamId));
-      if (team) {
-        setUnassigned((prev) => [...prev, ...team.members.map((m) => ({ ...m, teamName: '' }))]);
+    async (teamId: Team['id']) => {
+      try {
+        await axiosClient.delete(`/teams/${teamId}`);
+        refreshAssignmentTeams();
+      } catch (error) {
+        console.error('Error deleting team:', error);
       }
     },
-    [teams],
+    [refreshAssignmentTeams],
   );
 
-  const createTeam = useCallback(() => {
+  const createTeam = useCallback(async () => {
     const name = newTeamName.trim();
     if (!name || teams.some((t) => t.name === name)) return;
-    const id = `t-${Date.now()}`;
-    setTeams((prev) => [...prev, { id, name, members: [] }]);
-    setNewTeamName('');
-    setShowCreateModal(false);
-  }, [newTeamName, teams]);
+    try {
+      await axiosClient.post('/teams', {
+        team: {
+          name,
+          type: 'AssignmentTeam',
+          parent_id: assignmentId,
+        },
+      });
+      setNewTeamName('');
+      setShowCreateModal(false);
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error creating team:', error);
+    }
+  }, [assignmentId, newTeamName, refreshAssignmentTeams, teams]);
 
-  const deleteAllTeams = useCallback(() => {
+  const deleteAllTeams = useCallback(async () => {
     if (!window.confirm('Delete all teams? This returns all members to the unassigned list.'))
       return;
-    const everyone = teams.flatMap((t) => t.members);
-    setUnassigned((prev) => [...prev, ...everyone.map((m) => ({ ...m, teamName: '' }))]);
-    setTeams([]);
-  }, [teams]);
+    try {
+      await Promise.all(teams.map((team) => axiosClient.delete(`/teams/${team.id}`)));
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error deleting all teams:', error);
+    }
+  }, [refreshAssignmentTeams, teams]);
 
   const copyTeamsToCourse = useCallback(() => {
     alert(`Copying ${teams.length} team(s) to "${copyTarget || '(choose destination)'}"`);
