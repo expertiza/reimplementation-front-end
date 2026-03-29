@@ -1,11 +1,19 @@
 // vite.config.ts
-import { defineConfig } from "vite";
+/// <reference types="vitest" />
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
+// Project uses Vite 7; Vitest 1.x depends on an older nested Vite — plugin types conflict in TS only.
 export default defineConfig({
-  plugins: [react()],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge Vite 7 plugin types vs Vitest's bundled Vite
+  plugins: [react() as any],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/setupTests.ts"],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

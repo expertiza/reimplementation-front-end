@@ -29,6 +29,7 @@ const initialValues: IParticipantFormValues = {
   role_id: -1,
   institution_id: -1,
   emailPreferences: [],
+  email_on_review_of_review: false,
 };
 
 interface IParticipantEditor {
@@ -170,7 +171,7 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
                 <FormInput controlId="participant-email" label="Email" name="email" />
                 <FormCheckBoxGroup
                   controlId="email-pref"
-                  label="Email Preferences"
+                  label="When to send me emails"
                   name="emailPreferences"
                   options={emailOptions}
                 />

@@ -38,29 +38,11 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableColumnFilter: false,
   }),
 
-  columnHelper.group({
-    id: "email_preferences",
-    header: "Email Preferences",
-    columns: [
-      columnHelper.accessor("email_on_review", {
-        header: "Review",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      columnHelper.accessor("email_on_submission", {
-        header: "Submission",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      columnHelper.accessor("email_on_review_of_review", {
-        header: "Meta Review",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-    ],
+  columnHelper.display({
+    id: "assignment_emails",
+    header: "Assignment emails",
+    cell: ({ row }) => (row.original.email_on_review || row.original.email_on_submission ? "Yes" : "—"),
+    enableSorting: false,
   }),
   columnHelper.accessor("institution.name", {
     id: "institution",

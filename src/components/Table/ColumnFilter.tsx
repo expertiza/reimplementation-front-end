@@ -19,7 +19,7 @@ const ColumnFilter: React.FC<FilterProps> = ({ column }) => {
 
   return (
     <DebouncedInput
-      className="w-75"
+      className="w-100 mt-1"
       onChange={searchHandler}
       value={filterValue() ?? ""}
       placeholder="Search"

@@ -18,17 +18,19 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("name", {
     header: "Username",
     enableSorting: true,
+    size: 140,
   }),
 
   columnHelper.accessor("full_name", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,
+    size: 200,
   }),
 
   columnHelper.accessor("email", {
     header: "Email",
-    size: 200,
+    size: 220,
   }),
 
   columnHelper.accessor("role.name", {
@@ -43,61 +45,37 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableColumnFilter: false,
   }),
 
-  columnHelper.group({
-    id: "email_preferences",
-    header: "Email Preferences",
-    columns: [
-      columnHelper.accessor("email_on_review", {
-        header: () => (
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="review-tooltip">Receives email when a new review becomes available</Tooltip>}
-          >
-            <span>Review</span>
-          </OverlayTrigger>
-        ),
-        cell: (info) =>
-          info.getValue() ? (
-            <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
-              alt="Checked"
-              style={{ width: "20px", height: "20px" }}
-            />
-          ) : null,
-        size: 70,
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      columnHelper.accessor("email_on_submission", {
-        header: () => (
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="submission-tooltip">Receives email when a new submission is made</Tooltip>}
-          >
-            <span>Submit</span>
-          </OverlayTrigger>
-        ),
-        cell: (info) =>
-          info.getValue() ? (
-            <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
-              alt="Checked"
-              style={{ width: "20px", height: "20px" }}
-            />
-          ) : null,
-        size: 70,
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      // columnHelper.accessor("email_on_review_of_review", {
-      //   header: "Meta Review",
-      //   enableSorting: false,
-      //   enableColumnFilter: false,
-      //   enableGlobalFilter: false,
-      // }),
-    ],
+  columnHelper.display({
+    id: "assignment_emails",
+    header: () => (
+      <OverlayTrigger
+        placement="top"
+        overlay={
+          <Tooltip id="assignment-emails-tooltip">
+            On means this user gets emails for assignment activity (for example new reviews and new submissions).
+            Editing the user uses one setting for both.
+          </Tooltip>
+        }
+      >
+        <span className="d-inline-block" style={{ lineHeight: 1.25 }}>
+          Assignment emails
+        </span>
+      </OverlayTrigger>
+    ),
+    cell: ({ row }) => {
+      const on = Boolean(row.original.email_on_review || row.original.email_on_submission);
+      return on ? (
+        <img
+          src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+          alt="Assignment emails: on"
+          style={{ width: "20px", height: "20px" }}
+        />
+      ) : (
+        <span className="text-muted small" title="Off">
+          —
+        </span>
+      );
+    },
   }),
   columnHelper.accessor("institution.name", {
     id: "institution",

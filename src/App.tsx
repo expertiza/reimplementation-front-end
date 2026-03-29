@@ -12,6 +12,7 @@ import ViewReports from "./pages/Assignments/ViewReports";
 import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
 import SubmittedContent from "./pages/Assignments/SubmittedContent";
+import CalibrationReview from "./pages/Assignments/CalibrationReview";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
@@ -122,6 +123,10 @@ function App() {
           path: "assignments/edit/:id/viewreports",
           element: <ViewReports />,
           loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:id/calibration/:responseMapId",
+          element: <CalibrationReview />,
         },
         {
           path: "assignments/edit/:id/viewdelayedjobs",
