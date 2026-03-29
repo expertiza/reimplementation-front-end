@@ -1,12 +1,13 @@
 import axios from 'axios';
 import SubmittedContentService from '../SubmittedContentService';
+import type { Mocked } from 'vitest';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('SubmittedContentService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('submitFile should call correct endpoint', async () => {
