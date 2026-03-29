@@ -673,12 +673,12 @@ const TopicsTab = ({
       <ImportModal
         show={showImportModal}
         onHide={handleCloseImport}
-        modelClass="SignUpTopic"
+        modelClass="ProjectTopic"
       />
       <ExportModal
         show={showExportModal}
         onHide={handleCloseExport}
-        modelClass="SignUpTopic"
+        modelClass="ProjectTopic"
       />
 
       {deleteState.visible && (
