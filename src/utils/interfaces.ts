@@ -91,7 +91,6 @@ export interface IAssignmentRequest {
 
   // Visibility / basic flags
   private: boolean;
-  show_template_review: boolean;
   require_quiz: boolean;
   has_badge: boolean;
   staggered_deadline: boolean;
@@ -247,7 +246,6 @@ export interface IAssignmentResponse {
   directory_path: string;
   spec_location:string;
   private:boolean;
-  show_template_review: boolean;
   require_quiz:boolean;
   has_badge:boolean;
   staggered_deadline:boolean;

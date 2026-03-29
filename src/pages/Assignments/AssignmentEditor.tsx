@@ -102,7 +102,6 @@ const initialValues: IAssignmentFormValues = {
   // dir: "",
   spec_location: "",
   private: false,
-  show_template_review: false,
   require_quiz: false,
   has_badge: false,
   staggered_deadline: false,

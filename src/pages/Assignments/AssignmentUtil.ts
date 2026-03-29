@@ -8,7 +8,6 @@ export interface IAssignmentFormValues {
   directory_path: string;
   spec_location: string;
   private: boolean;
-  show_template_review: boolean;
   require_quiz: boolean;
   has_badge: boolean;
   staggered_deadline: boolean;
@@ -108,7 +107,6 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
 
     // Visibility / basic flags
     private: values.private,
-    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz ?? false,
     has_badge: values.has_badge ?? false,
     staggered_deadline: values.staggered_deadline ?? false,
@@ -231,7 +229,6 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     directory_path: assignment.directory_path,
     spec_location: assignment.spec_location,
     private: assignment.private,
-    show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,
     has_badge: assignment.has_badge,
     staggered_deadline: assignment.staggered_deadline,
