@@ -458,6 +458,8 @@ const AssignReviewer: React.FC = () => {
       p.response_maps = p.response_maps.filter(m => m.id !== mappingId);
       p.responses = p.responses.filter(r => r.map_id !== mappingId);
     });
+    // Also delete from backend DB
+    axiosClient.delete(`/response_maps/${mappingId}`).catch(() => {});
   }
 
   function onUnsubmit(_teamId: number, mappingId: number) {
@@ -477,6 +479,8 @@ const AssignReviewer: React.FC = () => {
       );
       p.response_maps = p.response_maps.filter(m => !ids.has(m.id));
       p.responses = p.responses.filter(r => !ids.has(r.map_id));
+      // Also delete from backend DB
+      ids.forEach(id => axiosClient.delete(`/response_maps/${id}`).catch(() => {}));
     });
   }
 
