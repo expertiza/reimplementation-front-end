@@ -65,8 +65,18 @@
     name: Yup.string().required("Name is required"),
     questionnaire_type: Yup.string().required("Questionnaire type is required"),
     private: Yup.boolean(),
-    min_question_score: Yup.number().required("Minimum item score is required"),
-    max_question_score: Yup.number().required("Maximum item score is required"),
+    min_question_score: Yup.number()
+      .typeError("Minimum item score is required")
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      .required("Minimum item score is required"),
+    max_question_score: Yup.number()
+      .typeError("Maximum item score is required")
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      .required("Maximum item score is required"),
     items: Yup.array()
       .of(itemFields)
       .min(
