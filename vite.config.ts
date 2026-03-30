@@ -30,7 +30,7 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       "/api": {
-        target: "http://localhost:3002",   // backend Rails server
+        target: "http://localhost:3003",   // backend Rails server
         changeOrigin: true,
         secure: false,
       },
