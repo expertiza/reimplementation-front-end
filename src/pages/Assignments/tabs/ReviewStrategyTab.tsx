@@ -13,7 +13,6 @@ interface ReviewStrategyTabProps {
   initialIsSelfReviewsRequired?: boolean;
   initialIsReviewRoleBased?: boolean;
   initialIsReviewDoneByTeams?: boolean;
-  initialIsImportingSpreadsheet?: boolean;
   onSave?: (payload: {
     review_assignment_strategy: string;
     num_reviews_required: number;
@@ -22,6 +21,7 @@ interface ReviewStrategyTabProps {
     is_anonymous: boolean;
     is_selfreview_enabled: boolean;
     team_members_have_duty: boolean;
+    team_reviewing_enabled: boolean;
   }) => void;
   isSaving?: boolean;
 }
@@ -55,7 +55,6 @@ const ReviewStrategyTab = ({
   const [isSelfReviewsRequired, setIsSelfReviewsRequired] = useState<boolean>(initialIsSelfReviewsRequired);
   const [isReviewRoleBased, setIsReviewRoleBased] = useState<boolean>(initialIsReviewRoleBased);
   const [isReviewDoneByTeams, setIsReviewDoneByTeams] = useState<boolean>(initialIsReviewDoneByTeams);
-  const [staticStrategy, setStaticStrategy] = useState<string>("");
 
   useEffect(() => {
     setReviewStrategy(normalizeStrategy(initialStrategy));
@@ -158,94 +157,9 @@ const ReviewStrategyTab = ({
             )}
           </>
         ) : (
-          <>
-            <div className="alert alert-secondary">
-              Static review strategy selected. Static form controls can be added here next.
-            </div>
-
-        
-              <div className="mb-3">
-                <Form.Check 
-                   id="assignment-is-round-robin"
-                   type="radio"
-                   label="Round Robin Assignment"
-                   name="static-strategy"
-                   checked = {staticStrategy === "round-robin"}
-                  onChange={() => {
-                    setStaticStrategy("round-robin");
-                  }}
-                />
-                <Form.Check 
-                  id="assignment-is-random"
-                  type="radio"
-                  label="Random Assignment"
-                  name = "static-strategy"
-                  checked = {staticStrategy === "random"}
-                  onChange={() => {
-                    setStaticStrategy("random");
-                  }}
-                />
-                <Form.Check 
-                  id="assignment-is-spreadsheet-upload"
-                  type="radio"
-                  label="Import Spreadsheet"
-                  name = "static-strategy"
-                  checked = {staticStrategy === "spreadsheet"}
-                  onChange={() => {
-                    setStaticStrategy("spreadsheet");
-                  }}
-                      />
-              </div>
-          
-            
-            
-            
-            {staticStrategy === "spreadsheet" && (
-              <>
-                <div className="alert alert-info">
-                  Spreadsheet importing selected. Spreadsheet upload form controls can be added here.
-                </div>
-                <div className="mb-3" style={{ display: "grid", gridTemplateColumns: "max-content 200px", alignItems: "center", columnGap: "10px", rowGap: "10px" }}>
-                  <Form.Group controlId="formFile" className="mb-3">
-                    <Form.Label>Import Spreadsheet Here:</Form.Label>
-                    <Form.Control type="file" />
-                  </Form.Group>
-                </div>
-                
-              </>
-            )}
-
-            {staticStrategy !== "spreadsheet" && (
-              <>
-                <div className="mb-3" style={{ display: "grid", gridTemplateColumns: "max-content 100px", alignItems: "center", columnGap: "10px", rowGap: "10px" }}>
-                  <label htmlFor="assignment-required_reviews" className="form-label mb-0">Number of reviews each reviewer is required to do:</label>
-                  <Form.Control
-                    id="assignment-required_reviews"
-                    type="number"
-                    value={requiredReviews}
-                    min={0}
-                    onChange={(event) => {
-                      const value = Number(event.target.value || 0);
-                      setRequiredReviews(value);
-                      if (allowedReviews < value) {
-                        setAllowedReviews(value);
-                      }
-                    }}
-                  />
-                </div>
-
-                <Form.Check
-                  id="assignment-is_submitted"
-                  type="checkbox"
-                  defaultChecked={true}
-                  label="Assign reviewers to review projects that have not yet been submitted?"
-                />
-              </>
-            )}
-          </>
-          
-
-          
+          <div className="alert alert-secondary">
+            Static review strategy selected. Static form controls can be added here next.
+          </div>
         )}
 
         <div className="mt-3">
@@ -320,10 +234,6 @@ const ReviewStrategyTab = ({
             </Button>
           </div>
         )}
-
-        {!isDynamic 
-        
-        }
       </Col>
     </Row>
   );
