@@ -225,7 +225,7 @@ function App() {
 
         {
           path: "assignments/edit/:assignmentId/participants",
-          element: <Participants type="student_tasks" id={1} />,
+          element: <Participants type="assignments" id={1} />,
           children: [
             {
               path: "new",

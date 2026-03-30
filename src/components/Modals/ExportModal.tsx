@@ -80,34 +80,71 @@ Icon.displayName = 'Icon';
 type ExportModal = {
   show: boolean;
   onHide: () => void;
-    modelClass: string;
+  modelClass: string;
+  contextParams?: Record<string, string | number | undefined>;
 };
 
 /* =============================================================================
    Component (dummy mode – no backend)
 ============================================================================= */
 
-const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
-    const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
-    const [optionalFields, setOptionalFields] = useState<string[]>([]);
-    const [externalFields, setExternalFields] = useState<string[]>([]);
-    const [allFields, setAllFields] = useState<string[]>([]);
-    const [selectedFields, setSelectedFields] = useState<string[]>([]);
+const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextParams }) => {
+  const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
+  const [optionalFields, setOptionalFields] = useState<string[]>([]);
+  const [externalFields, setExternalFields] = useState<string[]>([]);
+  const [allFields, setAllFields] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
-  const { error, isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
+  const { isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
   const { data: sendExportResponse, error: exportError, sendRequest: sendExport } = useAPI();
+  const teamParticipantFields = useCallback(
+    (fields: string[]) => fields.filter((field) => field.startsWith("participant_")),
+    []
+  );
+  const normalizeTeamFieldList = useCallback(
+    (fields: string[]) => {
+      if (modelClass !== "Team") return fields;
 
-    const fetchConfig = useCallback(async () => {
-        try {
-            fetchExports({ url: `/export/${modelClass}` });
-            // Handle the responses as needed
-        } catch (err) {
-            // Handle any errors that occur during the fetch
-            console.error("Error fetching data:", err);
+      const participantFields = teamParticipantFields(fields);
+      if (participantFields.length === 0) return fields;
+
+      const nonParticipantFields = fields.filter((field) => !field.startsWith("participant_"));
+      return [...nonParticipantFields, "participant_ids"];
+    },
+    [modelClass, teamParticipantFields]
+  );
+  const expandTeamFieldSelection = useCallback(
+    (fields: string[], sourceFields: string[]) => {
+      if (modelClass !== "Team" || !fields.includes("participant_ids")) return fields;
+
+      const participantFields = teamParticipantFields(sourceFields);
+      const expandedFields = fields.flatMap((field) =>
+        field === "participant_ids" ? participantFields : [field]
+      );
+
+      return Array.from(new Set(expandedFields));
+    },
+    [modelClass, teamParticipantFields]
+  );
+
+  const fetchConfig = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(contextParams || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
         }
-    }, [fetchExports]);
+      });
+
+      const url = params.toString() ? `/export/${modelClass}?${params.toString()}` : `/export/${modelClass}`;
+      fetchExports({ url });
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  }, [contextParams, fetchExports, modelClass]);
 
   const transformField = (field: string) => {
+    if (field === "participant_ids") return "Participant IDs";
     let f = field.replace(/_/g, " ");
     return f.charAt(0).toUpperCase() + f.slice(1);
   };
@@ -124,27 +161,30 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
   useEffect(() => {
     if (!show) return;
 
-    fetchConfig()
-  }, [show]);
+    fetchConfig();
+  }, [fetchConfig, show]);
 
   useEffect(() => {
     if (exportResponse) {
-      setMandatoryFields(exportResponse.data.mandatory_fields);
-      setOptionalFields(exportResponse.data.optional_fields);
+      const normalizedMandatoryFields = normalizeTeamFieldList(exportResponse.data.mandatory_fields);
+      const normalizedOptionalFields = normalizeTeamFieldList(exportResponse.data.optional_fields);
+
+      setMandatoryFields(normalizedMandatoryFields);
+      setOptionalFields(normalizedOptionalFields);
       setExternalFields(exportResponse.data.external_fields);
 
       const fields = [
-        ...exportResponse.data.mandatory_fields,
-        ...exportResponse.data.optional_fields,
+        ...normalizedMandatoryFields,
+        ...normalizedOptionalFields,
         ...exportResponse.data.external_fields
-      ]
+      ];
 
-      setAllFields(fields)
-      setSelectedFields(exportResponse.data.mandatory_fields)
+      setAllFields(Array.from(new Set(fields)));
+      setSelectedFields(normalizedMandatoryFields);
 
       setStatus('');
     }
-  }, [exportResponse]);
+  }, [exportResponse, normalizeTeamFieldList]);
 
   const toggleField = (field: string) => {
     setSelectedFields((prev) =>
@@ -192,13 +232,11 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
     const link = document.createElement('a')
     link.href = url
 
-    const timestamp = Date.now().toLocaleString();
-
-    link.setAttribute('download', `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-  }
+    link.setAttribute('download', `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
   const on_export = async () => {
     if (selectedFields.length === 0) {
       setStatus('Please select at least one field.');
@@ -210,21 +248,30 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
     try {
       const formData = new FormData();
 
-      const orderedFields = allFields.filter((f) => selectedFields.includes(f));
+      const orderedFields = expandTeamFieldSelection(
+        allFields.filter((f) => selectedFields.includes(f)),
+        exportResponse?.data
+          ? [
+              ...exportResponse.data.mandatory_fields,
+              ...exportResponse.data.optional_fields,
+              ...exportResponse.data.external_fields,
+            ]
+          : allFields
+      );
 
       formData.append("ordered_fields", JSON.stringify(orderedFields));
-
-      let url = `/export/${modelClass}`;
+      Object.entries(contextParams || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          formData.append(key, String(value));
+        }
+      });
 
       await sendExport({
-        url,
+        url: `/export/${modelClass}`,
         method: HttpMethod.POST,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-
-      console.log(sendExportResponse)
 
     } catch (err: any) {
       setStatus(err.message || "Unexpected error.");
@@ -234,17 +281,17 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
 
 
   useEffect(() => {
-    if(sendExportResponse) {
+    if (sendExportResponse) {
       setStatus(sendExportResponse.data.message);
-      downloadFile(sendExportResponse.data.file)
+      downloadFile(sendExportResponse.data.file);
 
-      if (!exportError){
+      if (!exportError) {
         setTimeout(onHide, 1500);
       }
     } else if (exportError) {
       setStatus(exportError);
     }
-  }, [sendExportResponse, exportError]);
+  }, [exportError, onHide, sendExportResponse]);
 
   return (
     <Modal
@@ -300,8 +347,8 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
                       </span>
                     </OverlayTrigger>
                   </div>
-                    <div>
-                        <strong>Optional fields:</strong>
+                  <div>
+                    <strong>External fields:</strong>
                       <OverlayTrigger
                         placement="right"
                         overlay={
@@ -310,11 +357,11 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
                           </Tooltip>
                         }
                       >
-                      <span style={{ cursor: "help", marginLeft: 6 }}>
-                        <Icon name="info" size={16} />
-                      </span>
+                        <span style={{ cursor: "help", marginLeft: 6 }}>
+                          <Icon name="info" size={16} />
+                        </span>
                       </OverlayTrigger>
-                    </div>
+                  </div>
                 </div>
               </Col>
             </Row>

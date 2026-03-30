@@ -6,7 +6,7 @@ import useAPI from "../../hooks/useAPI";
 import React, { useEffect } from "react";
 import { Button, Col, InputGroup, Modal, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
+import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { HttpMethod } from "../../utils/httpMethods";
 import * as Yup from "yup";
@@ -59,6 +59,15 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { assignmentId } = useParams();
+
+  const participantsPath =
+    location.state?.from ??
+    (type === "assignments" && assignmentId
+      ? `/assignments/edit/${assignmentId}/participants`
+      : type === "student_tasks" && assignmentId
+        ? `/student_tasks/edit/${assignmentId}/participants`
+        : `/${type}/participants`);
 
   // logged-in participant is the parent of the participant being created and the institution is the same as the parent's
   initialValues.parent_id = auth.user.id;
@@ -77,7 +86,7 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
           message: `Participant ${participantData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : `/${type}/participants`);
+      navigate(participantsPath);
     }
   }, [
     dispatch,
@@ -85,8 +94,7 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
     navigate,
     participantData.name,
     participantResponse,
-    location.state?.from,
-    type,
+    participantsPath,
   ]);
 
   // Show the error message if the participant is not updated successfully
@@ -118,8 +126,7 @@ const ParticipantEditor: React.FC<IParticipantEditor> = ({ mode, type }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () =>
-    navigate(location.state?.from ? location.state.from : `/${type}/participants`);
+  const handleClose = () => navigate(participantsPath);
 
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">

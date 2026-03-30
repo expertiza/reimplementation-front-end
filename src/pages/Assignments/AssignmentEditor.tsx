@@ -52,6 +52,16 @@ interface TopicData {
   updatedAt?: string;
 }
 
+const buildTopicSettings = (assignment?: any): TopicSettings => ({
+  allowTopicSuggestions: false,
+  enableBidding: false,
+  enableAuthorsReview: true,
+  allowReviewerChoice: true,
+  allowBookmarks: Boolean(assignment?.allow_bookmarks),
+  allowBiddingForReviewers: false,
+  allowAdvertiseForPartners: Boolean(assignment?.advertising_for_partners_allowed),
+});
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -153,18 +163,21 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
-  const [assignmentName, setAssignmentName] = useState("");
+  const [assignmentName, setAssignmentName] = useState(assignmentData?.name || "");
+  const [topicSettings, setTopicSettings] = useState<TopicSettings>(() => buildTopicSettings(assignmentData));
+  const [topicsData, setTopicsData] = useState<TopicData[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(false);
+  const [topicsError, setTopicsError] = useState<string | null>(null);
 
-
-   useEffect(() => {
-    if (assignmentResponse?.data) {
-      setAssignmentName(assignmentResponse.data.name || "");
-      // Load allow_bookmarks setting from backend
-      if (assignmentResponse.data.allow_bookmarks !== undefined && assignmentResponse.data.advertising_for_partners_allowed !== undefined) {
-        setTopicSettings(prev => ({ ...prev, allowBookmarks: assignmentResponse.data.allow_bookmarks,allowAdvertiseForPartners: assignmentResponse.data.advertising_for_partners_allowed }));
-      }
+  useEffect(() => {
+    if (assignmentData) {
+      setAssignmentName(assignmentData.name || "");
+      setTopicSettings((prev) => ({
+        ...prev,
+        ...buildTopicSettings(assignmentData),
+      }));
     }
-  }, [assignmentResponse]);
+  }, [assignmentData]);
 
   useEffect(() => {
     if (assignmentError) {
@@ -535,25 +548,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }
     });
   }
-
-
-  // Topic settings state
-    const [topicSettings, setTopicSettings] = useState<TopicSettings>({
-      allowTopicSuggestions: false,
-      enableBidding: false,
-      enableAuthorsReview: true,
-      allowReviewerChoice: true,
-      allowBookmarks: false,
-      allowBiddingForReviewers: false,
-      allowAdvertiseForPartners: false,
-    });
-  
-    // Topics data state
-    const [topicsData, setTopicsData] = useState<TopicData[]>([]);
-    const [topicsLoading, setTopicsLoading] = useState(false);
-    const [topicsError, setTopicsError] = useState<string | null>(null);
-
-
 
   return (
     <div style={{ padding: '30px' }}>

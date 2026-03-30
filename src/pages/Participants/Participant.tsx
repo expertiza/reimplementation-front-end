@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
@@ -18,7 +18,7 @@ import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns
 
 interface IModel {
   type: "student_tasks" | "courses" | "assignments";
-  id: Number;
+  id: number;
 }
 
 const Participants: React.FC<IModel> = ({ type, id }) => {
@@ -29,6 +29,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
   const navigate = useNavigate();
   const location = useLocation();
+  const { assignmentId } = useParams();
   const dispatch = useDispatch();
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
@@ -36,9 +37,17 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     data?: IParticipantResponse;
   }>({ visible: false });
 
+  const participantsUrl = useMemo(() => {
+    if (type === "assignments" || type === "student_tasks") {
+      return `/participants/assignment/${assignmentId ?? id}`;
+    }
+
+    return `/participants/${type}/${id}`;
+  }, [assignmentId, id, type]);
+
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id]);
+    if (!showDeleteConfirmation.visible) fetchParticipants({ url: participantsUrl });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, participantsUrl]);
 
   // Error alert
   useEffect(() => {
@@ -53,8 +62,9 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
 
   const onEditHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
-    [navigate, type]
+    (row: TRow<IParticipantResponse>) =>
+      navigate(`edit/${row.original.id}`, { state: { from: location.pathname } }),
+    [location.pathname, navigate]
   );
 
   const onDeleteHandle = useCallback(
@@ -69,7 +79,28 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
 
   const tableData = useMemo(
-    () => (isLoading || !participantResponse?.data ? [] : participantResponse.data),
+    () =>
+      isLoading || !participantResponse?.data
+        ? []
+        : participantResponse.data.map((participant: any) => {
+            const user = participant.user || {};
+
+            return {
+              ...participant,
+              name: participant.name ?? user.name ?? user.username ?? "",
+              full_name: participant.full_name ?? user.full_name ?? user.fullName ?? "",
+              email: participant.email ?? user.email ?? "",
+              role: participant.role ?? user.role ?? { id: null, name: "" },
+              parent: participant.parent ?? user.parent ?? { id: null, name: "" },
+              institution: participant.institution ?? user.institution ?? { id: null, name: "" },
+              email_on_review: participant.email_on_review ?? user.email_on_review ?? false,
+              email_on_submission: participant.email_on_submission ?? user.email_on_submission ?? false,
+              email_on_review_of_review:
+                participant.email_on_review_of_review ??
+                user.email_on_review_of_review ??
+                false,
+            };
+          }),
     [participantResponse?.data, isLoading]
   );
 
@@ -86,7 +117,11 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button className="btn btn-md" variant="success" onClick={() => navigate("new")}>
+              <Button
+                className="btn btn-md"
+                variant="success"
+                onClick={() => navigate("new", { state: { from: location.pathname } })}
+              >
                 <img src="/assets/icons/add-participant-24.png" alt="Add" width="16" height="16" />{" "}
                 Add
               </Button>
