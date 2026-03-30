@@ -71,14 +71,14 @@ const useAPI = () => {
       });
   }, []);
 
-  const reset = (error: boolean, data: boolean) => {
+  const reset = useCallback((error: boolean, data: boolean) => {
     if (error) {
       setError(null);
     }
     if (data) {
       setData(undefined);
     }
-  };
+  }, []);
   // console.log(errorStatus)
 
   return { data, setData, isLoading, error, sendRequest, reset, errorStatus };
