@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../../utils/apiBaseUrl';
 import { SignedUpTeam } from '../../utils/interfaces';
 import styles from './PartnerAdvertisements.module.css';
 
@@ -21,7 +22,7 @@ const PartnerAdvertisements: React.FC = () => {
 
       const token = localStorage.getItem('token') || localStorage.getItem('jwt');
       const response = await axios.get(
-        `http://localhost:3002/signed_up_teams`,
+        `${API_BASE_URL}/signed_up_teams`,
         {
           params: { topic_id: topicId },
           headers: { Authorization: `Bearer ${token}` }

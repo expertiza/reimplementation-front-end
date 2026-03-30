@@ -12,10 +12,12 @@ import { IFormikFieldProps } from "./interfaces";
 interface IFormDatePickerProps {
   controlId: string;
   name: string;
+  /** When true, adds HTML5 required (avoid on forms with many optional date rows). */
+  required?: boolean;
 }
 
 const FormDatePicker: React.FC<IFormDatePickerProps> = (props) => {
-  const { controlId, name } = props;
+  const { controlId, name, required = false } = props;
 
   return (
     <Field name={name}>
@@ -25,7 +27,7 @@ const FormDatePicker: React.FC<IFormDatePickerProps> = (props) => {
         return (
           <Form.Group controlId={controlId}>
             <DatePicker
-              required
+              required={required}
               showTimeSelect
               timeIntervals={60}
               minDate={new Date()}

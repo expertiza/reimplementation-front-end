@@ -3,7 +3,11 @@ import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-do
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
 import { RiHealthBookLine } from "react-icons/ri";
-import { QuestionnaireResponse } from "./QuestionnaireUtils";
+import {
+  QuestionnaireResponse,
+  coerceQuestionnaireDisplayText,
+  normalizeQuestionnaireItemsResponse,
+} from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import QuestionnaireTypeTable from "./QuestionnaireTypes";
@@ -48,7 +52,7 @@ const Questionnaires = () => {
   const onDeleteQuestionnaireHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<QuestionnaireResponse>) => navigate(`/questionnaires/edit/${row.original.id}`),
     [navigate]
   );
 
@@ -73,6 +77,11 @@ const Questionnaires = () => {
   const tableColumns = useMemo(
     () => questionnaireColumns(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
+  );
+
+  const itemPreviewRows = useMemo(
+    () => normalizeQuestionnaireItemsResponse(itemsResponse?.data),
+    [itemsResponse?.data]
   );
 
   const handleClose = () => setShowTypeModal(false);
@@ -175,38 +184,38 @@ const Questionnaires = () => {
                   <h5>Items</h5>
                   {isLoading ? (
                   <p>Loading items...</p>
-                ) : itemsResponse?.data?.length ?  (
+                ) : itemPreviewRows.length ? (
                   <ol>
-  {itemsResponse.data.map((item: any, i: number) => (
+  {itemPreviewRows.map((item: any, i: number) => (
     <li key={i} style={{ marginBottom: "8px" }}>
-      <strong>{item.txt}</strong> ({item.question_type})
+      <strong>{coerceQuestionnaireDisplayText(item.txt)}</strong> ({item.question_type})
       {item.alternatives && (
         <>
-          &nbsp;&nbsp;<span>Choices: {item.alternatives}</span>
+          &nbsp;&nbsp;<span>Choices: {coerceQuestionnaireDisplayText(item.alternatives)}</span>
           <span>&nbsp;|</span>
         </>
       )}
       {item.min_label && (
         <>
-          &nbsp;&nbsp;<span>Scale Min: {item.min_label}</span>
+          &nbsp;&nbsp;<span>Scale Min: {coerceQuestionnaireDisplayText(item.min_label)}</span>
         </>
       )}
       {item.max_label && (
         <>
-          &nbsp;&nbsp;<span>Max: {item.max_label}</span>
+          &nbsp;&nbsp;<span>Max: {coerceQuestionnaireDisplayText(item.max_label)}</span>
         </>
       )}
       {
         item.row_names && (
           <>
-            &nbsp;&nbsp;<span>Rows: {item.row_names}</span>
+            &nbsp;&nbsp;<span>Rows: {coerceQuestionnaireDisplayText(item.row_names)}</span>
           </>
         )
       }
       {
         item.col_names && (
           <>
-            &nbsp;&nbsp;<span>Columns: {item.col_names}</span>
+            &nbsp;&nbsp;<span>Columns: {coerceQuestionnaireDisplayText(item.col_names)}</span>
           </>
         )
       }

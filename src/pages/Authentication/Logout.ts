@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { useDispatch } from "react-redux";
+import { persistor } from "../../store/store";
 import { authenticationActions } from "../../store/slices/authenticationSlice";
 
 /**
@@ -9,18 +9,20 @@ import { authenticationActions } from "../../store/slices/authenticationSlice";
  */
 
 const Logout: React.FC = () => {
-  const auth = useSelector((state: RootState) => state.authentication);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("expiration");
-      dispatch(authenticationActions.removeAuthentication());
-    }
+    // Always wipe client auth. Previously we only cleared when isAuthenticated was true, which
+    // could skip cleanup if this ran before redux-persist rehydration — leaving an admin JWT
+    // and persisted super-admin user while the UI looked "logged out".
+    localStorage.removeItem("token");
+    localStorage.removeItem("expiration");
+    localStorage.removeItem("session");
+    dispatch(authenticationActions.removeAuthentication());
+    void persistor.purge();
     navigate("/login");
-  }, [auth.isAuthenticated, navigate, dispatch]);
+  }, [navigate, dispatch]);
 
   return null;
 };

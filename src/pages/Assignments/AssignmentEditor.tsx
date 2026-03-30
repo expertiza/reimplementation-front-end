@@ -1,8 +1,12 @@
 import * as Yup from "yup";
 
-import { Button, Modal, Form as RBForm, InputGroup } from "react-bootstrap";
+import { Alert, Button, Form as RBForm, InputGroup } from "react-bootstrap";
 import { Form, Formik, FormikHelpers, Field } from "formik";
-import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
+import {
+  IAssignmentFormValues,
+  normalizeReviewStrategyForSelect,
+  transformAssignmentRequest,
+} from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
 import type { AxiosResponse } from "axios";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -14,6 +18,7 @@ import { HttpMethod } from "../../utils/httpMethods";
 import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
+import axiosClient from "../../utils/axios_client";
 import FormCheckbox from "../../components/Form/FormCheckBox";
 import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
@@ -25,6 +30,7 @@ import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
 import TopicsTab from "./tabs/TopicsTab";
+import { fileDisplayName } from "../../utils/fileDisplayName";
 
 interface TopicSettings {
   allowTopicSuggestions: boolean;
@@ -75,7 +81,7 @@ const initialValues: IAssignmentFormValues = {
   has_topics: false,
   review_topic_threshold: 0,
   maximum_number_of_reviews_per_submission: 0,
-  review_strategy: "",
+  review_strategy: "1",
   review_rubric_varies_by_round: false,
   review_rubric_varies_by_topic: false,
   review_rubric_varies_by_role: false,
@@ -107,13 +113,39 @@ const validationSchema = Yup.object({
   // Add other assignment-specific validation rules
 });
 
-/** Rails returns a JSON array; guard against wrapped shapes or accidental objects. */
+/** Rails returns a JSON array (legacy) or { calibration_response_maps, has_review_rubric_for_calibration }. */
 function calibrationMapsPayloadToArray(resData: unknown): any[] {
   if (Array.isArray(resData)) return resData;
-  if (resData && typeof resData === "object" && Array.isArray((resData as { data?: unknown }).data)) {
-    return (resData as { data: any[] }).data;
+  if (resData && typeof resData === "object") {
+    const o = resData as Record<string, unknown>;
+    if (Array.isArray(o.calibration_response_maps)) return o.calibration_response_maps as any[];
+    if (Array.isArray(o.maps)) return o.maps as any[];
+    if (Array.isArray(o.data)) return o.data as any[];
   }
   return [];
+}
+
+function calibrationListHasRubricFlag(resData: unknown): boolean | null {
+  if (!resData || typeof resData !== "object" || Array.isArray(resData)) return null;
+  const v = (resData as Record<string, unknown>).has_review_rubric_for_calibration;
+  if (v === true) return true;
+  if (v === false) return false;
+  return null;
+}
+
+function assignmentQuestionnairesHaveLinkedRubric(assignmentData: unknown): boolean {
+  const aqs = (assignmentData as { assignment_questionnaires?: unknown })?.assignment_questionnaires;
+  if (!Array.isArray(aqs)) return false;
+  return aqs.some((aq: any) => {
+    const qid = aq?.questionnaire?.id ?? aq?.questionnaire_id;
+    return qid != null && qid !== "" && Number(qid) > 0;
+  });
+}
+
+function calibrationResponseAssignmentId(res: { config?: { url?: string } } | undefined): string | null {
+  const url = res?.config?.url ?? "";
+  const m = url.match(/\/assignments\/([^/]+)\/calibration_response_maps(?:\?|$)/);
+  return m ? m[1] : null;
 }
 
 function parseAssignmentIdFromCalibrationAddRequest(res: AxiosResponse): string | null {
@@ -162,14 +194,100 @@ function calibrationTableRowFromAddBody(body: unknown, fallbackUsername: string)
   };
 }
 
+/** Rubrics tab uses `weights[1]`, `weights[100]`, etc. — Formik often yields an object or sparse array; naive `.reduce` hits `undefined` and becomes NaN. */
+function sumAssignmentRubricWeights(weights: unknown): number {
+  if (weights == null) return 0;
+  const add = (acc: number, v: unknown) => {
+    if (v === "" || v === undefined || v === null) return acc;
+    const n = typeof v === "number" ? v : Number(v);
+    return acc + (Number.isFinite(n) ? n : 0);
+  };
+  if (Array.isArray(weights)) {
+    return weights.reduce((acc, curr) => add(acc, curr), 0);
+  }
+  if (typeof weights === "object") {
+    return Object.values(weights as Record<string, unknown>).reduce((acc, v) => add(acc, v), 0);
+  }
+  return 0;
+}
+
+function mergeAssignmentQuestionnaires(
+  assignmentData: any,
+  assignmentResponse: { data?: any } | undefined
+): any[] {
+  const fromLoader = Array.isArray(assignmentData?.assignment_questionnaires)
+    ? assignmentData.assignment_questionnaires
+    : [];
+  const fromSave = Array.isArray(assignmentResponse?.data?.assignment_questionnaires)
+    ? assignmentResponse.data.assignment_questionnaires
+    : [];
+  const seen = new Set<string>();
+  const out: any[] = [];
+  for (const aq of [...fromSave, ...fromLoader]) {
+    if (!aq || typeof aq !== "object") continue;
+    const id = (aq as { id?: unknown }).id;
+    const qid = (aq as { questionnaire_id?: unknown }).questionnaire_id ?? (aq as { questionnaire?: { id?: unknown } }).questionnaire?.id;
+    const key = id != null ? `id:${id}` : `q:${String(qid ?? "")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(aq);
+  }
+  return out;
+}
+
+/**
+ * Any Rubrics-tab dropdown that is a real review round (not author/teammate rows 900+).
+ */
+function formHasCalibrationQuestionnaireSelection(formValues: Record<string, unknown>): boolean {
+  for (const key of Object.keys(formValues)) {
+    const m = /^questionnaire_round_(\d+)$/.exec(key);
+    if (!m) continue;
+    const rowId = Number(m[1]);
+    if (!Number.isFinite(rowId) || rowId >= 900) continue;
+    const raw = formValues[key];
+    if (raw === undefined || raw === null || raw === "") continue;
+    const n = typeof raw === "number" ? raw : Number(raw);
+    if (Number.isFinite(n) && n > 0) return true;
+  }
+  return false;
+}
+
+/**
+ * True if calibration can use the same rubric as Assignment#review_rubric_questionnaire.
+ * Prefer the server flag; fall back to merged assignment_questionnaires and Formik rubric fields.
+ */
+function assignmentHasReviewQuestionnaireForCalibration(
+  assignmentData: any,
+  assignmentResponse: { data?: any } | undefined,
+  formValues: Record<string, unknown>,
+  calibrationListHasRubric: boolean | null
+): boolean {
+  if (calibrationListHasRubric === true) return true;
+  if (assignmentResponse?.data?.has_review_rubric_for_calibration === true) return true;
+  if (assignmentData?.has_review_rubric_for_calibration === true) return true;
+
+  const list = mergeAssignmentQuestionnaires(assignmentData, assignmentResponse);
+  const fromApi = list.some((aq: any) => {
+    const qid = aq?.questionnaire?.id ?? aq?.questionnaire_id;
+    return qid != null && qid !== "" && Number(qid) > 0;
+  });
+  if (fromApi) return true;
+
+  return formHasCalibrationQuestionnaireSelection(formValues);
+}
+
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
   const { data: calibrationSubmissionsResponse, error: calibrationSubmissionsError, sendRequest: sendCalibrationSubmissionsRequest } = useAPI();
   // useAPI instance for adding calibration participant
   const { data: addParticipantResponse, error: addParticipantError, sendRequest: sendAddParticipantRequest } = useAPI();
+  const { data: removeParticipantResponse, error: removeParticipantError, sendRequest: sendRemoveParticipantRequest } =
+    useAPI();
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
+  /** From GET calibration_response_maps (fresh per load); null = unknown / legacy array body. */
+  const [calibrationListRubricReady, setCalibrationListRubricReady] = useState<boolean | null>(null);
   const [usernameSearch, setUsernameSearch] = useState<string>("");
   /** Set when Add is clicked so we accept the matching POST response even if URL/body shape varies. */
   const pendingCalibrationAddForAssignmentIdRef = useRef<string | null>(null);
@@ -206,7 +324,20 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         if (value === null || value === undefined) {
           merged[key] = initialValues[key];
         }
+        // Controlled <select> only has options "1"|"2"|"3"; "" breaks syncing and saves.
+        if (key === "review_strategy" && (value === "" || value === null || value === undefined)) {
+          merged[key] = initialValues.review_strategy;
+        }
       }
+    );
+
+    // Prefer DB column `review_assignment_strategy` when present so we never show a stale
+    // `review_strategy` after React Router serves cached loader data or partial shapes omit it.
+    const apiStrategy = merged.review_assignment_strategy;
+    const hasApiStrategy =
+      apiStrategy !== undefined && apiStrategy !== null && String(apiStrategy).trim() !== "";
+    merged.review_strategy = normalizeReviewStrategyForSelect(
+      hasApiStrategy ? apiStrategy : merged.review_strategy
     );
 
     return merged as IAssignmentFormValues;
@@ -500,6 +631,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Load calibration submissions on component mount
   useEffect(() => {
+    setCalibrationListRubricReady(null);
     if (id) {
       sendCalibrationSubmissionsRequest({
         url: `/assignments/${id}/calibration_response_maps`,
@@ -511,6 +643,23 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   // Handle calibration submissions response
   useEffect(() => {
     if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
+      const reqAid = calibrationResponseAssignmentId(calibrationSubmissionsResponse);
+      if (reqAid != null && id != null && String(reqAid) !== String(id)) {
+        return;
+      }
+
+      const body = calibrationSubmissionsResponse.data;
+      let rubricFlag = calibrationListHasRubricFlag(body);
+      if (rubricFlag === null) {
+        if (Array.isArray(body)) {
+          rubricFlag = assignmentQuestionnairesHaveLinkedRubric(assignmentData) ? true : null;
+        } else if (body && typeof body === "object" && !("has_review_rubric_for_calibration" in body)) {
+          rubricFlag = assignmentQuestionnairesHaveLinkedRubric(assignmentData) ? true : null;
+        }
+      }
+      if (rubricFlag !== null) {
+        setCalibrationListRubricReady(rubricFlag);
+      }
       const rows = calibrationMapsPayloadToArray(calibrationSubmissionsResponse.data);
       const normalizedData = rows.map((raw: any) => {
         const participantName =
@@ -540,7 +689,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       });
       setCalibrationSubmissions(normalizedData);
     }
-  }, [calibrationSubmissionsResponse]);
+  }, [calibrationSubmissionsResponse, id, assignmentData]);
 
   // Show calibration submissions error message
   useEffect(() => {
@@ -618,18 +767,43 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     }
   }, [addParticipantError, dispatch]);
 
+  const handleRemoveCalibrationClick = useCallback(
+    (mapId: number) => {
+      if (!id || !window.confirm("Are you sure you want to remove this calibration participant?")) return;
+
+      sendRemoveParticipantRequest({
+        url: `/assignments/${id}/calibration_response_maps/${mapId}`,
+        method: HttpMethod.DELETE,
+      });
+    },
+    [id, sendRemoveParticipantRequest]
+  );
+
+  useEffect(() => {
+    if (!removeParticipantResponse || removeParticipantResponse.status < 200 || removeParticipantResponse.status >= 300) {
+      return;
+    }
+    dispatch(alertActions.showAlert({ variant: "success", message: "Calibration participant removed successfully" }));
+    sendCalibrationSubmissionsRequest({
+      url: `/assignments/${id}/calibration_response_maps`,
+      method: HttpMethod.GET,
+    });
+  }, [removeParticipantResponse, dispatch, id, sendCalibrationSubmissionsRequest]);
+
+  useEffect(() => {
+    if (removeParticipantError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: removeParticipantError }));
+    }
+  }, [removeParticipantError, dispatch]);
 
   const onSubmit = (
     values: IAssignmentFormValues,
     submitProps: FormikHelpers<IAssignmentFormValues>
   ) => {
 
-    // validate sum of weights = 100%
-    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
-
-    const hasWeights = (values.weights?.length ?? 0) > 0;
-
-    if (hasWeights && totalWeight !== 100) {
+    // Rubrics weights must total 100% when any weight field has a value (handles object + sparse arrays).
+    const totalWeight = sumAssignmentRubricWeights(values.weights);
+    if (totalWeight > 0 && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
       return;
     }
@@ -846,38 +1020,40 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           }
                           return [
                             {
-                              id: 0,
+                              id: 1,
                               title: "Review rubric:",
                               questionnaire_options: questionnaireOptions,
                               selected_questionnaire: roundSelections[1]?.id,
                               questionnaire_type: 'dropdown',
                             },
                             {
-                              id: 0,
+                              id: 2,
                               title: "Add tag prompts",
                               questionnaire_type: 'tag_prompts',
                             }
                           ];
                         })(),
+                        // IDs must not collide with review round 1 (`questionnaire_round_1`). When
+                        // number_of_review_rounds is 0, (0+1) was 1 and overwrote the real review rubric field.
                         {
-                          id: formik.values.number_of_review_rounds ?? 0,
+                          id: 901,
                           title: "Author feedback:",
                           questionnaire_options: [{ label: 'Standard author feedback', value: 'Standard author feedback' }],
                           questionnaire_type: 'dropdown',
                         },
                         {
-                          id: formik.values.number_of_review_rounds ?? 0,
+                          id: 902,
                           title: "Add tag prompts",
                           questionnaire_type: 'tag_prompts',
                         },
                         {
-                          id: (formik.values.number_of_review_rounds ?? 0) + 1,
+                          id: 903,
                           title: "Teammate review:",
                           questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                           questionnaire_type: 'dropdown',
                         },
                         {
-                          id: (formik.values.number_of_review_rounds ?? 0) + 1,
+                          id: 904,
                           title: "Add tag prompts",
                           questionnaire_type: 'tag_prompts',
                         },
@@ -944,7 +1120,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 </Tab>
 
                 {/* Review Strategy Tab */}
-                <Tab eventKey="review_strategy" title="Review strategy">
+                <Tab eventKey="tab-review-strategy" title="Review strategy">
                   <div style={{ marginTop: '20px' }}></div>
                   <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
                     <label className="form-label">Review strategy:</label>
@@ -952,9 +1128,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       controlId="assignment-review_strategy"
                       name="review_strategy"
                       options={[
-                        { label: "Review Strategy 1", value: 1 },
-                        { label: "Review Strategy 2", value: 2 },
-                        { label: "Review Strategy 3", value: 3 },
+                        { label: "Review Strategy 1", value: "1" },
+                        { label: "Review Strategy 2", value: "2" },
+                        { label: "Review Strategy 3", value: "3" },
                       ]}
                     />
                   </div>
@@ -1131,6 +1307,24 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
                 {/* Calibration Tab */}
                 <Tab eventKey="calibration" title="Calibration">
+                  {!assignmentHasReviewQuestionnaireForCalibration(
+                    assignmentData,
+                    assignmentResponse,
+                    formik.values as Record<string, unknown>,
+                    calibrationListRubricReady
+                  ) && (
+                    <Alert variant="warning" className="mt-2">
+                      Link a <strong>review questionnaire</strong> on the <strong>Rubrics</strong> tab (round 1 for a
+                      single review round) and save the assignment. Without it, Begin / save calibration review will fail.
+                    </Alert>
+                  )}
+                  {calibrationSubmissions.length === 0 && (
+                    <Alert variant="info" className="mt-2">
+                      <strong>Begin</strong> appears on each row after you add a calibration participant: enter a student’s{" "}
+                      <strong>username</strong> above and click <strong>Add</strong>. Then use <strong>Begin</strong> in the
+                      Review column for that row.
+                    </Alert>
+                  )}
                   <Field name="calibration_username_search">
                     {({ field, form }: any) => {
                       return (
@@ -1216,33 +1410,77 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           {
                             cell: ({ row }) => {
                               const calLink = `/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`;
-                              const linkStyle = { color: '#986633', textDecoration: 'none' } as const;
+                              const reviewLink = `${calLink}/review`;
+                              const linkStyle = { color: "#986633", textDecoration: "none", cursor: "pointer" } as const;
+
+                              const handleBeginClick = async (e: React.MouseEvent) => {
+                                e.preventDefault();
+                                try {
+                                  const res = await axiosClient.post(
+                                    `/assignments/${assignmentData.id}/calibration_response_maps/${row.original.id}/begin`
+                                  );
+                                  const path =
+                                    res.data &&
+                                    typeof res.data === "object" &&
+                                    "redirect_to" in res.data &&
+                                    typeof (res.data as { redirect_to?: unknown }).redirect_to === "string"
+                                      ? (res.data as { redirect_to: string }).redirect_to
+                                      : reviewLink;
+                                  navigate(path);
+                                  sendCalibrationSubmissionsRequest({
+                                    url: `/assignments/${assignmentData.id}/calibration_response_maps`,
+                                    method: HttpMethod.GET,
+                                  });
+                                } catch (err) {
+                                  console.error("Failed to begin calibration:", err);
+                                  alert("Failed to begin calibration. Please try again.");
+                                }
+                              };
+
                               if (row.original.review_status === "not_started") {
-                                return <Link style={linkStyle} to={calLink}>Begin</Link>;
-                              } else {
-                                return <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                                  <Link style={linkStyle} to={calLink}>View</Link>
-                                  |
-                                  <Link style={linkStyle} to={calLink}>Edit</Link>
-                                </div>;
+                                return (
+                                  <a style={linkStyle} onClick={handleBeginClick} href={reviewLink}>
+                                    Begin
+                                  </a>
+                                );
                               }
+                              return (
+                                <div style={{ display: "flex", alignItems: "center", columnGap: "5px" }}>
+                                  <Link style={linkStyle} to={calLink} title="Comparison charts vs instructor gold standard">
+                                    View
+                                  </Link>
+                                  |
+                                  <Link style={linkStyle} to={reviewLink} title="Enter or edit instructor review">
+                                    Edit
+                                  </Link>
+                                </div>
+                              );
                             },
-                            accessorKey: "action", header: "Review", enableSorting: false, enableColumnFilter: false
+                            accessorKey: "action",
+                            header: "Review",
+                            enableSorting: false,
+                            enableColumnFilter: false,
                           },
                           {
                             cell: ({ row }) => {
                               const reportLink = `/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`;
-                              const linkStyle = { color: '#986633', textDecoration: 'none' } as const;
-                              return (
-                                <Link style={linkStyle} to={reportLink}>
-                                  View review report
-                                </Link>
-                              );
+                              const linkStyle = { color: "#986633", textDecoration: "none" } as const;
+                              const st = row.original.review_status;
+                              const showReport =
+                                st === "Completed" || st === "submitted" || st === "completed";
+                              if (showReport) {
+                                return (
+                                  <Link style={linkStyle} to={reportLink}>
+                                    View review report
+                                  </Link>
+                                );
+                              }
+                              return null;
                             },
                             accessorKey: "calibration_report",
                             header: "Report",
                             enableSorting: false,
-                            enableColumnFilter: false
+                            enableColumnFilter: false,
                           },
                           {
                             cell: ({ row }) => <>
@@ -1258,12 +1496,32 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {
                                   row.original.submitted_content.files.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                    const label = typeof item === 'string' ? item : String(item);
+                                    return (
+                                      <span style={{ color: '#986633' }} key={index} className="text-break">
+                                        {fileDisplayName(label)}
+                                      </span>
+                                    );
                                   })
                                 }
                               </div>
                             </>,
                             accessorKey: "submitted_content", header: "Submitted items(s)", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            cell: ({ row }) => (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveCalibrationClick(row.original.id)}
+                              >
+                                Remove
+                              </Button>
+                            ),
+                            accessorKey: "remove_calibration",
+                            header: "",
+                            enableSorting: false,
+                            enableColumnFilter: false,
                           },
                         ]}
                       />
@@ -1319,86 +1577,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       </Formik>
     </div >
 
-  );
-
-  return (
-    <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? `Update Assignment - ${assignmentData.name}` : "Create Assignment"}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {assignmentError && <p className="text-danger">{assignmentError}</p>}
-        <Tabs defaultActiveKey="general" id="assignment-tabs">
-          <Tab eventKey="general" title="General">
-            <Formik
-              initialValues={mode === "update" ? assignmentData : initialValues}
-              onSubmit={onSubmit}
-              validationSchema={validationSchema}
-              validateOnChange={false}
-              enableReinitialize={true}
-            >
-              {(formik) => {
-                return (
-                  <Form>
-                    <FormInput controlId="assignment-name" label="Assignment Name" name="name" />
-                    <FormInput controlId="assignment-directory_path" label="Submission Directory" name="directory_path" />
-                    <FormInput controlId="assignment-spec_location" label="Description URL" name="spec_location" />
-                    <FormInput controlId="assignment-submitter_count" label="Submitter Count" name="submitter_count" type="number" />
-                    <FormInput controlId="assignment-num_reviews" label="Number of Reviews" name="num_reviews" type="number" />
-                    <FormInput controlId="assignment-num_review_of_reviews" label="Number of Review of Reviews" name="num_review_of_reviews" type="number" />
-                    <FormInput controlId="assignment-num_review_of_reviewers" label="Number of Review of Reviewers" name="num_review_of_reviewers" type="number" />
-                    <FormInput controlId="assignment-num_reviewers" label="Number of Reviewers" name="num_reviewers" type="number" />
-                    <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
-                    <FormInput controlId="assignment-days_between_submissions" label="Days Between Submissions" name="days_between_submissions" type="number" />
-                    <FormInput controlId="assignment-review_assignment_strategy" label="Review Assignment Strategy" name="review_assignment_strategy" />
-                    <FormInput controlId="assignment-max_reviews_per_submission" label="Max Reviews Per Submission" name="max_reviews_per_submission" type="number" />
-                    <FormInput controlId="assignment-review_topic_threshold" label="Review Topic Threshold" name="review_topic_threshold" type="number" />
-                    <FormInput controlId="assignment-rounds_of_reviews" label="Rounds of Reviews" name="rounds_of_reviews" type="number" />
-                    <FormInput controlId="assignment-num_quiz_questions" label="Number of Quiz Questions" name="num_quiz_questions" type="number" />
-                    <FormInput controlId="assignment-late_policy_id" label="Late Policy ID" name="late_policy_id" type="number" />
-                    <FormInput controlId="assignment-max_bids" label="Max Bids" name="max_bids" type="number" />
-                    <FormCheckbox controlId="assignment-private" label="Private Assignment" name="private" />
-                    <FormCheckbox controlId="assignment-show_teammate_review" label="Show Teammate Reviews?" name="show_teammate_review" />
-                    <FormCheckbox controlId="assignment-require_quiz" label="Has quiz?" name="require_quiz" />
-                    <FormCheckbox controlId="assignment-has_badge" label="Has badge?" name="has_badge" />
-                    <FormCheckbox controlId="assignment-staggered_deadline" label="Staggered deadline assignment?" name="staggered_deadline" />
-                    <FormCheckbox controlId="assignment-is_calibrated" label="Calibration for training?" name="is_calibrated" />
-                    <FormCheckbox controlId="assignment-reviews_visible_to_all" label="Reviews Visible to All" name="reviews_visible_to_all" />
-                    <FormCheckbox controlId="assignment-allow_suggestions" label="Allow Suggestions" name="allow_suggestions" />
-                    <FormCheckbox controlId="assignment-copy_flag" label="Copy Flag" name="copy_flag" />
-                    <FormCheckbox controlId="assignment-microtask" label="Microtask" name="microtask" />
-                    <FormCheckbox controlId="assignment-is_coding_assignment" label="Is Coding Assignment" name="is_coding_assignment" />
-                    <FormCheckbox controlId="assignment-is_intelligent" label="Is Intelligent" name="is_intelligent" />
-                    <FormCheckbox controlId="assignment-calculate_penalty" label="Calculate Penalty" name="calculate_penalty" />
-                    <FormCheckbox controlId="assignment-is_penalty_calculated" label="Is Penalty Calculated" name="is_penalty_calculated" />
-                    <FormCheckbox controlId="assignment-availability_flag" label="Availability Flag" name="availability_flag" />
-                    <FormCheckbox controlId="assignment-use_bookmark" label="Use Bookmark" name="use_bookmark" />
-                    <FormCheckbox controlId="assignment-can_review_same_topic" label="Can Review Same Topic" name="can_review_same_topic" />
-                    <FormCheckbox controlId="assignment-can_choose_topic_to_review" label="Can Choose Topic to Review" name="can_choose_topic_to_review" />
-                    <Modal.Footer>
-                      <Button variant="outline-secondary" onClick={handleClose}>
-                        Close
-                      </Button>
-
-                      <Button
-                        variant="outline-success"
-                        type="submit"
-                        disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-                      >
-                        {mode === "update" ? "Update Assignment" : "Create Assignment"}
-                      </Button>
-                    </Modal.Footer>
-                  </Form>
-                );
-              }}
-            </Formik>
-          </Tab>
-          <Tab eventKey="etc" title="Etc">
-            <EtcTab assignmentId={assignmentData?.id} />
-          </Tab>
-        </Tabs>
-      </Modal.Body>
-    </Modal>
   );
 };
 

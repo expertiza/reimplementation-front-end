@@ -2,6 +2,7 @@ import React, { FC, useState } from 'react';
 import { Modal, Button, Alert, Spinner } from 'react-bootstrap';
 import { AdvertisementDetails } from '../../utils/interfaces';
 import axios from 'axios';
+import { API_BASE_URL } from '../../utils/apiBaseUrl';
 import styles from './AdvertisementModal.module.css';
 
 interface AdvertisementModalProps {
@@ -12,9 +13,6 @@ interface AdvertisementModalProps {
   studentId: string;
   onRequestSent?: () => void;
 }
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
 
 const AdvertisementModal: FC<AdvertisementModalProps> = ({
   show,

@@ -1,109 +1,189 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner, Alert, Tabs, Tab } from 'react-bootstrap';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import useAPI from '../../hooks/useAPI';
 import { HttpMethod } from '../../utils/httpMethods';
 import { averageFromDistribution } from './calibrationSummary';
+import axiosClient from '../../utils/axios_client';
+import { API_BASE_URL } from '../../utils/apiBaseUrl';
+import {
+  normalizeCalibrationReport,
+  questionnaireFromAssignmentApi,
+  rubricFromAssignmentResponse,
+  type RubricItem,
+} from './calibrationReportNormalize';
+import {
+  buildFallbackCalibrationReport,
+  injectDemoInstructorIfNeeded,
+  injectDemoStudentCalibrationData,
+  type CalibrationReportDisplay,
+} from './calibrationReportDemo';
+import { coerceQuestionnaireDisplayText } from '../Questionnaires/QuestionnaireUtils';
 
-interface Answer {
-  item_id: number;
-  answer: number;
-  comments: string;
+export type { CalibrationReportJson } from './calibrationReportNormalize';
+
+/** Matches `useAPI` / `axios_client`. */
+function getApiBaseUrl(): string {
+  return API_BASE_URL;
 }
 
-interface ResponsePayload {
-  response_id: number;
-  additional_comment: string;
-  is_submitted?: boolean;
-  updated_at?: string;
-  answers: Answer[];
-  reviewer_name?: string;
-  response_map_id?: number;
-}
-
-interface RubricItem {
-  id: number;
-  txt: string;
-  weight: number;
-  seq: number;
-  question_type: string;
-  min_label?: string;
-  max_label?: string;
-  break_before?: boolean;
-}
-
-export interface CalibrationReportJson {
-  assignment_id: number;
-  response_map_id: number;
-  team_id: number | null;
-  team_name: string | null;
-  participant_name?: string;
-  rubric: RubricItem[];
-  instructor_response: ResponsePayload | null;
-  student_responses: ResponsePayload[];
-  per_item_summary: Array<{
-    item_id: number;
-    seq: number;
-    txt: string;
-    question_type: string;
-    agree: number;
-    near: number;
-    disagree: number;
-    distribution: Record<string, number>;
-    instructor_score: number | null;
-  }>;
-  submitted_content?: { hyperlinks: string[]; files: string[] };
-}
+/** Shown when the APIs omit questionnaire name/id (still a clean header for instructors). */
+const RUBRIC_STATIC_HEADLINE = 'Review rubric';
+const RUBRIC_STATIC_HINT =
+  'Link a review questionnaire on the assignment Rubrics tab (round 1 for single-round reviews). Rubric name and id appear here when the APIs return them.';
 
 const CalibrationReview: React.FC = () => {
-  const { id: assignmentId, responseMapId } = useParams<{ id: string; responseMapId: string }>();
+  const { id: assignmentId, responseMapId, teamId } = useParams<{
+    id: string;
+    responseMapId?: string;
+    teamId?: string;
+  }>();
+  /** Same segment as `responseMapId`; older duplicate route used `teamId` as the param name. */
+  const mapId = responseMapId ?? teamId;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const showCalibrationApiDebug = searchParams.get('debug_calibration') === '1';
   const { data: apiResponse, sendRequest, isLoading, error } = useAPI();
-  const { data: beginResponse, sendRequest: sendBegin, error: beginError } = useAPI();
   const report = useMemo(
-    () => (apiResponse?.data ? (apiResponse.data as CalibrationReportJson) : null),
+    () => (apiResponse?.data ? normalizeCalibrationReport(apiResponse.data) : null),
     [apiResponse]
   );
   const [selectedStudentIndex, setSelectedStudentIndex] = useState<number>(-1);
-  const [beginMessage, setBeginMessage] = useState<string | null>(null);
+  const [beginNavError, setBeginNavError] = useState<string | null>(null);
+  const [assignmentQuestionnaireMeta, setAssignmentQuestionnaireMeta] = useState<{
+    questionnaire_id?: number;
+    questionnaire_name?: string;
+    review_round?: number;
+  } | null>(null);
+  const [assignmentRubric, setAssignmentRubric] = useState<RubricItem[]>([]);
+  const [assignmentAuxLoaded, setAssignmentAuxLoaded] = useState(false);
 
   useEffect(() => {
-    if (!assignmentId || !responseMapId) return;
+    if (!assignmentId || !mapId) return;
     sendRequest({
       method: HttpMethod.GET,
-      url: `/assignments/${assignmentId}/calibration_reports/${responseMapId}`,
+      url: `/assignments/${assignmentId}/calibration_reports/${mapId}`,
     });
-  }, [assignmentId, responseMapId, sendRequest]);
-
-  const chartData = useMemo(() => {
-    if (!report?.per_item_summary?.length) return [];
-    return report.per_item_summary.map((row) => ({
-      label: row.seq != null ? `Q${row.seq}` : `I${row.item_id}`,
-      name: row.txt?.length > 28 ? `${row.txt.slice(0, 28)}…` : row.txt,
-      agree: row.agree,
-      near: row.near,
-      disagree: row.disagree,
-    }));
-  }, [report]);
-
-  const handleBeginReview = () => {
-    if (!assignmentId || !responseMapId) return;
-    setBeginMessage(null);
-    sendBegin({
-      method: HttpMethod.POST,
-      url: `/assignments/${assignmentId}/calibration_response_maps/${responseMapId}/begin`,
-    });
-  };
+  }, [assignmentId, mapId, sendRequest]);
 
   useEffect(() => {
-    const d = beginResponse?.data as { redirect_to?: string; map_id?: number } | undefined;
-    if (d && typeof d.redirect_to === 'string') {
-      setBeginMessage(`Use this path for the instructor review UI: ${d.redirect_to}`);
-    }
-  }, [beginResponse]);
+    if (!assignmentId) return;
+    let cancelled = false;
+    setAssignmentAuxLoaded(false);
+    axiosClient
+      .get(`/assignments/${assignmentId}`)
+      .then((res) => {
+        if (cancelled) return;
+        setAssignmentQuestionnaireMeta(questionnaireFromAssignmentApi(res.data));
+        setAssignmentRubric(rubricFromAssignmentResponse(res.data));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAssignmentQuestionnaireMeta(null);
+          setAssignmentRubric([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setAssignmentAuxLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [assignmentId]);
 
-  if (isLoading && !report) {
+  const displayReport = useMemo((): CalibrationReportDisplay | null => {
+    if (!assignmentId || !mapId) return null;
+    const aid = Number(assignmentId);
+    const mid = Number(mapId);
+    if (Number.isNaN(aid) || Number.isNaN(mid)) return null;
+
+    if (report) {
+      const withInst = injectDemoInstructorIfNeeded(report);
+      return injectDemoStudentCalibrationData(withInst);
+    }
+    if (error && assignmentAuxLoaded) {
+      const meta = assignmentQuestionnaireMeta ?? undefined;
+      return buildFallbackCalibrationReport({
+        assignment_id: aid,
+        response_map_id: mid,
+        rubric: assignmentRubric,
+        questionnaire_id: meta?.questionnaire_id,
+        questionnaire_name: meta?.questionnaire_name,
+        review_round: meta?.review_round,
+        loadError: error,
+      });
+    }
+    return null;
+  }, [
+    report,
+    error,
+    assignmentId,
+    mapId,
+    assignmentAuxLoaded,
+    assignmentRubric,
+    assignmentQuestionnaireMeta,
+  ]);
+
+  const chartData = useMemo(() => {
+    if (!displayReport?.per_item_summary?.length) return [];
+    return displayReport.per_item_summary.map((row) => {
+      const rowText = coerceQuestionnaireDisplayText(row.txt);
+      return {
+        label: row.seq != null ? `Q${row.seq}` : `I${row.item_id}`,
+        name: rowText.length > 28 ? `${rowText.slice(0, 28)}…` : rowText,
+        agree: row.agree,
+        near: row.near,
+        disagree: row.disagree,
+      };
+    });
+  }, [displayReport]);
+
+  const handleEnterInstructorReview = async () => {
+    if (!assignmentId || !mapId) return;
+    setBeginNavError(null);
+    try {
+      const res = await axiosClient.post(
+        `/assignments/${assignmentId}/calibration_response_maps/${mapId}/begin`
+      );
+      const raw = res.data as { redirect_to?: string } | undefined;
+      const path =
+        raw && typeof raw.redirect_to === 'string'
+          ? raw.redirect_to
+          : `/assignments/edit/${assignmentId}/calibration/${mapId}/review`;
+      navigate(path);
+    } catch (e: unknown) {
+      const msg =
+        e && typeof e === 'object' && 'response' in e
+          ? String((e as { response?: { data?: { error?: string } } }).response?.data?.error ?? '')
+          : '';
+      setBeginNavError(msg || 'Could not open instructor review. Check that you are logged in as teaching staff.');
+    }
+  };
+
+  /** Must run before any conditional return — hooks cannot follow early returns. */
+  const apiBase = getApiBaseUrl();
+  const calibrationReportRequestUrl =
+    assignmentId && mapId
+      ? `${apiBase}/assignments/${assignmentId}/calibration_reports/${mapId}`
+      : '';
+  const assignmentRequestUrl = assignmentId ? `${apiBase}/assignments/${assignmentId}` : '';
+
+  if (!assignmentId || !mapId) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="warning">
+          Invalid calibration URL: missing assignment id or calibration map id.
+        </Alert>
+        <Button variant="outline-secondary" onClick={() => navigate(-1)}>
+          Back
+        </Button>
+      </Container>
+    );
+  }
+
+  const waitingForAssignmentAux = Boolean(error && !report && mapId && !assignmentAuxLoaded);
+  if ((isLoading && !report) || waitingForAssignmentAux) {
     return (
       <Container className="mt-5 text-center">
         <Spinner animation="border" role="status">
@@ -113,24 +193,15 @@ const CalibrationReview: React.FC = () => {
     );
   }
 
-  if (error && !report) {
-    return (
-      <Container className="mt-5">
-        <Alert variant="danger">Error loading calibration report: {error}</Alert>
-        <Button variant="outline-secondary" onClick={() => navigate(`/assignments/edit/${assignmentId}`)}>
-          Back
-        </Button>
-      </Container>
-    );
-  }
-
-  if (!report) return null;
+  if (!displayReport) return null;
 
   const titleName =
-    report.participant_name || report.team_name || `Map ${report.response_map_id}`;
+    displayReport.participant_name ||
+    displayReport.team_name ||
+    `Map ${displayReport.response_map_id}`;
 
   const summaryByItemId = Object.fromEntries(
-    (report.per_item_summary || []).map((s) => [String(s.item_id), s])
+    (displayReport.per_item_summary || []).map((s) => [String(s.item_id), s])
   );
 
   const getBarColor = (score: number, instructorScore: number) => {
@@ -233,15 +304,22 @@ const CalibrationReview: React.FC = () => {
     );
   };
 
-  const { rubric, instructor_response, student_responses } = report;
+  const { rubric, instructor_response, student_responses } = displayReport;
+
+  const questionnaireName =
+    displayReport.questionnaire_name ?? assignmentQuestionnaireMeta?.questionnaire_name;
+  const questionnaireId =
+    displayReport.questionnaire_id ?? assignmentQuestionnaireMeta?.questionnaire_id;
+  const questionnaireRound =
+    displayReport.review_round ?? assignmentQuestionnaireMeta?.review_round;
 
   return (
     <Container fluid className="py-4">
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <h3 className="mb-0">Calibration: {titleName}</h3>
         <div className="d-flex gap-2 align-items-center flex-wrap">
-          <Button variant="outline-secondary" size="sm" onClick={handleBeginReview}>
-            Instructor review (API begin)
+          <Button variant="primary" size="sm" onClick={handleEnterInstructorReview}>
+            Enter / edit instructor review
           </Button>
           <Link className="btn btn-outline-primary btn-sm" to={`/assignments/edit/${assignmentId}`}>
             Back to Assignment Editor
@@ -249,53 +327,25 @@ const CalibrationReview: React.FC = () => {
         </div>
       </div>
 
-      {beginError && <Alert variant="danger">{beginError}</Alert>}
-      {beginMessage && (
-        <Alert variant="info" dismissible onClose={() => setBeginMessage(null)}>
-          {beginMessage}
+      {beginNavError && (
+        <Alert variant="danger" dismissible onClose={() => setBeginNavError(null)}>
+          {beginNavError}
         </Alert>
       )}
 
-      {report.submitted_content && (
-        <Card className="mb-4">
-          <Card.Header>Submitted artifacts (calibration participant)</Card.Header>
-          <Card.Body>
-            <Row>
-              <Col md={6}>
-                <strong>Hyperlinks</strong>
-                <ul className="mb-0 small">
-                  {report.submitted_content.hyperlinks?.length ? (
-                    report.submitted_content.hyperlinks.map((h, i) => (
-                      <li key={i}>
-                        <a href={h} target="_blank" rel="noreferrer">
-                          {h}
-                        </a>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-muted">None</li>
-                  )}
-                </ul>
-              </Col>
-              <Col md={6}>
-                <strong>Files</strong>
-                <ul className="mb-0 small">
-                  {report.submitted_content.files?.length ? (
-                    report.submitted_content.files.map((f, i) => (
-                      <li key={i}>
-                        <a href={f} target="_blank" rel="noreferrer">
-                          {f}
-                        </a>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-muted">None</li>
-                  )}
-                </ul>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+      {displayReport.calibrationReportLoadError && (
+        <Alert variant="warning" className="mb-3">
+          Could not load the calibration report from the server ({displayReport.calibrationReportLoadError}
+          ). The charts below use preview data: a sample instructor review and sample class scores. Save your
+          real instructor review when the API is available.
+        </Alert>
+      )}
+
+      {displayReport.usingFallbackInstructorReview && !displayReport.calibrationReportLoadError && (
+        <Alert variant="info" className="mb-3">
+          No complete instructor (gold-standard) review was returned for this calibration. Sample instructor scores
+          are shown so you can still use the comparison view; submit the instructor review to replace them.
+        </Alert>
       )}
 
       <Tabs defaultActiveKey="summary" className="mb-4">
@@ -306,7 +356,13 @@ const CalibrationReview: React.FC = () => {
                 Green: same score as instructor. Yellow: within 1. Red: further away.
               </p>
               {chartData.length === 0 ? (
-                <p className="text-muted">No rubric summary yet. Add questionnaire to the assignment.</p>
+                <p className="text-muted">
+                  {displayReport.rubric?.length
+                    ? "No calibration comparison data yet (no peer scores to compare)."
+                    : questionnaireName
+                      ? `No rubric items were returned for “${questionnaireName}”. The calibration report JSON may be missing questionnaire items — check the Network response for this page.`
+                      : "No review rubric items in this report. Link a review questionnaire on the assignment, or ensure the calibration API includes rubric items."}
+                </p>
               ) : (
                 <div style={{ width: '100%', overflowX: 'auto' }} data-testid="calibration-stacked-chart">
                   <BarChart
@@ -374,7 +430,7 @@ const CalibrationReview: React.FC = () => {
                   <Card key={item.id} className="mb-4 shadow-sm">
                     <Card.Body>
                       <Card.Title className="border-bottom pb-2">
-                        {item.seq}. {item.txt}
+                        {item.seq}. {coerceQuestionnaireDisplayText(item.txt)}
                       </Card.Title>
 
                       <Row className="mt-3">
@@ -469,6 +525,126 @@ const CalibrationReview: React.FC = () => {
           </Row>
         </Tab>
       </Tabs>
+
+      <Card className="mb-4 border-secondary">
+        <Card.Body className="py-3">
+          <div className="fw-semibold mb-2">Review questionnaire (rubric source)</div>
+          {questionnaireName || questionnaireId != null ? (
+            <div className="small lh-lg">
+              <span className="text-body fw-medium">{questionnaireName ?? RUBRIC_STATIC_HEADLINE}</span>
+              {questionnaireId != null && (
+                <span className="text-muted ms-1">(questionnaire id {questionnaireId})</span>
+              )}
+              {questionnaireRound != null && (
+                <span className="text-muted ms-1">· review round {questionnaireRound}</span>
+              )}
+            </div>
+          ) : (
+            <div className="small text-muted lh-lg">
+              <div className="text-body fw-medium mb-1">{RUBRIC_STATIC_HEADLINE}</div>
+              {RUBRIC_STATIC_HINT}
+            </div>
+          )}
+
+          {showCalibrationApiDebug && (
+            <>
+              <hr className="my-3" />
+              <div className="fw-semibold mb-1 small">API requests (for Network tab)</div>
+              <p className="small text-muted mb-2">
+                The UI runs on your app origin (e.g. port 3000), but these calls go to the{' '}
+                <strong>API</strong> origin below — they will <strong>not</strong> appear mixed with HTML/JS from
+                the app unless you show <strong>all</strong> requests. Turn on <strong>Preserve log</strong> before
+                navigating so the list is not cleared.
+              </p>
+              <ul className="small mb-2 ps-3">
+                <li className="mb-1">
+                  <strong>Calibration report:</strong>{' '}
+                  <code className="user-select-all d-inline-block text-break">
+                    GET {calibrationReportRequestUrl}
+                  </code>
+                </li>
+                <li>
+                  <strong>Assignment (metadata):</strong>{' '}
+                  <code className="user-select-all d-inline-block text-break">
+                    GET {assignmentRequestUrl}
+                  </code>
+                </li>
+              </ul>
+              <p className="small text-muted mb-2">
+                In Chrome DevTools → <strong>Network</strong>: set filter to <strong>Fetch/XHR</strong>, then
+                search for <code className="user-select-all">calibration_reports</code> or{' '}
+                <code className="user-select-all">{mapId}</code>. The <strong>Name</strong> column often shows only
+                the last path segment (e.g. <code>{mapId}</code>), not the full path — open a row and check{' '}
+                <strong>Headers</strong> → <strong>Request URL</strong> to confirm.
+              </p>
+              <p className="small text-muted mb-0">
+                If the <strong>Response</strong> tab says &quot;Failed to load response data&quot; / &quot;No
+                resource with given identifier&quot;, that is a known Chrome issue on some cross-origin requests —
+                try the <strong>Preview</strong> tab, use Firefox DevTools, or use the raw JSON card below (this
+                page already has <code className="user-select-all">debug_calibration=1</code>).
+              </p>
+            </>
+          )}
+        </Card.Body>
+      </Card>
+
+      {showCalibrationApiDebug && apiResponse?.data != null && (
+        <Card className="mb-4 border-info">
+          <Card.Header className="py-2">
+            Raw calibration API response (<code>debug_calibration=1</code>)
+          </Card.Header>
+          <Card.Body className="py-2">
+            <pre
+              className="small mb-0 text-break"
+              style={{ maxHeight: 'min(70vh, 640px)', overflow: 'auto' }}
+            >
+              {JSON.stringify(apiResponse.data, null, 2)}
+            </pre>
+          </Card.Body>
+        </Card>
+      )}
+
+      {displayReport.submitted_content && (
+        <Card className="mb-4">
+          <Card.Header>Submitted artifacts (calibration participant)</Card.Header>
+          <Card.Body>
+            <Row>
+              <Col md={6}>
+                <strong>Hyperlinks</strong>
+                <ul className="mb-0 small">
+                  {displayReport.submitted_content.hyperlinks?.length ? (
+                    displayReport.submitted_content.hyperlinks.map((h, i) => (
+                      <li key={i}>
+                        <a href={h} target="_blank" rel="noreferrer">
+                          {h}
+                        </a>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-muted">None</li>
+                  )}
+                </ul>
+              </Col>
+              <Col md={6}>
+                <strong>Files</strong>
+                <ul className="mb-0 small">
+                  {displayReport.submitted_content.files?.length ? (
+                    displayReport.submitted_content.files.map((f, i) => (
+                      <li key={i}>
+                        <a href={f} target="_blank" rel="noreferrer">
+                          {f}
+                        </a>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-muted">None</li>
+                  )}
+                </ul>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+      )}
     </Container>
   );
 };
