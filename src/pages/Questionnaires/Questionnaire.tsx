@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
+import ExportModal from "../../components/Modals/ExportModal";
 
 
 
@@ -20,12 +21,14 @@ const Questionnaires = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showTypeModal, setShowTypeModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   
   // loader option
   const questionnaireData :any = useLoaderData();
 
   useEffect(() => {
     setShowTypeModal(false);
+    setShowExportModal(false);
   }, [location]);
 
   const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
@@ -96,22 +99,31 @@ const Questionnaires = () => {
             </Col>
             <hr />
           </Row>
-         <Row className="mb-2">
-  <Col className="d-flex justify-content-end" style={{ maxWidth: "1400px", margin: "0 auto" }}>
-    <Button
-      variant="success"
-      onClick={() => setShowTypeModal(true)}
-      className="d-flex align-items-center shadow-sm"
-      style={{
-        borderRadius: "8px",
-        width: "48px",
-        height: "48px",
-      }}
-    >
-      <RiHealthBookLine size={24} />
-    </Button>
-  </Col>
-</Row>
+          <Row className="mb-2">
+            <Col className="d-flex justify-content-end gap-2" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+              <Button
+                variant="outline-primary"
+                onClick={() => setShowExportModal(true)}
+                className="d-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: "8px", height: "48px" }}
+              >
+                <img src="/assets/icons/export-temp.png" alt="Export questionnaires" width={18} height={18} />
+                <span>Export</span>
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => setShowTypeModal(true)}
+                className="d-flex align-items-center shadow-sm"
+                style={{
+                  borderRadius: "8px",
+                  width: "48px",
+                  height: "48px",
+                }}
+              >
+                <RiHealthBookLine size={24} />
+              </Button>
+            </Col>
+          </Row>
 
           <Row>
             {showTypeModal && (
@@ -261,6 +273,11 @@ const Questionnaires = () => {
 )}
         </Container>
       </main>
+      <ExportModal
+        show={showExportModal}
+        onHide={() => setShowExportModal(false)}
+        modelClass="Questionnaire"
+      />
     </>
     
   );
