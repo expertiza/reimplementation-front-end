@@ -1405,7 +1405,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                             header: "Participant name",
                             enableSorting: false,
                             enableColumnFilter: false,
-                            cell: ({ row }) => <>{row.original.participant_name}</>
+                            cell: ({ row }) => <>Team_{row.original.participant_name}</>
                           },
                           {
                             cell: ({ row }) => {
