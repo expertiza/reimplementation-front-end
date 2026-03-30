@@ -798,154 +798,41 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <FormSelect
                     controlId="assignment-review_strategy"
                     name="review_strategy"
-                    onChange={(event) => {
-                      const selectedStrategy = event.target.value;
-                      if (selectedStrategy === "Auto-Selected" && formik.values.has_topics && !formik.values.review_topic_threshold) {
-                        formik.setFieldValue("review_topic_threshold", 1);
-                      }
-                    }}
                     options={[
-                      { label: "Static", value: "Static" },
-                      { label: "Dynamic", value: "Dynamic" },
-                      { label: "DJ", value: "DJ" },
+                      { label: "Review Strategy 1", value: 1 },
+                      { label: "Review Strategy 2", value: 2 },
+                      { label: "Review Strategy 3", value: 3 },
                     ]}
                   />
                 </div>
-                {formik.values.review_strategy === "Auto-Selected" ? (
-                  <>
-                    <div style={{ display: 'grid', alignItems: 'center', columnGap: '10px', gridTemplateColumns: 'max-content 1fr' }}>
-                      <label className="form-label">Number of reviews each reviewer is required to do:</label>
-                      <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                        <input
-                          id="assignment-set_required_number_of_reviews_per_reviewer"
-                          name="set_required_number_of_reviews_per_reviewer"
-                          type="number"
-                          className="form-control"
-                          value={formik.values.set_required_number_of_reviews_per_reviewer ?? 0}
-                          onChange={(event) => {
-                            const value = event.target.value === "" ? "" : Number(event.target.value);
-                            const previousRequired = formik.values.set_required_number_of_reviews_per_reviewer;
-                            const currentAllowed = formik.values.set_allowed_number_of_reviews_per_reviewer;
-                            const shouldKeepSynced =
-                              currentAllowed === undefined ||
-                              currentAllowed === null ||
-                              currentAllowed === "" ||
-                              Number(currentAllowed) === Number(previousRequired ?? 0);
-
-                            formik.setFieldValue("set_required_number_of_reviews_per_reviewer", value);
-                            if (shouldKeepSynced) {
-                              formik.setFieldValue("set_allowed_number_of_reviews_per_reviewer", value);
-                            }
-                          }}
-                        />
-                      </div>
-
-                      <label className="form-label">Max. number of reviews each reviewer is allowed to do:</label>
-                      <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                        <input
-                          id="assignment-set_allowed_number_of_reviews_per_reviewer"
-                          name="set_allowed_number_of_reviews_per_reviewer"
-                          type="number"
-                          min={formik.values.set_required_number_of_reviews_per_reviewer ?? 0}
-                          className="form-control"
-                          value={formik.values.set_allowed_number_of_reviews_per_reviewer ?? 0}
-                          onChange={(event) => {
-                            if (event.target.value === "") {
-                              formik.setFieldValue("set_allowed_number_of_reviews_per_reviewer", "");
-                              return;
-                            }
-
-                            const enteredValue = Number(event.target.value);
-                            const requiredValue = Number(formik.values.set_required_number_of_reviews_per_reviewer ?? 0);
-                            const constrainedValue = Math.max(enteredValue, requiredValue);
-
-                            formik.setFieldValue("set_allowed_number_of_reviews_per_reviewer", constrainedValue);
-                          }}
-                        />
-                      </div>
+                {formik.values.has_topics && (
+                  <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
+                    <label className="form-label">Review topic threshold (k):</label>
+                    <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                      <FormInput controlId="assignment-review_topic_threshold" name="review_topic_threshold" type="number" />
                     </div>
-
-                    {formik.values.has_topics && (
-                      <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                          <label className="form-label">Review topic threshold (k):</label>
-                          <ToolTip
-                            id="assignment-review-topic-threshold-k-tooltip"
-                            info="A topic is reviewable if the minimum number of reviews already done for the submissions on that topic is within k of the minimum number of reviews done on the least-reviewed submission on any topic."
-                          />
-                        </div>
-                        <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                          <input
-                            id="assignment-review_topic_threshold"
-                            name="review_topic_threshold"
-                            type="number"
-                            className="form-control"
-                            value={formik.values.review_topic_threshold || 1}
-                            onChange={formik.handleChange}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {formik.values.has_topics && (
-                      <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
-                        <label className="form-label">Review topic threshold (k):</label>
-                        <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                          <FormInput controlId="assignment-review_topic_threshold" name="review_topic_threshold" type="number" />
-                        </div>
-                      </div>
-                    )}
-                    <div style={{ display: 'grid', alignItems: 'center', columnGap: '10px', gridTemplateColumns: 'max-content 1fr' }}>
-                      <label className="form-label">Maximum number of reviews per submission:</label>
-                      <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                        <FormInput controlId="assignment-maximum_number_of_reviews_per_submission" name="maximum_number_of_reviews_per_submission" type="number" />
-                      </div>
-                      <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
-                      <div></div>
-                      <label className="form-label">Set allowed number of reviews per reviewer:</label>
-                      <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                        <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
-                      </div>
-                      <label className="form-label">Set required number of reviews per reviewer:</label>
-                      <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                        <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" name="set_required_number_of_reviews_per_reviewer" type="number" />
-                      </div>
-                    </div>
-                  </>
+                  </div>
                 )}
+                <div style={{ display: 'grid', alignItems: 'center', columnGap: '10px', gridTemplateColumns: 'max-content 1fr' }}>
+                  <label className="form-label">Maximum number of reviews per submission:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-maximum_number_of_reviews_per_submission" name="maximum_number_of_reviews_per_submission" type="number" />
+                  </div>
+                  <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
+                  <div></div>
+                  <label className="form-label">Set allowed number of reviews per reviewer:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
+                  </div>
+                  <label className="form-label">Set required number of reviews per reviewer:</label>
+                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                    <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" name="set_required_number_of_reviews_per_reviewer" type="number" />
+                  </div>
+                </div>
                 <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
+                <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
                 <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
                 <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
-
-                {formik.values.has_teams && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                      <FormCheckbox
-                        controlId="assignment-review_rubric_varies_by_role"
-                        label="Is reviewing role based?"
-                        name="review_rubric_varies_by_role"
-                      />
-                      <ToolTip
-                        id="assignment-review-role-based-tooltip"
-                        info="If this is chosen, every team member will need to choose a role, and team members will review their contributions based on the rubric for that role."
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                      <FormCheckbox
-                        controlId="assignment-is_review_done_by_teams"
-                        label="Are reviews to be done by teams?"
-                        name="is_review_done_by_teams"
-                      />
-                      <ToolTip
-                        id="assignment-review-done-by-teams-tooltip"
-                        info="If this is chosen, teams (not individuals) will be assigned to review other teams."
-                      />
-                    </div>
-                  </>
-                )}
 
               </Tab>
 
