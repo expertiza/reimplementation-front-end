@@ -84,6 +84,11 @@ type ExportModal = {
   contextParams?: Record<string, string | number | undefined>;
 };
 
+type ExportFilePayload = {
+  name: string;
+  contents: string;
+};
+
 /* =============================================================================
    Component (dummy mode – no backend)
 ============================================================================= */
@@ -94,6 +99,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   const [externalFields, setExternalFields] = useState<string[]>([]);
   const [allFields, setAllFields] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [graphExportEnabled, setGraphExportEnabled] = useState(false);
   const [status, setStatus] = useState<string>('');
   const { isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
   const { data: sendExportResponse, error: exportError, sendRequest: sendExport } = useAPI();
@@ -181,6 +187,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
 
       setAllFields(Array.from(new Set(fields)));
       setSelectedFields(normalizedMandatoryFields);
+      setGraphExportEnabled(false);
 
       setStatus('');
     }
@@ -210,32 +217,19 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
     });
   };
 
-  function getFormattedDateTimeForFilename() {
-    const now = new Date();
-
-    // Get year, month, day
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(now.getDate()).padStart(2, '0');
-
-    // Get hours, minutes, seconds
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    // Combine into a string without invalid characters
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-  }
-
-  const downloadFile = (file) => {
-    const url = window.URL.createObjectURL(new Blob([file]))
-    const link = document.createElement('a')
-    link.href = url
-
-    link.setAttribute('download', `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+  const downloadFiles = (files: ExportFilePayload[]) => {
+    files.forEach((file) => {
+      const blob = new Blob([file.contents], { type: "text/csv;charset=utf-8;" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = file.name.endsWith(".csv") ? file.name : `${file.name}.csv`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    });
   };
   const on_export = async () => {
     if (selectedFields.length === 0) {
@@ -260,6 +254,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
       );
 
       formData.append("ordered_fields", JSON.stringify(orderedFields));
+      formData.append("graph_export", String(graphExportEnabled));
       Object.entries(contextParams || {}).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           formData.append(key, String(value));
@@ -283,7 +278,8 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   useEffect(() => {
     if (sendExportResponse) {
       setStatus(sendExportResponse.data.message);
-      downloadFile(sendExportResponse.data.file);
+      const files = Array.isArray(sendExportResponse.data.file) ? sendExportResponse.data.file : [];
+      downloadFiles(files);
 
       if (!exportError) {
         setTimeout(onHide, 1500);
@@ -363,6 +359,19 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
                       </OverlayTrigger>
                   </div>
                 </div>
+              </Col>
+            </Row>
+
+            <Row className="mb-3">
+              <Col>
+                <Form.Check
+                  type="checkbox"
+                  id="graph-export-toggle"
+                  checked={graphExportEnabled}
+                  onChange={(event) => setGraphExportEnabled(event.target.checked)}
+                  label="Enable graph export"
+                  style={TABLE_TEXT}
+                />
               </Col>
             </Row>
 
