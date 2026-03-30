@@ -217,13 +217,28 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
     });
   };
 
+  const getTimestampForFilename = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+  };
+
   const downloadFiles = (files: ExportFilePayload[]) => {
+    const timestamp = getTimestampForFilename();
+
     files.forEach((file) => {
       const blob = new Blob([file.contents], { type: "text/csv;charset=utf-8;" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const filename = file.name.endsWith(".csv") ? file.name : `${file.name}.csv`;
+      const baseName = file.name.replace(/\.csv$/i, "");
+      const filename = `${baseName}_${timestamp}.csv`;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
@@ -369,7 +384,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
                   id="graph-export-toggle"
                   checked={graphExportEnabled}
                   onChange={(event) => setGraphExportEnabled(event.target.checked)}
-                  label="Enable graph export"
+                  label="Export sub-models"
                   style={TABLE_TEXT}
                 />
               </Col>
