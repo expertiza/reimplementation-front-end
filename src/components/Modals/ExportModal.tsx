@@ -1,5 +1,5 @@
 // src/components/ExportModal.tsx
-import React, { useEffect, useState, memo, useCallback } from "react";
+import React, { useEffect, useState, memo, useCallback, useRef } from "react";
 import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
@@ -96,7 +96,13 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [status, setStatus] = useState<string>('');
   const { isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
-  const { data: sendExportResponse, error: exportError, sendRequest: sendExport } = useAPI();
+  const {
+    data: sendExportResponse,
+    error: exportError,
+    sendRequest: sendExport,
+    reset: resetExportState,
+  } = useAPI();
+  const hasHandledExportResponse = useRef(false);
   const teamParticipantFields = useCallback(
     (fields: string[]) => fields.filter((field) => field.startsWith("participant_")),
     []
@@ -128,6 +134,9 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   );
 
   const fetchConfig = useCallback(async () => {
+    hasHandledExportResponse.current = false;
+    resetExportState(true, true);
+
     try {
       const params = new URLSearchParams();
       Object.entries(contextParams || {}).forEach(([key, value]) => {
@@ -161,8 +170,10 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   useEffect(() => {
     if (!show) return;
 
+    hasHandledExportResponse.current = false;
+    resetExportState(true, true);
     fetchConfig();
-  }, [fetchConfig, show]);
+  }, [fetchConfig, resetExportState, show]);
 
   useEffect(() => {
     if (exportResponse) {
@@ -281,17 +292,23 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
 
 
   useEffect(() => {
-    if (sendExportResponse) {
+    if (!show) return;
+
+    if (sendExportResponse && !hasHandledExportResponse.current) {
+      hasHandledExportResponse.current = true;
       setStatus(sendExportResponse.data.message);
       downloadFile(sendExportResponse.data.file);
 
       if (!exportError) {
-        setTimeout(onHide, 1500);
+        setTimeout(() => {
+          resetExportState(true, true);
+          onHide();
+        }, 1500);
       }
     } else if (exportError) {
       setStatus(exportError);
     }
-  }, [exportError, onHide, sendExportResponse]);
+  }, [exportError, onHide, resetExportState, sendExportResponse, show]);
 
   return (
     <Modal
