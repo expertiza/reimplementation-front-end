@@ -58,10 +58,8 @@ export interface IAssignmentFormValues {
    // Misc flags from the form
   allow_tag_prompts?: boolean;
   course_id?: number;
-  has_quizzes?: boolean;
-  calibration_for_training?: boolean;
-  available_to_students?: boolean;
-  allow_topic_suggestion_from_students?: boolean;
+  availability_flag?: boolean;
+  allow_suggestions?: boolean;
   enable_bidding_for_topics?: boolean;
   enable_bidding_for_reviews?: boolean;
   enable_authors_to_review_other_topics?: boolean;
@@ -85,18 +83,24 @@ export interface IAssignmentFormValues {
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
   const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
-  const roundCount = values.number_of_review_rounds ?? 0;
-  for (let i = 1; i <= roundCount; i += 1) {
-    const questionnaireId = values[`questionnaire_round_${i}`];
-    if (questionnaireId) {
-      const existingId = values[`assignment_questionnaire_id_${i}`];
-      assignmentQuestionnaires.push({
-        id: existingId,
-        questionnaire_id: questionnaireId,
-        used_in_round: i,
-      });
+  
+  // Scan for all questionnaire_round_* fields dynamically (0-based indexing)
+  // This works even if number_of_review_rounds is not set correctly
+  Object.keys(values).forEach((key) => {
+    const match = key.match(/^questionnaire_round_(\d+)$/);
+    if (match) {
+      const roundIndex = parseInt(match[1], 10);
+      const questionnaireId = values[key];
+      if (questionnaireId) {
+        const existingId = values[`assignment_questionnaire_id_${roundIndex}`];
+        assignmentQuestionnaires.push({
+          id: existingId ? parseInt(String(existingId), 10) : undefined,
+          questionnaire_id: parseInt(String(questionnaireId), 10),  // Ensure number type
+          used_in_round: roundIndex + 1,  // Convert 0-based index to 1-based round number
+        });
+      }
     }
-  }
+  });
 
   const assignment: IAssignmentRequest = {
     // Core fields
@@ -161,17 +165,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     reminder: values.reminder ?? [],
 
     // Misc flags from other tabs
-    allow_tag_prompts: values.allow_tag_prompts ?? false,
-    has_quizzes: values.has_quizzes ?? false,
-    calibration_for_training: values.calibration_for_training ?? false,
-    available_to_students: values.available_to_students ?? false,
-    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
-    allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
-    staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
+    availability_flag: values.availability_flag ?? false,
+    allow_suggestions: values.allow_suggestions ?? false,
 
     // Per-round rubric configuration
     vary_by_round: values.review_rubric_varies_by_round,
@@ -247,6 +242,18 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     due_dates: assignment.due_dates,
     assignment_questionnaires: assignment.assignment_questionnaires,
   };
+
+  // Map existing assignment_questionnaires back to individual form fields (questionnaire_round_*, assignment_questionnaire_id_*)
+  // so that when submitting, the IDs are included and Rails updates existing records instead of creating new ones
+  const assignmentQuestionnaires: any[] = assignment.assignment_questionnaires || [];
+  assignmentQuestionnaires.forEach((aq: any) => {
+    if (typeof aq.used_in_round === "number" && aq.used_in_round > 0) {
+      const roundIndex = aq.used_in_round - 1; // Convert 1-based round to 0-based index
+      assignmentValues[`questionnaire_round_${roundIndex}`] = aq.questionnaire_id;
+      assignmentValues[`assignment_questionnaire_id_${roundIndex}`] = aq.id;
+    }
+  });
+
   return assignmentValues;
 };
 

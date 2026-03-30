@@ -19,7 +19,7 @@ const DeleteTopics: React.FC<DeleteTopicsProps> = ({ assignmentId, topicIds, top
 
   const deleteHandler = () => {
     deleteTopics({
-      url: `/project_topics`,
+      url: `/sign_up_topics`,
       method: 'DELETE',
       params: {
         assignment_id: Number(assignmentId),

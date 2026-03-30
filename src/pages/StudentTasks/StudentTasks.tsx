@@ -1,10 +1,11 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
-import { Container, Spinner, Alert, Row, Col } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { Container, Spinner, Alert, Row, Col, Button } from "react-bootstrap";
+import { useNavigate, useParams } from "react-router-dom";
 import useAPI from "../../hooks/useAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import TopicsTable, { TopicRow } from "pages/Assignments/components/TopicsTable";
+import axiosClient from "../../utils/axios_client";
 
 interface Topic {
   id: string;
@@ -18,7 +19,56 @@ interface Topic {
   isWaitlisted?: boolean;
 }
 
+interface ReviewerPersistParticipant {
+  id: number;
+  user_id: number;
+  parent_id: number;
+  team_id?: number | null;
+}
+
+interface ReviewerPersistResponseMap {
+  id: number;
+  reviewer_id: number;
+  reviewee_id: number;
+  reviewed_object_id: number;
+  reviewee_team_id?: number | null;
+}
+
+interface ReviewerPersistResponse {
+  id: number;
+  map_id: number;
+  is_submitted: boolean | 0 | 1;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+interface ReviewerPersistTeam {
+  id: number;
+  name: string;
+}
+
+interface ReviewerPersist {
+  participants?: ReviewerPersistParticipant[];
+  response_maps?: ReviewerPersistResponseMap[];
+  responses?: ReviewerPersistResponse[];
+  teams?: ReviewerPersistTeam[];
+}
+
+interface AssignedReviewRow {
+  mapId: number;
+  responseId?: number;
+  teamName: string;
+  revieweeTeamId?: number;
+  assignmentId?: number;
+  assignmentName?: string;
+  status: "Not saved" | "Saved" | "Submitted";
+  questionnaireType: "Review" | "Teammate Review";
+  questionnaireId?: number;
+  questionnaireName: string;
+}
+
 const StudentTasks: React.FC = () => {
+  const navigate = useNavigate();
   const { assignmentId } = useParams<{ assignmentId?: string }>();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
@@ -47,7 +97,7 @@ const StudentTasks: React.FC = () => {
 
   const fetchTopics = useCallback((assignmentId: number) => {
     if (!assignmentId) return;
-    fetchTopicsAPI({ url: `/project_topics?assignment_id=${assignmentId}`, method: 'GET' });
+    fetchTopicsAPI({ url: `/sign_up_topics?assignment_id=${assignmentId}`, method: 'GET' });
   }, [fetchTopicsAPI]);
 
   useEffect(() => {
@@ -241,6 +291,172 @@ const StudentTasks: React.FC = () => {
     }
   }, [assignmentResponse]);
 
+  const resolvedAssignmentId = useMemo(() => {
+    if (assignmentId) return parseInt(assignmentId, 10);
+    if (!assignmentResponse?.data) return undefined;
+    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
+      return Number(assignmentResponse.data[0].id);
+    }
+    return Number(assignmentResponse.data.id);
+  }, [assignmentId, assignmentResponse]);
+
+  const [assignedReviews, setAssignedReviews] = useState<AssignedReviewRow[]>([]);
+
+  useEffect(() => {
+    if (!currentUser?.id) { setAssignedReviews([]); return; }
+
+    const assignmentData = Array.isArray(assignmentResponse?.data)
+      ? assignmentResponse?.data?.[0]
+      : assignmentResponse?.data;
+
+    const questionnaires = Array.isArray(assignmentData?.questionnaires) ? assignmentData.questionnaires : [];
+    const isTeammateQuestionnaire = (questionnaire: any) => {
+      const questionnaireType = String(questionnaire?.questionnaire_type || "");
+      const questionnaireName = String(questionnaire?.name || "");
+      return (
+        /teammatereview/i.test(questionnaireType)
+        || /teammate\s*review/i.test(questionnaireType)
+        || /teammate\s*review/i.test(questionnaireName)
+      );
+    };
+
+    const teammateQuestionnaire = questionnaires.find((questionnaire: any) => isTeammateQuestionnaire(questionnaire));
+    const normalReviewQuestionnaire = questionnaires.find((questionnaire: any) => !isTeammateQuestionnaire(questionnaire));
+
+    // Helper: build rows from a list of maps + optional responses
+    const buildRows = (
+      maps: { id: number; reviewee_id: number; reviewed_object_id?: number; assignment_name?: string; reviewee_team_id?: number | null; team_name?: string; latest_response?: any }[],
+      currentUserTeamId?: number
+    ): AssignedReviewRow[] =>
+      maps.map((map) => {
+        const teamId = Number(map.reviewee_team_id ?? map.reviewee_id);
+        const teamName = map.team_name ?? `Team #${teamId}`;
+        const latestResponse = map.latest_response;
+        const isTeammateReview = Boolean(currentUserTeamId) && Number(currentUserTeamId) === Number(teamId);
+        const mapAssignmentId = (map as any).reviewed_object_id ? Number((map as any).reviewed_object_id) : resolvedAssignmentId;
+
+        const selectedQuestionnaire = isTeammateReview
+          ? (teammateQuestionnaire ?? normalReviewQuestionnaire)
+          : (normalReviewQuestionnaire ?? teammateQuestionnaire);
+
+        let status: AssignedReviewRow["status"] = "Not saved";
+        if (latestResponse) {
+          const submitted = typeof latestResponse.is_submitted === "boolean"
+            ? latestResponse.is_submitted
+            : Number(latestResponse.is_submitted) === 1;
+          status = submitted ? "Submitted" : "Saved";
+        }
+
+        return {
+          mapId: Number(map.id),
+          responseId: latestResponse ? Number(latestResponse.id) : undefined,
+          teamName,
+          revieweeTeamId: (map as any)._revieweeTeamId ?? Number(map.reviewee_team_id ?? map.reviewee_id),
+          assignmentId: mapAssignmentId,
+          assignmentName: (map as any).assignment_name,
+          status,
+          questionnaireType: isTeammateReview ? "Teammate Review" : "Review",
+          questionnaireId: selectedQuestionnaire?.id ? Number(selectedQuestionnaire.id) : undefined,
+          questionnaireName: selectedQuestionnaire?.name || (isTeammateReview ? "Teammate Review Questionnaire" : "Review Questionnaire")
+        };
+      });
+
+    // 1) Try localStorage first (data written by AssignReviewer page) — only when scoped to one assignment
+    if (resolvedAssignmentId) {
+      try {
+        const raw = localStorage.getItem(`assignreviewer:${resolvedAssignmentId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw) as ReviewerPersist;
+        const participants = Array.isArray(parsed.participants) ? parsed.participants : [];
+        const responseMaps = Array.isArray(parsed.response_maps) ? parsed.response_maps : [];
+        const responses = Array.isArray(parsed.responses) ? parsed.responses : [];
+        const teams = Array.isArray(parsed.teams) ? parsed.teams : [];
+
+        const participantIds = new Set(
+          participants
+            .filter((p) => Number(p.user_id) === Number(currentUser.id) && Number(p.parent_id) === Number(resolvedAssignmentId))
+            .map((p) => p.id)
+        );
+
+        const currentParticipant = participants.find((p) =>
+          Number(p.user_id) === Number(currentUser.id) && Number(p.parent_id) === Number(resolvedAssignmentId)
+        );
+        const currentUserTeamId = currentParticipant?.team_id ? Number(currentParticipant.team_id) : undefined;
+
+        if (participantIds.size > 0) {
+          const latestByMapId = new Map<number, ReviewerPersistResponse>();
+          responses.forEach((response) => {
+            const mapId = Number(response.map_id);
+            const timestamp = new Date(response.updated_at ?? response.created_at ?? "").getTime() || 0;
+            const previous = latestByMapId.get(mapId);
+            const previousTs = previous
+              ? (new Date(previous.updated_at ?? previous.created_at ?? "").getTime() || 0)
+              : -1;
+            if (!previous || timestamp > previousTs) latestByMapId.set(mapId, response);
+          });
+
+          const filtered = responseMaps
+            .filter((m) => Number(m.reviewed_object_id) === Number(resolvedAssignmentId) && participantIds.has(Number(m.reviewer_id)));
+
+          const withResponse = filtered.map((m) => ({
+            ...m,
+            team_name: teams.find((t) => Number(t.id) === Number(m.reviewee_team_id ?? m.reviewee_id))?.name,
+            latest_response: latestByMapId.get(Number(m.id)),
+            _revieweeTeamId: Number(m.reviewee_team_id ?? m.reviewee_id)
+          }));
+
+          const rows = buildRows(withResponse, currentUserTeamId);
+          // Don't return early — also fetch from backend and merge below
+          if (rows.length > 0) { setAssignedReviews(rows); }
+        }
+      }
+    } catch { /* fall through to API */ }
+    } // end if resolvedAssignmentId
+
+    // 2) Always fetch ALL reviews across assignments (backend is source of truth)
+    let cancelled = false;
+    axiosClient
+      .get('/response_maps', { params: { reviewer_user_id: currentUser.id } })
+      .then((res) => {
+        if (cancelled) return;
+        const maps = Array.isArray(res.data?.response_maps) ? res.data.response_maps : [];
+        const backendRows = buildRows(maps);
+        setAssignedReviews(prev => {
+          // Merge: backend rows take priority (by mapId), then add any localStorage-only rows
+          const byMapId = new Map<number, AssignedReviewRow>();
+          prev.forEach(r => byMapId.set(r.mapId, r));
+          backendRows.forEach(r => byMapId.set(r.mapId, r));
+          return Array.from(byMapId.values());
+        });
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [currentUser?.id, assignmentResponse?.data]);
+
+  const handleOpenReview = useCallback((review: AssignedReviewRow) => {
+    const effectiveAssignmentId = review.assignmentId ?? resolvedAssignmentId;
+    const params = new URLSearchParams({
+      assignment_id: String(effectiveAssignmentId),
+      map_id: String(review.mapId),
+      questionnaire_type: review.questionnaireType,
+      questionnaire_name: review.questionnaireName,
+      team_name: review.teamName,
+    });
+
+    if (review.questionnaireId) {
+      params.set("questionnaire_id", String(review.questionnaireId));
+    }
+    if (review.responseId) {
+      params.set("response_id", String(review.responseId));
+    }
+    if (review.revieweeTeamId) {
+      params.set("reviewee_team_id", String(review.revieweeTeamId));
+    }
+
+    navigate(`/response/new?${params.toString()}`);
+  }, [navigate, resolvedAssignmentId]);
+
   // Check if bookmarks are allowed for this assignment
   const allowBookmarks = useMemo(() => {
     if (!assignmentResponse?.data) return false;
@@ -414,16 +630,16 @@ const StudentTasks: React.FC = () => {
   // removed duplicate columns definition placed after conditional returns
 
   return (
-    <Container fluid className="px-md-4">
+    <Container fluid className="px-md-4" style={{ fontFamily: 'verdana, arial, helvetica, sans-serif', color: '#333' }}>
       <Row className="mt-3 mb-3">
         <Col xs={12}>
-          <h2>Signup Sheet For {assignmentName}</h2>
+          <h2>Signup sheet for {assignmentName}</h2>
         </Col>
       </Row>
       
       <Row className="mb-4">
         <Col xs={12}>
-          <p className="mb-0">
+          <p className="mb-0" style={{ fontSize: 13, lineHeight: '30px' }}>
             <strong>Your topic(s):</strong> {userSelectedTopics.length > 0
               ? userSelectedTopics.map((topic) => topic.isWaitlisted ? `${topic.name} (waitlisted)` : topic.name).join(", ")
               : "No topics selected yet"}
@@ -431,12 +647,55 @@ const StudentTasks: React.FC = () => {
         </Col>
       </Row>
 
+      <Row className="mb-4">
+        <Col xs={12}>
+          <h5 className="mb-2" style={{ fontSize: '1.2em', lineHeight: '18px' }}>Assigned reviews</h5>
+          {assignedReviews.length === 0 ? (
+            <Alert variant="light" className="flash_note mb-0" style={{ fontSize: 13 }}>
+              No reviews currently assigned to you.
+            </Alert>
+          ) : (
+            <table className="table table-striped" style={{ fontSize: 15, lineHeight: '1.428em' }}>
+              <thead>
+                <tr>
+                  <th>Assignment</th>
+                  <th>Team</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assignedReviews.map((review) => (
+                  <tr key={review.mapId}>
+                    <td>{review.assignmentName || `Assignment #${review.assignmentId}`}</td>
+                    <td>{review.teamName}</td>
+                    <td>{review.questionnaireType}</td>
+                    <td><strong>{review.status}</strong></td>
+                    <td>
+                      <Button
+                        variant="outline-secondary"
+                        className="btn btn-md"
+                        size="sm"
+                        onClick={() => handleOpenReview(review)}
+                      >
+                        {review.responseId ? "Open review" : "Start review"}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Col>
+      </Row>
+
       <Row>
         <Col xs={12}>
           {topics.length === 0 ? (
-            <Alert variant="info">
-              <Alert.Heading>No Topics Available</Alert.Heading>
-              <p>There are no topics available for this assignment yet.</p>
+            <Alert variant="info" className="flash_note">
+              <Alert.Heading>No topics available</Alert.Heading>
+              <p style={{ fontSize: 13 }}>There are no topics available for this assignment yet.</p>
             </Alert>
           ) : (
             <TopicsTable

@@ -189,7 +189,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
       }
     }
   }, [deleteResponse, dispatch, id, fetchTopics]);
@@ -205,7 +205,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
       }
     }
   }, [createResponse, dispatch, id, fetchTopics]);
@@ -221,7 +221,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
       }
     }
   }, [updateTopicResponse, dispatch, id, fetchTopics]);
@@ -236,7 +236,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     if (dropTeamResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
       if (id) {
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
       }
     }
   }, [dropTeamResponse, dispatch, id, fetchTopics]);
@@ -252,7 +252,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       if (id) {
         setTopicsLoading(true);
         setTopicsError(null);
-        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
       }
     }, [id, fetchTopics]);
 
@@ -335,7 +335,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           console.log(`Delete topic ${topicIdentifier}`);
           if (id) {
             deleteTopic({
-              url: `/project_topics`,
+              url: `/sign_up_topics`,
               method: 'DELETE',
               params: {
                 assignment_id: Number(id),
@@ -348,10 +348,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
           console.log(`Edit topic DB id ${dbId}`, updatedData);
           updateTopic({
-            url: `/project_topics/${dbId}`,
+            url: `/sign_up_topics/${dbId}`,
             method: 'PATCH',
             data: {
-              project_topic: {
+              sign_up_topic: {
                 topic_identifier: updatedData.topic_identifier,
                 topic_name: updatedData.topic_name,
                 category: updatedData.category,
@@ -368,10 +368,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           console.log(`Create topic`, topicData);
           if (id) {
             createTopic({
-              url: `/project_topics`,
+              url: `/sign_up_topics`,
               method: 'POST',
               data: {
-                project_topic: {
+                sign_up_topic: {
                   topic_identifier: topicData.topic_identifier || topicData.id,
                   topic_name: topicData.topic_name || topicData.name,
                   category: topicData.category,
@@ -519,6 +519,21 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     value: q.id,
   }));
 
+  const teammateReviewOptions = (assignmentData.questionnaires || [])
+    .filter((q: any) => {
+      const questionnaireType = String(q.questionnaire_type || "");
+      const questionnaireName = String(q.name || "");
+      return (
+        /teammatereview/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireName)
+      );
+    })
+    .map((q: any) => ({
+      label: q.name,
+      value: q.id,
+    }));
+
   const reviewRounds = assignmentData.number_of_review_rounds;
 
   // Build initial form values from existing assignment data (update) or defaults (create)
@@ -629,7 +644,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormCheckbox controlId="assignment-has_quizzes" label="Has quizzes?" name="has_quizzes" />
                 <FormCheckbox controlId="assignment-calibration_for_training" label="Calibration for training?" name="calibration_for_training" />
                 <FormCheckbox controlId="assignment-allow_tag_prompts" label="Allow tag prompts so author can tag feedback comments?" name="allow_tag_prompts" />
-                <FormCheckbox controlId="assignment-available_to_students" label="Available to students?" name="available_to_students" />
+                <FormCheckbox controlId="assignment-availability_flag" label="Available to students?" name="availability_flag" />
               </Tab>
 
               {/* Topics Tab */}
@@ -647,7 +662,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
-            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
+            onTopicsChanged={() => id && fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` })}
                 />
               </Tab>
 
@@ -720,7 +735,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
                         title: "Teammate review:",
-                        questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
+                        questionnaire_options: teammateReviewOptions,
                         questionnaire_type: 'dropdown',
                       },
                       {

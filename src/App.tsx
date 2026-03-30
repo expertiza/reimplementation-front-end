@@ -72,6 +72,7 @@ function App() {
         {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
+          loader: loadQuestionnaire,
         },
 
         {
