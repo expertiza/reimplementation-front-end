@@ -1,8 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import React from "react";
-import useAPI from "../../hooks/useAPI";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/AssignmentColumns";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IAssignmentResponse } from "../../utils/interfaces";
@@ -33,10 +32,10 @@ interface ActionHandler {
 interface CourseAssignmentsProps {
   courseId: number;
   courseName: string;
+  assignments: IAssignmentResponse[];
 }
 
-const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName }) => {
-  const { data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
+const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName, assignments }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
@@ -151,12 +150,6 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     ]
   );
 
-  useEffect(() => {
-    if (!showDeleteConfirmation.visible) {
-      fetchAssignments({ url: `/assignments` });
-    }
-  }, [fetchAssignments, showDeleteConfirmation.visible]);
-
   const getAssignmentColumns = (actions: ActionHandler[]) => {
     let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col =>
       !["edit", "delete", "actions"].includes(String(col.id))
@@ -208,8 +201,6 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     return [...baseColumns, actionsColumn];
   };
 
-  const assignments = (assignmentResponse?.data || []).filter(
-    (assignment: any) => assignment.course_id === courseId);
   const columns = useMemo(() => getAssignmentColumns(actionHandlers), [actionHandlers]);
 
   return (
@@ -219,6 +210,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
         <AssignmentDelete
           assignmentData={showDeleteConfirmation.data!}
           onClose={onDeleteAssignmentHandler}
+          onSuccess={() => onAssignmentDelete(showDeleteConfirmation.data!.id)}
         />
       )}
       <Table
