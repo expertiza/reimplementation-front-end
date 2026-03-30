@@ -940,7 +940,7 @@
 
 
 // src/pages/Assignments/CreateTeams.tsx
-import React, { useMemo, useState, useCallback, memo } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, memo } from 'react';
 import {
   Button,
   Container,
@@ -957,6 +957,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom';
 
 import ImportModal from "../../components/Modals/ImportModal";
 import ExportModal from "../../components/Modals/ExportModal";
+import axiosClient from "../../utils/axios_client";
 
 /* =============================================================================
    Types
@@ -1311,6 +1312,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   // Loader / routing
   const loader = (useLoaderData?.() as LoaderPayload) || {};
   const navigate = useNavigate();
+  const assignmentId = String((loader as any)?.id || '');
 
   // Context
   const ctxType = (contextType || loader.contextType || 'assignment') as ContextType;
@@ -1352,6 +1354,56 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const [newTeamName, setNewTeamName] = useState('');
   const [copyTarget, setCopyTarget] = useState('');
   const [copySource, setCopySource] = useState('');
+
+  const refreshAssignmentTeams = useCallback(async () => {
+    if (ctxType !== 'assignment' || !assignmentId) return;
+
+    try {
+      const [teamsResponse, participantsResponse] = await Promise.all([
+        axiosClient.get('/teams'),
+        axiosClient.get(`/participants/assignment/${assignmentId}`),
+      ]);
+
+      const fetchedTeams: Team[] = (Array.isArray(teamsResponse.data) ? teamsResponse.data : [])
+        .filter((team: any) => String(team.assignment_id) === assignmentId)
+        .map((team: any) => ({
+          id: team.id,
+          name: team.name,
+          members: (team.users || []).map((user: any) => ({
+            id: user.id,
+            username: user.name || user.full_name || `User ${user.id}`,
+            fullName: user.full_name || user.name,
+            teamName: team.name,
+          })),
+        }));
+
+      const assignedIds = new Set(
+        fetchedTeams.flatMap((team) => team.members.map((member) => String(member.id))),
+      );
+
+      const fetchedParticipants: Participant[] = (Array.isArray(participantsResponse.data)
+        ? participantsResponse.data
+        : []
+      )
+        .map((participant: any) => ({
+          id: participant.user?.id ?? participant.id,
+          username: participant.user?.name || participant.user?.full_name || `User ${participant.user?.id ?? participant.id}`,
+          fullName: participant.user?.full_name || participant.user?.name,
+          teamName: '',
+        }))
+        .filter((participant: Participant) => !assignedIds.has(String(participant.id)));
+
+      setTeams(fetchedTeams);
+      setUnassigned(fetchedParticipants);
+      setExpanded(Object.fromEntries(fetchedTeams.map((team) => [team.id, true])));
+    } catch (error) {
+      console.error('Error loading assignment teams:', error);
+    }
+  }, [assignmentId, ctxType]);
+
+  useEffect(() => {
+    refreshAssignmentTeams();
+  }, [refreshAssignmentTeams]);
 
   /* -------------------------------------------------------------------------
      Derived helpers
@@ -1680,7 +1732,10 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       {/* Import / Export modals (from separate files) */}
       <ImportModal
         show={showImportTeamsModal}
-        onHide={() => setShowImportTeamsModal(false)}
+        onHide={() => {
+          setShowImportTeamsModal(false);
+          refreshAssignmentTeams();
+        }}
         modelClass="Team"
       />
       <ExportModal
@@ -1838,4 +1893,3 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
 };
 
 export default CreateTeams;
-
