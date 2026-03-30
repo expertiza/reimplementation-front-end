@@ -940,7 +940,7 @@
 
 
 // src/pages/Assignments/CreateTeams.tsx
-import React, { useMemo, useState, useCallback, memo } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, memo } from 'react';
 import {
   Button,
   Container,
@@ -957,6 +957,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom';
 
 import ImportModal from "../../components/Modals/ImportModal";
 import ExportModal from "../../components/Modals/ExportModal";
+import axiosClient from "../../utils/axios_client";
 
 /* =============================================================================
    Types
@@ -1311,14 +1312,15 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   // Loader / routing
   const loader = (useLoaderData?.() as LoaderPayload) || {};
   const navigate = useNavigate();
+  const assignmentId = String((loader as any)?.id || '');
 
   // Context
   const ctxType = (contextType || loader.contextType || 'assignment') as ContextType;
   const ctxName = contextName || loader.contextName || 'Program';
 
   // Initial data
-  const baseTeams = loader.initialTeams || sampleTeams;
-  const baseUnassigned = loader.initialUnassigned || sampleUnassigned;
+  const baseTeams = loader.initialTeams || [];
+  const baseUnassigned = loader.initialUnassigned || [];
 
   // Compute initial unassigned list excluding already-assigned members
   const initialUnassigned = useMemo(() => {
@@ -1352,6 +1354,61 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const [newTeamName, setNewTeamName] = useState('');
   const [copyTarget, setCopyTarget] = useState('');
   const [copySource, setCopySource] = useState('');
+
+  const mapUserToParticipant = useCallback((user: any, teamName = ''): Participant => ({
+    id: user.id,
+    username: user.name || user.username || user.full_name || user.fullName || `User ${user.id}`,
+    fullName: user.full_name || user.fullName || user.name || user.username,
+    teamName,
+  }), []);
+
+  const refreshAssignmentTeams = useCallback(async () => {
+    if (ctxType !== 'assignment' || !assignmentId) return;
+
+    try {
+      const [teamsResponse, participantsResponse] = await Promise.all([
+        axiosClient.get('/teams'),
+        axiosClient.get(`/participants/assignment/${assignmentId}`),
+      ]);
+
+      const fetchedTeams: Team[] = (Array.isArray(teamsResponse.data) ? teamsResponse.data : [])
+        .filter((team: any) =>
+          String(team.assignment_id ?? team.parent_id) === assignmentId &&
+          ['AssignmentTeam', 'MentoredTeam'].includes(team.type),
+        )
+        .map((team: any) => ({
+          id: team.id,
+          name: team.name,
+          members: (team.users || []).map((user: any) => mapUserToParticipant(user, team.name)),
+        }));
+
+      const assignedIds = new Set(
+        fetchedTeams.flatMap((team) => team.members.map((member) => String(member.id))),
+      );
+
+      const fetchedParticipants: Participant[] = (Array.isArray(participantsResponse.data)
+        ? participantsResponse.data
+        : []
+      )
+        .map((participant: any) => ({
+          id: participant.user?.id ?? participant.id,
+          username: participant.user?.name || participant.user?.username || participant.user?.fullName || participant.user?.full_name || `User ${participant.user?.id ?? participant.id}`,
+          fullName: participant.user?.fullName || participant.user?.full_name || participant.user?.name,
+          teamName: '',
+        }))
+        .filter((participant: Participant) => !assignedIds.has(String(participant.id)));
+
+      setTeams(fetchedTeams);
+      setUnassigned(fetchedParticipants);
+      setExpanded(Object.fromEntries(fetchedTeams.map((team) => [team.id, true])));
+    } catch (error) {
+      console.error('Error loading assignment teams:', error);
+    }
+  }, [assignmentId, ctxType, mapUserToParticipant]);
+
+  useEffect(() => {
+    refreshAssignmentTeams();
+  }, [refreshAssignmentTeams]);
 
   /* -------------------------------------------------------------------------
      Derived helpers
@@ -1396,38 +1453,36 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     setShowAddModal(true);
   }, []);
 
-  const confirmAddMember = useCallback(() => {
+  const confirmAddMember = useCallback(async () => {
     if (!selectedTeam || !selectedParticipantId) return;
-    const member = unassigned.find((u) => String(u.id) === selectedParticipantId);
-    if (!member) return;
-
-    setUnassigned((prev) => prev.filter((u) => String(u.id) !== selectedParticipantId));
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id === selectedTeam.id
-          ? { ...t, members: [...t.members, { ...member, teamName: t.name }] }
-          : t,
-      ),
-    );
-    setShowAddModal(false);
-  }, [selectedParticipantId, selectedTeam, unassigned]);
+    try {
+      await axiosClient.post(`/teams/${selectedTeam.id}/members`, {
+        team_participant: { user_id: selectedParticipantId },
+      });
+      setShowAddModal(false);
+      setSelectedParticipantId('');
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error adding member to team:', error);
+    }
+  }, [refreshAssignmentTeams, selectedParticipantId, selectedTeam]);
 
   const removeMemberFromTeam = useCallback(
-    (teamId: Team['id'], memberId: Participant['id']) => {
+    async (teamId: Team['id'], memberId: Participant['id']) => {
       const team = teams.find((t) => t.id === teamId);
       if (!team) return;
 
       const member = team.members.find((m) => m.id === memberId);
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t,
-        ),
-      );
-      if (member) {
-        setUnassigned((prev) => [...prev, { ...member, teamName: '' }]);
+      if (!member) return;
+
+      try {
+        await axiosClient.delete(`/teams/${teamId}/members/${member.id}`);
+        refreshAssignmentTeams();
+      } catch (error) {
+        console.error('Error removing member from team:', error);
       }
     },
-    [teams],
+    [refreshAssignmentTeams, teams],
   );
 
   const removeMentor = useCallback((teamId: Team['id']) => {
@@ -1446,50 +1501,60 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     setShowEditModal(true);
   }, []);
 
-  const confirmEditTeamName = useCallback(() => {
+  const confirmEditTeamName = useCallback(async () => {
     if (!selectedTeam || !editTeamName.trim()) return;
-    const newName = editTeamName.trim();
-    setTeams((prev) =>
-      prev.map((t) =>
-        t.id !== selectedTeam.id
-          ? t
-          : {
-            ...t,
-            name: newName,
-            members: t.members.map((m) => ({ ...m, teamName: newName })),
-          },
-      ),
-    );
-    setShowEditModal(false);
-  }, [editTeamName, selectedTeam]);
+    try {
+      await axiosClient.patch(`/teams/${selectedTeam.id}`, {
+        team: { name: editTeamName.trim() },
+      });
+      setShowEditModal(false);
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error updating team:', error);
+    }
+  }, [editTeamName, refreshAssignmentTeams, selectedTeam]);
 
   const deleteTeam = useCallback(
-    (teamId: Team['id']) => {
-      const team = teams.find((t) => t.id === teamId);
-      setTeams((prev) => prev.filter((t) => t.id !== teamId));
-      if (team) {
-        setUnassigned((prev) => [...prev, ...team.members.map((m) => ({ ...m, teamName: '' }))]);
+    async (teamId: Team['id']) => {
+      try {
+        await axiosClient.delete(`/teams/${teamId}`);
+        refreshAssignmentTeams();
+      } catch (error) {
+        console.error('Error deleting team:', error);
       }
     },
-    [teams],
+    [refreshAssignmentTeams],
   );
 
-  const createTeam = useCallback(() => {
+  const createTeam = useCallback(async () => {
     const name = newTeamName.trim();
     if (!name || teams.some((t) => t.name === name)) return;
-    const id = `t-${Date.now()}`;
-    setTeams((prev) => [...prev, { id, name, members: [] }]);
-    setNewTeamName('');
-    setShowCreateModal(false);
-  }, [newTeamName, teams]);
+    try {
+      await axiosClient.post('/teams', {
+        team: {
+          name,
+          type: 'AssignmentTeam',
+          parent_id: assignmentId,
+        },
+      });
+      setNewTeamName('');
+      setShowCreateModal(false);
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error creating team:', error);
+    }
+  }, [assignmentId, newTeamName, refreshAssignmentTeams, teams]);
 
-  const deleteAllTeams = useCallback(() => {
+  const deleteAllTeams = useCallback(async () => {
     if (!window.confirm('Delete all teams? This returns all members to the unassigned list.'))
       return;
-    const everyone = teams.flatMap((t) => t.members);
-    setUnassigned((prev) => [...prev, ...everyone.map((m) => ({ ...m, teamName: '' }))]);
-    setTeams([]);
-  }, [teams]);
+    try {
+      await Promise.all(teams.map((team) => axiosClient.delete(`/teams/${team.id}`)));
+      refreshAssignmentTeams();
+    } catch (error) {
+      console.error('Error deleting all teams:', error);
+    }
+  }, [refreshAssignmentTeams, teams]);
 
   const copyTeamsToCourse = useCallback(() => {
     alert(`Copying ${teams.length} team(s) to "${copyTarget || '(choose destination)'}"`);
@@ -1680,13 +1745,18 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       {/* Import / Export modals (from separate files) */}
       <ImportModal
         show={showImportTeamsModal}
-        onHide={() => setShowImportTeamsModal(false)}
+        onHide={() => {
+          setShowImportTeamsModal(false);
+          refreshAssignmentTeams();
+        }}
         modelClass="Team"
+        contextParams={{ assignment_id: assignmentId }}
       />
       <ExportModal
         show={showExportTeamsModal}
         onHide={() => setShowExportTeamsModal(false)}
         modelClass="Team"
+        contextParams={{ assignment_id: assignmentId }}
       />
 
       {/* Other Modals */}
@@ -1838,4 +1908,3 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
 };
 
 export default CreateTeams;
-

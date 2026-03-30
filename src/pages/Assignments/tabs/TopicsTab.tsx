@@ -5,6 +5,8 @@ import { BsPersonPlusFill, BsBookmark, BsBookmarkFill } from "react-icons/bs";
 import TopicsTable from "pages/Assignments/components/TopicsTable";
 import DeleteTopics from "../TopicDelete";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import ImportModal from "../../../components/Modals/ImportModal";
+import ExportModal from "../../../components/Modals/ExportModal";
 
 // --- Interface Modifications ---
 // Assuming these interfaces are defined elsewhere and imported
@@ -87,6 +89,34 @@ interface TopicsTabProps {
 
 // --- Component Implementation ---
 
+const STANDARD_TEXT: React.CSSProperties = {
+  fontFamily: 'verdana, arial, helvetica, sans-serif',
+  color: '#333',
+  fontSize: '13px',
+  lineHeight: '30px',
+};
+
+const toolbarLinkBase: React.CSSProperties = {
+  ...STANDARD_TEXT,
+  color: '#8b5e3c',
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  margin: 0,
+  cursor: 'pointer',
+  textDecoration: 'none',
+};
+const pipe: React.CSSProperties = { margin: '0 8px', color: '#8b5e3c' };
+
+const ToolbarLink: React.FC<{
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ onClick, children }) => (
+  <button type="button" style={toolbarLinkBase} onClick={onClick}>
+    {children}
+  </button>
+);
+
 const TopicsTab = ({
   assignmentName = "Assignment",
   assignmentId,
@@ -121,9 +151,9 @@ const TopicsTab = ({
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
-  // Import topics modal state
+  // Import / export topics modal state
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importData, setImportData] = useState('');
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Delete modal state (repo-standard)
   const [deleteState, setDeleteState] = useState<{ visible: boolean; ids: string[]; names: string[] }>({ visible: false, ids: [], names: [] });
@@ -256,41 +286,20 @@ const TopicsTab = ({
 
   // --- Import Topics Handlers ---
   const handleShowImport = () => {
-    setImportData('');
     setShowImportModal(true);
   };
 
   const handleCloseImport = () => {
+    onTopicsChanged?.();
     setShowImportModal(false);
   };
 
-  const handleImportTopics = () => {
-    try {
-      // Parse CSV or JSON data
-      const lines = importData.trim().split('\n');
-      const topics = lines.map((line, index) => {
-        const [topic_name, topic_identifier, category, max_choosers, description, link] = line.split(',');
-        return {
-          topic_name: topic_name?.trim() || `Imported Topic ${index + 1}`,
-          topic_identifier: topic_identifier?.trim() || `IMP${index + 1}`,
-          category: category?.trim() || '',
-          max_choosers: parseInt(max_choosers?.trim()) || 1,
-          description: description?.trim() || '',
-          link: link?.trim() || ''
-        };
-      });
+  const handleShowExport = () => {
+    setShowExportModal(true);
+  };
 
-      // Create each topic
-      topics.forEach(topic => {
-        if (onCreateTopic) {
-          onCreateTopic(topic);
-        }
-      });
-
-      handleCloseImport();
-    } catch (error) {
-      console.error('Error importing topics:', error);
-    }
+  const handleCloseExport = () => {
+    setShowExportModal(false);
   };
 
   // --- Delete Handlers ---
@@ -522,34 +531,19 @@ const TopicsTab = ({
           )}
         />
 
-        {/* Action Buttons */}
-        <div className="d-flex flex-wrap gap-2 justify-content-start mb-3 mt-3">
-          <Button 
-            variant="success" 
-            onClick={handleShowNewTopic}
-          >
-            New topic
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={handleShowImport}
-          >
-            Import topics
-          </Button>
-          <Button 
-            variant="danger" 
-            onClick={handleDeleteSelected}
-            disabled={selectedTopics.size === 0}
-          >
-            Delete selected topics ({selectedTopics.size})
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleBack}
-          >
-            Back
-          </Button>
-        </div>
+        <Row className="mt-3 mb-3">
+          <Col style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+            <ToolbarLink onClick={handleShowNewTopic}>New topic</ToolbarLink>
+            <span style={pipe}>|</span>
+            <ToolbarLink onClick={handleShowImport}>Import topics</ToolbarLink>
+            <span style={pipe}>|</span>
+            <ToolbarLink onClick={handleShowExport}>Export topics</ToolbarLink>
+            <span style={pipe}>|</span>
+            <ToolbarLink onClick={handleDeleteSelected}>Delete selected topics ({selectedTopics.size})</ToolbarLink>
+            <span style={pipe}>|</span>
+            <ToolbarLink onClick={handleBack}>Back</ToolbarLink>
+          </Col>
+        </Row>
       </Col>
 
        {/* Partner Advertisement Modal */}
@@ -676,40 +670,16 @@ const TopicsTab = ({
         </Modal.Footer>
       </Modal>
 
-      {/* Import Topics Modal */}
-      <Modal show={showImportModal} onHide={handleCloseImport} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Import Topics</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="mb-3">
-            <p>Import topics from CSV format. Each line should contain:</p>
-            <p><code>Topic Name, Topic Identifier, Category, Max Choosers, Description, Link</code></p>
-            <p className="text-muted small">Example: "Database Design, DB001, Technical, 2, Design database schema, https://example.com"</p>
-          </div>
-          <FloatingLabel controlId="importData" label="CSV Data">
-            <Form.Control
-              as="textarea"
-              placeholder="Enter CSV data here..."
-              style={{ height: '200px' }}
-              value={importData}
-              onChange={(e) => setImportData(e.target.value)}
-            />
-          </FloatingLabel>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseImport}>
-            Cancel
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleImportTopics}
-            disabled={!importData.trim()}
-          >
-            Import Topics
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <ImportModal
+        show={showImportModal}
+        onHide={handleCloseImport}
+        modelClass="ProjectTopic"
+      />
+      <ExportModal
+        show={showExportModal}
+        onHide={handleCloseExport}
+        modelClass="ProjectTopic"
+      />
 
       {deleteState.visible && (
         <DeleteTopics

@@ -74,16 +74,42 @@ export const transformUserRequest = (values: IUserFormValues) => {
   return JSON.stringify(user);
 };
 
+const parseFullName = (fullName: string) => {
+  const normalizedFullName = (fullName || "").trim();
+  if (!normalizedFullName) {
+    return { firstName: "", lastName: "" };
+  }
+
+  if (normalizedFullName.includes(",")) {
+    const [lastName = "", firstName = ""] = normalizedFullName.split(",", 2);
+    return {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+    };
+  }
+
+  const parts = normalizedFullName.split(/\s+/);
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "" };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
+};
+
 export const transformUserResponse = (userResponse: string) => {
   const user: IUserResponse = JSON.parse(userResponse);
+  const { firstName, lastName } = parseFullName(user.full_name);
   const parent_id = user.parent.id ? user.parent.id : null;
   const institution_id = user.institution.id ? user.institution.id : -1;
   const userValues: IUserFormValues = {
     id: user.id,
     name: user.name,
     email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
+    firstName,
+    lastName,
     role_id: user.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
