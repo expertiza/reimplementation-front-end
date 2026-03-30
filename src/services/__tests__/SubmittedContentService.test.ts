@@ -1,84 +1,70 @@
-import axios from 'axios';
+import axiosClient from '../../utils/axios_client';
 import SubmittedContentService from '../SubmittedContentService';
-import type { Mocked } from 'vitest';
 
-vi.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
+vi.mock('../../utils/axios_client', () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+const mockedClient = vi.mocked(axiosClient, true);
 
 describe('SubmittedContentService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test('submitFile should call correct endpoint', async () => {
+  test('submitFile posts multipart with participant id and uploaded_file', async () => {
     const mockResponse = { data: { message: 'File uploaded' } };
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+    mockedClient.post.mockResolvedValueOnce(mockResponse);
 
-    const formData = new FormData();
-    formData.append('file', new File(['test'], 'test.pdf'));
+    const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
+    const result = await SubmittedContentService.submitFile('123', file, '/');
 
-    const result = await SubmittedContentService.submitFile(formData, '123', '/');
-
-    expect(mockedAxios.post).toHaveBeenCalledWith(
+    expect(mockedClient.post).toHaveBeenCalledWith(
       '/submitted_content/submit_file',
-      formData,
-      expect.any(Object)
+      expect.any(FormData)
     );
     expect(result).toEqual(mockResponse.data);
-  });
-
-  test('submitFile should handle FormData correctly', async () => {
-    mockedAxios.post.mockResolvedValueOnce({ data: { message: 'Success' } });
-
-    const file = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
-    const formData = new FormData();
-    formData.append('id', '123');
-    formData.append('uploaded_file', file);
-
-    await SubmittedContentService.submitFile(formData, '123', '/');
-
-    expect(mockedAxios.post).toHaveBeenCalled();
   });
 
   test('submitHyperlink should call correct endpoint', async () => {
     const mockResponse = { data: { message: 'Hyperlink submitted' } };
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+    mockedClient.post.mockResolvedValueOnce(mockResponse);
 
     const result = await SubmittedContentService.submitHyperlink('https://example.com', '123');
 
-    expect(mockedAxios.post).toHaveBeenCalledWith(
+    expect(mockedClient.post).toHaveBeenCalledWith(
       '/submitted_content/submit_hyperlink',
       expect.objectContaining({
         id: '123',
-        submission: 'https://example.com',
+        submit_link: 'https://example.com',
       })
     );
     expect(result).toEqual(mockResponse.data);
   });
 
-  test('removeHyperlink should call correct endpoint', async () => {
-    const mockResponse = { data: { message: 'Hyperlink removed' } };
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+  test('removeHyperlink should DELETE with query params', async () => {
+    const mockResponse = { data: {} };
+    mockedClient.delete.mockResolvedValueOnce(mockResponse);
 
     const result = await SubmittedContentService.removeHyperlink('123', 0);
 
-    expect(mockedAxios.post).toHaveBeenCalledWith(
-      '/submitted_content/remove_hyperlink',
-      expect.objectContaining({
-        id: '123',
-        chk_links: 0,
-      })
-    );
+    expect(mockedClient.delete).toHaveBeenCalledWith('/submitted_content/remove_hyperlink', {
+      params: { id: '123', chk_links: 0 },
+    });
     expect(result).toEqual(mockResponse.data);
   });
 
   test('listFiles should call correct endpoint', async () => {
     const mockResponse = { data: { files: [], hyperlinks: [] } };
-    mockedAxios.get.mockResolvedValueOnce(mockResponse);
+    mockedClient.get.mockResolvedValueOnce(mockResponse);
 
     const result = await SubmittedContentService.listFiles('123', '/');
 
-    expect(mockedAxios.get).toHaveBeenCalledWith(
+    expect(mockedClient.get).toHaveBeenCalledWith(
       '/submitted_content/list_files',
       expect.any(Object)
     );
@@ -87,25 +73,26 @@ describe('SubmittedContentService', () => {
 
   test('downloadFile should set responseType to blob', async () => {
     const mockBlob = new Blob(['test'], { type: 'application/pdf' });
-    mockedAxios.get.mockResolvedValueOnce({ data: mockBlob });
+    mockedClient.get.mockResolvedValueOnce({ data: mockBlob });
 
     const result = await SubmittedContentService.downloadFile('test.pdf', '123', '/');
 
-    expect(mockedAxios.get).toHaveBeenCalledWith(
+    expect(mockedClient.get).toHaveBeenCalledWith(
       '/submitted_content/download',
       expect.objectContaining({
         responseType: 'blob',
       })
     );
+    expect(result).toEqual(mockBlob);
   });
 
   test('deleteFile should call correct endpoint', async () => {
     const mockResponse = { data: { message: 'File deleted' } };
-    mockedAxios.post.mockResolvedValueOnce(mockResponse);
+    mockedClient.post.mockResolvedValueOnce(mockResponse);
 
     const result = await SubmittedContentService.deleteFile('test.pdf', '123', '/');
 
-    expect(mockedAxios.post).toHaveBeenCalledWith(
+    expect(mockedClient.post).toHaveBeenCalledWith(
       '/submitted_content/folder_action',
       expect.objectContaining({
         id: '123',
@@ -148,7 +135,7 @@ describe('SubmittedContentService', () => {
 
   test('should handle API errors gracefully', async () => {
     const error = new Error('Network error');
-    mockedAxios.post.mockRejectedValueOnce(error);
+    mockedClient.post.mockRejectedValueOnce(error);
 
     await expect(
       SubmittedContentService.submitHyperlink('https://example.com', '123')
@@ -156,7 +143,7 @@ describe('SubmittedContentService', () => {
   });
 
   test('should handle response with error field', async () => {
-    mockedAxios.get.mockResolvedValueOnce({
+    mockedClient.get.mockResolvedValueOnce({
       data: { error: 'File not found' },
     });
 

@@ -22,6 +22,16 @@ interface Props {
   itemTypes: string[];
 }
 
+function visibleItemCount(items: IItem[]): number {
+  return items.filter((i) => !i._destroy).length;
+}
+
+function parseBulkAddCount(raw: number | ""): number {
+  if (raw === "") return 0;
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.floor(raw);
+}
+
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   values,
   errors,
@@ -30,9 +40,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 }) => {
   const [questionType, setQuestionType] = useState("");
   const [numQuestions, setNumQuestions] = useState<number | "">("");
-   const [showNumbers, setShowNumbers] = useState(false);
-
-  
+  const [showNumbers, setShowNumbers] = useState(false);
+  const [addRowHint, setAddRowHint] = useState<string | null>(null);
 
   return (
     <FieldArray name="items">
@@ -95,7 +104,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 />
 
                               {item.question_type === "Multiple choice" ||
-                              item.question_type === "Dropdown" ? (
+                              item.question_type === "Dropdown" ||
+                              item.question_type === "multiple_choice" ||
+                              item.question_type === "dropdown" ? (
                                 <>
                                  
                                   <Field
@@ -134,7 +145,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                              ) : item.question_type === "Scale" ? (
+                              ) : item.question_type === "Scale" || item.question_type === "scale" ? (
                                 <>
                                   <Field
                                     name={`items[${index}].min_label`}
@@ -237,7 +248,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                            ) : item.question_type === "Text field" ? (<>
+                            ) : item.question_type === "Text field" || item.question_type === "TextField" ? (<>
                                   <Field
                                     name={`items[${index}].textbox_width`}
                                     type="number"
@@ -267,7 +278,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             />
           </Button>
         </OverlayTrigger></div>
-                                </>): item.question_type === "Text area" ? (
+                                </>): item.question_type === "Text area" || item.question_type === "TextArea" ? (
                                   <>
                                   <Field
                                     name={`items[${index}].textarea_width`}
@@ -396,25 +407,37 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </DragDropContext>
 
 
-          <div className="d-flex gap-2 mb-3">
+          <p className="text-muted small mb-2">
+            Choose how many rows to add and the item type, then click <strong>Add</strong>. Fill the text for each
+            rubric row, then click <strong>Save</strong> at the bottom.
+          </p>
+          <div className="d-flex flex-wrap align-items-start gap-2 mb-1">
             <button
               type="button"
               className="btn btn-success"
               onClick={() => {
-                const questionCount =
-                  typeof numQuestions === "number" ? numQuestions : 0;
-
+                if (!questionType.trim()) {
+                  setAddRowHint("Select an item type before adding.");
+                  return;
+                }
+                const questionCount = parseBulkAddCount(numQuestions);
+                if (questionCount < 1) {
+                  setAddRowHint("Enter a number of items (1 or more) in the box next to Add.");
+                  return;
+                }
+                setAddRowHint(null);
+                const base = visibleItemCount(values.items || []);
                 for (let i = 0; i < questionCount; i++) {
                   push({
                     id: undefined,
                     txt: "",
-                    weight: "",
+                    weight: 1,
                     question_type: questionType,
-                    break_before: 1,
+                    break_before: true,
                     alternatives: "",
-                    min_label: "",
-                    max_label: "",
-                    seq: values.items.length + 1,
+                    min_label: "Strongly disagree",
+                    max_label: "Strongly agree",
+                    seq: base + i + 1,
                   });
                 }
                 setNumQuestions("");
@@ -423,25 +446,35 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             >
               Add
             </button>
-                        <span  title="How many items?">
-
-            <Field
-  type="number"
-  name="numQuestions"
-  placeholder="#"
-  value={numQuestions}
-  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-    setNumQuestions(Number(e.target.value))
-  }
-  className="form-control"
-  maxLength={3}
-  style={{ width: "60px" }} 
-/></span>
+            <span title="How many items?">
+              {/* Plain input: a Formik Field named numQuestions fought local state and could clear the count. */}
+              <input
+                type="number"
+                min={1}
+                placeholder="#"
+                value={numQuestions === "" ? "" : numQuestions}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const v = e.target.value;
+                  if (v === "") {
+                    setNumQuestions("");
+                  } else {
+                    const n = Number(v);
+                    setNumQuestions(Number.isFinite(n) ? n : "");
+                  }
+                  setAddRowHint(null);
+                }}
+                className="form-control"
+                style={{ width: "72px" }}
+              />
+            </span>
             <select
               className="form-control"
               value={questionType}
-  style={{ width: "140px" }}
-              onChange={(e) => setQuestionType(e.target.value)}
+              style={{ width: "140px" }}
+              onChange={(e) => {
+                setQuestionType(e.target.value);
+                setAddRowHint(null);
+              }}
             >
               <option value="">- Select item type -</option>
               {itemTypes.map((type) => (
@@ -461,9 +494,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 onChange={(e) => setShowNumbers(e.target.checked)}
               />
               <span style={{ fontSize: "14px"}} className="fw-semibold">Show item numbers</span>
-
             </div>
           </div>
+          {addRowHint && <div className="text-danger small mb-2">{addRowHint}</div>}
         </>
       )}}
     </FieldArray>

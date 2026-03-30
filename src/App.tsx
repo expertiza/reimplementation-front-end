@@ -12,6 +12,8 @@ import ViewReports from "./pages/Assignments/ViewReports";
 import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
 import SubmittedContent from "./pages/Assignments/SubmittedContent";
+import CalibrationReview from "./pages/Assignments/CalibrationReview";
+import CalibrationInstructorReview from "./pages/Assignments/CalibrationInstructorReview";
 import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
@@ -78,6 +80,8 @@ function App() {
           path: "assignments/edit/:id",
           element: <AssignmentEditor mode="update" />,
           loader: loadAssignment,
+          // Avoid showing stale assignment fields (e.g. review strategy) from the data router cache after saves or back/forward.
+          shouldRevalidate: () => true,
         },
         {
           path: "assignments/edit/:id/createteams",
@@ -118,6 +122,14 @@ function App() {
           loader: loadAssignment,
         },
         {
+          path: "assignments/edit/:id/calibration/:responseMapId/review",
+          element: <CalibrationInstructorReview />,
+        },
+        {
+          path: "assignments/edit/:id/calibration/:responseMapId",
+          element: <ProtectedRoute element={<CalibrationReview />} />,
+        },
+        {
           path: "assignments/edit/:id/viewdelayedjobs",
           element: <ViewDelayedJobs />,
           loader: loadAssignment,
@@ -127,6 +139,7 @@ function App() {
           path: "assignments/new",
           element: <AssignmentEditor mode="create" />,
           loader: loadAssignment,
+          shouldRevalidate: () => true,
         },
 
         {

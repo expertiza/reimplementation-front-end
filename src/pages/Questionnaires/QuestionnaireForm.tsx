@@ -4,6 +4,7 @@
   import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
   import * as Yup from "yup";
   import useAPI from "hooks/useAPI";
+  import { resolveQuestionnaireEditorItemTypes } from "./QuestionnaireUtils";
 
 
   const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
@@ -13,7 +14,7 @@
 
     useEffect(() => {
           
-            fetchItemTypes({ url: "/item_types" });
+            fetchItemTypes({ url: "/questions/types" });
           console.log(itemTypes?.data);
         }, [fetchItemTypes]);
       
@@ -48,13 +49,13 @@
       }),
 
       min_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+        return (question_type === "scale" || question_type === "Scale")
           ? schema.required("Minimum label is required")
           : schema.notRequired();
       }),
 
       max_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+        return (question_type === "scale" || question_type === "Scale")
           ? schema.required("Maximum label is required")
           : schema.notRequired();
       }),
@@ -64,9 +65,24 @@
     name: Yup.string().required("Name is required"),
     questionnaire_type: Yup.string().required("Questionnaire type is required"),
     private: Yup.boolean(),
-    min_question_score: Yup.number().required("Minimum item score is required"),
-    max_question_score: Yup.number().required("Maximum item score is required"),
-    items: Yup.array().of(itemFields).min(1, "At least one item is required"),
+    min_question_score: Yup.number()
+      .typeError("Minimum item score is required")
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      .required("Minimum item score is required"),
+    max_question_score: Yup.number()
+      .typeError("Maximum item score is required")
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      .required("Maximum item score is required"),
+    items: Yup.array()
+      .of(itemFields)
+      .min(
+        1,
+        "Add at least one rubric row: set the number and item type, click Add, then fill each row’s text before Save."
+      ),
   });
 
 
@@ -151,33 +167,47 @@
 
             <div className="d-flex align-items-center mt-1 mb-1">
               <div className="form-check me-2" title="Make questionnaire private, so other instructors cannot see it">
-      <input type="checkbox" className="form-check-input" id="private" />
+                <Field type="checkbox" name="private" className="form-check-input" id="private" />
                 <span style={{ fontSize: "14px"}} className="fw-semibold">Private</span>
+              </div>
 
-    </div>
+              <Field
+                type="number"
+                name="min_question_score"
+                placeholder="0"
+                className="form-control"
+                style={{ width: "60px" }}
+              />
 
-    
-    <input
-      type="number"
-      placeholder="0"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
+              <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
 
-    <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
-
-    
-    <input
-      type="number"
-      placeholder="10"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
-  </div>
+              <Field
+                type="number"
+                name="max_question_score"
+                placeholder="10"
+                className="form-control"
+                style={{ width: "60px" }}
+              />
+            </div>
+            <div className="d-flex gap-3">
+              <ErrorMessage name="min_question_score" component="div" className="text-danger" />
+              <ErrorMessage name="max_question_score" component="div" className="text-danger" />
+            </div>
+            <br />
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray
+              values={values}
+              errors={errors}
+              touched={touched}
+              itemTypes={resolveQuestionnaireEditorItemTypes(itemTypes?.data)}
+            />
+            {/* `errors.items` can be a nested object/array (e.g. `{ txt: ... }` for each row).
+                React cannot render that directly, so only render the array-level string error. */}
+            {typeof (errors as any)?.items === "string" ? (
+              <div className="text-danger small mt-2">{(errors as any).items}</div>
+            ) : null}
 
             <br />
             <Button type="submit" variant="primary">

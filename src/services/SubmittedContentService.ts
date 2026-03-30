@@ -1,16 +1,24 @@
-import axios from 'axios';
+import axiosClient from '../utils/axios_client';
 
 /**
  * SubmittedContentService
  * Handles all API calls related to submitted content (files and hyperlinks)
+ * Uses axiosClient so JWT Bearer auth is sent (same as useAPI).
  * @author Team CSC517
  */
 
-interface IListFilesResponse {
+/** Matches GET /submitted_content/list_files (Rails SubmittedContentController#list_files). */
+export interface IListFilesResponse {
+  current_folder?: string;
   files?: Array<{
     name: string;
-    path: string;
-    type: 'file' | 'directory';
+    size?: number;
+    type?: string;
+    modified_at?: string;
+  }>;
+  folders?: Array<{
+    name: string;
+    modified_at?: string;
   }>;
   hyperlinks?: string[];
   error?: string;
@@ -23,27 +31,21 @@ interface IValidationResult {
 
 class SubmittedContentService {
   /**
-   * Submit a file for an assignment
-   * @param formData FormData containing file and metadata
-   * @param participantId The participant ID
-   * @param currentFolder Current folder path
-   * @returns Response data
+   * Submit a file for the current user's assignment participant (Rails expects multipart
+   * `id` = AssignmentParticipant id, `uploaded_file` = file).
    */
   static async submitFile(
-    formData: FormData,
     participantId: string,
-    currentFolder: string
+    file: File,
+    currentFolder: string = '/'
   ): Promise<any> {
+    const formData = new FormData();
+    formData.append('id', String(participantId));
+    formData.append('uploaded_file', file);
+    formData.append('current_folder[name]', currentFolder || '/');
     try {
-      const response = await axios.post(
-        '/submitted_content/submit_file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      // Do not set Content-Type: let the browser set multipart boundary.
+      const response = await axiosClient.post('/submitted_content/submit_file', formData);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
@@ -58,9 +60,9 @@ class SubmittedContentService {
    */
   static async submitHyperlink(url: string, participantId: string): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/submit_hyperlink', {
+      const response = await axiosClient.post('/submitted_content/submit_hyperlink', {
         id: participantId,
-        submission: url,
+        submit_link: url,
       });
       return response.data;
     } catch (error: any) {
@@ -69,16 +71,12 @@ class SubmittedContentService {
   }
 
   /**
-   * Remove a submitted hyperlink
-   * @param participantId The participant ID
-   * @param index Index of hyperlink to remove
-   * @returns Response data
+   * Remove a submitted hyperlink (Rails route: DELETE /submitted_content/remove_hyperlink)
    */
   static async removeHyperlink(participantId: string, index: number): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/remove_hyperlink', {
-        id: participantId,
-        chk_links: index,
+      const response = await axiosClient.delete('/submitted_content/remove_hyperlink', {
+        params: { id: participantId, chk_links: index },
       });
       return response.data;
     } catch (error: any) {
@@ -97,7 +95,7 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<IListFilesResponse> {
     try {
-      const response = await axios.get('/submitted_content/list_files', {
+      const response = await axiosClient.get('/submitted_content/list_files', {
         params: {
           id: participantId,
           folder: { name: currentFolder },
@@ -122,7 +120,7 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/folder_action', {
+      const response = await axiosClient.post('/submitted_content/folder_action', {
         id: participantId,
         current_folder: { name: currentFolder },
         faction: action,
@@ -161,7 +159,7 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<Blob> {
     try {
-      const response = await axios.get('/submitted_content/download', {
+      const response = await axiosClient.get('/submitted_content/download', {
         params: {
           id: participantId,
           current_folder: { name: currentFolder },

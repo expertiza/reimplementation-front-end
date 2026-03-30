@@ -1,4 +1,4 @@
-import { IAssignmentRequest, IAssignmentResponse } from "../../utils/interfaces";
+import { IAssignmentRequest } from "../../utils/interfaces";
 import axiosClient from "../../utils/axios_client";
 
 export interface IAssignmentFormValues {
@@ -78,117 +78,250 @@ export interface IAssignmentFormValues {
     used_in_round?: number;
     questionnaire?: { id: number; name: string };
   }[];
+  /** Present on JSON from the server; mirrors Assignment#review_rubric_questionnaire. */
+  has_review_rubric_for_calibration?: boolean;
   [key: string]: any;
 }
 
+/** Matches `DueDate` / assignment editor row layout (see `transformAssignmentResponse`). */
+const SUBMISSION_DEADLINE_TYPE_ID = 1;
+const REVIEW_DEADLINE_TYPE_ID = 2;
+/** Ancillary deadlines (signup / drop topic / team formation) use a generic type; `deadline_name` disambiguates. */
+const NAMED_DEADLINE_TYPE_ID = 3;
 
-export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
-  // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
-  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
-  const roundCount = values.number_of_review_rounds ?? 0;
-  for (let i = 1; i <= roundCount; i += 1) {
-    const questionnaireId = values[`questionnaire_round_${i}`];
-    if (questionnaireId) {
-      const existingId = values[`assignment_questionnaire_id_${i}`];
-      assignmentQuestionnaires.push({
-        id: existingId,
-        questionnaire_id: questionnaireId,
-        used_in_round: i,
-      });
+function yesNoToAllowedId(v: unknown): number {
+  if (v === "no" || v === false || v === 0 || v === "0") return 1;
+  return 3;
+}
+
+function valueAtFormRow(container: unknown, key: string | number): unknown {
+  if (container == null) return undefined;
+  if (typeof container === "object" && !Array.isArray(container)) {
+    const o = container as Record<string, unknown>;
+    return o[String(key)] ?? (typeof key === "number" ? o[key] : undefined);
+  }
+  if (Array.isArray(container) && typeof key === "number") return container[key];
+  return undefined;
+}
+
+function dateTimeAt(values: IAssignmentFormValues, key: string | number): Date | null {
+  const dt = values.date_time as Record<string, unknown> | undefined | null;
+  if (dt == null || typeof dt !== "object" || Array.isArray(dt)) return null;
+  const raw =
+    (dt as Record<string, unknown>)[String(key)] ??
+    (typeof key === "number" ? (dt as Record<string, unknown>)[key] : undefined);
+  if (raw == null || raw === "") return null;
+  const d = raw instanceof Date ? raw : new Date(raw as string);
+  return Number.isFinite(d.getTime()) ? d : null;
+}
+
+function buildDueDatesAttributes(
+  values: IAssignmentFormValues,
+  num: (v: unknown) => number | undefined
+): Record<string, Record<string, unknown>> | null {
+  const indexed: Record<string, Record<string, unknown>> = {};
+  let idx = 0;
+
+  const push = (row: Record<string, unknown>) => {
+    indexed[String(idx++)] = row;
+  };
+
+  const rowPayload = (
+    rowKey: string | number,
+    dueAtIso: string,
+    extra: Record<string, unknown>
+  ): Record<string, unknown> => {
+    const existingId = num(values[`due_date_id_${rowKey}`]);
+    const reminderRaw = valueAtFormRow(values.reminder, rowKey);
+    const thresholdN = num(reminderRaw) ?? 1;
+    return {
+      ...(existingId !== undefined ? { id: existingId } : {}),
+      due_at: dueAtIso,
+      submission_allowed_id: yesNoToAllowedId(valueAtFormRow(values.submission_allowed, rowKey)),
+      review_allowed_id: yesNoToAllowedId(valueAtFormRow(values.review_allowed, rowKey)),
+      teammate_review_allowed_id: yesNoToAllowedId(valueAtFormRow(values.teammate_allowed, rowKey)),
+      quiz_allowed_id: 1,
+      threshold: thresholdN,
+      review_of_review_allowed_id: yesNoToAllowedId(valueAtFormRow(values.metareview_allowed, rowKey)),
+      type: "AssignmentDueDate",
+      ...extra,
+    };
+  };
+
+  const rounds = values.number_of_review_rounds ?? 0;
+  for (let r = 1; r <= rounds; r += 1) {
+    const subRowId = 2 * (r - 1);
+    const revRowId = 2 * (r - 1) + 1;
+    const subDate = dateTimeAt(values, subRowId);
+    const revDate = dateTimeAt(values, revRowId);
+    if (subDate) {
+      push(
+        rowPayload(subRowId, subDate.toISOString(), {
+          deadline_type_id: SUBMISSION_DEADLINE_TYPE_ID,
+          round: r,
+        })
+      );
+    }
+    if (revDate) {
+      push(
+        rowPayload(revRowId, revDate.toISOString(), {
+          deadline_type_id: REVIEW_DEADLINE_TYPE_ID,
+          round: r,
+        })
+      );
     }
   }
 
-  const assignment: IAssignmentRequest = {
-    // Core fields
+  const named: { key: string; label: string }[] = [];
+  if (values.use_signup_deadline) named.push({ key: "signup_deadline", label: "Signup deadline" });
+  if (values.use_drop_topic_deadline) named.push({ key: "drop_topic_deadline", label: "Drop topic deadline" });
+  if (values.use_team_formation_deadline) {
+    named.push({ key: "team_formation_deadline", label: "Team formation deadline" });
+  }
+
+  for (const { key, label } of named) {
+    const d = dateTimeAt(values, key);
+    if (!d) continue;
+    push(
+      rowPayload(key, d.toISOString(), {
+        deadline_type_id: NAMED_DEADLINE_TYPE_ID,
+        deadline_name: label,
+      })
+    );
+  }
+
+  return idx === 0 ? null : indexed;
+}
+
+/** Dropdown + API use DB column `review_assignment_strategy` as "1" | "2" | "3" (Expertiza-style numeric strategies). */
+export function normalizeReviewStrategyForSelect(v: unknown): "1" | "2" | "3" {
+  if (v === undefined || v === null) return "1";
+  const s = String(v).trim();
+  if (s === "") return "1";
+  const n = Number.parseInt(s, 10);
+  if (n === 1 || n === 2 || n === 3) return String(n) as "1" | "2" | "3";
+  return "1";
+}
+
+export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
+  // Nested rows for Assignment accepts_nested_attributes_for :assignment_questionnaires
+  const assignmentQuestionnaires: Record<string, unknown>[] = [];
+  const roundCount = Math.max(values.number_of_review_rounds ?? 0, 1);
+  const weights = values.weights as unknown;
+  const notificationLimits = values.notification_limits as unknown;
+
+  const num = (v: unknown): number | undefined => {
+    if (v === undefined || v === null || v === "") return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  };
+
+  const valueAtIndex = (container: unknown, idx: number): unknown => {
+    if (container == null) return undefined;
+    if (Array.isArray(container)) return container[idx];
+    if (typeof container === "object") {
+      const o = container as Record<string, unknown>;
+      return o[idx] ?? o[String(idx)];
+    }
+    return undefined;
+  };
+
+  for (let i = 1; i <= roundCount; i += 1) {
+    const rawQ = values[`questionnaire_round_${i}`];
+    if (rawQ === undefined || rawQ === null || rawQ === "") continue;
+    const questionnaireId = num(rawQ);
+    if (questionnaireId === undefined) continue;
+
+    const row: Record<string, unknown> = {
+      questionnaire_id: questionnaireId,
+      used_in_round: i,
+    };
+
+    const existingId = num(values[`assignment_questionnaire_id_${i}`]);
+    if (existingId !== undefined) row.id = existingId;
+
+    const w = num(valueAtIndex(weights, i));
+    if (w !== undefined) row.questionnaire_weight = w;
+
+    const nl = num(valueAtIndex(notificationLimits, i));
+    if (nl !== undefined) row.notification_limit = nl;
+
+    assignmentQuestionnaires.push(row);
+  }
+
+  // Single review rubric with no weight field filled still means 100% for that questionnaire.
+  if (assignmentQuestionnaires.length === 1 && assignmentQuestionnaires[0].questionnaire_weight === undefined) {
+    assignmentQuestionnaires[0].questionnaire_weight = 100;
+  }
+
+  // Rails accepts nested attributes from forms as { "0" => {...}, "1" => {...} }; a bare JSON array
+  // is not always applied correctly to accepts_nested_attributes_for on update.
+  const indexedQuestionnaireAttrs: Record<string, Record<string, unknown>> = {};
+  assignmentQuestionnaires.forEach((row, index) => {
+    indexedQuestionnaireAttrs[String(index)] = row;
+  });
+
+  // Always send a valid strategy so PATCH persists even when the DB was null or the select was out of sync.
+  const reviewAssignmentStrategy = normalizeReviewStrategyForSelect(values.review_strategy);
+
+  const dueDatesIndexed = buildDueDatesAttributes(values, num);
+
+  // Keys must match real `assignments` columns (see reimplementation-back-end db/schema.rb).
+  const assignment: Record<string, unknown> = {
     name: values.name,
     directory_path: values.directory_path,
     spec_location: values.spec_location,
     course_id: values.course_id,
-
-    // Visibility / basic flags
-    private: values.private,
-    show_template_review: values.show_template_review ?? false,
+    instructor_id: values.instructor_id,
+    private: values.private ?? false,
     require_quiz: values.require_quiz ?? false,
     has_badge: values.has_badge ?? false,
     staggered_deadline: values.staggered_deadline ?? false,
     is_calibrated: values.is_calibrated ?? false,
-
-    // Team / mentor / topic configuration
     has_teams: values.has_teams ?? false,
     max_team_size: values.max_team_size,
-    show_teammate_review: values.show_teammate_review ?? false,
-    is_pair_programming: values.is_pair_programming ?? false,
-    has_mentors: values.has_mentors ?? false,
     has_topics: values.has_topics ?? false,
-    auto_assign_mentors: values.auto_assign_mentors ?? false,
-
-    // Review strategy / limits
+    enable_pair_programming: values.is_pair_programming ?? false,
+    show_teammate_reviews: values.show_teammate_review ?? false,
     review_topic_threshold: values.review_topic_threshold,
-    maximum_number_of_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
-    review_strategy: values.review_strategy,
-    review_rubric_varies_by_round: values.review_rubric_varies_by_round ?? false,
-    review_rubric_varies_by_topic: values.review_rubric_varies_by_topic ?? false,
-    review_rubric_varies_by_role: values.review_rubric_varies_by_role ?? false,
-    has_max_review_limit: values.has_max_review_limit ?? false,
-    set_allowed_number_of_reviews_per_reviewer: values.set_allowed_number_of_reviews_per_reviewer,
-    set_required_number_of_reviews_per_reviewer: values.set_required_number_of_reviews_per_reviewer,
-    is_review_anonymous: values.is_review_anonymous ?? false,
-    is_review_done_by_teams: values.is_review_done_by_teams ?? false,
-    allow_self_reviews: values.allow_self_reviews ?? false,
-    reviews_visible_to_other_reviewers: values.reviews_visible_to_other_reviewers ?? false,
-    number_of_review_rounds: values.number_of_review_rounds,
-
-    // Dates / penalties
+    max_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
+    vary_by_round: values.review_rubric_varies_by_round ?? false,
+    rounds_of_reviews: values.number_of_review_rounds,
     days_between_submissions: values.days_between_submissions,
     late_policy_id: values.late_policy_id,
     is_penalty_calculated: values.is_penalty_calculated ?? false,
     calculate_penalty: values.calculate_penalty ?? false,
-    apply_late_policy: values.apply_late_policy ?? false,
-
-    // Deadline toggles
-    use_signup_deadline: values.use_signup_deadline ?? false,
-    use_drop_topic_deadline: values.use_drop_topic_deadline ?? false,
-    use_team_formation_deadline: values.use_team_formation_deadline ?? false,
-
-    // JSON-configured deadline settings (default to empty arrays so backend always sees a consistent shape)
-    weights: values.weights ?? [],
-    notification_limits: values.notification_limits ?? [],
-    use_date_updater: values.use_date_updater ?? [],
-    submission_allowed: values.submission_allowed ?? [],
-    review_allowed: values.review_allowed ?? [],
-    teammate_allowed: values.teammate_allowed ?? [],
-    metareview_allowed: values.metareview_allowed ?? [],
-    reminder: values.reminder ?? [],
-
-    // Misc flags from other tabs
-    allow_tag_prompts: values.allow_tag_prompts ?? false,
-    has_quizzes: values.has_quizzes ?? false,
-    calibration_for_training: values.calibration_for_training ?? false,
-    available_to_students: values.available_to_students ?? false,
-    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
-    allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
-    staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
-
-    // Per-round rubric configuration
-    vary_by_round: values.review_rubric_varies_by_round,
-    rounds_of_reviews: values.number_of_review_rounds,
-    assignment_questionnaires_attributes: assignmentQuestionnaires,
-
+    is_anonymous: values.is_review_anonymous ?? false,
+    reviews_visible_to_all: values.reviews_visible_to_other_reviewers ?? false,
+    is_selfreview_enabled: values.allow_self_reviews ?? false,
+    num_reviews_allowed: num(values.set_allowed_number_of_reviews_per_reviewer),
+    num_reviews_required: num(values.set_required_number_of_reviews_per_reviewer),
+    review_assignment_strategy: reviewAssignmentStrategy,
+    ...(assignmentQuestionnaires.length > 0
+      ? { assignment_questionnaires_attributes: indexedQuestionnaireAttrs }
+      : {}),
+    ...(dueDatesIndexed ? { due_dates_attributes: dueDatesIndexed } : {}),
   };
+
   return JSON.stringify({ assignment });
 };
 
-export const transformAssignmentResponse = (assignmentResponse: string) => {
-  const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
+/** Axios may pass a parsed object (after default JSON transform) or a raw string. */
+export const transformAssignmentResponse = (data: string | Record<string, unknown>): IAssignmentFormValues => {
+  const parsed: Record<string, unknown> =
+    typeof data === "string" ? (JSON.parse(data) as Record<string, unknown>) : data;
+
+  // Some clients wrap the record as `{ assignment: { ... } }`; merge so field reads stay consistent.
+  const raw: Record<string, unknown> =
+    parsed.assignment != null && typeof parsed.assignment === "object" && !Array.isArray(parsed.assignment)
+      ? { ...parsed, ...(parsed.assignment as Record<string, unknown>) }
+      : parsed;
 
   // Map legacy DueDate records to the form's date_time[...] structure so
   // date pickers are pre-filled when editing.
   const dateTimeMap: Record<string | number, Date> = {};
-  const dueDates: any[] = (assignment as any).due_dates || [];
+  const dueDateIdExtras: Record<string, unknown> = {};
+  const dueDates: any[] = (raw.due_dates as any[]) || [];
 
   dueDates.forEach((due: any) => {
     const dueAt: string | undefined = due.due_at;
@@ -199,11 +332,12 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     // Round-based submission / review rows
     if (typeof due.round === "number") {
       const roundIndex = due.round; // 1-based
-      const isReviewDeadline = due.deadline_type_id === 2; // DueDate::REVIEW_DEADLINE_TYPE_ID
+      const isReviewDeadline = due.deadline_type_id === REVIEW_DEADLINE_TYPE_ID;
       const rowId = isReviewDeadline
         ? 2 * (roundIndex - 1) + 1 // "Review i: Review"
         : 2 * (roundIndex - 1); // "Review i: Submission"
       dateTimeMap[rowId] = dueDateObj;
+      if (due.id != null) dueDateIdExtras[`due_date_id_${rowId}`] = due.id;
       return;
     }
 
@@ -216,36 +350,126 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
 
     if (key) {
       dateTimeMap[key] = dueDateObj;
+      if (due.id != null) dueDateIdExtras[`due_date_id_${key}`] = due.id;
     }
   });
 
+  // DB columns -> form field names (see transformAssignmentRequest).
+  const roundsOfReviews = raw.rounds_of_reviews as number | undefined;
+  const numReviewRounds = raw.num_review_rounds as number | undefined;
+  const numberOfReviewRounds =
+    typeof roundsOfReviews === "number"
+      ? roundsOfReviews
+      : typeof numReviewRounds === "number"
+        ? numReviewRounds
+        : 0;
+
+  const strategyFromApi =
+    raw.review_assignment_strategy ??
+    (raw as { reviewAssignmentStrategy?: unknown }).reviewAssignmentStrategy;
+  const reviewStrategyForForm = normalizeReviewStrategyForSelect(strategyFromApi);
+
+  const perRoundExtras: Record<string, unknown> = {};
+  // Formik fields use `weights[1]`, `weights[100]` → nested object with string keys, not sparse arrays.
+  const weightsFromAq: Record<string, number> = {};
+  const notificationFromAq: Record<string, number> = {};
+  const aqList = (raw.assignment_questionnaires as any[]) || [];
+  if (Array.isArray(aqList)) {
+    aqList.forEach((aq: any) => {
+      const qid = aq.questionnaire?.id ?? aq.questionnaire_id;
+      if (qid == null) return;
+      // Treat missing round as round 1 so the Rubrics tab and calibration "linked rubric" checks stay in sync.
+      let round = aq.used_in_round as number | undefined;
+      if (round == null || round < 1) {
+        round = 1;
+      }
+      perRoundExtras[`questionnaire_round_${round}`] = qid;
+      if (aq.id != null) {
+        perRoundExtras[`assignment_questionnaire_id_${round}`] = aq.id;
+      }
+      if (aq.questionnaire_weight != null && aq.questionnaire_weight !== "") {
+        const w = Number(aq.questionnaire_weight);
+        if (Number.isFinite(w)) weightsFromAq[String(round)] = w;
+      }
+      if (aq.notification_limit != null && aq.notification_limit !== "") {
+        const nl = Number(aq.notification_limit);
+        if (Number.isFinite(nl)) notificationFromAq[String(round)] = nl;
+      }
+    });
+  }
+
   const assignmentValues: IAssignmentFormValues = {
-    // bring in all persisted columns (booleans, JSON fields, etc.)
-    ...(assignment as any),
+    ...(raw as unknown as IAssignmentFormValues),
 
-    // ensure core fields match our form naming
-    id: assignment.id,
-    name: assignment.name,
-    directory_path: assignment.directory_path,
-    spec_location: assignment.spec_location,
-    private: assignment.private,
-    show_template_review: assignment.show_template_review ?? false,
-    require_quiz: assignment.require_quiz,
-    has_badge: assignment.has_badge,
-    staggered_deadline: assignment.staggered_deadline,
-    is_calibrated: assignment.is_calibrated,
+    id: raw.id as number,
+    name: raw.name as string,
+    directory_path: raw.directory_path as string,
+    spec_location: (raw.spec_location as string) || "",
+    private: Boolean(raw.private),
+    show_template_review: false,
+    require_quiz: Boolean(raw.require_quiz),
+    has_badge: Boolean(raw.has_badge),
+    staggered_deadline: Boolean(raw.staggered_deadline),
+    is_calibrated: Boolean(raw.is_calibrated),
 
-    // review rounds / rubrics
-    review_rubric_varies_by_round:
-      assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
-    number_of_review_rounds: assignment.num_review_rounds,
+    has_teams: Boolean(raw.has_teams),
+    max_team_size: raw.max_team_size as number | undefined,
+    has_topics: Boolean(raw.has_topics),
+    show_teammate_review: Boolean(raw.show_teammate_reviews),
+    is_pair_programming: Boolean(raw.enable_pair_programming),
+
+    review_topic_threshold: raw.review_topic_threshold as number | undefined,
+    maximum_number_of_reviews_per_submission: raw.max_reviews_per_submission as number | undefined,
+    review_strategy: reviewStrategyForForm,
+    review_rubric_varies_by_round: Boolean(raw.vary_by_round),
+    number_of_review_rounds: numberOfReviewRounds,
+
+    is_review_anonymous: Boolean(raw.is_anonymous),
+    reviews_visible_to_other_reviewers: Boolean(raw.reviews_visible_to_all),
+    allow_self_reviews: Boolean(raw.is_selfreview_enabled),
+    set_allowed_number_of_reviews_per_reviewer:
+      raw.num_reviews_allowed != null && raw.num_reviews_allowed !== ""
+        ? Number(raw.num_reviews_allowed)
+        : 0,
+    set_required_number_of_reviews_per_reviewer:
+      raw.num_reviews_required != null && raw.num_reviews_required !== ""
+        ? Number(raw.num_reviews_required)
+        : 0,
+
+    days_between_submissions: raw.days_between_submissions as number | undefined,
+    late_policy_id: raw.late_policy_id as number | undefined,
+    is_penalty_calculated: Boolean(raw.is_penalty_calculated),
+    calculate_penalty: Boolean(raw.calculate_penalty),
+
+    ...perRoundExtras,
+    weights:
+      Object.keys(weightsFromAq).length > 0
+        ? weightsFromAq
+        : Array.isArray((raw as any).weights)
+          ? ((raw as any).weights as number[])
+          : [],
+    notification_limits:
+      Object.keys(notificationFromAq).length > 0
+        ? notificationFromAq
+        : Array.isArray((raw as any).notification_limits)
+          ? ((raw as any).notification_limits as number[])
+          : [],
 
     // precomputed date/time fields for the Due dates tab
     date_time: dateTimeMap as any,
 
-    // nested collections used by tabs
-    due_dates: assignment.due_dates,
-    assignment_questionnaires: assignment.assignment_questionnaires,
+    ...dueDateIdExtras,
+
+    due_dates: raw.due_dates as any,
+    assignment_questionnaires: raw.assignment_questionnaires as any,
+    // Do NOT use Boolean(undefined) — that forces false and hides rubrics when the API omits this key.
+    ...(() => {
+      const v = (raw as { has_review_rubric_for_calibration?: unknown }).has_review_rubric_for_calibration;
+      if (v === true || v === false) {
+        return { has_review_rubric_for_calibration: v };
+      }
+      return {};
+    })(),
   };
   return assignmentValues;
 };
@@ -270,5 +494,6 @@ export async function loadAssignment({ params }: any) {
   const questionnairesRes = await axiosClient.get("/questionnaires");
   questionnaires = questionnairesRes.data || [];
 
-  return { ...assignmentData, questionnaires, weights: [] };
+  // Never overwrite `weights` / `notification_limits` from transformAssignmentResponse (was `weights: []`).
+  return { ...assignmentData, questionnaires };
 }

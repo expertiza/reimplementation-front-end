@@ -7,15 +7,11 @@ import { IInstitution, IParticipantRequest, IParticipantResponse, IRole } from "
  */
 
 export enum EmailPreference {
-  EMAIL_ON_REVIEW = "email_on_review",
-  EMAIL_ON_SUBMISSION = "email_on_submission",
-  EMAIL_ON_META_REVIEW = "email_on_review_of_review",
+  /** Form-only: maps to both email_on_review and email_on_submission on the API. */
+  EMAIL_ON_ASSIGNMENTS = "email_on_assignments",
 }
 
-type PermittedEmailPreferences =
-  | EmailPreference.EMAIL_ON_REVIEW
-  | EmailPreference.EMAIL_ON_SUBMISSION
-  | EmailPreference.EMAIL_ON_META_REVIEW;
+type PermittedEmailPreferences = EmailPreference.EMAIL_ON_ASSIGNMENTS;
 
 export interface IParticipantFormValues {
   id?: number;
@@ -27,17 +23,14 @@ export interface IParticipantFormValues {
   parent_id?: number | null;
   institution_id: number;
   emailPreferences: Array<PermittedEmailPreferences>;
+  /** Loaded from API and sent back unchanged; not shown in the UI. */
+  email_on_review_of_review: boolean;
 }
 
 export const emailOptions: IFormOption[] = [
-  { label: "When someone else reviews my work", value: EmailPreference.EMAIL_ON_REVIEW },
   {
-    label: "When someone else submits work I am assigned to review",
-    value: EmailPreference.EMAIL_ON_SUBMISSION,
-  },
-  {
-    label: "When someone else reviews one of my reviews (meta-reviews my work)",
-    value: EmailPreference.EMAIL_ON_META_REVIEW,
+    label: "When there are updates on my assignments (new reviews or new submissions)",
+    value: EmailPreference.EMAIL_ON_ASSIGNMENTS,
   },
 ];
 
@@ -66,11 +59,9 @@ export const transformParticipantRequest = (values: IParticipantFormValues) => {
     parent_id: values.parent_id,
     institution_id: values.institution_id,
     full_name: values.lastName + ", " + values.firstName,
-    email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
-    email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
-    email_on_review_of_review: values.emailPreferences.includes(
-      EmailPreference.EMAIL_ON_META_REVIEW
-    ),
+    email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_ASSIGNMENTS),
+    email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_ASSIGNMENTS),
+    email_on_review_of_review: values.email_on_review_of_review,
   };
   return JSON.stringify(participant);
 };
@@ -89,15 +80,10 @@ export const transformParticipantResponse = (participantResponse: string) => {
     parent_id: parent_id,
     institution_id: institution_id,
     emailPreferences: [],
+    email_on_review_of_review: Boolean(participant.email_on_review_of_review),
   };
-  if (participant.email_on_review) {
-    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
-  }
-  if (participant.email_on_submission) {
-    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
-  }
-  if (participant.email_on_review_of_review) {
-    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
+  if (participant.email_on_review || participant.email_on_submission) {
+    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_ASSIGNMENTS);
   }
   return participantValues;
 };

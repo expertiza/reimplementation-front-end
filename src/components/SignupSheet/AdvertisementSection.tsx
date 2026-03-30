@@ -2,6 +2,7 @@ import React, { FC, useState } from 'react';
 import { Button, Alert, Spinner, Form } from 'react-bootstrap';
 import { AdvertisementDetails } from '../../utils/interfaces';
 import axios from 'axios';
+import { API_BASE_URL } from '../../utils/apiBaseUrl';
 import styles from './AdvertisementSection.module.css';
 
 interface AdvertisementSectionProps {
@@ -11,9 +12,6 @@ interface AdvertisementSectionProps {
   onClose: () => void;
   onShowAlert: (message: string, type: 'success' | 'danger') => void;
 }
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
 
 const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   advertisementData,

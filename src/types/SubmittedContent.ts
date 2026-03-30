@@ -92,7 +92,7 @@ export interface ISubmittedContentProps {
  */
 export interface IModalState {
   show: boolean;
-  loading: boolean;
+  isSubmitting: boolean;
   error?: IError;
 }
 

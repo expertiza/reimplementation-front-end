@@ -9,6 +9,7 @@ import { alertActions } from "../../store/slices/alertSlice";
 import { setAuthToken } from "../../utils/auth";
 import * as Yup from "yup";
 import axios from "axios";
+import { API_BASE_URL } from "../../utils/apiBaseUrl";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -30,7 +31,7 @@ const Login: React.FC = () => {
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
     axios
-      .post("http://localhost:3002/login", values)
+      .post(`${API_BASE_URL}/login`, values)
       .then((response) => {
         const payload = setAuthToken(response.data.token);
 

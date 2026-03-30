@@ -1,17 +1,29 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Container, Row, Col, Button, Modal, Form, Alert, Table, Spinner } from 'react-bootstrap';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Container, Row, Col, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { FaFile, FaLink, FaTrash, FaDownload } from 'react-icons/fa';
 import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import SubmittedContentService from '../../services/SubmittedContentService';
-import { ISubmittedContentProps, IModalState, IFile } from '../../types/SubmittedContent';
+import useAPI from '../../hooks/useAPI';
+import { RootState } from '../../store/store';
+import { ISubmittedContentProps, IModalState } from '../../types/SubmittedContent';
 import './SubmittedContent.css';
 
+type DisplayFile = { id: string; name: string; size: number; uploadedAt: string };
+
 const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
+  const { id: assignmentIdFromRoute } = useParams<{ id: string }>();
+  const currentUser = useSelector((state: RootState) => state.authentication.user);
+  const { data: participantsRes, isLoading: participantsLoading, sendRequest: fetchParticipants } = useAPI();
+  const { data: assignmentRes, isLoading: assignmentLoading, sendRequest: fetchAssignmentMeta } = useAPI({
+    initialLoading: false,
+  });
+
   // State Management
-  const [files, setFiles] = useState<IFile[]>([]);
+  const [files, setFiles] = useState<DisplayFile[]>([]);
   const [hyperlinks, setHyperlinks] = useState<{ url: string; title: string; submittedAt: string }[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -27,29 +39,90 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
     isSubmitting: false,
   });
 
-  // Get assignment ID from URL
-  const assignmentId = new URLSearchParams(window.location.search).get('id') || 'default';
+  // Route: assignments/edit/:id/submitcontent — fall back to ?id= for older links
+  const assignmentId =
+    assignmentIdFromRoute ||
+    new URLSearchParams(window.location.search).get('id') ||
+    'default';
 
-  // Initial data fetch
   useEffect(() => {
-    fetchSubmissions();
-  }, [assignmentId]);
+    if (!assignmentId || assignmentId === 'default' || !currentUser?.id) return;
+    fetchParticipants({ url: `/participants/assignment/${assignmentId}`, method: 'GET' });
+  }, [assignmentId, currentUser?.id, fetchParticipants]);
 
-  // Fetch submissions list
-  const fetchSubmissions = useCallback(async () => {
+  useEffect(() => {
+    if (!assignmentId || assignmentId === 'default') return;
+    fetchAssignmentMeta({ url: `/assignments/${assignmentId}`, method: 'GET' });
+  }, [assignmentId, fetchAssignmentMeta]);
+
+  const assignmentTitle = useMemo(() => {
+    const d = assignmentRes?.data as Record<string, unknown> | undefined;
+    const n = d?.name;
+    if (typeof n === 'string' && n.trim()) return n.trim();
+    if (assignmentId !== 'default') return `Assignment #${assignmentId}`;
+    return 'Assignment submission';
+  }, [assignmentRes, assignmentId]);
+
+  const participantId = useMemo(() => {
+    const rows = participantsRes?.data;
+    if (!Array.isArray(rows)) return null;
+    const uid = String(currentUser?.id ?? '');
+    const match = rows.find((p: { user_id?: number; user?: { id?: number } }) => {
+      const rowUser = p.user_id ?? p.user?.id;
+      return String(rowUser) === uid;
+    });
+    return match?.id != null ? String(match.id) : null;
+  }, [participantsRes, currentUser?.id]);
+
+  const refreshSubmissionArtifacts = useCallback(async () => {
+    if (!participantId) return;
     try {
       setLoading(true);
       setError(null);
-      // This would call the backend API to fetch submissions
-      // const response = await SubmittedContentService.listFiles(assignmentId);
-      // setSubmissions(response);
-    } catch (err) {
-      setError('Failed to fetch submissions');
+      const data = await SubmittedContentService.listFiles(participantId, '/');
+      const rawFiles = Array.isArray(data.files) ? data.files : [];
+      setFiles(
+        rawFiles.map((f) => {
+          const modified = f.modified_at;
+          const uploadedAt =
+            typeof modified === 'string' && modified
+              ? modified
+              : modified != null
+                ? new Date(modified as unknown as string).toISOString()
+                : new Date().toISOString();
+          return {
+            id: `${f.name}-${uploadedAt}`,
+            name: f.name,
+            size: typeof f.size === 'number' ? f.size : 0,
+            uploadedAt,
+          };
+        })
+      );
+      const linkList = Array.isArray(data.hyperlinks) ? data.hyperlinks : [];
+      setHyperlinks(
+        linkList.map((url: string) => ({
+          url,
+          title: url,
+          submittedAt: '',
+        }))
+      );
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'error' in err
+          ? String((err as { error: string }).error)
+          : err instanceof Error
+            ? err.message
+            : 'Failed to load submitted files and links';
+      setError(msg);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [assignmentId]);
+  }, [participantId]);
+
+  useEffect(() => {
+    refreshSubmissionArtifacts();
+  }, [refreshSubmissionArtifacts]);
 
   // File Upload Handler
   const handleFileUpload = useCallback(
@@ -62,17 +135,19 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           const file = values.file[0];
 
           // Validate file
-          const validation = await SubmittedContentService.validateFile(file);
-          if (!validation.isValid) {
+          if (!participantId) {
+            setError('You must be a participant on this assignment to submit files.');
+            return;
+          }
+
+          const validation = SubmittedContentService.validateFile(file);
+          if (!validation.valid) {
             setError(validation.error || 'Invalid file');
             return;
           }
 
-          // Submit file
-          const response = await SubmittedContentService.submitFile(assignmentId, file);
-          
-          // Add to files list
-          setFiles((prev) => [...prev, response.file]);
+          await SubmittedContentService.submitFile(participantId, file);
+          await refreshSubmissionArtifacts();
           setSuccess('File uploaded successfully');
 
           // Reset modal
@@ -81,14 +156,20 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           // Clear success message after 3 seconds
           setTimeout(() => setSuccess(null), 3000);
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to upload file');
+      } catch (err: unknown) {
+        const msg =
+          err && typeof err === 'object' && 'error' in err
+            ? String((err as { error: string }).error)
+            : err instanceof Error
+              ? err.message
+              : 'Failed to upload file';
+        setError(msg);
         console.error(err);
       } finally {
         setFileModal((prev) => ({ ...prev, isSubmitting: false }));
       }
     },
-    [assignmentId]
+    [participantId, refreshSubmissionArtifacts]
   );
 
   // Hyperlink Submit Handler
@@ -99,21 +180,19 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         setError(null);
 
         // Validate URL
-        const validation = await SubmittedContentService.validateUrl(values.url);
-        if (!validation.isValid) {
+        if (!participantId) {
+          setError('You must be a participant on this assignment to submit links.');
+          return;
+        }
+
+        const validation = SubmittedContentService.validateUrl(values.url);
+        if (!validation.valid) {
           setError(validation.error || 'Invalid URL');
           return;
         }
 
-        // Submit hyperlink
-        const response = await SubmittedContentService.submitHyperlink(
-          assignmentId,
-          values.url,
-          values.title || values.url
-        );
-
-        // Add to hyperlinks list
-        setHyperlinks((prev) => [...prev, response.hyperlink]);
+        await SubmittedContentService.submitHyperlink(values.url, participantId);
+        await refreshSubmissionArtifacts();
         setSuccess('Hyperlink submitted successfully');
 
         // Reset modal
@@ -128,16 +207,20 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         setHyperlinkModal((prev) => ({ ...prev, isSubmitting: false }));
       }
     },
-    [assignmentId]
+    [participantId, refreshSubmissionArtifacts]
   );
 
-  // Remove Hyperlink Handler
+  // Remove Hyperlink Handler (index matches team.hyperlinks order on the server)
   const handleRemoveHyperlink = useCallback(
-    async (url: string) => {
+    async (index: number) => {
       try {
         setError(null);
-        await SubmittedContentService.removeHyperlink(assignmentId, url);
-        setHyperlinks((prev) => prev.filter((h) => h.url !== url));
+        if (!participantId) {
+          setError('You must be a participant on this assignment to remove links.');
+          return;
+        }
+        await SubmittedContentService.removeHyperlink(participantId, index);
+        await refreshSubmissionArtifacts();
         setSuccess('Hyperlink removed successfully');
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
@@ -145,30 +228,38 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         console.error(err);
       }
     },
-    [assignmentId]
+    [participantId, refreshSubmissionArtifacts]
   );
 
   // Download File Handler
   const handleDownloadFile = useCallback(
-    async (file: IFile) => {
+    async (file: DisplayFile) => {
       try {
         setError(null);
-        await SubmittedContentService.downloadFile(assignmentId, file.id);
+        if (!participantId) {
+          setError('Missing participant id for download.');
+          return;
+        }
+        await SubmittedContentService.downloadFile(file.name, participantId, '/');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to download file');
         console.error(err);
       }
     },
-    [assignmentId]
+    [participantId]
   );
 
   // Delete File Handler
   const handleDeleteFile = useCallback(
-    async (fileId: string) => {
+    async (file: DisplayFile) => {
       try {
         setError(null);
-        await SubmittedContentService.deleteFile(assignmentId, fileId);
-        setFiles((prev) => prev.filter((f) => f.id !== fileId));
+        if (!participantId) {
+          setError('Missing participant id for delete.');
+          return;
+        }
+        await SubmittedContentService.deleteFile(file.name, participantId, '/');
+        await refreshSubmissionArtifacts();
         setSuccess('File deleted successfully');
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
@@ -176,16 +267,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         console.error(err);
       }
     },
-    [assignmentId]
+    [participantId, refreshSubmissionArtifacts]
   );
 
   // Validation Schemas
   const fileValidationSchema = Yup.object().shape({
     file: Yup.mixed()
       .required('File is required')
-      .test('fileSize', 'File is too large', (value: any) => {
+      .test('fileSize', 'File is too large (max 5MB)', (value: any) => {
         if (!value || value.length === 0) return false;
-        return value[0].size <= 50 * 1024 * 1024; // 50MB limit
+        return value[0].size <= 5 * 1024 * 1024;
       }),
   });
 
@@ -194,18 +285,50 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
     title: Yup.string().max(255, 'Title is too long'),
   });
 
+  const studentTasksPath =
+    assignmentId !== 'default' ? `/student_tasks/${assignmentId}` : '/student_tasks';
+
   return (
-    <Container className="submitted-content-container py-5">
-      {/* Header */}
-      <Row className="mb-5">
-        <Col className="text-center">
-          <h1 className="submitted-content-title">📝 Submitted Content</h1>
+    <Container fluid className="px-md-4 submitted-content-container py-4">
+      <Row className="mt-3 mb-3">
+        <Col xs={12}>
+          {assignmentId !== 'default' && assignmentLoading ? (
+            <div className="d-flex align-items-center gap-2 text-muted">
+              <Spinner animation="border" size="sm" />
+              <span>Loading assignment…</span>
+            </div>
+          ) : (
+            <h2 className="mb-0">{assignmentTitle}</h2>
+          )}
+        </Col>
+      </Row>
+
+      <Row>
+        <Col xs={12}>
+          <Alert variant="info" className="mb-4">
+            <Alert.Heading as="h3" className="h5">
+              Submit your work
+            </Alert.Heading>
+            <p className="mb-0">
+              Upload files or add links for this assignment. Anything you submit is stored with your team on the server
+              and listed below whenever you return.
+            </p>
+          </Alert>
         </Col>
       </Row>
 
       {/* Alerts */}
       {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
       {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>{success}</Alert>}
+
+      {assignmentId !== 'default' && participantsLoading && (
+        <Alert variant="secondary" className="mb-3">Checking your enrollment on this assignment…</Alert>
+      )}
+      {assignmentId !== 'default' && !participantsLoading && !participantId && currentUser?.id && (
+        <Alert variant="warning" className="mb-3">
+          You are not enrolled as a participant on this assignment, so uploads are blocked. Ask the instructor to add you under assignment participants.
+        </Alert>
+      )}
 
       {/* Action Buttons Grid */}
       <Row className="mb-5 justify-content-center">
@@ -253,8 +376,8 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
 
         <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
           <Button
-            onClick={fetchSubmissions}
-            disabled={loading}
+            onClick={() => refreshSubmissionArtifacts()}
+            disabled={loading || !participantId}
             style={{
               backgroundColor: '#e9ecef',
               border: '1px solid #dee2e6',
@@ -281,7 +404,8 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
 
         <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
           <Button
-            onClick={() => window.location.href = '/'}
+            as={Link}
+            to={studentTasksPath}
             style={{
               backgroundColor: '#e9ecef',
               border: '1px solid #dee2e6',
@@ -301,37 +425,11 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         </Col>
       </Row>
 
-      {/* Submission History Table */}
-      {loading ? (
-        <Row className="mb-5">
-          <Col className="text-center">
-            <Spinner animation="border" />
-          </Col>
-        </Row>
-      ) : submissions.length > 0 ? (
-        <Row className="mb-5">
-          <Col>
-            <h3>📊 Submission History</h3>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Submission ID</th>
-                  <th>Type</th>
-                  <th>Submitted At</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{submission.id}</td>
-                    <td>{submission.type}</td>
-                    <td>{new Date(submission.submittedAt).toLocaleString()}</td>
-                    <td>{submission.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+      {loading && participantId && files.length === 0 && hyperlinks.length === 0 ? (
+        <Row className="mb-4">
+          <Col className="text-center text-muted">
+            <Spinner animation="border" size="sm" className="me-2" />
+            Loading your submissions…
           </Col>
         </Row>
       ) : null}
@@ -340,7 +438,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
       {files.length > 0 && (
         <Row className="mb-5">
           <Col>
-            <h3>📁 Uploaded Files</h3>
+            <h3 className="h5">Uploaded files</h3>
             <div className="files-list">
               {files.map((file) => (
                 <div key={file.id} className="file-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
@@ -361,7 +459,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                     </Button>
                     <Button
                       variant="link"
-                      onClick={() => handleDeleteFile(file.id)}
+                      onClick={() => handleDeleteFile(file)}
                       title="Delete"
                       style={{ color: '#dc3545' }}
                     >
@@ -379,23 +477,26 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
       {hyperlinks.length > 0 && (
         <Row className="mb-5">
           <Col>
-            <h3>🔗 Submitted Hyperlinks</h3>
+            <h3 className="h5">Submitted hyperlinks</h3>
             <div className="hyperlinks-list">
-              {hyperlinks.map((hyperlink) => (
-                <div key={hyperlink.url} className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
+              {hyperlinks.map((hyperlink, index) => (
+                <div key={`${hyperlink.url}-${index}`} className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
                   <div>
                     <a href={hyperlink.url} target="_blank" rel="noopener noreferrer">
                       <strong>{hyperlink.title}</strong>
                     </a>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      Submitted: {new Date(hyperlink.submittedAt).toLocaleString()}
-                    </div>
+                    {hyperlink.submittedAt ? (
+                      <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                        Submitted: {new Date(hyperlink.submittedAt).toLocaleString()}
+                      </div>
+                    ) : null}
                   </div>
                   <Button
                     variant="link"
-                    onClick={() => handleRemoveHyperlink(hyperlink.url)}
+                    onClick={() => handleRemoveHyperlink(index)}
                     title="Remove"
                     style={{ color: '#dc3545' }}
+                    disabled={!participantId}
                   >
                     <FaTrash />
                   </Button>

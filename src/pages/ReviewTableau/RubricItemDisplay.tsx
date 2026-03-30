@@ -1,6 +1,7 @@
 import React from 'react';
 import { RubricItemDisplayProps } from '../../types/reviewTableau';
 import { MaxScoreWidget } from './ScoreWidgets';
+import { coerceQuestionnaireDisplayText } from '../Questionnaires/QuestionnaireUtils';
 
 /**
  * Component for displaying rubric items in the left column of the tableau
@@ -16,6 +17,8 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
       return null;
     }
 
+    const txtLabel = coerceQuestionnaireDisplayText(item.txt);
+
     switch (item.itemType) {
       case 'Section_header':
         return (
@@ -27,7 +30,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
             marginBottom: '5px',
             color: '#b00404'
           }}>
-            {item.txt}
+            {txtLabel}
           </div>
         );
 
@@ -41,7 +44,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
             backgroundColor: '#f8f9fa',
             color: '#333'
           }}>
-            {item.txt}
+            {txtLabel}
           </div>
         );
 
@@ -54,7 +57,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
             color: '#666',
             fontStyle: 'italic'
           }}>
-            {item.txt}
+            {txtLabel}
           </div>
         );
 
@@ -73,7 +76,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
                 {item.questionNumber && (
                   <span className="item-number">{item.questionNumber}.</span>
                 )}
-                <span>{item.txt}</span>
+                <span>{txtLabel}</span>
               </div>
               {item.scaleDescription && (
                 <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
@@ -98,7 +101,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
               {item.questionNumber && (
                 <span className="item-number">{item.questionNumber}.</span>
               )}
-              <span>{item.txt}</span>
+              <span>{txtLabel}</span>
               <span style={{ fontSize: '12px', color: '#666', marginLeft: '5px' }}>
                 ({item.itemType === 'TextArea' ? 'Long Text' : 'Short Text'})
               </span>
@@ -117,7 +120,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
               {item.questionNumber && (
                 <span className="item-number">{item.questionNumber}.</span>
               )}
-              <span>{item.txt}</span>
+              <span>{txtLabel}</span>
               <span style={{ fontSize: '12px', color: '#666', marginLeft: '5px' }}>
                 ({item.itemType})
               </span>
@@ -141,7 +144,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
               {item.questionNumber && (
                 <span className="item-number">{item.questionNumber}.</span>
               )}
-              <span>{item.txt}</span>
+              <span>{txtLabel}</span>
               <span style={{ fontSize: '12px', color: '#666', marginLeft: '5px' }}>
                 (Multiple Selection)
               </span>
@@ -165,7 +168,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
               {item.questionNumber && (
                 <span className="item-number">{item.questionNumber}.</span>
               )}
-              <span>{item.txt}</span>
+              <span>{txtLabel}</span>
               <span style={{ fontSize: '12px', color: '#666', marginLeft: '5px' }}>
                 (File Upload)
               </span>
@@ -182,7 +185,7 @@ export const RubricItemDisplay: React.FC<RubricItemDisplayProps> = ({
             {item.questionNumber && (
               <span className="item-number">{item.questionNumber}.</span>
             )}
-            <span>{item.txt}</span>
+            <span>{txtLabel}</span>
           </div>
         );
     }

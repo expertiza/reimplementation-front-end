@@ -173,6 +173,10 @@ const Table: React.FC<TableProps> = ({
 
   const firstRenderRef = useRef(true);
 
+  const headerGroups = table.getHeaderGroups();
+  const maxHeaderDepth =
+    headerGroups.length === 0 ? 0 : Math.max(...headerGroups.map((hg) => hg.depth));
+
   return (
     <>
       {!disableGlobalFilter && (
@@ -195,33 +199,53 @@ const Table: React.FC<TableProps> = ({
           <Col md={tableSize}>
             <BTable striped hover responsive size="sm" className="custom-table-layout">
               <thead className="table-secondary">
-                {table.getHeaderGroups().map((headerGroup) => (
+                {headerGroups.map((headerGroup) => (
                   <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} style={{ width: `${header.getSize()}px` }}>
-                        {header.isPlaceholder ? null : (
-                          <>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick: header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                            {shouldShowColumnFilters && header.column.getCanFilter() ? (
-                              <ColumnFilter column={header.column} />
-                            ) : null}
-                          </>
-                        )}
-                      </th>
-                    ))}
+                    {headerGroup.headers.map((header) => {
+                      const isGroupedParent = header.subHeaders.length > 0;
+                      const showColumnFilter =
+                        shouldShowColumnFilters &&
+                        headerGroup.depth === maxHeaderDepth &&
+                        header.column.getCanFilter() &&
+                        !header.isPlaceholder &&
+                        header.subHeaders.length === 0;
+
+                      return (
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          rowSpan={header.rowSpan > 1 ? header.rowSpan : undefined}
+                          className={isGroupedParent ? "text-center align-middle" : undefined}
+                          style={
+                            header.getSize() && header.getSize() > 0
+                              ? { width: `${header.getSize()}px`, minWidth: `${header.getSize()}px` }
+                              : showColumnFilter
+                                ? { minWidth: "7rem" }
+                                : undefined
+                          }
+                        >
+                          {header.isPlaceholder ? null : (
+                            <>
+                              <div
+                                {...{
+                                  className: header.column.getCanSort()
+                                    ? "cursor-pointer select-none"
+                                    : "",
+                                  onClick: header.column.getToggleSortingHandler(),
+                                }}
+                              >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                {{
+                                  asc: " 🔼",
+                                  desc: " 🔽",
+                                }[header.column.getIsSorted() as string] ?? null}
+                              </div>
+                              {showColumnFilter ? <ColumnFilter column={header.column} /> : null}
+                            </>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 ))}
               </thead>

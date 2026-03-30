@@ -7,15 +7,11 @@ import { IInstitution, IRole, IUserRequest, IUserResponse } from "../../utils/in
  */
 
 export enum EmailPreference {
-  EMAIL_ON_REVIEW = "email_on_review",
-  EMAIL_ON_SUBMISSION = "email_on_submission",
-  EMAIL_ON_META_REVIEW = "email_on_review_of_review",
+  /** Form-only: maps to both email_on_review and email_on_submission on the API. */
+  EMAIL_ON_ASSIGNMENTS = "email_on_assignments",
 }
 
-type PermittedEmailPreferences =
-  | EmailPreference.EMAIL_ON_REVIEW
-  | EmailPreference.EMAIL_ON_SUBMISSION
-  | EmailPreference.EMAIL_ON_META_REVIEW;
+type PermittedEmailPreferences = EmailPreference.EMAIL_ON_ASSIGNMENTS;
 
 export interface IUserFormValues {
   id?: number;
@@ -27,16 +23,16 @@ export interface IUserFormValues {
   parent_id?: number | null;
   institution_id: number;
   emailPreferences: Array<PermittedEmailPreferences>;
-  date_format_pref?: string; 
+  /** Loaded from API and sent back unchanged; not shown in the UI. */
+  email_on_review_of_review: boolean;
+  date_format_pref?: string;
 }
 
 export const emailOptions: IFormOption[] = [
-  { label: "When someone else reviews my work", value: EmailPreference.EMAIL_ON_REVIEW },
   {
-    label: "When someone else submits work I am assigned to review",
-    value: EmailPreference.EMAIL_ON_SUBMISSION,
+    label: "When there are updates on my assignments (new reviews or new submissions)",
+    value: EmailPreference.EMAIL_ON_ASSIGNMENTS,
   },
-
 ];
 
 export const transformInstitutionsResponse = (institutionsList: string) => {
@@ -64,11 +60,9 @@ export const transformUserRequest = (values: IUserFormValues) => {
     parent_id: values.parent_id,
     institution_id: values.institution_id,
     full_name: values.lastName + ", " + values.firstName,
-    email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
-    email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
-    email_on_review_of_review: values.emailPreferences.includes(
-      EmailPreference.EMAIL_ON_META_REVIEW
-    ),
+    email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_ASSIGNMENTS),
+    email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_ASSIGNMENTS),
+    email_on_review_of_review: values.email_on_review_of_review,
     date_format_pref: values.date_format_pref,
   };
   return JSON.stringify(user);
@@ -76,28 +70,27 @@ export const transformUserRequest = (values: IUserFormValues) => {
 
 export const transformUserResponse = (userResponse: string) => {
   const user: IUserResponse = JSON.parse(userResponse);
-  const parent_id = user.parent.id ? user.parent.id : null;
-  const institution_id = user.institution.id ? user.institution.id : -1;
+  const parent_id = user.parent?.id != null ? user.parent.id : null;
+  const institution_id = user.institution?.id != null ? user.institution.id : -1;
+  const full = user.full_name ?? "";
+  const nameParts = full.split(",");
+  const lastName = nameParts[0]?.trim() ?? "";
+  const firstName = nameParts.length > 1 ? nameParts[1].trim() : full.trim();
   const userValues: IUserFormValues = {
     id: user.id,
     name: user.name,
     email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
-    role_id: user.role.id,
+    firstName,
+    lastName,
+    role_id: user.role?.id ?? -1,
     parent_id: parent_id,
     institution_id: institution_id,
     emailPreferences: [],
+    email_on_review_of_review: Boolean(user.email_on_review_of_review),
     date_format_pref: user.date_format_pref,
   };
-  if (user.email_on_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_REVIEW);
-  }
-  if (user.email_on_submission) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
-  }
-  if (user.email_on_review_of_review) {
-    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
+  if (user.email_on_review || user.email_on_submission) {
+    userValues.emailPreferences.push(EmailPreference.EMAIL_ON_ASSIGNMENTS);
   }
   return userValues;
 };

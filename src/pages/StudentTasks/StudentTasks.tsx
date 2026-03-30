@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
-import { Container, Spinner, Alert, Row, Col } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { Container, Spinner, Alert, Row, Col, Button } from "react-bootstrap";
+import { Link, useParams } from "react-router-dom";
 import useAPI from "../../hooks/useAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -18,10 +18,22 @@ interface Topic {
   isWaitlisted?: boolean;
 }
 
+/** Row from GET /student_tasks/list */
+interface StudentTaskRow {
+  assignment: string;
+  assignment_id: number;
+  participant_id: number;
+  current_stage?: string;
+  stage_deadline?: string;
+  topic?: string;
+  permission_granted?: boolean;
+}
+
 const StudentTasks: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId?: string }>();
   const { data: topicsResponse, error: topicsError, isLoading: topicsLoading, sendRequest: fetchTopicsAPI } = useAPI();
-  const { data: assignmentResponse, sendRequest: fetchAssignment } = useAPI();
+  const { data: tasksListResponse, error: tasksListError, isLoading: tasksListLoading, sendRequest: fetchStudentTasks } = useAPI({ initialLoading: false });
+  const { data: assignmentResponse, error: assignmentError, isLoading: assignmentLoading, sendRequest: fetchAssignment } = useAPI({ initialLoading: false });
   const { data: signUpResponse, error: signUpError, sendRequest: signUpAPI } = useAPI();
   const { data: dropResponse, error: dropError, sendRequest: dropAPI } = useAPI();
   
@@ -37,36 +49,52 @@ const StudentTasks: React.FC = () => {
   const [pendingDeselections, setPendingDeselections] = useState<Set<string>>(new Set());
   const [lastSignedDbTopicId, setLastSignedDbTopicId] = useState<number | null>(null);
 
-  const fetchAssignmentData = useCallback(() => {
-    if (assignmentId) {
-      fetchAssignment({ url: `/assignments/${assignmentId}`, method: 'GET' });
-    } else {
-      fetchAssignment({ url: `/assignments`, method: 'GET' });
-    }
-  }, [assignmentId, fetchAssignment]);
+  const studentTasks = useMemo((): StudentTaskRow[] => {
+    const raw = tasksListResponse?.data;
+    return Array.isArray(raw) ? (raw as StudentTaskRow[]) : [];
+  }, [tasksListResponse]);
 
-  const fetchTopics = useCallback((assignmentId: number) => {
-    if (!assignmentId) return;
-    fetchTopicsAPI({ url: `/project_topics?assignment_id=${assignmentId}`, method: 'GET' });
+  useEffect(() => {
+    fetchStudentTasks({ url: "/student_tasks/list", method: "GET" });
+  }, [fetchStudentTasks]);
+
+  const resolvedAssignmentId = useMemo((): number | null => {
+    if (assignmentId) {
+      const aid = parseInt(assignmentId, 10);
+      return Number.isNaN(aid) ? null : aid;
+    }
+    if (studentTasks.length === 1) {
+      return studentTasks[0].assignment_id;
+    }
+    return null;
+  }, [assignmentId, studentTasks]);
+
+  useEffect(() => {
+    if (resolvedAssignmentId == null) return;
+    fetchAssignment({ url: `/assignments/${resolvedAssignmentId}`, method: "GET" });
+  }, [resolvedAssignmentId, fetchAssignment]);
+
+  const fetchTopics = useCallback((id: number) => {
+    if (!id) return;
+    fetchTopicsAPI({ url: `/project_topics?assignment_id=${id}`, method: 'GET' });
   }, [fetchTopicsAPI]);
 
-  useEffect(() => {
-    fetchAssignmentData();
-  }, [fetchAssignmentData]);
+  const assignmentRecord = useMemo((): { id?: number; has_topics?: boolean; name?: string; allow_bookmarks?: boolean } | null => {
+    const d = assignmentResponse?.data as Record<string, unknown> | undefined;
+    if (!d || resolvedAssignmentId == null) return null;
+    if (Array.isArray(d)) {
+      return (d as { id?: number }[]).find((a) => a.id === resolvedAssignmentId) ?? null;
+    }
+    return d as { id?: number; has_topics?: boolean; name?: string; allow_bookmarks?: boolean };
+  }, [assignmentResponse, resolvedAssignmentId]);
+
+  const hasTopics = assignmentRecord?.has_topics === true;
 
   useEffect(() => {
-    if (assignmentResponse?.data) {
-      let targetAssignmentId: number;
-      if (assignmentId) {
-        targetAssignmentId = parseInt(assignmentId);
-      } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
-        targetAssignmentId = assignmentResponse.data[0].id;
-      } else {
-        targetAssignmentId = assignmentResponse.data.id;
-      }
-      fetchTopics(targetAssignmentId);
-    }
-  }, [assignmentResponse, assignmentId, fetchTopics]);
+    if (resolvedAssignmentId == null || !assignmentRecord) return;
+    if (!hasTopics) return;
+    fetchTopics(resolvedAssignmentId);
+  }, [resolvedAssignmentId, assignmentRecord, fetchTopics, hasTopics]);
 
   useEffect(() => {
     if (signUpResponse) {
@@ -75,19 +103,11 @@ const StudentTasks: React.FC = () => {
       if (dbTopicId) setLastSignedDbTopicId(Number(dbTopicId));
       // Clear optimistic updates since we'll get real data
       setOptimisticSlotChanges(new Map());
-      if (assignmentResponse?.data) {
-        let targetAssignmentId: number;
-        if (assignmentId) {
-          targetAssignmentId = parseInt(assignmentId);
-        } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
-          targetAssignmentId = assignmentResponse.data[0].id;
-        } else {
-          targetAssignmentId = assignmentResponse.data.id;
-        }
-        fetchTopics(targetAssignmentId);
+      if (resolvedAssignmentId != null) {
+        fetchTopics(resolvedAssignmentId);
       }
     }
-  }, [signUpResponse, assignmentResponse, assignmentId, fetchTopics]);
+  }, [signUpResponse, resolvedAssignmentId, fetchTopics]);
 
   useEffect(() => {
     if (signUpError) {
@@ -102,19 +122,11 @@ const StudentTasks: React.FC = () => {
     if (dropResponse) {
       // Clear optimistic updates since we'll get real data
       setOptimisticSlotChanges(new Map());
-      if (assignmentResponse?.data) {
-        let targetAssignmentId: number;
-        if (assignmentId) {
-          targetAssignmentId = parseInt(assignmentId);
-        } else if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
-          targetAssignmentId = assignmentResponse.data[0].id;
-        } else {
-          targetAssignmentId = assignmentResponse.data.id;
-        }
-        fetchTopics(targetAssignmentId);
+      if (resolvedAssignmentId != null) {
+        fetchTopics(resolvedAssignmentId);
       }
     }
-  }, [dropResponse, assignmentResponse, assignmentId, fetchTopics]);
+  }, [dropResponse, resolvedAssignmentId, fetchTopics]);
 
   useEffect(() => {
     if (dropError) {
@@ -233,23 +245,20 @@ const StudentTasks: React.FC = () => {
   }, [topicsResponse?.data, isUserOnTopic]);
 
   const assignmentName = useMemo(() => {
-    if (!assignmentResponse?.data) return 'OSS project & documentation assignment';
-    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
-      return assignmentResponse.data[0].name || 'OSS project & documentation assignment';
-    } else {
-      return assignmentResponse.data.name || 'OSS project & documentation assignment';
-    }
-  }, [assignmentResponse]);
+    const fromApi = assignmentRecord?.name;
+    if (fromApi != null && String(fromApi).trim() !== "") return String(fromApi).trim();
+    const fromTask =
+      resolvedAssignmentId != null
+        ? studentTasks.find((t) => t.assignment_id === resolvedAssignmentId)?.assignment
+        : undefined;
+    if (fromTask != null && String(fromTask).trim() !== "") return String(fromTask).trim();
+    return "Assignment";
+  }, [assignmentRecord, studentTasks, resolvedAssignmentId]);
 
   // Check if bookmarks are allowed for this assignment
   const allowBookmarks = useMemo(() => {
-    if (!assignmentResponse?.data) return false;
-    if (Array.isArray(assignmentResponse.data) && assignmentResponse.data.length > 0) {
-      return assignmentResponse.data[0].allow_bookmarks || false;
-    } else {
-      return assignmentResponse.data.allow_bookmarks || false;
-    }
-  }, [assignmentResponse]);
+    return assignmentRecord?.allow_bookmarks === true;
+  }, [assignmentRecord]);
 
   const userSelectedTopics: Topic[] = useMemo(() => {
     return topics.filter(topic => topic.isSelected);
@@ -384,7 +393,113 @@ const StudentTasks: React.FC = () => {
     isWaitlisted: t.isWaitlisted,
   })), [topics]);
 
-  if (topicsLoading) {
+  const routeAssignmentAllowed = useMemo(() => {
+    if (!assignmentId) return true;
+    const aid = parseInt(assignmentId, 10);
+    if (Number.isNaN(aid)) return false;
+    if (tasksListLoading || studentTasks.length === 0) return true;
+    return studentTasks.some((t) => t.assignment_id === aid);
+  }, [assignmentId, tasksListLoading, studentTasks]);
+
+  if (tasksListLoading) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading your assignments...</span>
+        </Spinner>
+        <p className="mt-2">Loading your assignments...</p>
+      </Container>
+    );
+  }
+
+  if (tasksListError) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">
+          <Alert.Heading>Could not load your assignments</Alert.Heading>
+          <p>{typeof tasksListError === "string" ? tasksListError : JSON.stringify(tasksListError)}</p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (studentTasks.length === 0) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="info">
+          <Alert.Heading>No assignments yet</Alert.Heading>
+          <p className="mb-0">
+            You have no visible assignments. For <strong>calibrated</strong> assignments, your instructor must add you as a
+            calibration participant before the assignment appears here.
+          </p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (studentTasks.length > 1 && !assignmentId) {
+    return (
+      <Container className="mt-4">
+        <h2 className="mb-3">Your assignments</h2>
+        <p className="text-muted mb-3">Choose an assignment to open the signup sheet or submission options.</p>
+        <ul className="list-unstyled d-grid gap-2">
+          {studentTasks.map((t) => (
+            <li key={`${t.assignment_id}-${t.participant_id}`}>
+              <Button as={Link} to={`/student_tasks/${t.assignment_id}`} variant="outline-primary" className="text-start w-100">
+                {t.assignment}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </Container>
+    );
+  }
+
+  if (!routeAssignmentAllowed) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="warning">
+          <Alert.Heading>Not enrolled</Alert.Heading>
+          <p className="mb-0">You are not a participant on this assignment. Open Student tasks to pick one you are enrolled in.</p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (resolvedAssignmentId != null && (assignmentLoading || !assignmentRecord)) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading assignment...</span>
+        </Spinner>
+        <p className="mt-2">Loading assignment...</p>
+      </Container>
+    );
+  }
+
+  if (resolvedAssignmentId != null && assignmentError) {
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">
+          <Alert.Heading>Could not load assignment</Alert.Heading>
+          <p>{typeof assignmentError === "string" ? assignmentError : JSON.stringify(assignmentError)}</p>
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!assignmentRecord) {
+    return (
+      <Container className="mt-4 text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading assignment...</span>
+        </Spinner>
+        <p className="mt-2">Loading assignment...</p>
+      </Container>
+    );
+  }
+
+  if (hasTopics && topicsLoading) {
     return (
       <Container className="mt-4 text-center">
         <Spinner animation="border" role="status">
@@ -395,7 +510,7 @@ const StudentTasks: React.FC = () => {
     );
   }
 
-  if (topicsError) {
+  if (hasTopics && topicsError) {
     return (
       <Container className="mt-4">
         <Alert variant="danger">
@@ -407,6 +522,39 @@ const StudentTasks: React.FC = () => {
             }
           </p>
         </Alert>
+      </Container>
+    );
+  }
+
+  if (!hasTopics) {
+    const submitPath =
+      resolvedAssignmentId != null && !Number.isNaN(resolvedAssignmentId)
+        ? `/assignments/edit/${resolvedAssignmentId}/submitcontent`
+        : null;
+    return (
+      <Container fluid className="px-md-4">
+        <Row className="mt-3 mb-3">
+          <Col xs={12}>
+            <h2>{assignmentName}</h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={12}>
+            <Alert variant="info" className="mb-3">
+              <Alert.Heading>No topic signup for this assignment</Alert.Heading>
+              <p className="mb-2">
+                This assignment is not using signup-sheet topics. Open <strong>Submit your work</strong> to upload files or links.
+              </p>
+              {submitPath ? (
+                <Button as={Link} to={submitPath} variant="primary">
+                  Submit your work
+                </Button>
+              ) : (
+                <p className="mb-0">Could not determine assignment id for submission.</p>
+              )}
+            </Alert>
+          </Col>
+        </Row>
       </Container>
     );
   }
