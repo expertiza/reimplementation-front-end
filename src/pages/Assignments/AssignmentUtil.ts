@@ -7,6 +7,7 @@ export interface IAssignmentFormValues {
   name: string;
   directory_path: string;
   spec_location: string;
+  description_url?: string;
   private: boolean;
   show_template_review: boolean;
   require_quiz: boolean;
@@ -102,12 +103,11 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     // Core fields
     name: values.name,
     directory_path: values.directory_path,
-    spec_location: values.spec_location,
+    description_url: values.spec_location ?? values.description_url,
     course_id: values.course_id,
 
     // Visibility / basic flags
     private: values.private,
-    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz ?? false,
     has_badge: values.has_badge ?? false,
     staggered_deadline: values.staggered_deadline ?? false,
@@ -227,7 +227,8 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     id: assignment.id,
     name: assignment.name,
     directory_path: assignment.directory_path,
-    spec_location: assignment.spec_location,
+    spec_location: assignment.spec_location ?? (assignment as any).description_url ?? "",
+    description_url: (assignment as any).description_url,
     private: assignment.private,
     show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,

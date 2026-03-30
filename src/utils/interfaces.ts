@@ -86,12 +86,13 @@ export interface IAssignmentRequest {
   // Core fields
   name: string;
   directory_path: string;
-  spec_location: string;
+  spec_location?: string;
+  description_url?: string;
   course_id?: number;
 
   // Visibility / basic flags
   private: boolean;
-  show_template_review: boolean;
+  show_template_review?: boolean;
   require_quiz: boolean;
   has_badge: boolean;
   staggered_deadline: boolean;
@@ -245,7 +246,8 @@ export interface IAssignmentResponse {
   created_at: Date; 
   updated_at: Date; 
   directory_path: string;
-  spec_location:string;
+  spec_location?: string;
+  description_url?: string;
   private:boolean;
   show_template_review: boolean;
   require_quiz:boolean;

@@ -805,8 +805,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       }
                     }}
                     options={[
-                      { label: "Static", value: "Instructor-Selected" },
-                      { label: "Dynamic", value: "Auto-Selected" },
+                      { label: "Static", value: "Static" },
+                      { label: "Dynamic", value: "Dynamic" },
+                      { label: "DJ", value: "DJ" },
                     ]}
                   />
                 </div>
