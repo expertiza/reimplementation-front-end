@@ -393,7 +393,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       
 
 
-  // Close the modal if the assignment is updated successfully and navigate to the assignments page
+  // Show success when assignment is saved; keep user on the current page
   useEffect(() => {
     if (
       assignmentResponse &&
@@ -406,9 +406,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           message: `Assignment ${assignmentData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/assignments");
     }
-  }, [dispatch, mode, navigate, assignmentData, assignmentResponse, location.state?.from]);
+  }, [dispatch, mode, assignmentData, assignmentResponse]);
 
   // Show the error message if the assignment is not updated successfully
   useEffect(() => {
