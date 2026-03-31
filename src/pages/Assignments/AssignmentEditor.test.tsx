@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import AssignmentEditor from "./AssignmentEditor";
@@ -95,8 +95,121 @@ describe("AssignmentEditor rubrics tab", () => {
 
 });
 
+describe("AssignmentEditor review strategy calibration behavior", () => {
+  beforeEach(() => {
+    loaderData = { ...baseAssignment, calibration_for_training: false, is_calibrated: false };
+    sendRequestMock.mockClear();
+    dispatchMock.mockClear();
+  });
+
+  it("shows uncalibrated label and calibrated field in Static strategy when calibration is enabled", () => {
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+    expect(
+      screen.getByText("Number of reviews each reviewer is required to do")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Number of calibrated reviews")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /General/i }));
+    fireEvent.click(screen.getByLabelText("Calibration for training?"));
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+    expect(
+      screen.getByText("Number of uncalibrated reviews each reviewer is required to do")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Number of calibrated reviews")).toBeInTheDocument();
+  });
+
+  it("keeps calibrated field hidden in Static strategy when calibration is disabled", () => {
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+
+    expect(
+      screen.getByText("Number of reviews each reviewer is required to do")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Number of uncalibrated reviews each reviewer is required to do")).not.toBeInTheDocument();
+    expect(screen.queryByText("Number of calibrated reviews")).not.toBeInTheDocument();
+  });
+});
+
+describe("AssignmentEditor review mapping strategy behavior", () => {
+  beforeEach(() => {
+    loaderData = {
+      ...baseAssignment,
+      calibration_for_training: false,
+      is_calibrated: false,
+      has_topics: false,
+    };
+    sendRequestMock.mockClear();
+    dispatchMock.mockClear();
+  });
+
+  it("maps legacy Auto-Selected strategy to Dynamic UI fields", () => {
+    loaderData = { ...loaderData, review_strategy: "Auto-Selected" };
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+
+    expect(screen.getByText("Number of reviews each reviewer is required to do")).toBeInTheDocument();
+    expect(screen.getByText("Max. number of reviews each reviewer is allowed to do")).toBeInTheDocument();
+    expect(screen.queryByText("Round Robin Assignment")).not.toBeInTheDocument();
+  });
+
+  it("maps legacy Instructor-Selected strategy to Static UI fields", () => {
+    loaderData = { ...loaderData, review_strategy: "Instructor-Selected" };
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+
+    expect(screen.getByText("Round Robin Assignment")).toBeInTheDocument();
+    expect(screen.getByText("Random Assignment")).toBeInTheDocument();
+    expect(screen.getByText("Upload Spreadsheet Assignment")).toBeInTheDocument();
+  });
+
+  it("shows upload input and hides required-review fields when static upload strategy is selected", () => {
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+    fireEvent.click(screen.getByLabelText("Upload Spreadsheet Assignment"));
+
+    const uploadInput = document.querySelector('input[name="spreadsheetFile"]');
+    expect(uploadInput).toBeInTheDocument();
+    expect(screen.queryByText("Number of reviews each reviewer is required to do")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Assign reviewers to review projects that have not yet been submitted")
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows review topic threshold only for Dynamic strategy when assignment has topics", () => {
+    loaderData = { ...loaderData, review_strategy: "Dynamic", has_topics: true };
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+
+    expect(screen.getByText("Review topic threshold (k):")).toBeInTheDocument();
+  });
+
+  it("shows team-based review controls in Dynamic strategy only when has teams is enabled", () => {
+    loaderData = { ...loaderData, review_strategy: "Dynamic", has_teams: false };
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+    expect(screen.queryByText("Is reviewing role based?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Are reviews to be done by teams?")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /General/i }));
+    fireEvent.click(screen.getByLabelText("Has teams?"));
+
+    fireEvent.click(screen.getByRole("tab", { name: /Review strategy/i }));
+    expect(screen.getByText("Is reviewing role based?")).toBeInTheDocument();
+    expect(screen.getByText("Are reviews to be done by teams?")).toBeInTheDocument();
+  });
+});
+
 describe("transformAssignmentRequest", () => {
-  it("builds assignment_questionnaires_attributes for selected rounds", () => {
+  it("does not include unsupported questionnaire nested attributes", () => {
     const values: IAssignmentFormValues = {
       id: 1,
       name: "Test Assignment",
@@ -125,10 +238,7 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
-    expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 10, questionnaire_id: 101, used_in_round: 1 },
-      { questionnaire_id: 102, used_in_round: 2 },
-    ]);
+    expect(payload.assignment.assignment_questionnaires_attributes).toBeUndefined();
     expect(payload.assignment.vary_by_round).toBe(true);
     expect(payload.assignment.rounds_of_reviews).toBe(2);
   });
@@ -161,9 +271,7 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
-    expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 99, questionnaire_id: 201, used_in_round: 1 },
-    ]);
+    expect(payload.assignment.assignment_questionnaires_attributes).toBeUndefined();
   });
 
   it("sets vary_by_round to false when checkbox is unchecked", () => {

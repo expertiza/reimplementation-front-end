@@ -7,6 +7,7 @@ export interface IAssignmentFormValues {
   name: string;
   directory_path: string;
   spec_location: string;
+  description_url?: string;
   private: boolean;
   show_template_review: boolean;
   require_quiz: boolean;
@@ -83,31 +84,69 @@ export interface IAssignmentFormValues {
 
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
-  // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
-  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
-  const roundCount = values.number_of_review_rounds ?? 0;
-  for (let i = 1; i <= roundCount; i += 1) {
-    const questionnaireId = values[`questionnaire_round_${i}`];
-    if (questionnaireId) {
-      const existingId = values[`assignment_questionnaire_id_${i}`];
-      assignmentQuestionnaires.push({
-        id: existingId,
-        questionnaire_id: questionnaireId,
-        used_in_round: i,
-      });
-    }
-  }
+  const backendAssignmentKeys = new Set([
+    "name",
+    "directory_path",
+    "URL",
+    "course_id",
+    "private",
+    "require_quiz",
+    "staggered_deadline",
+    "is_calibrated",
+    "has_teams",
+    "max_team_size",
+    "has_topics",
+    "review_topic_threshold",
+    "max_reviews_per_submission",
+    "review_assignment_strategy",
+    "vary_by_round",
+    "team_members_have_duty",
+    "num_reviews_allowed",
+    "num_reviews_required",
+    "is_anonymous",
+    "team_reviewing_enabled",
+    "is_selfreview_enabled",
+    "reviews_visible_to_all",
+    "rounds_of_reviews",
+    "days_between_submissions",
+    "late_policy_id",
+    "is_penalty_calculated",
+    "calculate_penalty",
+    "is_answer_tagging_allowed",
+    "available_to_students",
+    "bidding_for_reviews_enabled",
+    "can_choose_topic_to_review",
+    "can_bookmark_topics",
+    "show_teammate_reviews",
+    "enable_pair_programming",
+    "auto_assign_mentor",
+  ]);
 
-  const assignment: IAssignmentRequest = {
+  const normalizedReviewStrategy = (() => {
+    if (values.review_strategy === "Dynamic" || values.review_strategy === "Auto-Selected") {
+      return "Dynamic";
+    }
+    if (values.review_strategy === "Static" || values.review_strategy === "Instructor-Selected") {
+      return "Static";
+    }
+    return "Static";
+  })();
+
+  const requiredReviews = Number(values.set_required_number_of_reviews_per_reviewer ?? 0);
+  const allowedReviews = Math.max(
+    Number(values.set_allowed_number_of_reviews_per_reviewer ?? 0),
+    requiredReviews
+  );
+
+  const assignment: any = {
     // Core fields
     name: values.name,
     directory_path: values.directory_path,
-    spec_location: values.spec_location,
+    URL: values.spec_location ?? values.description_url,
     course_id: values.course_id,
 
     // Visibility / basic flags
     private: values.private,
-    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz ?? false,
     has_badge: values.has_badge ?? false,
     staggered_deadline: values.staggered_deadline ?? false,
@@ -116,70 +155,51 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     // Team / mentor / topic configuration
     has_teams: values.has_teams ?? false,
     max_team_size: values.max_team_size,
-    show_teammate_review: values.show_teammate_review ?? false,
-    is_pair_programming: values.is_pair_programming ?? false,
-    has_mentors: values.has_mentors ?? false,
     has_topics: values.has_topics ?? false,
-    auto_assign_mentors: values.auto_assign_mentors ?? false,
 
     // Review strategy / limits
     review_topic_threshold: values.review_topic_threshold,
-    maximum_number_of_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
-    review_strategy: values.review_strategy,
-    review_rubric_varies_by_round: values.review_rubric_varies_by_round ?? false,
-    review_rubric_varies_by_topic: values.review_rubric_varies_by_topic ?? false,
-    review_rubric_varies_by_role: values.review_rubric_varies_by_role ?? false,
-    has_max_review_limit: values.has_max_review_limit ?? false,
-    set_allowed_number_of_reviews_per_reviewer: values.set_allowed_number_of_reviews_per_reviewer,
-    set_required_number_of_reviews_per_reviewer: values.set_required_number_of_reviews_per_reviewer,
-    is_review_anonymous: values.is_review_anonymous ?? false,
-    is_review_done_by_teams: values.is_review_done_by_teams ?? false,
-    allow_self_reviews: values.allow_self_reviews ?? false,
-    reviews_visible_to_other_reviewers: values.reviews_visible_to_other_reviewers ?? false,
-    number_of_review_rounds: values.number_of_review_rounds,
+    max_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
+    review_assignment_strategy: normalizedReviewStrategy,
+    vary_by_round: values.review_rubric_varies_by_round ?? false,
+    team_members_have_duty: values.review_rubric_varies_by_role ?? false,
+    num_reviews_allowed: allowedReviews,
+    num_reviews_required: requiredReviews,
+    is_anonymous: values.is_review_anonymous ?? false,
+    team_reviewing_enabled: values.is_review_done_by_teams ?? false,
+    is_selfreview_enabled: values.allow_self_reviews ?? false,
+    reviews_visible_to_all: values.reviews_visible_to_other_reviewers ?? false,
+    rounds_of_reviews: values.number_of_review_rounds,
 
     // Dates / penalties
     days_between_submissions: values.days_between_submissions,
     late_policy_id: values.late_policy_id,
     is_penalty_calculated: values.is_penalty_calculated ?? false,
     calculate_penalty: values.calculate_penalty ?? false,
-    apply_late_policy: values.apply_late_policy ?? false,
-
-    // Deadline toggles
-    use_signup_deadline: values.use_signup_deadline ?? false,
-    use_drop_topic_deadline: values.use_drop_topic_deadline ?? false,
-    use_team_formation_deadline: values.use_team_formation_deadline ?? false,
-
     // JSON-configured deadline settings (default to empty arrays so backend always sees a consistent shape)
     weights: values.weights ?? [],
     notification_limits: values.notification_limits ?? [],
-    use_date_updater: values.use_date_updater ?? [],
-    submission_allowed: values.submission_allowed ?? [],
-    review_allowed: values.review_allowed ?? [],
-    teammate_allowed: values.teammate_allowed ?? [],
-    metareview_allowed: values.metareview_allowed ?? [],
     reminder: values.reminder ?? [],
 
     // Misc flags from other tabs
-    allow_tag_prompts: values.allow_tag_prompts ?? false,
-    has_quizzes: values.has_quizzes ?? false,
-    calibration_for_training: values.calibration_for_training ?? false,
+    is_answer_tagging_allowed: values.allow_tag_prompts ?? false,
     available_to_students: values.available_to_students ?? false,
-    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
-    allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
-    staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
-
-    // Per-round rubric configuration
-    vary_by_round: values.review_rubric_varies_by_round,
-    rounds_of_reviews: values.number_of_review_rounds,
-    assignment_questionnaires_attributes: assignmentQuestionnaires,
+    bidding_for_reviews_enabled: values.enable_bidding_for_reviews ?? false,
+    can_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
+    can_bookmark_topics: values.allow_participants_to_create_bookmarks ?? false,
+    show_teammate_reviews: values.show_teammate_review ?? false,
+    enable_pair_programming: values.is_pair_programming ?? false,
+    auto_assign_mentor: values.auto_assign_mentors ?? false,
 
   };
-  return JSON.stringify({ assignment });
+
+  const filteredAssignment = Object.fromEntries(
+    Object.entries(assignment).filter(
+      ([key, value]) => backendAssignmentKeys.has(key) && value !== undefined
+    )
+  );
+
+  return JSON.stringify({ assignment: filteredAssignment });
 };
 
 export const transformAssignmentResponse = (assignmentResponse: string) => {
@@ -227,7 +247,8 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     id: assignment.id,
     name: assignment.name,
     directory_path: assignment.directory_path,
-    spec_location: assignment.spec_location,
+    spec_location: (assignment as any).URL ?? assignment.spec_location ?? (assignment as any).description_url ?? "",
+    description_url: (assignment as any).description_url ?? (assignment as any).URL,
     private: assignment.private,
     show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,
@@ -237,8 +258,28 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
 
     // review rounds / rubrics
     review_rubric_varies_by_round:
-      assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
-    number_of_review_rounds: assignment.num_review_rounds,
+      assignment.varying_rubrics_by_round ?? assignment.vary_by_round ?? (assignment as any).vary_by_round,
+    number_of_review_rounds: assignment.num_review_rounds ?? (assignment as any).rounds_of_reviews,
+
+    // map backend review strategy keys into AssignmentEditor form fields
+    review_strategy:
+      ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) === "Auto-Selected"
+        ? "Dynamic"
+        : ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) === "Instructor-Selected"
+          ? "Static"
+          : ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) ?? "Static",
+    set_required_number_of_reviews_per_reviewer: Number((assignment as any).set_required_number_of_reviews_per_reviewer ?? (assignment as any).num_reviews_required ?? 0),
+    set_allowed_number_of_reviews_per_reviewer: Number((assignment as any).set_allowed_number_of_reviews_per_reviewer ?? (assignment as any).num_reviews_allowed ?? 0),
+    is_review_anonymous: !!((assignment as any).is_review_anonymous ?? (assignment as any).is_anonymous),
+    allow_self_reviews: !!((assignment as any).allow_self_reviews ?? (assignment as any).is_selfreview_enabled),
+    review_rubric_varies_by_role: !!((assignment as any).review_rubric_varies_by_role ?? (assignment as any).team_members_have_duty),
+    is_review_done_by_teams: !!((assignment as any).is_review_done_by_teams ?? (assignment as any).team_reviewing_enabled),
+    maximum_number_of_reviews_per_submission: Number((assignment as any).max_reviews_per_submission ?? (assignment as any).maximum_number_of_reviews_per_submission ?? 0),
+    reviews_visible_to_other_reviewers: !!((assignment as any).reviews_visible_to_other_reviewers ?? (assignment as any).reviews_visible_to_all),
+    show_teammate_review: !!((assignment as any).show_teammate_review ?? (assignment as any).show_teammate_reviews),
+    is_pair_programming: !!((assignment as any).is_pair_programming ?? (assignment as any).enable_pair_programming),
+    auto_assign_mentors: !!((assignment as any).auto_assign_mentors ?? (assignment as any).auto_assign_mentor),
+    review_topic_threshold: Number((assignment as any).review_topic_threshold ?? 1),
 
     // precomputed date/time fields for the Due dates tab
     date_time: dateTimeMap as any,
