@@ -12,6 +12,7 @@ import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
 import ExportModal from "../../components/Modals/ExportModal";
+import ImportModal from "../../components/Modals/ImportModal";
 
 
 
@@ -22,6 +23,7 @@ const Questionnaires = () => {
   const dispatch = useDispatch();
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // loader option
   const questionnaireData :any = useLoaderData();
@@ -29,6 +31,7 @@ const Questionnaires = () => {
   useEffect(() => {
     setShowTypeModal(false);
     setShowExportModal(false);
+    setShowImportModal(false);
   }, [location]);
 
   const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
@@ -101,6 +104,14 @@ const Questionnaires = () => {
           </Row>
           <Row className="mb-2">
             <Col className="d-flex justify-content-end gap-2" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowImportModal(true)}
+                className="d-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: "8px", height: "48px" }}
+              >
+                <span>Import</span>
+              </Button>
               <Button
                 variant="outline-primary"
                 onClick={() => setShowExportModal(true)}
@@ -276,6 +287,11 @@ const Questionnaires = () => {
       <ExportModal
         show={showExportModal}
         onHide={() => setShowExportModal(false)}
+        modelClass="Questionnaire"
+      />
+      <ImportModal
+        show={showImportModal}
+        onHide={() => setShowImportModal(false)}
         modelClass="Questionnaire"
       />
     </>
