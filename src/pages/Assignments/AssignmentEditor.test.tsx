@@ -96,7 +96,7 @@ describe("AssignmentEditor rubrics tab", () => {
 });
 
 describe("transformAssignmentRequest", () => {
-  it("builds assignment_questionnaires_attributes for selected rounds", () => {
+  it("does not include unsupported questionnaire nested attributes", () => {
     const values: IAssignmentFormValues = {
       id: 1,
       name: "Test Assignment",
@@ -125,10 +125,7 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
-    expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 10, questionnaire_id: 101, used_in_round: 1 },
-      { questionnaire_id: 102, used_in_round: 2 },
-    ]);
+    expect(payload.assignment.assignment_questionnaires_attributes).toBeUndefined();
     expect(payload.assignment.vary_by_round).toBe(true);
     expect(payload.assignment.rounds_of_reviews).toBe(2);
   });
@@ -161,9 +158,7 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
-    expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 99, questionnaire_id: 201, used_in_round: 1 },
-    ]);
+    expect(payload.assignment.assignment_questionnaires_attributes).toBeUndefined();
   });
 
   it("sets vary_by_round to false when checkbox is unchecked", () => {
