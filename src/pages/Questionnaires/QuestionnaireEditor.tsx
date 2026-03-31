@@ -8,6 +8,51 @@ import QuestionnaireForm from "./QuestionnaireForm";
 import { useSelector} from "react-redux";
 import { RootState } from "../../store/store";
 
+const displayQuestionnaireType = (questionnaireType?: string) => {
+  const typeMap: Record<string, string> = {
+    ReviewQuestionnaire: "Review",
+    MetareviewQuestionnaire: "Metareview",
+    AuthorFeedbackQuestionnaire: "Author feedback",
+    "Author FeedbackQuestionnaire": "Author feedback",
+    TeammateReviewQuestionnaire: "Teammate Review",
+    "Teammate ReviewQuestionnaire": "Teammate Review",
+    SurveyQuestionnaire: "Survey",
+    AssignmentSurveyQuestionnaire: "Assignment survey",
+    "Assignment SurveyQuestionnaire": "Assignment survey",
+    GlobalSurveyQuestionnaire: "Global survey",
+    "Global SurveyQuestionnaire": "Global survey",
+    CourseSurveyQuestionnaire: "Course survey",
+    "Course SurveyQuestionnaire": "Course survey",
+    BookmarkRatingQuestionnaire: "Bookmark rating",
+    "Bookmark RatingQuestionnaire": "Bookmark rating",
+    QuizQuestionnaire: "Quiz",
+  };
+
+  return questionnaireType ? typeMap[questionnaireType] ?? questionnaireType : "";
+};
+
+const mapFetchedItemToFormItem = (item: any) => {
+  const size = typeof item.size === "string" ? item.size.split(",").map((value: string) => value.trim()) : [];
+  const [width, height] = size;
+
+  return {
+    id: item.id,
+    txt: item.txt,
+    question_type: item.question_type,
+    weight: item.weight ?? "",
+    alternatives: item.alternatives ? item.alternatives.split("|").join(", ") : "",
+    min_label: item.min_label ?? "",
+    max_label: item.max_label ?? "",
+    textarea_width: item.question_type === "Criterion" || item.question_type === "TextArea" ? width ?? "" : "",
+    textarea_height: item.question_type === "Criterion" || item.question_type === "TextArea" ? height ?? "" : "",
+    textbox_width: item.question_type === "TextField" ? item.size ?? "" : "",
+    col_names: item.col_names ?? "",
+    row_names: item.row_names ?? "",
+    seq: item.seq,
+    break_before: item.break_before,
+    _destroy: item._destroy || false,
+  };
+};
 
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const token = localStorage.getItem("token");
@@ -50,10 +95,12 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
   // the form values to the browser console.
   const onSubmit = async (values: QuestionnaireFormValues) => {
-  values.instructor_id = auth.user.id;
-  //values.instructor = auth.user.name;
-  console.log("Submit:", values);
-  const payload = transformQuestionnaireRequest(values);
+  const normalizedValues: QuestionnaireFormValues = {
+    ...values,
+    instructor_id: mode === "create" ? auth.user.id : values.instructor_id ?? questionnaire?.instructor_id,
+  };
+  console.log("Submit:", normalizedValues);
+  const payload = transformQuestionnaireRequest(normalizedValues);
   const endpoint = mode === "create"
     ? "/questionnaires"
     : `/questionnaires/${values.id}`;
@@ -78,27 +125,11 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const initialValues: QuestionnaireFormValues = {
     id: questionnaire?.id ?? undefined,
     name: questionnaire?.name ?? "",
-    questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
+    questionnaire_type: displayQuestionnaireType(questionnaire?.questionnaire_type) || type || "",
     private: questionnaire?.private ?? false,
     min_question_score: questionnaire?.min_question_score ?? 0,
     max_question_score: questionnaire?.max_question_score ?? 10,
-    items: fetchedItems.length > 0 ? fetchedItems.map(item => ({
-      id: item.id,          
-      txt: item.txt,
-      question_type: item.question_type,
-      weight: item.weight,
-      alternatives: item.alternatives,
-      min_label: item.min_label,
-      max_label: item.max_label,
-      textarea_width: item.textarea_width,
-      textarea_height: item.textarea_height,
-      textbox_width: item.textbox_width,
-      col_names: item.col_names,
-      row_names: item.row_names,
-      seq: item.seq,
-      break_before: item.break_before,
-      _destroy: item._destroy || false,
-    })) : questionnaire?.items ?? [],
+    items: fetchedItems.length > 0 ? fetchedItems.map(mapFetchedItemToFormItem) : questionnaire?.items ?? [],
   };
 
   return (

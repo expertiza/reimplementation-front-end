@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     version="1.1" width="1000" height="1000">
+    <rect width="1000" height="1000" rx="200" ry="200" fill="red"/>
+    <g transform="matrix(1.5625,0,0,1.5625,100,100)">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             version="1.1" width="512" height="512">
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <defs>
+                    <style>.cls-1{fill:#fff;}</style>
+                </defs>
+                <title>icons-collection</title>
+                <path class="cls-1"
+                      d="M0,512H468l24.57-78.85L463.87,289.79,512,146.43l-13.31-31.74-24.58,23.55,9.22-60.42L449.54,0,342,107.52l-57.35-6.14-80.89,98.3L102.4,278.53l-1,1h0a24.14,24.14,0,0,0-7.17,16.39,21.3,21.3,0,0,0,19.45,21.5l31.75,3.07L93.18,408.58Z"/>
+            </svg>
+        </svg>
+    </g>
+</svg>

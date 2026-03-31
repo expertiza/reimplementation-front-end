@@ -19,7 +19,7 @@ import CourseEditor from "./pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
-import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
+import { loadQuestionnaire, loadQuestionnaireHierarchy } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import Home from "./pages/Home";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -393,17 +393,17 @@ function App() {
             { 
               path: "questionnaire", 
               element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
+              loader: loadQuestionnaireHierarchy, },
                       ],
         },
 
        { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaireHierarchy },
 
         {
           path: "questionnaires",
           element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
-          loader: loadQuestionnaire,
+          loader: loadQuestionnaireHierarchy,
         },
         {
           path: "questionnaires/new",

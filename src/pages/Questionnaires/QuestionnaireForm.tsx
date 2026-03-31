@@ -1,5 +1,5 @@
-  import React, { useEffect, useState } from "react";
-  import { Formik, Field, Form, ErrorMessage } from "formik";
+  import React, { useEffect } from "react";
+  import { Formik, Field, Form, ErrorMessage, getIn } from "formik";
   import { Button } from 'react-bootstrap';
   import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
   import * as Yup from "yup";
@@ -13,8 +13,7 @@
 
     useEffect(() => {
           
-            fetchItemTypes({ url: "/item_types" });
-          console.log(itemTypes?.data);
+          fetchItemTypes({ url: "/questions/types" });
         }, [fetchItemTypes]);
       
 
@@ -28,7 +27,7 @@
       .notRequired(), 
 
       alternatives: Yup.string().when("question_type", ([questionType], schema) => {
-        if (questionType === "dropdown" || questionType === "multiple_choice") {
+        if (questionType === "Dropdown" || questionType === "MultipleChoiceRadio") {
           return schema
             .required("Options are required")
             .test(
@@ -48,13 +47,13 @@
       }),
 
       min_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+        return question_type === "Scale"
           ? schema.required("Minimum label is required")
           : schema.notRequired();
       }),
 
       max_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+        return question_type === "Scale"
           ? schema.required("Maximum label is required")
           : schema.notRequired();
       }),
@@ -69,6 +68,25 @@
     items: Yup.array().of(itemFields).min(1, "At least one item is required"),
   });
 
+
+    const fallbackItemTypes = [
+      "Criterion",
+      "Scale",
+      "Dropdown",
+      "Text area",
+      "Text field",
+      "Multiple choice",
+    ];
+
+    const normalizedItemTypes = (((itemTypes?.data as string[]) ?? []).length
+      ? (itemTypes?.data as string[])
+      : fallbackItemTypes
+    ).map((type) =>
+      type === "TextArea" ? "Text area" :
+      type === "TextField" ? "Text field" :
+      type === "MultipleChoiceRadio" ? "Multiple choice" :
+      type
+    );
 
     return (
       <div style={{ maxWidth: "800px", margin: "auto" }}>
@@ -151,14 +169,15 @@
 
             <div className="d-flex align-items-center mt-1 mb-1">
               <div className="form-check me-2" title="Make questionnaire private, so other instructors cannot see it">
-      <input type="checkbox" className="form-check-input" id="private" />
+              <Field type="checkbox" name="private" className="form-check-input" id="private" />
                 <span style={{ fontSize: "14px"}} className="fw-semibold">Private</span>
 
     </div>
 
     
-    <input
+    <Field
       type="number"
+      name="min_question_score"
       placeholder="0"
       className="form-control"
       style={{ width: "60px" }}
@@ -167,17 +186,29 @@
     <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
 
     
-    <input
+    <Field
       type="number"
+      name="max_question_score"
       placeholder="10"
       className="form-control"
       style={{ width: "60px" }}
     />
   </div>
+            <ErrorMessage name="min_question_score" component="div" className="text-danger" />
+            <ErrorMessage name="max_question_score" component="div" className="text-danger" />
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray
+              values={values}
+              errors={errors}
+              touched={touched}
+              itemTypes={normalizedItemTypes}
+            />
+            {typeof getIn(touched, "items") !== "undefined" &&
+              typeof getIn(errors, "items") === "string" && (
+                <div className="text-danger">{getIn(errors, "items")}</div>
+              )}
 
             <br />
             <Button type="submit" variant="primary">
