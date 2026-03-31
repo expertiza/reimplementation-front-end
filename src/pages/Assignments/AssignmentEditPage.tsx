@@ -42,17 +42,6 @@ interface TopicData {
   updatedAt?: string;
 }
 
-interface ReviewStrategyPayload {
-  review_assignment_strategy: string;
-  num_reviews_required: number;
-  num_reviews_allowed: number;
-  review_topic_threshold?: number;
-  is_anonymous: boolean;
-  is_selfreview_enabled: boolean;
-  team_members_have_duty: boolean;
-  team_reviewing_enabled: boolean;
-}
-
 const AssignmentEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -77,7 +66,6 @@ const AssignmentEditPage = () => {
   const [topicsData, setTopicsData] = useState<TopicData[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [topicsError, setTopicsError] = useState<string | null>(null);
-  const [isSavingReviewStrategy, setIsSavingReviewStrategy] = useState(false);
 
   // Fetch assignment data
   const { data: assignmentResponse, error: assignmentError, sendRequest: fetchAssignment } = useAPI();
@@ -112,14 +100,12 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (updateResponse) {
-      setIsSavingReviewStrategy(false);
-      dispatch(alertActions.showAlert({ variant: "success", message: "Assignment setting saved successfully" }));
+      dispatch(alertActions.showAlert({ variant: "success", message: "Bookmark setting saved successfully" }));
     }
   }, [updateResponse, dispatch]);
 
   useEffect(() => {
     if (updateError) {
-      setIsSavingReviewStrategy(false);
       dispatch(alertActions.showAlert({ variant: "danger", message: updateError }));
     }
   }, [updateError, dispatch]);
@@ -334,20 +320,6 @@ const AssignmentEditPage = () => {
     // TODO: Implement partner ad application logic
   }, []);
 
-  const handleSaveReviewStrategy = useCallback((payload: ReviewStrategyPayload) => {
-    if (!id) return;
-
-    setIsSavingReviewStrategy(true);
-
-    updateAssignment({
-      url: `/assignments/${id}`,
-      method: "PATCH",
-      data: {
-        assignment: payload,
-      },
-    });
-  }, [id, updateAssignment]);
-
   const renderTabContent = () => {
     switch (activeTab) {
       
@@ -377,22 +349,7 @@ const AssignmentEditPage = () => {
         return <RubricsTab />;
       
       case "review-strategy":
-        return (
-          <ReviewStrategyTab
-            hasTopics={!!assignmentResponse?.data?.has_topics}
-            hasTeams={!!assignmentResponse?.data?.has_teams}
-            initialStrategy={assignmentResponse?.data?.review_assignment_strategy || "Static"}
-            initialRequiredReviews={Number(assignmentResponse?.data?.num_reviews_required ?? 0)}
-            initialAllowedReviews={Number(assignmentResponse?.data?.num_reviews_allowed ?? 0)}
-            initialReviewTopicThreshold={Number(assignmentResponse?.data?.review_topic_threshold ?? 1)}
-            initialIsReviewAnonymous={!!assignmentResponse?.data?.is_anonymous}
-            initialIsSelfReviewsRequired={!!assignmentResponse?.data?.is_selfreview_enabled}
-            initialIsReviewRoleBased={!!assignmentResponse?.data?.team_members_have_duty}
-            initialIsReviewDoneByTeams={!!assignmentResponse?.data?.team_reviewing_enabled}
-            onSave={handleSaveReviewStrategy}
-            isSaving={isSavingReviewStrategy}
-          />
-        );
+        return <ReviewStrategyTab />;
       
       case "due-dates":
         return <DueDatesTab />;
