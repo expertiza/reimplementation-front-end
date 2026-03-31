@@ -86,12 +86,13 @@ export interface IAssignmentRequest {
   // Core fields
   name: string;
   directory_path: string;
-  spec_location: string;
+  spec_location?: string;
+  description_url?: string;
   course_id?: number;
 
   // Visibility / basic flags
   private: boolean;
-  show_template_review: boolean;
+  show_template_review?: boolean;
   require_quiz: boolean;
   has_badge: boolean;
   staggered_deadline: boolean;
@@ -110,14 +111,21 @@ export interface IAssignmentRequest {
   review_topic_threshold?: number;
   maximum_number_of_reviews_per_submission?: number;
   review_strategy?: string | number;
+  review_assignment_strategy?: string;
   review_rubric_varies_by_round?: boolean;
   review_rubric_varies_by_topic?: boolean;
   review_rubric_varies_by_role?: boolean;
   has_max_review_limit?: boolean;
   set_allowed_number_of_reviews_per_reviewer?: number;
   set_required_number_of_reviews_per_reviewer?: number;
+  num_reviews_allowed?: number;
+  num_reviews_required?: number;
   is_review_anonymous?: boolean;
   is_review_done_by_teams?: boolean;
+  is_anonymous?: boolean;
+  is_selfreview_enabled?: boolean;
+  team_members_have_duty?: boolean;
+  team_reviewing_enabled?: boolean;
   allow_self_reviews?: boolean;
   reviews_visible_to_other_reviewers?: boolean;
   number_of_review_rounds?: number;
@@ -245,7 +253,8 @@ export interface IAssignmentResponse {
   created_at: Date; 
   updated_at: Date; 
   directory_path: string;
-  spec_location:string;
+  spec_location?: string;
+  description_url?: string;
   private:boolean;
   show_template_review: boolean;
   require_quiz:boolean;

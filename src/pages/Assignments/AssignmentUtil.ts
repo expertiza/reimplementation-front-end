@@ -7,6 +7,7 @@ export interface IAssignmentFormValues {
   name: string;
   directory_path: string;
   spec_location: string;
+  description_url?: string;
   private: boolean;
   show_template_review: boolean;
   require_quiz: boolean;
@@ -83,6 +84,22 @@ export interface IAssignmentFormValues {
 
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
+  const normalizedReviewStrategy = (() => {
+    if (values.review_strategy === "Dynamic" || values.review_strategy === "Auto-Selected") {
+      return "Auto-Selected";
+    }
+    if (values.review_strategy === "Static" || values.review_strategy === "Instructor-Selected") {
+      return "Instructor-Selected";
+    }
+    return "Instructor-Selected";
+  })();
+
+  const requiredReviews = Number(values.set_required_number_of_reviews_per_reviewer ?? 0);
+  const allowedReviews = Math.max(
+    Number(values.set_allowed_number_of_reviews_per_reviewer ?? 0),
+    requiredReviews
+  );
+
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
   const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
   const roundCount = values.number_of_review_rounds ?? 0;
@@ -102,12 +119,11 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     // Core fields
     name: values.name,
     directory_path: values.directory_path,
-    spec_location: values.spec_location,
+    description_url: values.spec_location ?? values.description_url,
     course_id: values.course_id,
 
     // Visibility / basic flags
     private: values.private,
-    show_template_review: values.show_template_review ?? false,
     require_quiz: values.require_quiz ?? false,
     has_badge: values.has_badge ?? false,
     staggered_deadline: values.staggered_deadline ?? false,
@@ -116,22 +132,18 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     // Team / mentor / topic configuration
     has_teams: values.has_teams ?? false,
     max_team_size: values.max_team_size,
-    show_teammate_review: values.show_teammate_review ?? false,
-    is_pair_programming: values.is_pair_programming ?? false,
-    has_mentors: values.has_mentors ?? false,
     has_topics: values.has_topics ?? false,
-    auto_assign_mentors: values.auto_assign_mentors ?? false,
 
     // Review strategy / limits
     review_topic_threshold: values.review_topic_threshold,
     maximum_number_of_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
-    review_strategy: values.review_strategy,
+    review_strategy: normalizedReviewStrategy,
     review_rubric_varies_by_round: values.review_rubric_varies_by_round ?? false,
     review_rubric_varies_by_topic: values.review_rubric_varies_by_topic ?? false,
     review_rubric_varies_by_role: values.review_rubric_varies_by_role ?? false,
     has_max_review_limit: values.has_max_review_limit ?? false,
-    set_allowed_number_of_reviews_per_reviewer: values.set_allowed_number_of_reviews_per_reviewer,
-    set_required_number_of_reviews_per_reviewer: values.set_required_number_of_reviews_per_reviewer,
+    set_allowed_number_of_reviews_per_reviewer: allowedReviews,
+    set_required_number_of_reviews_per_reviewer: requiredReviews,
     is_review_anonymous: values.is_review_anonymous ?? false,
     is_review_done_by_teams: values.is_review_done_by_teams ?? false,
     allow_self_reviews: values.allow_self_reviews ?? false,
@@ -227,7 +239,8 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     id: assignment.id,
     name: assignment.name,
     directory_path: assignment.directory_path,
-    spec_location: assignment.spec_location,
+    spec_location: assignment.spec_location ?? (assignment as any).description_url ?? "",
+    description_url: (assignment as any).description_url,
     private: assignment.private,
     show_template_review: assignment.show_template_review ?? false,
     require_quiz: assignment.require_quiz,
@@ -239,6 +252,21 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     review_rubric_varies_by_round:
       assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
     number_of_review_rounds: assignment.num_review_rounds,
+
+    // map backend review strategy keys into AssignmentEditor form fields
+    review_strategy:
+      ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) === "Auto-Selected"
+        ? "Dynamic"
+        : ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) === "Instructor-Selected"
+          ? "Static"
+          : ((assignment as any).review_assignment_strategy ?? (assignment as any).review_strategy) ?? "Static",
+    set_required_number_of_reviews_per_reviewer: Number((assignment as any).set_required_number_of_reviews_per_reviewer ?? (assignment as any).num_reviews_required ?? 0),
+    set_allowed_number_of_reviews_per_reviewer: Number((assignment as any).set_allowed_number_of_reviews_per_reviewer ?? (assignment as any).num_reviews_allowed ?? 0),
+    is_review_anonymous: !!((assignment as any).is_review_anonymous ?? (assignment as any).is_anonymous),
+    allow_self_reviews: !!((assignment as any).allow_self_reviews ?? (assignment as any).is_selfreview_enabled),
+    review_rubric_varies_by_role: !!((assignment as any).review_rubric_varies_by_role ?? (assignment as any).team_members_have_duty),
+    is_review_done_by_teams: !!((assignment as any).is_review_done_by_teams ?? (assignment as any).team_reviewing_enabled),
+    review_topic_threshold: Number((assignment as any).review_topic_threshold ?? 1),
 
     // precomputed date/time fields for the Due dates tab
     date_time: dateTimeMap as any,
