@@ -4,7 +4,6 @@ import RootLayout from "./layout/Root";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import AssignmentEditPage from "./pages/Assignments/AssignmentEditPage";
 import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
 import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
 import CreateTeams from "./pages/Assignments/CreateTeams";
@@ -77,7 +76,7 @@ function App() {
 
         {
           path: "assignments/edit/:id",
-          element: <AssignmentEditPage />,
+          element: <AssignmentEditor mode="update" />,
           loader: loadAssignment,
         },
         {
