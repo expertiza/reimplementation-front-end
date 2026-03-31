@@ -832,6 +832,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   const requiredReviews = Number(formik.values.set_required_number_of_reviews_per_reviewer ?? 0);
                   const allowedReviews = Number(formik.values.set_allowed_number_of_reviews_per_reviewer ?? 0);
                   const reviewTopicThreshold = Number(formik.values.review_topic_threshold ?? 1);
+                  const isCalibrationInUse = !!(formik.values.calibration_for_training || formik.values.is_calibrated);
 
                   return isDynamic ? (
                     <>
@@ -979,7 +980,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                             gridTemplateColumns: 'max-content 100px'
                           }}
                         >
-                          <label className="form-label">Number of reviews each reviewer is required to do</label>
+                          <label className="form-label">
+                            {isCalibrationInUse
+                              ? "Number of uncalibrated reviews each reviewer is required to do"
+                              : "Number of reviews each reviewer is required to do"}
+                          </label>
                           <Field name="set_required_number_of_reviews_per_reviewer">
                             {({ field }: any) => (
                               <input
@@ -998,6 +1003,26 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                               />
                             )}
                           </Field>
+
+                          {isCalibrationInUse && (
+                            <>
+                              <label className="form-label">Number of calibrated reviews</label>
+                              <Field name="number_of_calibrated_reviews">
+                                {({ field }: any) => (
+                                  <input
+                                    {...field}
+                                    className="form-control"
+                                    type="number"
+                                    min={0}
+                                    value={Number(formik.values.number_of_calibrated_reviews ?? 0)}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                      formik.setFieldValue("number_of_calibrated_reviews", Number(event.target.value || 0));
+                                    }}
+                                  />
+                                )}
+                              </Field>
+                            </>
+                          )}
                           </div>
 
                           <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', columnGap: '6px' }}>
