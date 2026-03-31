@@ -80,6 +80,9 @@ const initialValues: IAssignmentFormValues = {
   has_max_review_limit: false,
   set_allowed_number_of_reviews_per_reviewer: 0,
   set_required_number_of_reviews_per_reviewer: 0,
+  static_reviewer_strategy: "",
+  static_assignment_sheet: File ? undefined : undefined,
+  can_assign_reviewers_to_unreviewed_submissions: false,
   is_review_anonymous: false,
   is_review_done_by_teams: false,
   allow_self_reviews: false,
@@ -119,7 +122,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: updateTopicResponse, error: updateTopicError, sendRequest: updateTopic } = useAPI();
   const { data: dropTeamResponse, error: dropTeamError, sendRequest: dropTeamRequest } = useAPI();
 
- 
+  const [uploadedSpreadsheet, setUploadedSpreadSheet] = useState<File | null>(null);
+
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -910,8 +914,106 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         </div>
                       )}
                     </>
-                  ) : null;
-                })()}
+                  ) : (
+                    <>
+
+                    <div>
+                      <label className="d-block">
+                        <input
+                          type="radio"
+                          name="static_reviewer_strategy"
+                          value="Round Robin"
+                          checked={formik.values.static_reviewer_strategy === "Round Robin"}
+                          onChange={formik.handleChange}
+                        />
+                        Round Robin Assignment
+                      </label>
+
+                      <label className="d-block">
+                        <input
+                          type="radio"
+                          name="static_reviewer_strategy"
+                          value="Random"
+                          checked={formik.values.static_reviewer_strategy === "Random"}
+                          onChange={formik.handleChange}
+                        />
+                        Random Assignment
+                      </label>
+
+                      <label className="d-block">
+                        <input
+                          type="radio"
+                          name="static_reviewer_strategy"
+                          value="Upload Spreadsheet"
+                          checked={formik.values.static_reviewer_strategy === "Upload Spreadsheet"}
+                          onChange={formik.handleChange}
+                        />
+                        Upload Spreadsheet Assignment
+                      </label>
+                    </div>
+                    
+                    {formik.values.static_reviewer_strategy === "Upload Spreadsheet" && (
+                      <>
+                      <input
+                        name="spreadsheetFile"
+                        type="file"
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                          if (event.currentTarget.files) {
+                            // Take the first file (you can extend this to multiple if you want)
+                            formik.values.static_assignment_sheet === event.currentTarget.files[0];
+                          }
+                        }}
+                      />
+
+
+                    </>
+                    )}
+
+                    {formik.values.static_reviewer_strategy !== "Upload Spreadsheet" && (
+                        <>
+                          <div
+                          style={{
+                            display: 'grid',
+                            alignItems: 'center',
+                            columnGap: '10px',
+                            rowGap: '10px',
+                            gridTemplateColumns: 'max-content 100px'
+                          }}
+                        >
+                          <label className="form-label">Number of reviews each reviewer is required to do</label>
+                          <Field name="set_required_number_of_reviews_per_reviewer">
+                            {({ field }: any) => (
+                              <input
+                                {...field}
+                                className="form-control"
+                                type="number"
+                                min={0}
+                                value={requiredReviews}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                  const value = Number(event.target.value || 0);
+                                  formik.setFieldValue("set_required_number_of_reviews_per_reviewer", value);
+                                  if (allowedReviews < value) {
+                                    formik.setFieldValue("set_allowed_number_of_reviews_per_reviewer", value);
+                                  }
+                                }}
+                              />
+                            )}
+                          </Field>
+                          </div>
+
+                          <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', columnGap: '6px' }}>
+                            <FormCheckbox
+                              label="Assign reviewers to review projects that have not yet been submitted" 
+                              name="can_assign_reviewers_to_unreviewed_submissions" />
+                          </div>
+                        </>
+                      )
+                    }
+                    
+                  
+                    </>
+                
+                )})()}
 
                 <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', columnGap: '6px' }}>
                   <FormCheckbox controlId="assignment-is_review_anonymous" label="Is reviewing anonymous?" name="is_review_anonymous" />
