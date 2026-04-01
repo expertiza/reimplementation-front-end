@@ -302,6 +302,8 @@ function App() {
             { path: "new", element: <DutyEditor mode="create" /> },
             { path: "edit/:id", element: <DutyEditor mode="update" /> },
           ],
+        },
+        {
           path: "student_tasks",
           element: <ProtectedRoute element={<StudentTasks />} />,
         },
