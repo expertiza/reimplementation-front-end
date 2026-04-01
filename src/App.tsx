@@ -46,6 +46,7 @@ import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
+import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
@@ -54,6 +55,7 @@ import SignupSheet from 'components/SignupSheet/SignupSheet';
 import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
 import Duties from "./pages/Duties/Duties";
 import DutyEditor from "./pages/Duties/DutyEditor";
+import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -193,6 +195,11 @@ function App() {
               element: <UserEditor mode="update" />,
               loader: loadUserDataRolesAndInstitutions,
             },
+            {
+              path: ":id",
+              element: <UserEditor mode="update" />,
+              loader: loadUserDataRolesAndInstitutions,
+            },
           ],
         },
 
@@ -295,6 +302,16 @@ function App() {
             { path: "new", element: <DutyEditor mode="create" /> },
             { path: "edit/:id", element: <DutyEditor mode="update" /> },
           ],
+          path: "student_tasks",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId",
+          element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "assignments/:id/review",
+          element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
         {
