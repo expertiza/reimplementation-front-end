@@ -23,6 +23,7 @@ import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
 import TopicsTab from "./tabs/TopicsTab";
+import DutyEditor from "pages/Duties/DutyEditor";
 
 interface TopicSettings {
   allowTopicSuggestions: boolean;
@@ -77,6 +78,7 @@ const initialValues: IAssignmentFormValues = {
   review_rubric_varies_by_round: false,
   review_rubric_varies_by_topic: false,
   review_rubric_varies_by_role: false,
+  is_role_based: false,
   has_max_review_limit: false,
   set_allowed_number_of_reviews_per_reviewer: 0,
   set_required_number_of_reviews_per_reviewer: 0,
@@ -118,6 +120,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
   const { data: updateTopicResponse, error: updateTopicError, sendRequest: updateTopic } = useAPI();
   const { data: dropTeamResponse, error: dropTeamError, sendRequest: dropTeamRequest } = useAPI();
+  const { data: accessibleDutiesResponse, error: accessibleDutiesError, sendRequest: fetchAccessibleDuties } = useAPI();
+  const { data: assignmentDutiesResponse, error: assignmentDutiesError, sendRequest: fetchAssignmentDuties } = useAPI();
+  const { error: addAssignmentDutyError, sendRequest: addAssignmentDuty } = useAPI();
+  const { error: removeAssignmentDutyError, sendRequest: removeAssignmentDuty } = useAPI();
 
  
 
@@ -154,6 +160,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [assignmentName, setAssignmentName] = useState("");
+  const [showDutyEditor, setShowDutyEditor] = useState(false);
+  const [accessibleDuties, setAccessibleDuties] = useState<any[]>([]);
+  const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
+  const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
+  const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
 
 
    useEffect(() => {
@@ -171,6 +182,30 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "danger", message: assignmentError }));
     }
   }, [assignmentError, dispatch]);
+
+  useEffect(() => {
+    if (accessibleDutiesError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: accessibleDutiesError }));
+    }
+  }, [accessibleDutiesError, dispatch]);
+
+  useEffect(() => {
+    if (assignmentDutiesError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: assignmentDutiesError }));
+    }
+  }, [assignmentDutiesError, dispatch]);
+
+  useEffect(() => {
+    if (addAssignmentDutyError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: addAssignmentDutyError }));
+    }
+  }, [addAssignmentDutyError, dispatch]);
+
+  useEffect(() => {
+    if (removeAssignmentDutyError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: removeAssignmentDutyError }));
+    }
+  }, [removeAssignmentDutyError, dispatch]);
 
   useEffect(() => {
     if (updateResponse) {
@@ -256,6 +291,34 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }
     }, [id, fetchTopics]);
 
+  const refreshAccessibleDuties = useCallback(() => {
+    fetchAccessibleDuties({ url: `/duties/accessible_duties` });
+  }, [fetchAccessibleDuties]);
+
+  const refreshAssignmentDuties = useCallback(() => {
+    if (!id) return;
+    fetchAssignmentDuties({ url: `/assignments/${id}/duties` });
+  }, [fetchAssignmentDuties, id]);
+
+  useEffect(() => {
+    if (id) {
+      refreshAccessibleDuties();
+      refreshAssignmentDuties();
+    }
+  }, [id, refreshAccessibleDuties, refreshAssignmentDuties]);
+
+  useEffect(() => {
+    if (accessibleDutiesResponse?.data) {
+      setAccessibleDuties(accessibleDutiesResponse.data || []);
+    }
+  }, [accessibleDutiesResponse]);
+
+  useEffect(() => {
+    if (assignmentDutiesResponse?.data) {
+      setAssignmentDuties(assignmentDutiesResponse.data || []);
+    }
+  }, [assignmentDutiesResponse]);
+
      // Process topics response
       useEffect(() => {
         if (topicsResponse?.data) {
@@ -282,12 +345,50 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }, [topicsResponse]);
     
       // Handle topics API errors
-      useEffect(() => {
-        if (topicsApiError) {
-          setTopicsError(topicsApiError);
-          setTopicsLoading(false);
-        }
-      }, [topicsApiError]);
+  useEffect(() => {
+    if (topicsApiError) {
+      setTopicsError(topicsApiError);
+      setTopicsLoading(false);
+    }
+  }, [topicsApiError]);
+
+  const toggleDutySelection = useCallback((dutyId: number) => {
+    setSelectedDutyIds((prev) =>
+      prev.includes(dutyId) ? prev.filter((id) => id !== dutyId) : [...prev, dutyId]
+    );
+  }, []);
+
+  const handleAddSelectedDuties = useCallback(async () => {
+    if (!id) return;
+    if (selectedDutyIds.length === 0) {
+      setRoleBasedLocalError("Select at least one duty to add.");
+      return;
+    }
+    setRoleBasedLocalError(null);
+    await Promise.all(
+      selectedDutyIds.map((dutyId) =>
+        addAssignmentDuty({
+          url: `/assignments/${id}/duties`,
+          method: "POST",
+          data: { duty_id: dutyId },
+        })
+      )
+    );
+    setSelectedDutyIds([]);
+    refreshAssignmentDuties();
+  }, [addAssignmentDuty, id, refreshAssignmentDuties, selectedDutyIds]);
+
+  const handleRemoveDuty = useCallback(
+    async (dutyId: number) => {
+      if (!id) return;
+      await removeAssignmentDuty({
+        url: `/assignments/${id}/duties/${dutyId}`,
+        method: "DELETE",
+      });
+      refreshAssignmentDuties();
+    },
+    [id, refreshAssignmentDuties, removeAssignmentDuty]
+  );
      const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
         setTopicSettings((prev) => ({ ...prev, [setting]: value }));
         
@@ -474,6 +575,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     values: IAssignmentFormValues,
     submitProps: FormikHelpers<IAssignmentFormValues>
   ) => {
+    if (values.is_role_based && id && assignmentDuties.length === 0) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Please add at least one duty when role-based reviews are enabled." }));
+      return;
+    }
 
     // validate sum of weights = 100%
     const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
@@ -834,6 +939,91 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
                 <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
 
+                <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
+                {formik.values.is_role_based && (
+                  <div style={{ marginTop: '10px', paddingLeft: 30, maxWidth: '520px' }}>
+                    {!id && (
+                      <div className="alert alert-warning" role="alert">
+                        Save the assignment before adding duties.
+                      </div>
+                    )}
+                    {roleBasedLocalError && (
+                      <div className="alert alert-danger" role="alert">
+                        {roleBasedLocalError}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <label className="form-label" style={{ marginBottom: 0 }}>Select roles(duties):</label>
+                      <Button
+                        variant="outline-success"
+                        onClick={() => setShowDutyEditor(true)}
+                        disabled={!id}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <div style={{ maxHeight: '180px', overflow: 'auto', border: '1px solid #ddd', padding: '8px', borderRadius: '4px' }}>
+                      {(accessibleDuties || []).length === 0 && (
+                        <div className="text-muted">No duties available.</div>
+                      )}
+                      {(() => {
+                        const assignedIds = new Set((assignmentDuties || []).map((d: any) => d.id));
+                        return (accessibleDuties || []).map((duty: any) => {
+                          const isAssigned = assignedIds.has(duty.id);
+                          return (
+                            <div key={duty.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input
+                                type="checkbox"
+                                checked={selectedDutyIds.includes(duty.id)}
+                                onChange={() => toggleDutySelection(duty.id)}
+                                disabled={isAssigned || !id}
+                              />
+                              <span>{duty.name}</span>
+                              {isAssigned && <span className="text-muted">(added)</span>}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <Button
+                        variant="outline-success"
+                        onClick={handleAddSelectedDuties}
+                        disabled={!id}
+                      >
+                        Add
+                      </Button>
+                    </div>
+
+                    <div style={{ marginTop: '12px' }}>
+                      <label className="form-label">Assigned roles(duties):</label>
+                      {(assignmentDuties || []).length === 0 ? (
+                        <div className="text-muted">No duties assigned yet.</div>
+                      ) : (
+                        <table className="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th style={{ width: '80px' }}>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(assignmentDuties || []).map((duty: any) => (
+                              <tr key={duty.id}>
+                                <td>{duty.name}</td>
+                                <td>
+                                  <Button variant="link" onClick={() => handleRemoveDuty(duty.id)} aria-label="Delete Duty" className="p-0" disabled={!id}>
+                                    <img src={"/assets/images/delete-icon-24.png"} alt="Delete" style={{ width: 25, height: 20 }} />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                )}
               </Tab>
 
               {/* Due dates Tab */}
@@ -1080,6 +1270,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 </Button> |
                 <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
               </div>
+              {showDutyEditor && (
+                <DutyEditor
+                  mode="create"
+                  onClose={() => setShowDutyEditor(false)}
+                  fetchDuties={refreshAccessibleDuties}
+                />
+              )}
             </Form>
         )}
         }
