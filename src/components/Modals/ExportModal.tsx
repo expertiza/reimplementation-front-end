@@ -99,7 +99,6 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   const [externalFields, setExternalFields] = useState<string[]>([]);
   const [allFields, setAllFields] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [graphExportEnabled, setGraphExportEnabled] = useState(false);
   const [status, setStatus] = useState<string>('');
   const { isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
   const {
@@ -198,7 +197,6 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
 
       setAllFields(Array.from(new Set(fields)));
       setSelectedFields(normalizedMandatoryFields);
-      setGraphExportEnabled(false);
 
       setStatus('');
     }
@@ -280,7 +278,6 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
       );
 
       formData.append("ordered_fields", JSON.stringify(orderedFields));
-      formData.append("graph_export", String(graphExportEnabled));
       Object.entries(contextParams || {}).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           formData.append(key, String(value));
@@ -391,19 +388,6 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
                       </OverlayTrigger>
                   </div>
                 </div>
-              </Col>
-            </Row>
-
-            <Row className="mb-3">
-              <Col>
-                <Form.Check
-                  type="checkbox"
-                  id="graph-export-toggle"
-                  checked={graphExportEnabled}
-                  onChange={(event) => setGraphExportEnabled(event.target.checked)}
-                  label="Export sub-models"
-                  style={TABLE_TEXT}
-                />
               </Col>
             </Row>
 
