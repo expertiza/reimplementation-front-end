@@ -925,8 +925,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           value="Round Robin"
                           checked={formik.values.static_reviewer_strategy === "Round Robin"}
                           onChange={formik.handleChange}
+                          style={{ marginRight: "8px" }}
                         />
-                        Round Robin Assignment
+                         Round-robin assignment
                       </label>
 
                       <label className="d-block">
@@ -936,8 +937,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           value="Random"
                           checked={formik.values.static_reviewer_strategy === "Random"}
                           onChange={formik.handleChange}
+                          style={{ marginRight: "8px" }}
                         />
-                        Random Assignment
+                         Random assignment
                       </label>
 
                       <label className="d-block">
@@ -947,8 +949,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           value="Upload Spreadsheet"
                           checked={formik.values.static_reviewer_strategy === "Upload Spreadsheet"}
                           onChange={formik.handleChange}
+                          style={{ marginRight: "8px" }}
                         />
-                        Upload Spreadsheet Assignment
+                         Upload spreadsheet
                       </label>
                     </div>
                     
