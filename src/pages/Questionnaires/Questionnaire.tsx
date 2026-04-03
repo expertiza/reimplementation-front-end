@@ -12,6 +12,7 @@ import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
 import ExportModal from "../../components/Modals/ExportModal";
+import ImportModal from "../../components/Modals/ImportModal";
 
 
 
@@ -22,6 +23,9 @@ const Questionnaires = () => {
   const dispatch = useDispatch();
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showItemImportModal, setShowItemImportModal] = useState(false);
+  const [showAdviceImportModal, setShowAdviceImportModal] = useState(false);
   
   // loader option
   const questionnaireData :any = useLoaderData();
@@ -29,6 +33,9 @@ const Questionnaires = () => {
   useEffect(() => {
     setShowTypeModal(false);
     setShowExportModal(false);
+    setShowImportModal(false);
+    setShowItemImportModal(false);
+    setShowAdviceImportModal(false);
   }, [location]);
 
   const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
@@ -102,13 +109,37 @@ const Questionnaires = () => {
           <Row className="mb-2">
             <Col className="d-flex justify-content-end gap-2" style={{ maxWidth: "1400px", margin: "0 auto" }}>
               <Button
+                variant="outline-secondary"
+                onClick={() => setShowImportModal(true)}
+                className="d-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: "8px", height: "48px" }}
+              >
+                <span>Import Questionnaires</span>
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowItemImportModal(true)}
+                className="d-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: "8px", height: "48px" }}
+              >
+                <span>Import Question Items</span>
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowAdviceImportModal(true)}
+                className="d-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: "8px", height: "48px" }}
+              >
+                <span>Import Question Advices</span>
+              </Button>
+              <Button
                 variant="outline-primary"
                 onClick={() => setShowExportModal(true)}
                 className="d-flex align-items-center gap-2 shadow-sm"
                 style={{ borderRadius: "8px", height: "48px" }}
               >
                 <img src="/assets/icons/export-temp.png" alt="Export questionnaires" width={18} height={18} />
-                <span>Export</span>
+                <span>Export Questionnaires</span>
               </Button>
               <Button
                 variant="success"
@@ -277,6 +308,21 @@ const Questionnaires = () => {
         show={showExportModal}
         onHide={() => setShowExportModal(false)}
         modelClass="Questionnaire"
+      />
+      <ImportModal
+        show={showImportModal}
+        onHide={() => setShowImportModal(false)}
+        modelClass="Questionnaire"
+      />
+      <ImportModal
+        show={showItemImportModal}
+        onHide={() => setShowItemImportModal(false)}
+        modelClass="Item"
+      />
+      <ImportModal
+        show={showAdviceImportModal}
+        onHide={() => setShowAdviceImportModal(false)}
+        modelClass="QuestionAdvice"
       />
     </>
     
