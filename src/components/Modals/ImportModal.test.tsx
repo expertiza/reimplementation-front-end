@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import ImportModal from "./ImportModal";
 
@@ -46,10 +46,29 @@ const IMPORT_METADATA = {
 
 describe("ImportModal", () => {
   const onHide = vi.fn();
+  let createObjectURLSpy: ReturnType<typeof vi.fn>;
+  let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockUseAPI.mockReset();
     onHide.mockReset();
+
+    createObjectURLSpy = vi.fn(() => "blob:sample-url");
+    revokeObjectURLSpy = vi.fn();
+
+    Object.defineProperty(window.URL, "createObjectURL", {
+      writable: true,
+      value: createObjectURLSpy,
+    });
+    Object.defineProperty(window.URL, "revokeObjectURL", {
+      writable: true,
+      value: revokeObjectURLSpy,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("shows loading state when isLoading is true", async () => {
@@ -238,5 +257,51 @@ describe("ImportModal", () => {
     await waitFor(() => {
       expect(onHide).toHaveBeenCalled();
     });
+  });
+
+  it("downloads a sample csv using backend header metadata", async () => {
+    const user = userEvent.setup();
+    let createdAnchor: HTMLAnchorElement | null = null;
+    let clickSpy: ReturnType<typeof vi.fn> | null = null;
+    let capturedBlobParts: BlobPart[] = [];
+    const OriginalBlob = Blob;
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName.toLowerCase() === "a" && element instanceof HTMLAnchorElement) {
+        createdAnchor = element;
+        clickSpy = vi.fn();
+        vi.spyOn(element, "click").mockImplementation(clickSpy);
+      }
+      return element;
+    });
+    vi.stubGlobal("Blob", vi.fn((parts: BlobPart[], options?: BlobPropertyBag) => {
+      capturedBlobParts = parts;
+      return new OriginalBlob(parts, options);
+    }));
+
+    mockUseAPI.mockReturnValue(
+      makeUseAPIResult({ data: { data: IMPORT_METADATA } })
+    );
+
+    await act(async () => {
+      render(<ImportModal show={true} onHide={onHide} modelClass="User" />);
+    });
+
+    await screen.findByText(/Mandatory fields/i);
+
+    await act(async () => {
+      await user.click(screen.getByRole("button", { name: /download sample csv/i }));
+    });
+
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(capturedBlobParts).toEqual(["email\n"]);
+
+    expect(createdAnchor).not.toBeNull();
+    expect(createdAnchor?.getAttribute("download")).toBe("user_import_sample.csv");
+    expect(clickSpy).not.toBeNull();
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:sample-url");
+    expect(createElementSpy).toHaveBeenCalledWith("a");
   });
 });
