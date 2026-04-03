@@ -48,7 +48,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center mt-xxl-5">
+    <Container className="d-flex justify-content-center mt-5">
       <Col xs={12} md={6} lg={4}>
         <h2 className="text-center">Forgotten Your Password?</h2>
         <Formik
