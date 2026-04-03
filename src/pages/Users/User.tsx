@@ -99,10 +99,10 @@ const Users = () => {
     [userResponse?.data, isLoading]
   );
 
-  const handleHideImportModal = () => {
+  const handleHideImportModal = useCallback(() => {
     fetchUsers({ url: `/users/${auth.user.id}/managed` });
-    setShowImportUserModal(false)
-  }
+    setShowImportUserModal(false);
+  }, [auth.user.id, fetchUsers]);
 
   return (
     <>
@@ -147,7 +147,7 @@ const Users = () => {
       {/* Import / Export modals (from separate files) */}
       <ImportModal
         show={showImportUserModal}
-        onHide={() => handleHideImportModal()}
+        onHide={handleHideImportModal}
         modelClass="User"
       />
       <ExportModal
