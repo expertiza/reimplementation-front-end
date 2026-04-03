@@ -1,6 +1,6 @@
 // src/components/ImportModal.tsx
 
-import React, { useEffect, useState, memo, useCallback, ChangeEvent, useMemo } from "react";
+import React, { useEffect, useState, memo, useCallback, ChangeEvent, useMemo, useRef } from "react";
 import {
   Modal,
   Button,
@@ -100,13 +100,19 @@ type ImportModalProps = {
  *  ImportModal Component
  * ============================================================================ */
 const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, contextParams }) => {
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   /**
    * Force-close handler — ALWAYS closes modal instantly.
    * Then notifies parent so it can update state if needed.
    */
-  const forceClose = () => {
+  const forceClose = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
     setTimeout(onHide, 10);   // Notify parent AFTER close
-  };
+  }, [onHide]);
 
   /* ---------------------------------------------------------
    * API metadata state
@@ -291,13 +297,24 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
     if (sendImportResponse) {
       setStatus(sendImportResponse.data.message);
 
-      if (!importError) {
-        setTimeout(forceClose, 1500);
+      if (!importError && !closeTimerRef.current) {
+        closeTimerRef.current = setTimeout(() => {
+          closeTimerRef.current = null;
+          forceClose();
+        }, 1500);
       }
     } else if (importError) {
       setStatus(importError);
     }
   }, [forceClose, importError, sendImportResponse]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
 
   const previewHeaders = useMemo(
     () => (useHeader ? csvHeaders : selectedFields),
