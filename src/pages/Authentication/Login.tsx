@@ -57,7 +57,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center mt-xxl-5">
+    <Container className="d-flex justify-content-center mt-5">
       <Col xs={12} md={6} lg={4}>
         <h1 className="text-center">Login</h1>
         <Formik
