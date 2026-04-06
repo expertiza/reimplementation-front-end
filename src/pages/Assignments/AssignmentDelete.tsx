@@ -10,9 +10,10 @@ import { useDispatch } from "react-redux";
 interface IDeleteAssignment {
   assignmentData: IAssignment;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose }) => {
+const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose, onSuccess }) => {
   const { data: deletedAssignment, error: assignmentError, sendRequest: deleteAssignment } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();

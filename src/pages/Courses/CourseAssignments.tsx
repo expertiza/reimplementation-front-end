@@ -33,9 +33,10 @@ interface CourseAssignmentsProps {
   courseId: number;
   courseName: string;
   assignments: IAssignmentResponse[];
+  onAssignmentDelete: (assignmentId: number) => void;
 }
 
-const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName, assignments }) => {
+const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseName, assignments, onAssignmentDelete }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
