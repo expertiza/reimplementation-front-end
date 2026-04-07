@@ -13,6 +13,7 @@ import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
 import SubmittedContent from "./pages/Assignments/SubmittedContent";
 import Login from "./pages/Authentication/Login";
+import OidcCallback from "./pages/OidcCallback/OidcCallback";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
@@ -63,6 +64,7 @@ function App() {
       children: [
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
+        { path: "auth/callback", element: <OidcCallback /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
 
         {
@@ -85,7 +87,7 @@ function App() {
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
+        // Assign Reviewer: no route loader (component handles localStorage/URL id)
         {
           path: "assignments/edit/:id/responsemappings",
           element: <ResponseMappings />,
@@ -350,7 +352,7 @@ function App() {
                   path: "new",
                   element: <RoleEditor mode="create" />,
                 },
-                                {
+                {
                   id: "edit-role",
                   path: "edit/:id",
                   element: <RoleEditor mode="update" />,
@@ -363,11 +365,11 @@ function App() {
               element: <Institutions />,
               loader: loadInstitutions,
               children: [
-               {
+                {
                   path: "new",
                   element: <InstitutionEditor mode="create" />,
                 },
-                                {
+                {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
                   loader: loadInstitution,
@@ -379,7 +381,7 @@ function App() {
               element: <ManageUserTypes />,
               loader: loadUsers,
               children: [
-                 {
+                {
                   path: "new",
                   element: <Navigate to="/users/new" />,
                 },
@@ -390,29 +392,42 @@ function App() {
                 },
               ],
             },
-            { 
-              path: "questionnaire", 
-              element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
-                      ],
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+              loader: loadQuestionnaire,
+            },
+          ],
         },
 
-       { path: "*", element: <NotFound /> },
+        { path: "*", element: <NotFound /> },
         { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
 
         {
           path: "questionnaires",
-          element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />
+          ),
           loader: loadQuestionnaire,
         },
         {
           path: "questionnaires/new",
-          element: <ProtectedRoute element={<QuestionnaireEditor mode="create" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute
+              element={<QuestionnaireEditor mode="create" />}
+              leastPrivilegeRole={ROLE.INSTRUCTOR}
+            />
+          ),
           loader: loadQuestionnaire,
         },
         {
           path: "questionnaires/edit/:id",
-          element: <ProtectedRoute element={<QuestionnaireEditor mode="update" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute
+              element={<QuestionnaireEditor mode="update" />}
+              leastPrivilegeRole={ROLE.INSTRUCTOR}
+            />
+          ),
           loader: loadQuestionnaire,
         },
       ],
