@@ -145,7 +145,7 @@ export interface IAssignmentRequest {
   reminder?: any[];
 
   // Misc flags that exist in the schema
-  availability_flag?: boolean;
+  available_to_students?: boolean;
   allow_suggestions?: boolean;
   use_bookmark?: boolean;
   can_review_same_topic?: boolean;

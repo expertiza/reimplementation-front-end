@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useState } from "react";
-import { Container, Spinner, Alert, Row, Col, Button } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { Container, Spinner, Alert, Row, Col, Button, Nav } from "react-bootstrap";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import useAPI from "../../hooks/useAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -97,7 +97,7 @@ const StudentTasks: React.FC = () => {
 
   const fetchTopics = useCallback((assignmentId: number) => {
     if (!assignmentId) return;
-    fetchTopicsAPI({ url: `/sign_up_topics?assignment_id=${assignmentId}`, method: 'GET' });
+    fetchTopicsAPI({ url: `/project_topics?assignment_id=${assignmentId}`, method: 'GET' });
   }, [fetchTopicsAPI]);
 
   useEffect(() => {
@@ -291,6 +291,9 @@ const StudentTasks: React.FC = () => {
     }
   }, [assignmentResponse]);
 
+  // Derives the numeric assignment ID from either the URL param or the API response.
+  // Used to scope localStorage lookups, backend queries for response maps, and
+  // to build navigation URLs for the review form.
   const resolvedAssignmentId = useMemo(() => {
     if (assignmentId) return parseInt(assignmentId, 10);
     if (!assignmentResponse?.data) return undefined;
@@ -434,7 +437,8 @@ const StudentTasks: React.FC = () => {
     return () => { cancelled = true; };
   }, [currentUser?.id, assignmentResponse?.data]);
 
-  const handleOpenReview = useCallback((review: AssignedReviewRow) => {
+  // openReview navigates to the TeammateReview page for the given assigned review row
+  const openReview = useCallback((review: AssignedReviewRow) => {
     const effectiveAssignmentId = review.assignmentId ?? resolvedAssignmentId;
     const params = new URLSearchParams({
       assignment_id: String(effectiveAssignmentId),
@@ -629,10 +633,22 @@ const StudentTasks: React.FC = () => {
 
   // removed duplicate columns definition placed after conditional returns
 
+  const reviewsPath = assignmentId
+    ? `/student_tasks/${assignmentId}/reviews`
+    : "/student_tasks/reviews";
+
   return (
     <Container fluid className="px-md-4" style={{ fontFamily: 'verdana, arial, helvetica, sans-serif', color: '#333' }}>
       <Row className="mt-3 mb-3">
         <Col xs={12}>
+          <Nav variant="tabs" className="mb-3">
+            <Nav.Item>
+              <Nav.Link active>Sign Up</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link as={Link} to={reviewsPath}>Reviews</Nav.Link>
+            </Nav.Item>
+          </Nav>
           <h2>Signup sheet for {assignmentName}</h2>
         </Col>
       </Row>
@@ -644,49 +660,6 @@ const StudentTasks: React.FC = () => {
               ? userSelectedTopics.map((topic) => topic.isWaitlisted ? `${topic.name} (waitlisted)` : topic.name).join(", ")
               : "No topics selected yet"}
           </p>
-        </Col>
-      </Row>
-
-      <Row className="mb-4">
-        <Col xs={12}>
-          <h5 className="mb-2" style={{ fontSize: '1.2em', lineHeight: '18px' }}>Assigned reviews</h5>
-          {assignedReviews.length === 0 ? (
-            <Alert variant="light" className="flash_note mb-0" style={{ fontSize: 13 }}>
-              No reviews currently assigned to you.
-            </Alert>
-          ) : (
-            <table className="table table-striped" style={{ fontSize: 15, lineHeight: '1.428em' }}>
-              <thead>
-                <tr>
-                  <th>Assignment</th>
-                  <th>Team</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignedReviews.map((review) => (
-                  <tr key={review.mapId}>
-                    <td>{review.assignmentName || `Assignment #${review.assignmentId}`}</td>
-                    <td>{review.teamName}</td>
-                    <td>{review.questionnaireType}</td>
-                    <td><strong>{review.status}</strong></td>
-                    <td>
-                      <Button
-                        variant="outline-secondary"
-                        className="btn btn-md"
-                        size="sm"
-                        onClick={() => handleOpenReview(review)}
-                      >
-                        {review.responseId ? "Open review" : "Start review"}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </Col>
       </Row>
 

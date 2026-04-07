@@ -58,7 +58,7 @@ export interface IAssignmentFormValues {
    // Misc flags from the form
   allow_tag_prompts?: boolean;
   course_id?: number;
-  availability_flag?: boolean;
+  available_to_students?: boolean;
   allow_suggestions?: boolean;
   enable_bidding_for_topics?: boolean;
   enable_bidding_for_reviews?: boolean;
@@ -165,7 +165,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     reminder: values.reminder ?? [],
 
     // Misc flags from other tabs
-    availability_flag: values.availability_flag ?? false,
+    available_to_students: values.available_to_students ?? false,
     allow_suggestions: values.allow_suggestions ?? false,
 
     // Per-round rubric configuration

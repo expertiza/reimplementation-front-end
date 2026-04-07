@@ -317,7 +317,9 @@ const TeammateReview = () => {
             setDraftResponseId(id);
             return id;
         } catch (err: any) {
-            // If 404 (ResponseMap not found), try to create the map first
+            // Workaround: if the ResponseMap row doesn't exist yet in the DB (404),
+            // create it on-the-fly using the current user, assignment, and reviewee team,
+            // then retry creating the Response against the newly created map.
             if (err?.response?.status === 404 && assignmentId && currentUser?.id && revieweeTeamId) {
                 const mapRes = await axiosClient.post('/response_maps', {
                     assignment_id: assignmentId,
@@ -472,17 +474,30 @@ const TeammateReview = () => {
 
                         return (
                             <div key={itemId} className="mb-4 p-3 border rounded bg-light d-flex flex-column gap-2">
-                                {/* Hide the label for single-checkbox items — the name is on the checkbox itself */}
-                                {!(itemType === 'Checkbox' && options.length === 0) && (
-                                    <Form.Label className="fw-semibold mb-0" style={{ fontSize: 13, lineHeight: '30px' }}>
-                                        {itemText}
-                                    </Form.Label>
-                                )}
-                                {item.weight && (
-                                    <span className="text-muted" style={{ fontSize: 13 }}>
-                                        Weight: {item.weight}
-                                    </span>
-                                )}
+                                {/* Item header row: label on the left, weight on the right */}
+                                <div className="d-flex align-items-center justify-content-between gap-2">
+                                    {/* Hide the label for single-checkbox items — the name is on the checkbox itself */}
+                                    {!(itemType === 'Checkbox' && options.length === 0) && (
+                                        <Form.Label className="fw-semibold mb-0 d-flex align-items-center gap-2 flex-grow-1" style={{ fontSize: 13, lineHeight: '30px' }}>
+                                            <span>{itemText}</span>
+                                            {itemType === 'TextField' && (
+                                                <Form.Control
+                                                    className="form-control"
+                                                    type="text"
+                                                    placeholder={item.textarea || item.placeholder || "Your response..."}
+                                                    value={answers[itemId] ?? ''}
+                                                    onChange={(e) => setAnswers(prev => ({ ...prev, [itemId]: e.target.value }))}
+                                                    style={{ fontSize: 13, ...(item.textbox_width ? { width: item.textbox_width } : { flex: 1 }) }}
+                                                />
+                                            )}
+                                        </Form.Label>
+                                    )}
+                                    {item.weight && (
+                                        <span className="text-muted text-end" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                                            Weight: {item.weight}
+                                        </span>
+                                    )}
+                                </div>
 
                                 {(itemType === 'Criterion' || itemType === 'Scale') && (
                                     <Form.Select
@@ -502,11 +517,11 @@ const TeammateReview = () => {
                                     <Form.Control
                                         className="form-control"
                                         as="textarea"
-                                        rows={3}
-                                        placeholder="Comment (required with criterion)"
+                                        rows={item.textarea_height ?? 3}
+                                        placeholder={item.textarea || item.placeholder || "Comment (required with criterion)"}
                                         value={comments[itemId] ?? ''}
                                         onChange={(e) => setComments(prev => ({ ...prev, [itemId]: e.target.value }))}
-                                        style={{ fontSize: 13 }}
+                                        style={{ fontSize: 13, ...(item.textarea_width ? { width: item.textarea_width } : {}) }}
                                     />
                                 )}
 
@@ -514,24 +529,15 @@ const TeammateReview = () => {
                                     <Form.Control
                                         className="form-control"
                                         as="textarea"
-                                        rows={4}
-                                        placeholder="Your comments..."
+                                        rows={item.textarea_height ?? 4}
+                                        placeholder={item.textarea || item.placeholder || "Your comments..."}
                                         value={answers[itemId] ?? ''}
                                         onChange={(e) => setAnswers(prev => ({ ...prev, [itemId]: e.target.value }))}
-                                        style={{ fontSize: 13 }}
+                                        style={{ fontSize: 13, ...(item.textarea_width ? { width: item.textarea_width } : {}) }}
                                     />
                                 )}
 
-                                {itemType === 'TextField' && (
-                                    <Form.Control
-                                        className="form-control"
-                                        type="text"
-                                        placeholder="Your response..."
-                                        value={answers[itemId] ?? ''}
-                                        onChange={(e) => setAnswers(prev => ({ ...prev, [itemId]: e.target.value }))}
-                                        style={{ fontSize: 13 }}
-                                    />
-                                )}
+                                {itemType === 'TextField' && null}
 
                                 {itemType === 'Dropdown' && options.length > 0 && (
                                     <Form.Select
@@ -569,7 +575,7 @@ const TeammateReview = () => {
                                 )}
 
                                 {itemType === 'Checkbox' && options.length > 0 && (
-                                    <div className="d-flex flex-column gap-2">
+                                    <div className="d-flex flex-column gap-2" style={{ fontSize: 13 }}>
                                         {options.map((option) => {
                                             const selected = multiSelections[itemId] ?? [];
                                             const isChecked = selected.includes(option);
@@ -577,7 +583,7 @@ const TeammateReview = () => {
                                                 <Form.Check
                                                     key={`${itemId}-${option}`}
                                                     type="checkbox"
-                                                    label={option}
+                                                    label={<span style={{ fontSize: 13, fontWeight: 600 }}>{option}</span>}
                                                     checked={isChecked}
                                                     onChange={(e) => {
                                                         setMultiSelections(prev => {
@@ -597,7 +603,7 @@ const TeammateReview = () => {
                                 {itemType === 'Checkbox' && options.length === 0 && (
                                     <Form.Check
                                         type="checkbox"
-                                        label={itemText}
+                                        label={<span style={{ fontSize: 13, fontWeight: 600 }}>{itemText}</span>}
                                         checked={booleanSelections[itemId] ?? false}
                                         onChange={(e) => setBooleanSelections(prev => ({ ...prev, [itemId]: e.target.checked }))}
                                     />

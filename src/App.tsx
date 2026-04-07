@@ -47,6 +47,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
 import StudentTasks from "./pages/StudentTasks/StudentTasks";
+import AssignedReviews from "./pages/StudentTasks/AssignedReviews";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
@@ -295,12 +296,20 @@ function App() {
           element: <Email_the_author />,
         },
         {
+          path: "student_tasks/reviews",
+          element: <ProtectedRoute element={<AssignedReviews />} />,
+        },
+        {
           path: "student_tasks",
           element: <ProtectedRoute element={<StudentTasks />} />,
         },
         {
           path: "student_tasks/:assignmentId",
           element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          path: "student_tasks/:assignmentId/reviews",
+          element: <ProtectedRoute element={<AssignedReviews />} />,
         },
         {
           path: "assignments/:id/review",

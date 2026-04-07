@@ -145,8 +145,8 @@ const GeneralTab = () => {
               <label htmlFor="assignment-is_penalty_calculated" className="form-check-label">Is Penalty Calculated</label>
             </div>
             <div className="form-check mb-3">
-              <input type="checkbox" id="assignment-availability_flag" name="availability_flag" className="form-check-input" />
-              <label htmlFor="assignment-availability_flag" className="form-check-label">Availability Flag</label>
+              <input type="checkbox" id="assignment-available_to_students" name="available_to_students" className="form-check-input" />
+              <label htmlFor="assignment-available_to_students" className="form-check-label">Available to students?</label>
             </div>
             <div className="form-check mb-3">
               <input type="checkbox" id="assignment-use_bookmark" name="use_bookmark" className="form-check-input" />
