@@ -70,11 +70,6 @@ function App() {
           element: <ProtectedRoute element={<ReviewTable />} />,
         },
         {
-          path: "edit-questionnaire",
-          element: <ProtectedRoute element={<Questionnaire />} />,
-        },
-
-        {
           path: "assignments/edit/:id",
           element: <AssignmentEditor mode="update" />,
           loader: loadAssignment,
@@ -398,7 +393,6 @@ function App() {
         },
 
        { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
 
         {
           path: "questionnaires",

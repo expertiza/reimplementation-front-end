@@ -22,7 +22,7 @@ const Questionnaires = () => {
   const [showTypeModal, setShowTypeModal] = useState(false);
   
   // loader option
-  const questionnaireData :any = useLoaderData();
+  const questionnaireData = useLoaderData() as QuestionnaireResponse[];
 
   useEffect(() => {
     setShowTypeModal(false);
@@ -63,12 +63,6 @@ const Questionnaires = () => {
   []
   );
   
-  
-  useEffect(() => {
-    if (error) {
-      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
-    }
-  }, [error, dispatch]);
 
   const tableColumns = useMemo(
     () => questionnaireColumns(onEditHandle, onDeleteHandle),
