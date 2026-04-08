@@ -53,11 +53,13 @@ columnHelper.accessor("updated_at", {
   columnHelper.accessor("instructor_id", {
     header: "Instructor ID",
   }),
-  columnHelper.accessor("instructor.name", {
+  columnHelper.accessor((row) => row.instructor?.name ?? "", {
+    id: "instructor.name",
     header: "Instructor Name",
     size:200
   }),
-  columnHelper.accessor("instructor.email", {
+  columnHelper.accessor((row) => row.instructor?.email ?? "", {
+    id: "instructor.email",
     header: "Instructor Email",
     size:300
   }),

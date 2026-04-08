@@ -514,10 +514,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   });
 
   // Build dropdown options from the questionnaires
-  const questionnaireOptions = (assignmentData.questionnaires || []).map((q: any) => ({
-    label: q.name,
-    value: q.id,
-  }));
+  const questionnaireOptions = [
+    { label: "-- Select --", value: "" },
+    ...(assignmentData.questionnaires || []).map((q: any) => ({
+      label: q.name,
+      value: q.id,
+    })),
+  ];
 
   const teammateReviewOptions = (assignmentData.questionnaires || [])
     .filter((q: any) => {
@@ -533,6 +536,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       label: q.name,
       value: q.id,
     }));
+
+  const teammateReviewOptionsWithBlank = [
+    { label: "-- Select --", value: "" },
+    ...teammateReviewOptions,
+  ];
 
   const reviewRounds = assignmentData.number_of_review_rounds;
 
@@ -735,7 +743,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
                         title: "Teammate review:",
-                        questionnaire_options: teammateReviewOptions,
+                        questionnaire_options: teammateReviewOptionsWithBlank,
                         questionnaire_type: 'dropdown',
                       },
                       {

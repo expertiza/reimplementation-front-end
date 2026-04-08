@@ -475,11 +475,11 @@ const TeammateReview = () => {
                         return (
                             <div key={itemId} className="mb-4 p-3 border rounded bg-light d-flex flex-column gap-2">
                                 {/* Item header row: label on the left, weight on the right */}
-                                <div className="d-flex align-items-center justify-content-between gap-2">
+                                <div className="d-flex align-items-start justify-content-between gap-2">
                                     {/* Hide the label for single-checkbox items — the name is on the checkbox itself */}
                                     {!(itemType === 'Checkbox' && options.length === 0) && (
-                                        <Form.Label className="fw-semibold mb-0 d-flex align-items-center gap-2 flex-grow-1" style={{ fontSize: 13, lineHeight: '30px' }}>
-                                            <span>{itemText}</span>
+                                        <Form.Label className="fw-semibold mb-0 d-flex align-items-center gap-2" style={{ fontSize: 13, lineHeight: '30px', minWidth: 0, flex: 1 }}>
+                                            <span style={{ overflowWrap: 'break-word', wordBreak: 'break-word', minWidth: 0 }}>{itemText}</span>
                                             {itemType === 'TextField' && (
                                                 <Form.Control
                                                     className="form-control"
@@ -493,7 +493,7 @@ const TeammateReview = () => {
                                         </Form.Label>
                                     )}
                                     {item.weight && (
-                                        <span className="text-muted text-end" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                                        <span className="text-muted text-end" style={{ fontSize: 13, whiteSpace: 'nowrap', flexShrink: 0 }}>
                                             Weight: {item.weight}
                                         </span>
                                     )}
