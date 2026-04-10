@@ -37,7 +37,7 @@ const OidcCallback: React.FC = () => {
     axios
       .post("http://localhost:3002/auth/callback", { code, state })
       .then((response) => {
-        const payload = setAuthToken(response.data.session_token);
+        const payload = setAuthToken(response.data.token);
 
         localStorage.setItem("session", JSON.stringify({ user: payload }));
 
