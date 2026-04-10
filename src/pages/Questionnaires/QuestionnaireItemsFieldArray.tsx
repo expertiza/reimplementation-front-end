@@ -20,13 +20,15 @@ interface Props {
   errors: any;
   touched: any;
   itemTypes: string[];
+  questionnaireType: string;
 }
 
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   values,
   errors,
   touched,
-  itemTypes
+  itemTypes,
+  questionnaireType
 }) => {
   const [questionType, setQuestionType] = useState("");
   const [numQuestions, setNumQuestions] = useState<number | "">("");
@@ -444,7 +446,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
               onChange={(e) => setQuestionType(e.target.value)}
             >
               <option value="">- Select item type -</option>
-              {itemTypes.map((type) => (
+              {itemTypes
+                .filter((type) => type.toLowerCase() !== "multiple choice" || questionnaireType === "Quiz")
+                .map((type) => (
     <option key={type} value={type}>
       {type}
     </option>

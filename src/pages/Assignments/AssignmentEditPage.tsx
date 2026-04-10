@@ -115,7 +115,7 @@ const AssignmentEditPage = () => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
       }
     }
   }, [deleteResponse, dispatch, id, fetchTopics]);
@@ -131,7 +131,7 @@ const AssignmentEditPage = () => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
       }
     }
   }, [createResponse, dispatch, id, fetchTopics]);
@@ -147,7 +147,7 @@ const AssignmentEditPage = () => {
       dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
       // Refresh topics data
       if (id) {
-        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
       }
     }
   }, [updateTopicResponse, dispatch, id, fetchTopics]);
@@ -162,7 +162,7 @@ const AssignmentEditPage = () => {
     if (dropTeamResponse) {
       dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
       if (id) {
-        fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
+        fetchTopics({ url: `/project_topics?assignment_id=${id}` });
       }
     }
   }, [dropTeamResponse, dispatch, id, fetchTopics]);
@@ -178,7 +178,7 @@ const AssignmentEditPage = () => {
     if (id) {
       setTopicsLoading(true);
       setTopicsError(null);
-      fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` });
+      fetchTopics({ url: `/project_topics?assignment_id=${id}` });
     }
   }, [id, fetchTopics]);
 
@@ -264,7 +264,7 @@ const AssignmentEditPage = () => {
     console.log(`Delete topic ${topicIdentifier}`);
     if (id) {
       deleteTopic({
-        url: `/sign_up_topics`,
+        url: `/project_topics`,
         method: 'DELETE',
         params: {
           assignment_id: Number(id),
@@ -277,10 +277,10 @@ const AssignmentEditPage = () => {
   const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
     console.log(`Edit topic DB id ${dbId}`, updatedData);
     updateTopic({
-      url: `/sign_up_topics/${dbId}`,
+      url: `/project_topics/${dbId}`,
       method: 'PATCH',
       data: {
-        sign_up_topic: {
+        project_topic: {
           topic_identifier: updatedData.topic_identifier,
           topic_name: updatedData.topic_name,
           category: updatedData.category,
@@ -297,10 +297,10 @@ const AssignmentEditPage = () => {
     console.log(`Create topic`, topicData);
     if (id) {
       createTopic({
-        url: `/sign_up_topics`,
+        url: `/project_topics`,
         method: 'POST',
         data: {
-          sign_up_topic: {
+          project_topic: {
             topic_identifier: topicData.topic_identifier || topicData.id,
             topic_name: topicData.topic_name || topicData.name,
             category: topicData.category,
@@ -341,7 +341,7 @@ const AssignmentEditPage = () => {
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
-            onTopicsChanged={() => id && fetchTopics({ url: `/sign_up_topics?assignment_id=${id}` })}
+            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
           />
         );
       

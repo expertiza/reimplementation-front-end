@@ -177,7 +177,7 @@
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} questionnaireType={values.questionnaire_type ?? ""} />
 
             <br />
             <Button type="submit" variant="primary">
