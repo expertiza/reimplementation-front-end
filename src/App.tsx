@@ -13,6 +13,8 @@ import ViewScores from "./pages/Assignments/ViewScores";
 import ViewSubmissions from "./pages/Assignments/ViewSubmissions";
 import SubmittedContent from "./pages/Assignments/SubmittedContent";
 import Login from "./pages/Authentication/Login";
+import ForgotPassword from "./pages/Authentication/ForgotPassword";
+import ResetPassword from "./pages/Authentication/ResetPassword";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
@@ -65,6 +67,8 @@ function App() {
       children: [
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
+        { path: "forgot-password", element: <ForgotPassword /> },
+        { path: "password_edit/check_reset_url", element: <ResetPassword /> },
         { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
 
         {
