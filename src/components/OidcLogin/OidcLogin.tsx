@@ -13,14 +13,14 @@ const OidcLogin: React.FC = () => {
 
   useEffect(() => {
     axiosClient
-      .get("/auth/providers")
+      .get("/auth/providers", { skipAuth: true })
       .then((response) => setProviders(response.data))
       .catch(() => setProviders([]));
   }, []);
 
   const handleLogin = (providerId: string) => {
     axiosClient
-      .post("/auth/client-select", { provider: providerId })
+      .post("/auth/client-select", { provider: providerId }, { skipAuth: true })
       .then((response) => {
         window.location.href = response.data.redirect_uri;
       })
