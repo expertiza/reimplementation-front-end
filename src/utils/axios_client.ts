@@ -16,9 +16,7 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
   // Check if this request should skip authentication (for login  / OIDC)
-  const skipAuth = (config as any).skipAuth === true;
-  
-  if (skipAuth) {
+  if (config.skipAuth) {
     return config;
   }
 
