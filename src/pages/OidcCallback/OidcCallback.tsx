@@ -35,7 +35,7 @@ const OidcCallback: React.FC = () => {
     }
 
     axiosClient
-      .post("/auth/callback", { code, state })
+      .post("/auth/callback", { code, state }, { skipAuth: true })
       .then((response) => {
         const payload = setAuthToken(response.data.token);
 
