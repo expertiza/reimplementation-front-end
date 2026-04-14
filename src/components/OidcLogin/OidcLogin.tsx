@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
-import axios from "axios";
+import axiosClient from "../../utils/axios_client";
 
 interface OidcProvider {
   id: string;
@@ -10,16 +10,17 @@ interface OidcProvider {
 const OidcLogin: React.FC = () => {
   const [providers, setProviders] = useState<OidcProvider[]>([]);
 
+
   useEffect(() => {
-    axios
-      .get("http://localhost:3002/auth/providers")
+    axiosClient
+      .get("/auth/providers", { skipAuth: true })
       .then((response) => setProviders(response.data))
       .catch(() => setProviders([]));
   }, []);
 
   const handleLogin = (providerId: string) => {
-    axios
-      .post("http://localhost:3002/auth/client-select", { provider: providerId })
+    axiosClient
+      .post("/auth/client-select", { provider: providerId }, { skipAuth: true })
       .then((response) => {
         window.location.href = response.data.redirect_uri;
       })

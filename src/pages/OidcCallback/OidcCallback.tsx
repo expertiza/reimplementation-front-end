@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { authenticationActions } from "../../store/slices/authenticationSlice";
 import { alertActions } from "../../store/slices/alertSlice";
 import { setAuthToken } from "../../utils/auth";
-import axios from "axios";
+import axiosClient from "../../utils/axios_client";
 
 const OidcCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -34,8 +34,8 @@ const OidcCallback: React.FC = () => {
       return;
     }
 
-    axios
-      .post("http://localhost:3002/auth/callback", { code, state })
+    axiosClient
+      .post("/auth/callback", { code, state })
       .then((response) => {
         const payload = setAuthToken(response.data.token);
 
