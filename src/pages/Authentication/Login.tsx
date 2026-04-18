@@ -9,7 +9,7 @@ import { alertActions } from "../../store/slices/alertSlice";
 import { setAuthToken } from "../../utils/auth";
 import * as Yup from "yup";
 import axiosClient from "utils/axios_client";
-import OidcLogin from "../../components/OidcLogin/OidcLogin";
+import OidcModal from "../../components/Modals/OidcModal";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -99,7 +99,7 @@ const Login: React.FC = () => {
             );
           }}
         </Formik>
-        <OidcLogin />
+        <OidcModal />
       </Col>
     </Container>
   );
