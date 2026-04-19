@@ -1,7 +1,7 @@
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import useAPI from "../../hooks/useAPI";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type FC, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { RiHealthBookLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +15,8 @@ import DeleteCourse from "./CourseDelete";
 import { formatDate, mergeDataAndNamesAndInstructors } from "./CourseUtil";
 import CourseAssignments from "./CourseAssignments";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
+import ImportModal from "../../components/Modals/ImportModal";
+import ExportModal from "../../components/Modals/ExportModal";
 
 /**
  * Courses Component: Displays and manages courses, including CRUD operations.
@@ -43,6 +45,37 @@ const Courses = () => {
     visible: boolean;
     data?: ICourseResponse;
   }>({ visible: false });
+  const [showImportCourseModal, setShowImportCourseModal] = useState(false);
+  const [showExportCourseModal, setShowExportCourseModal] = useState(false);
+
+  const STANDARD_TEXT: CSSProperties = {
+    fontFamily: 'verdana, arial, helvetica, sans-serif',
+    color: '#333',
+    fontSize: '13px',
+    lineHeight: '30px',
+  };
+
+  const toolbarLinkBase: CSSProperties = {
+    ...STANDARD_TEXT,
+    color: '#8b5e3c',
+    background: 'transparent',
+    border: 'none',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
+    textDecoration: 'none',
+  };
+
+  const pipe: CSSProperties = { margin: '0 8px', color: '#8b5e3c' };
+
+  const ToolbarLink: FC<{
+    onClick: () => void;
+    children: ReactNode;
+  }> = ({ onClick, children }) => (
+    <button style={toolbarLinkBase} onClick={onClick}>
+      {children}
+    </button>
+  );
 
   
   useEffect(() => {
@@ -79,6 +112,11 @@ const Courses = () => {
     () => setShowCopyConfirmation({ visible: false }),
     []
   );
+
+  const handleHideImportModal = useCallback(() => {
+    fetchCourses({ url: `/courses` });
+    setShowImportCourseModal(false);
+  }, [fetchCourses]);
 
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),
@@ -181,6 +219,13 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
               </h1>
             </Col>
           </Row>
+          <Row>
+            <Col>
+              <ToolbarLink onClick={() => setShowImportCourseModal(true)}>Import courses</ToolbarLink>
+              <span style={pipe}>|</span>
+              <ToolbarLink onClick={() => setShowExportCourseModal(true)}>Export courses</ToolbarLink>
+            </Col>
+          </Row>
           {/* Admin doenot have the option to create a course but he can create an assignment */}
           {auth.user?.role === ROLE.INSTRUCTOR && (
             <Row>
@@ -225,6 +270,16 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
           </Row>
         </Container>
       </main>
+      <ImportModal
+        show={showImportCourseModal}
+        onHide={handleHideImportModal}
+        modelClass="Course"
+      />
+      <ExportModal
+        show={showExportCourseModal}
+        onHide={() => setShowExportCourseModal(false)}
+        modelClass="Course"
+      />
     </>
   );
 };
