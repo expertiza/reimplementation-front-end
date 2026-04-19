@@ -32,13 +32,17 @@ export interface IItem {
   question_type: string;
   size?: number | string;
   alternatives?: string;
-  min_label?: number;
-  max_label?: number;
+  min_label?: string;
+  max_label?: string;
   break_before?: boolean;
   questionnaire_id?: number;
   _destroy?: boolean;
   type?: string;
-  
+  textarea_width?: number | string;
+  textarea_height?: number | string;
+  textbox_width?: number | string;
+  col_names?: string;
+  row_names?: string;
 }
 
 

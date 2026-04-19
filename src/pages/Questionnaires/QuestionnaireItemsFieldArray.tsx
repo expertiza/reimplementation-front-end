@@ -45,6 +45,16 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             onDragEnd={(result: DropResult) => {
               if (!result.destination) return;
               move(result.source.index, result.destination.index);
+              // Recompute seq for all items to match the new visual order
+              const reordered = [...form.values.items];
+              const [removed] = reordered.splice(result.source.index, 1);
+              reordered.splice(result.destination.index, 0, removed);
+              let seq = 1;
+              reordered.forEach((item: IItem, i: number) => {
+                if (!item._destroy) {
+                  setFieldValue(`items[${i}].seq`, seq++);
+                }
+              });
             }}
           >
             <Droppable droppableId="questions">

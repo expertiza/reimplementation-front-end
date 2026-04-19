@@ -1,23 +1,26 @@
 import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
-import { QuestionnaireFormValues , transformQuestionnaireRequest } from "./QuestionnaireUtils";
+import { IItem, QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
 import React, { useEffect, useState } from "react";
 import { useLoaderData, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Col, Container, Modal, Row } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 import QuestionnaireForm from "./QuestionnaireForm";
-import { useSelector} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import { alertActions } from "../../store/slices/alertSlice";
 
 
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const token = localStorage.getItem("token");
-  const questionnaire :any = useLoaderData();
+  const questionnaire = useLoaderData() as QuestionnaireFormValues | undefined;
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const type = searchParams.get("type");
 
-  const [fetchedItems, setFetchedItems] = useState<any[]>([]);
+  const [fetchedItems, setFetchedItems] = useState<IItem[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   useEffect(() => {
@@ -48,27 +51,31 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   console.log("Type:", type);
 
 
-  // the form values to the browser console.
   const onSubmit = async (values: QuestionnaireFormValues) => {
   values.instructor_id = auth.user.id;
-  //values.instructor = auth.user.name;
-  console.log("Submit:", values);
   const payload = transformQuestionnaireRequest(values);
   const endpoint = mode === "create"
     ? "/questionnaires"
     : `/questionnaires/${values.id}`;
 
+  setIsSubmitting(true);
   try {
-    const response = await axiosClient[mode === "create" ? "post" : "put"](
+    await axiosClient[mode === "create" ? "post" : "put"](
       endpoint,
-      payload, 
+      payload,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    console.log("Saved Questionnaire:", response.data);
+    dispatch(alertActions.showAlert({
+      variant: "success",
+      message: `Questionnaire "${values.name}" ${mode === "create" ? "created" : "updated"} successfully!`,
+    }));
     navigate("/questionnaires");
-  } catch (error) {
-    console.error("Error submitting form:", error);
+  } catch (error: any) {
+    const message = error?.response?.data?.error ?? "Failed to save questionnaire. Please try again.";
+    dispatch(alertActions.showAlert({ variant: "danger", message }));
+  } finally {
+    setIsSubmitting(false);
   }
 };
 
@@ -106,7 +113,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
                  <Row className="mt-md-2 mb-md-2">
                    <Col className="text-center">
                      <h1>{mode === "update"
-            ? `Update Questionnaire: ${questionnaire.name}`
+            ? `Update Questionnaire: ${questionnaire?.name}`
             : `Create ${type} Questionnaire`}</h1>
                    </Col>
                    <hr />
@@ -116,6 +123,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
           <QuestionnaireForm
             initialValues={initialValues}
             onSubmit={onSubmit}
+            isSubmitting={isSubmitting}
           /> 
         </Col>
       </Row>

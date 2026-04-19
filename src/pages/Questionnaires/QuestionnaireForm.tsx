@@ -1,21 +1,12 @@
-  import React, { useEffect, useState } from "react";
+  import React from "react";
   import { Formik, Field, Form, ErrorMessage } from "formik";
   import { Button } from 'react-bootstrap';
   import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
   import * as Yup from "yup";
-  import useAPI from "hooks/useAPI";
 
+  const ITEM_TYPES = ["Criterion", "Scale", "dropdown", "multiple_choice"];
 
-  const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
-
-    const { data: itemTypes, sendRequest: fetchItemTypes } = useAPI();
-  
-
-    useEffect(() => {
-          
-            fetchItemTypes({ url: "/item_types" });
-          console.log(itemTypes?.data);
-        }, [fetchItemTypes]);
+  const QuestionnaireForm = ({ initialValues, onSubmit, isSubmitting }: any) => {
       
 
     const itemFields = Yup.object().shape({
@@ -151,13 +142,14 @@
 
             <div className="d-flex align-items-center mt-1 mb-1">
               <div className="form-check me-2" title="Make questionnaire private, so other instructors cannot see it">
-      <input type="checkbox" className="form-check-input" id="private" />
+      <Field type="checkbox" name="private" className="form-check-input" id="private" />
                 <span style={{ fontSize: "14px"}} className="fw-semibold">Private</span>
 
     </div>
 
     
-    <input
+    <Field
+      name="min_question_score"
       type="number"
       placeholder="0"
       className="form-control"
@@ -167,7 +159,8 @@
     <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
 
     
-    <input
+    <Field
+      name="max_question_score"
       type="number"
       placeholder="10"
       className="form-control"
@@ -177,11 +170,11 @@
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={ITEM_TYPES} />
 
             <br />
-            <Button type="submit" variant="primary">
-              Save
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </Form>
         )}

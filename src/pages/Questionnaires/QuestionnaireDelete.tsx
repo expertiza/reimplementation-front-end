@@ -15,20 +15,24 @@ interface IDeleteQuestionnaire {
 const DeleteQuestionnaire: React.FC<IDeleteQuestionnaire> = ({ questionnaireData, onClose, onDeleteSuccess }) => {
   
   const { data: deletedQuestionnaire, error: questionnaireError, sendRequest: deleteQuestionnaire } = useAPI();
-  
+
   const [show, setShow] = useState<boolean>(true);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const dispatch = useDispatch();
 
- 
-  const deleteHandler = () => 
-    deleteQuestionnaire({ 
-      url: `/questionnaires/${questionnaireData.id}`, 
-      method: HttpMethod.DELETE 
+
+  const deleteHandler = () => {
+    setIsDeleting(true);
+    deleteQuestionnaire({
+      url: `/questionnaires/${questionnaireData.id}`,
+      method: HttpMethod.DELETE
     });
+  };
 
  
   useEffect(() => {
     if (questionnaireError) {
+      setIsDeleting(false);
       dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireError }));
     }
   }, [questionnaireError, dispatch]);
@@ -73,8 +77,8 @@ const DeleteQuestionnaire: React.FC<IDeleteQuestionnaire> = ({ questionnaireData
         <Button variant="outline-secondary" onClick={closeHandler}>
           Cancel
         </Button>
-        <Button variant="outline-danger" onClick={deleteHandler}>
-          Delete
+        <Button variant="outline-danger" onClick={deleteHandler} disabled={isDeleting}>
+          {isDeleting ? "Deleting..." : "Delete"}
         </Button>
       </Modal.Footer>
     </Modal>
