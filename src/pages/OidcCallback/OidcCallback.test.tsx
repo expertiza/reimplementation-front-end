@@ -117,8 +117,18 @@ describe("OidcCallback", () => {
       expect(vi.mocked(authUtils.setAuthToken)).toHaveBeenCalledWith(MOCK_JWT_TOKEN);
     }, { timeout: 3000 });
 
+    // localStorage session was persisted
     const session = JSON.parse(localStorage.getItem("session") || "{}");
     expect(session.user).toBeDefined();
+
+    // Redux received the correct token
+    expect(store.getState().authentication.authToken).toBe(MOCK_JWT_TOKEN);
+    expect(store.getState().authentication.user).toEqual(MOCK_AUTH_PAYLOAD);
+
+    // Navigated to the dashboard
+    await waitFor(() => {
+      expect(screen.getByText("Home")).toBeInTheDocument();
+    });
   });
 
   it("does not make API call when missing code", async () => {
@@ -144,9 +154,15 @@ describe("OidcCallback", () => {
 
     renderCallback(CALLBACK_URL, false);
 
+    // Wait for the redirect — confirms the catch block fully ran
     await waitFor(() => {
-      expect(vi.mocked(axiosClient).post).toHaveBeenCalled();
+      expect(screen.getByText("Login")).toBeInTheDocument();
     });
+
+    // Alert was dispatched with the backend error message
+    expect(store.getState().alert.show).toBe(true);
+    expect(store.getState().alert.variant).toBe("danger");
+    expect(store.getState().alert.message).toBe(MOCK_ERROR_RESPONSE.error);
   });
 
   it("handles network timeout during callback", async () => {
@@ -164,8 +180,17 @@ describe("OidcCallback", () => {
   it("shows error parameter in URL query and does not make API call", async () => {
     renderCallback(`${CALLBACK_ROUTE}?error=access_denied`, false);
 
+    // Wait for the redirect — the real observable side effect in this branch
     await waitFor(() => {
-      expect(vi.mocked(axiosClient).post).not.toHaveBeenCalled();
+      expect(screen.getByText("Login")).toBeInTheDocument();
     });
+
+    // After the full useEffect has run, the backend should never have been called
+    expect(vi.mocked(axiosClient).post).not.toHaveBeenCalled();
+
+    // Alert was dispatched with the provider error value
+    expect(store.getState().alert.show).toBe(true);
+    expect(store.getState().alert.variant).toBe("danger");
+    expect(store.getState().alert.message).toContain("access_denied");
   });
 });

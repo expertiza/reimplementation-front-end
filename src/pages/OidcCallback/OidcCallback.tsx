@@ -43,7 +43,7 @@ const OidcCallback: React.FC = () => {
 
         dispatch(
           authenticationActions.setAuthentication({
-            authToken: response.data.session_token,
+            authToken: response.data.token,
             user: payload,
           })
         );
