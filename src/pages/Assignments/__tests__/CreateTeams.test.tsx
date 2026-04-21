@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { render, screen, within } from "@testing-library/react";
-import CreateTeams from "../CreateTeams";
-import {Team, LoaderPayload, Participant, ContextType} from "../CreateTeams"
+import CreateTeams from "./CreateTeams";
+import {Team, LoaderPayload, Participant, ContextType} from "./CreateTeams"
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
@@ -154,7 +154,6 @@ describe("Test Create Teams Displays Correctly", () => {
 
 describe.skip("Test Create Teams Functions Correctly", () => {
     it("Test Adding a Student to a Team", async () => {
-      const user = userEvent.setup();
       await act(async () => {
         renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
       });
@@ -166,23 +165,24 @@ describe.skip("Test Create Teams Functions Correctly", () => {
 
       const firstRow = screen.getAllByTestId("team-row")[0]
 
-      // Click Add Button
-      const addButton = within(firstRow).getByRole('button', {name: "add"})
-      await user.click(addButton);
+      // Click Add Button and Select student in modal dropdown
+      act(() => {
+        const addButton = within(firstRow).getByRole('button', {name: "add"})
+        addButton.click()
+      });
 
-      // Select student in modal dropdown
-      const dropdown = screen.getByRole('combobox')
-      await user.selectOptions(dropdown, String(participantData[0].id))
+      act(() => {
+        const dropdown = screen.getByRole('combobox')
+        userEvent.selectOptions(dropdown, String(participantData[0].id))
 
-      const addInModal = within(screen.getByRole('dialog')).getByRole('button', {name: "add"})
-      await user.click(addInModal);
+        within(screen.getByRole('dialog')).getByRole('button', {name: "add"}).click()
+      })
 
       // Check student on page
-      expect(within(teamTabPanel).queryByText(participantData[0].username)).toBeInTheDocument()
+      expect(within(teamTabPanel).getByText(participantData[0].username)).toBeInTheDocument()
     });
 
     it("Test Edit Team Name", async () => {
-      const user = userEvent.setup();
       await act(async () => {
         renderWithRouter(<CreateTeams />, assignmentContext.contextType, assignmentContext.contextName);
       });
@@ -193,16 +193,19 @@ describe.skip("Test Create Teams Functions Correctly", () => {
       expect(team).toBeInTheDocument()
 
       // Click Edit Button
-      const editButton = within(team.parentElement?.parentElement!).getByRole('button', {name: "edit"})
-      await user.click(editButton);
+      act(() => {
+        if (!team.parentElement?.parentElement) fail()
+        const editButton = within(team.parentElement?.parentElement).getByRole('button', {name: "edit"})
+        editButton.click()
+      });
 
       // Type in new team name
-      const textBox = screen.getByRole('textbox', {name: "Team name"})
-      await user.clear(textBox);
-      await user.type(textBox, "New Team Name");
-      
-      const saveButton = screen.getByRole('button', {name: "save"})
-      await user.click(saveButton);
+      act(() => {
+        var textBox = screen.getByRole('textbox', {name: "Team name"})
+        userEvent.type(textBox, "{selectall}{backspace}")
+        userEvent.type(textBox, "New Team Name", {});
+        screen.getByRole('button', {name: "save"}).click()
+      })
 
       // Check new team name
       const teamNewName = await screen.findByText("New Team Name")

@@ -73,19 +73,18 @@ describe('CourseAssignments', () => {
 
   it('renders assignments in the table', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
-    const table = screen.queryByRole('table');
-    // Table should exist (data may not load depending on mock)
-    if (table) {
-      expect(table).toBeInTheDocument();
-    }
+    const rows = screen.getAllByRole('row');
+    expect(rows.length).toBeGreaterThan(1); // Header + assignment rows
+    expect(screen.getByText('Assignment 1')).toBeInTheDocument();
+    expect(screen.getByText('Assignment 2')).toBeInTheDocument();
   });
 
   it('triggers edit and delete actions correctly', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
-    const editButtons = screen.queryAllByRole('button', { name: /edit/i });
-    const deleteButtons = screen.queryAllByRole('button', { name: /delete/i });
-
+    const editButtons = screen.getAllByRole('button', { name: /edit/i });
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+    
     expect(editButtons.length).toBeGreaterThan(0);
     expect(deleteButtons.length).toBeGreaterThan(0);
 

@@ -1,26 +1,10 @@
 import '@testing-library/jest-dom';
-import { expect, vi, afterAll, beforeAll } from 'vitest';
 
-// Create jest compatibility layer for spies/mocks that are called in hooks
-const jest = {
-  spyOn: vi.spyOn,
-  fn: vi.fn,
-  clearAllMocks: vi.clearAllMocks,
-  resetAllMocks: vi.resetAllMocks,
-  restoreAllMocks: vi.restoreAllMocks,
-};
+// Extend expect with jest-dom matchers
+import { expect, vi } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
 
-// Make jest available globally for runtime spies
-globalThis.jest = jest as any;
-
-// Add test skip functions (xit, xdescribe, etc.)
-globalThis.xit = it.skip;
-globalThis.xdescribe = describe.skip;
-globalThis.xtest = test.skip;
-
-// Mock window.alert and window.confirm
-globalThis.alert = vi.fn();
-globalThis.confirm = vi.fn(() => true);
+expect.extend(matchers);
 
 // Mock window.matchMedia for testing
 Object.defineProperty(window, 'matchMedia', {
