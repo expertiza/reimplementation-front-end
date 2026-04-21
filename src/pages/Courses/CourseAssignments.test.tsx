@@ -84,10 +84,9 @@ describe('CourseAssignments', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
     const editButtons = screen.getAllByRole('button', { name: /edit/i });
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
-    
+
     expect(editButtons.length).toBeGreaterThan(0);
     expect(deleteButtons.length).toBeGreaterThan(0);
-
     await userEvent.click(editButtons[0]);
     await userEvent.click(deleteButtons[0]);
 
