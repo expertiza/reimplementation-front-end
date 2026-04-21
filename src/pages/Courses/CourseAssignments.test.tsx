@@ -87,6 +87,7 @@ describe('CourseAssignments', () => {
 
     expect(editButtons.length).toBeGreaterThan(0);
     expect(deleteButtons.length).toBeGreaterThan(0);
+
     await userEvent.click(editButtons[0]);
     await userEvent.click(deleteButtons[0]);
 
