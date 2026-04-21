@@ -5,8 +5,8 @@ import '@testing-library/jest-dom';
 
 // Mock axios client to avoid importing ESM axios during tests
 vi.mock('../../utils/axios_client', () => ({
-  get: jest.fn(),
-  post: jest.fn(),
+  get: vi.fn(),
+  post: vi.fn(),
 }));
 
 // Mock react-redux hooks so we don't need redux-mock-store

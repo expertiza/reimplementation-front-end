@@ -37,21 +37,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Suppress act() warning for react-transition-group with happy-dom
-// This is a known limitation of happy-dom's implementation
-const originalError = console.error;
-beforeAll(() => {
-  console.error = (...args: any[]) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('act(...) is not supported in this testing environment')
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
-});
-
-afterAll(() => {
-  console.error = originalError;
+Object.defineProperty(window, 'alert', {
+  writable: true,
+  value: vi.fn(),
 });

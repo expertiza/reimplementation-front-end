@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ImportModal from "./ImportModal";
+import ImportModal from "../../components/Modals/ImportModal";
 import ExportModal from "./ExportModal";
 
 interface ImportedData {
@@ -378,12 +378,18 @@ const Questionnaire = () => {
           </div>
 
           {/* Render import and export modals conditionally */}
-          {showImportModal && (
-            <ImportModal
-              onClose={() => setShowImportModal(false)}
-              onImport={handleFileChange}
-            />
-          )}
+          {/* Import / Export modals (from separate files) */}
+          <ImportModal
+            show={showImportModal}
+            onHide={() => setShowImportModal(false)}
+            modelClass="Item"
+          />
+          {/*{showImportModal && (*/}
+          {/*  <ImportModal*/}
+          {/*    onClose={() => setShowImportModal(false)}*/}
+          {/*    onImport={handleFileChange}*/}
+          {/*  />*/}
+          {/*)}*/}
           {showExportModal && (
             <ExportModal
               onClose={() => setShowExportModal(false)}

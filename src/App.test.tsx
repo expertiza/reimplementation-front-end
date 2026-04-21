@@ -1,25 +1,16 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
 import App from './App';
-import rootReducer from './store/rootReducer';
+import { store } from './store/store';
 
-// Create a test store
-const createTestStore = () => configureStore({
-  reducer: rootReducer,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }),
-});
-
-test('renders without crashing', () => {
-  const store = createTestStore();
-  const { container } = render(
+test('renders login route', () => {
+  window.history.pushState({}, 'Test page', '/login');
+  render(
     <Provider store={store}>
       <App />
     </Provider>
   );
-  expect(container).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /forgot password\?/i })).toBeInTheDocument();
 });

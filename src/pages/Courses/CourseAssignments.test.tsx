@@ -13,6 +13,7 @@ vi.mock('hooks/useAPI', () => ({
         {
           id: 1,
           name: 'Assignment 1',
+          course_id: 101,
           courseName: 'Test Course',
           description: 'Description 1',
           created_at: '2023-01-01',
@@ -21,6 +22,7 @@ vi.mock('hooks/useAPI', () => ({
         {
           id: 2,
           name: 'Assignment 2',
+          course_id: 101,
           courseName: 'Test Course',
           description: 'Description 2',
           created_at: '2023-01-03',
@@ -30,6 +32,18 @@ vi.mock('hooks/useAPI', () => ({
     },
     sendRequest: vi.fn(),
   }),
+}));
+
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/courses', search: '', hash: '' }),
+}));
+
+vi.mock('../Assignments/AssignmentDelete', () => ({
+  default: () => <div>Delete Assignment</div>,
 }));
 
 import CourseAssignments from './CourseAssignments';
@@ -46,11 +60,15 @@ describe('CourseAssignments', () => {
   const mockCourseId = 101;
   const mockCourseName = 'Test Course';
 
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
   it('renders the component correctly', () => {
     renderWithRouter(<CourseAssignments courseId={mockCourseId} courseName={mockCourseName} />);
-    // Component should render without error
-    const container = screen.getByRole('table', { hidden: true }).parentElement;
-    expect(container).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(table).toBeInTheDocument();
+    expect(screen.getByText('Actions')).toBeInTheDocument();
   });
 
   it('renders assignments in the table', () => {
@@ -68,14 +86,13 @@ describe('CourseAssignments', () => {
     const editButtons = screen.queryAllByRole('button', { name: /edit/i });
     const deleteButtons = screen.queryAllByRole('button', { name: /delete/i });
 
-    // If buttons don't exist, skip detailed checks
-    if (editButtons.length > 0) {
-      await userEvent.click(editButtons[0]);
-    }
-    if (deleteButtons.length > 0) {
-      await userEvent.click(deleteButtons[0]);
-    }
+    expect(editButtons.length).toBeGreaterThan(0);
+    expect(deleteButtons.length).toBeGreaterThan(0);
 
-    consoleSpy.mockRestore();
+    await userEvent.click(editButtons[0]);
+    await userEvent.click(deleteButtons[0]);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/assignments/edit/1', { state: { from: '/courses' } });
+    expect(screen.getByText(/delete assignment/i)).toBeInTheDocument();
   });
 });

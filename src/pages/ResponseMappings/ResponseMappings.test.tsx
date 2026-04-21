@@ -12,6 +12,7 @@ import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-
 import "@testing-library/jest-dom";
 import {Simulate} from "react-dom/test-utils";
 import click = Simulate.click;
+import type { MockInstance } from "vitest";
 
 const APIAssignmentData = {
       id: 2,
@@ -81,13 +82,15 @@ const APITeamData = [
 
 
 // Mock the useAPI hook to return mock assignments
-vi.mock("hooks/useAPI", () => () => ({
-  error: null,
-  isLoading: false,
-  data: {
-    data: APITeamData
-  },
-  sendRequest: jest.fn(),
+vi.mock("hooks/useAPI", () => ({
+  default: () => ({
+    error: null,
+    isLoading: false,
+    data: {
+      data: APITeamData
+    },
+    sendRequest: vi.fn(),
+  }),
 }));
 
 const renderWithRouter = (component: React.ReactNode) => {
@@ -241,10 +244,10 @@ describe("Test Response Mappings Displays Correctly", () => {
 });
 
 describe("Test Response Mappings Functions Correctly", () => {
-  let promptSpy: jest.SpyInstance;
+  let promptSpy: MockInstance;
 
   beforeEach(() => {
-    promptSpy = jest.spyOn(window, 'prompt');
+    promptSpy = vi.spyOn(window, 'prompt');
   });
 
   afterEach(() => {
@@ -274,23 +277,23 @@ describe("Test Response Mappings Functions Correctly", () => {
     expect(firstRowContributorCell).toHaveTextContent(user_name)
   });
 
-  xit("Test Adding a Reviewer", () => {
+  it.skip("Test Adding a Reviewer", () => {
 
   });
 
-  xit("Test Removing a Reviewer", () => {
+  it.skip("Test Removing a Reviewer", () => {
 
   });
 
-  xit("Test Removing all Current Reviewer", () => {
+  it.skip("Test Removing all Current Reviewer", () => {
 
   });
 
-  xit("Test Unsubmitting a Review", () => {
+  it.skip("Test Unsubmitting a Review", () => {
 
   });
 
-  xit("Test Showing Names / Usernames", () => {
+  it.skip("Test Showing Names / Usernames", () => {
 
   });
 });
