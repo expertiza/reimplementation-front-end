@@ -284,7 +284,7 @@ const ViewSubmissions = () => {
     if (!assignmentId) return;
 
     fetchSubmissions({
-      url: `/assignments/${assignmentId}/view_submissions`,
+      url: `/submitted_content/${assignmentId}/view_submissions`,
     });
   }, [assignmentId, fetchSubmissions]);
 
