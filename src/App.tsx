@@ -16,6 +16,7 @@ import Login from "./pages/Authentication/Login";
 import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
+import CourseReport from "./pages/Courses/CourseReport";
 import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
@@ -340,6 +341,10 @@ function App() {
                   loader: loadTAs,
                 },
               ],
+            },
+            {
+              path: ":courseId/class_assignment_overview",
+              element: <ProtectedRoute element={<CourseReport />} leastPrivilegeRole={ROLE.TA} />,
             },
           ],
         },

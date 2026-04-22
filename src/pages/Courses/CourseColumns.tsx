@@ -1,5 +1,6 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button, Tooltip, OverlayTrigger, Badge } from "react-bootstrap";
+import { BsBarChartFill } from "react-icons/bs";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 import { formatDate } from "../../utils/util";
 
@@ -12,7 +13,8 @@ export const courseColumns = (
   handleEdit: Fn,
   handleDelete: Fn,
   handleTA: Fn,
-  handleCopy: Fn
+  handleCopy: Fn,
+  handleReport: Fn
 ) => [
   columnHelper.accessor("name", {
     id: "name",
@@ -204,6 +206,17 @@ export const courseColumns = (
               alt="Copy"
               style={{ width: "25px", height: "25px" }}
             />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger overlay={<Tooltip>View Course Report</Tooltip>}>
+          <Button
+            variant="link"
+            onClick={() => handleReport(row)}
+            aria-label="View Course Report"
+            className="p-0"
+          >
+            <BsBarChartFill size={20} color="#000000" />
           </Button>
         </OverlayTrigger>
       </div>

@@ -102,6 +102,11 @@ const Courses = () => {
     []
   );
 
+  const onReportHandle = useCallback(
+    (row: TRow<ICourseResponse>) => navigate(`${row.original.id}/class_assignment_overview`),
+    [navigate]
+  );
+
 const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
 	return (
 	  <CourseAssignments
@@ -112,8 +117,8 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
   }, []);
 
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
-    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle, onReportHandle),
+    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle, onReportHandle]
   );
 
   const tableData = useMemo(
