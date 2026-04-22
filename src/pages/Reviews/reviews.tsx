@@ -1,13 +1,22 @@
 import { Table } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./Reviews.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getReviewItems, getFeedbackItems, ReviewItem } from "./reviewData"; // Import function and interface
+import useAPI from "../../hooks/useAPI";
 
 import { Row, Col, Button, Modal } from "react-bootstrap";
 import { BsEnvelopeFill, BsEyeFill, BsEyeSlashFill, BsShareFill, BsTrashFill, BsCheck, BsX, BsFileEarmarkArrowUp} from "react-icons/bs";
 
 type HandleMethod = () => void;
+
+interface ResolvedRubric {
+  assignment_questionnaire_id: number;
+  questionnaire_id: number;
+  questionnaire_name?: string;
+  project_topic_id?: number | null;
+  used_in_round?: number | null;
+}
 
 const Reviews: React.FC = () => {
   const [showReview, setShowReview] = useState<boolean>(true);
@@ -15,10 +24,15 @@ const Reviews: React.FC = () => {
   const [showSubmissions, setshowSubmissions] = useState<boolean>(true);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const responseMapId = searchParams.get("response_map_id");
+  const reviewRound = searchParams.get("round");
+  const { data: rubricResponse, error: rubricError, sendRequest: fetchResolvedRubric } = useAPI();
   const [reviewSetId, setReviewSetId] = useState<string>("1"); // Default set ID
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
   const [feedbackItems, setFeedbackItems] = useState<ReviewItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [resolvedRubric, setResolvedRubric] = useState<ResolvedRubric | null>(null);
 
   const [showWarning, setShowWarning] = useState(false);
   const [warningSuccessFunc, setWarningSuccessFunc] = useState<HandleMethod | null>(null);
@@ -71,6 +85,25 @@ const Reviews: React.FC = () => {
     setFeedbackItems(feedback);
   }, [reviewSetId]);  // Make sure reviewSetId is managed correctly
 
+  useEffect(() => {
+    if (!responseMapId) return;
+
+    fetchResolvedRubric({
+      url: "/student_tasks/rubric_for",
+      method: "GET",
+      params: {
+        response_map_id: responseMapId,
+        ...(reviewRound ? { round: reviewRound } : {}),
+      },
+    });
+  }, [fetchResolvedRubric, responseMapId, reviewRound]);
+
+  useEffect(() => {
+    if (rubricResponse?.data) {
+      setResolvedRubric(rubricResponse.data);
+    }
+  }, [rubricResponse]);
+
   if (!reviewItems.length) {
     console.log('No review items to display');
     return <div>No reviews available.</div>;
@@ -121,6 +154,28 @@ const Reviews: React.FC = () => {
   return (
     <div className="centered-container">
       <h1>Review for Program 2</h1>
+      {responseMapId && (
+        <div className={rubricError ? "alert alert-warning" : "alert alert-info"} role="status">
+          {rubricError ? (
+            <>
+              <strong>Rubric lookup failed:</strong> {rubricError}
+            </>
+          ) : resolvedRubric ? (
+            <>
+              <strong>Resolved review rubric:</strong>{" "}
+              {resolvedRubric.questionnaire_name || `Questionnaire ${resolvedRubric.questionnaire_id}`}
+              {resolvedRubric.project_topic_id && (
+                <span> for topic #{resolvedRubric.project_topic_id}</span>
+              )}
+              {resolvedRubric.used_in_round && (
+                <span> in round {resolvedRubric.used_in_round}</span>
+              )}
+            </>
+          ) : (
+            <>Loading resolved review rubric...</>
+          )}
+        </div>
+      )}
       <br/>
       <Modal show={showWarning} onHide={handleCloseWarning}>
         <Modal.Header closeButton>
