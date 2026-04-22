@@ -53,6 +53,14 @@ interface TopicData {
   updatedAt?: string;
 }
 
+interface TopicRubricMapping {
+  id: number;
+  questionnaire_id: number;
+  questionnaire_name?: string;
+  project_topic_id: number | null;
+  used_in_round: number | null;
+}
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -115,6 +123,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
 
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
+  const { data: topicRubricMappingsResponse, error: topicRubricMappingsError, sendRequest: fetchTopicRubricMappings } = useAPI();
+  const { error: saveTopicRubricError, sendRequest: saveTopicRubricMapping } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
   const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
   const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
@@ -165,6 +175,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
+  const [topicRubricMappings, setTopicRubricMappings] = useState<TopicRubricMapping[]>([]);
 
 
    useEffect(() => {
@@ -291,6 +302,15 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }
     }, [id, fetchTopics]);
 
+  const refreshTopicRubricMappings = useCallback(() => {
+    if (!id) return;
+    fetchTopicRubricMappings({ url: `/assignment_questionnaires?assignment_id=${id}` });
+  }, [fetchTopicRubricMappings, id]);
+
+  useEffect(() => {
+    refreshTopicRubricMappings();
+  }, [refreshTopicRubricMappings]);
+
   const refreshAccessibleDuties = useCallback(() => {
     fetchAccessibleDuties({ url: `/duties/accessible_duties` });
   }, [fetchAccessibleDuties]);
@@ -343,6 +363,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           setTopicsLoading(false);
         }
       }, [topicsResponse]);
+
+  useEffect(() => {
+    if (topicRubricMappingsResponse?.data) {
+      const mappings = (topicRubricMappingsResponse.data || [])
+        .filter((mapping: any) => mapping.project_topic_id !== null && mapping.project_topic_id !== undefined);
+      setTopicRubricMappings(mappings);
+    }
+  }, [topicRubricMappingsResponse]);
     
       // Handle topics API errors
   useEffect(() => {
@@ -351,6 +379,18 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       setTopicsLoading(false);
     }
   }, [topicsApiError]);
+
+  useEffect(() => {
+    if (topicRubricMappingsError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: topicRubricMappingsError }));
+    }
+  }, [topicRubricMappingsError, dispatch]);
+
+  useEffect(() => {
+    if (saveTopicRubricError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: saveTopicRubricError }));
+    }
+  }, [saveTopicRubricError, dispatch]);
 
   const toggleDutySelection = useCallback((dutyId: number) => {
     setSelectedDutyIds((prev) =>
@@ -491,6 +531,62 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
           // TODO: Implement partner ad application logic
         }, []);
+
+        const findTopicRubricMapping = useCallback((topicDatabaseId: number, usedInRound: number | null) => {
+          return topicRubricMappings.find((mapping) =>
+            Number(mapping.project_topic_id) === Number(topicDatabaseId) &&
+            (mapping.used_in_round ?? null) === (usedInRound ?? null)
+          );
+        }, [topicRubricMappings]);
+
+        const handleTopicRubricChange = useCallback(async (
+          topicDatabaseId: number,
+          questionnaireId: number | null,
+          usedInRound: number | null
+        ) => {
+          if (!id) return;
+
+          const existingMapping = findTopicRubricMapping(topicDatabaseId, usedInRound);
+
+          try {
+            if (!questionnaireId) {
+              if (existingMapping) {
+                await saveTopicRubricMapping({
+                  url: `/assignment_questionnaires/${existingMapping.id}`,
+                  method: HttpMethod.DELETE,
+                });
+              }
+            } else if (existingMapping) {
+              await saveTopicRubricMapping({
+                url: `/assignment_questionnaires/${existingMapping.id}`,
+                method: HttpMethod.PATCH,
+                data: {
+                  assignment_questionnaire: {
+                    questionnaire_id: questionnaireId,
+                  },
+                },
+              });
+            } else {
+              await saveTopicRubricMapping({
+                url: `/assignment_questionnaires`,
+                method: HttpMethod.POST,
+                data: {
+                  assignment_questionnaire: {
+                    assignment_id: Number(id),
+                    questionnaire_id: questionnaireId,
+                    project_topic_id: topicDatabaseId,
+                    used_in_round: usedInRound,
+                  },
+                },
+              });
+            }
+
+            refreshTopicRubricMappings();
+            dispatch(alertActions.showAlert({ variant: "success", message: "Topic rubric mapping saved successfully" }));
+          } catch {
+            // useAPI surfaces the request error through saveTopicRubricError.
+          }
+        }, [dispatch, findTopicRubricMapping, id, refreshTopicRubricMappings, saveTopicRubricMapping]);
       
 
 
@@ -624,6 +720,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     value: q.id,
   }));
 
+  const reviewRubricOptions = (assignmentData.questionnaires || [])
+    .filter((q: any) => q.questionnaire_type === "ReviewQuestionnaire")
+    .map((q: any) => ({
+      label: q.name,
+      value: q.id,
+    }));
+
   const reviewRounds = assignmentData.number_of_review_rounds;
 
   // Build initial form values from existing assignment data (update) or defaults (create)
@@ -746,12 +849,18 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             topicsData={topicsData}
             topicsLoading={topicsLoading}
             topicsError={topicsError}
+            varyByTopic={!!formik.values.review_rubric_varies_by_topic}
+            varyByRound={!!formik.values.review_rubric_varies_by_round}
+            reviewRounds={formik.values.number_of_review_rounds || reviewRounds || 1}
+            reviewRubricOptions={reviewRubricOptions}
+            topicRubricMappings={topicRubricMappings}
             onTopicSettingChange={handleTopicSettingChange}
             onDropTeam={handleDropTeam}
             onDeleteTopic={handleDeleteTopic}
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
+            onTopicRubricChange={handleTopicRubricChange}
             onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
                 />
               </Tab>

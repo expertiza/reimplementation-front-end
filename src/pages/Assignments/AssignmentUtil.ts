@@ -77,6 +77,8 @@ export interface IAssignmentFormValues {
   assignment_questionnaires?: {
     id: number;
     used_in_round?: number;
+    project_topic_id?: number | null;
+    questionnaire_id?: number;
     questionnaire?: { id: number; name: string };
   }[];
   [key: string]: any;
