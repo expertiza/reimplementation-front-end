@@ -1,503 +1,834 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Container, Row, Col, Button, Modal, Form, Alert, Table, Spinner } from 'react-bootstrap';
-import { FaFile, FaLink, FaTrash, FaDownload } from 'react-icons/fa';
-import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import SubmittedContentService from '../../services/SubmittedContentService';
-import { ISubmittedContentProps, IModalState, IFile } from '../../types/SubmittedContent';
-import './SubmittedContent.css';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Breadcrumb,
+  Button,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Spinner,
+  Table,
+} from "react-bootstrap";
+import {
+  FaDownload,
+  FaExternalLinkAlt,
+  FaFolderOpen,
+  FaLink,
+  FaSyncAlt,
+  FaTrash,
+  FaUpload,
+} from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { useLoaderData, useParams } from "react-router-dom";
+import SubmittedContentService, {
+  IListFilesResponse,
+  IListedFile,
+  IListedFolder,
+} from "../../services/SubmittedContentService";
+import { RootState } from "../../store/store";
+import { IAssignmentResponse } from "../../utils/interfaces";
+import "./SubmittedContent.css";
 
-const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
-  // State Management
-  const [files, setFiles] = useState<IFile[]>([]);
-  const [hyperlinks, setHyperlinks] = useState<{ url: string; title: string; submittedAt: string }[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+type SubmittedContentLoaderData = Partial<IAssignmentResponse>;
+
+const EMPTY_MESSAGE = "No submission artifacts are available in this folder yet.";
+
+const buildErrorMessage = (error: unknown, fallbackMessage: string) => {
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === "object") {
+    const apiError = (error as { error?: string }).error;
+    if (apiError) {
+      return apiError;
+    }
+
+    const message = (error as { message?: string }).message;
+    if (message) {
+      return message;
+    }
+  }
+
+  return fallbackMessage;
+};
+
+const formatTimestamp = (value?: string) => {
+  if (!value) return "-";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString();
+};
+
+const getPathSegments = (currentFolder: string) => {
+  const segments = currentFolder.split("/").filter(Boolean);
+
+  return segments.map((segment, index) => ({
+    label: segment,
+    path: `/${segments.slice(0, index + 1).join("/")}`,
+  }));
+};
+
+const SubmittedContent = () => {
+  const assignment = (useLoaderData?.() as SubmittedContentLoaderData) || {};
+  const { id: routeAssignmentId } = useParams<{ id: string }>();
+  const assignmentId = Number(assignment?.id ?? routeAssignmentId ?? 0);
+  const currentUserId = useSelector((state: RootState) => state.authentication.user.id);
+
+  const [participantId, setParticipantId] = useState<string | null>(null);
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [currentFolder, setCurrentFolder] = useState("/");
+  const [folderContents, setFolderContents] = useState<IListFilesResponse>({
+    current_folder: "/",
+    files: [],
+    folders: [],
+    hyperlinks: [],
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isResolvingParticipant, setIsResolvingParticipant] = useState(true);
+  const [isLoadingArtifacts, setIsLoadingArtifacts] = useState(false);
+  const [isSubmittingFile, setIsSubmittingFile] = useState(false);
+  const [isSubmittingHyperlink, setIsSubmittingHyperlink] = useState(false);
+  const [activeActionKey, setActiveActionKey] = useState<string | null>(null);
+  const [showHyperlinkModal, setShowHyperlinkModal] = useState(false);
+  const [hyperlinkUrl, setHyperlinkUrl] = useState("");
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Modal States
-  const [fileModal, setFileModal] = useState<IModalState>({
-    show: false,
-    isSubmitting: false,
-  });
+  const files = folderContents.files ?? [];
+  const folders = folderContents.folders ?? [];
+  const hyperlinks = folderContents.hyperlinks ?? [];
+  const hasArtifacts = files.length > 0 || folders.length > 0 || hyperlinks.length > 0;
+  const showLoadingState =
+    isResolvingParticipant || (isLoadingArtifacts && !hasArtifacts && !error);
+  const pathSegments = getPathSegments(currentFolder);
 
-  const [hyperlinkModal, setHyperlinkModal] = useState<IModalState>({
-    show: false,
-    isSubmitting: false,
-  });
+  const loadFolderContents = async (
+    resolvedParticipantId: string,
+    folderPath: string,
+    resolvedTeamId: number | null = teamId
+  ) => {
+    setIsLoadingArtifacts(true);
+    setError(null);
 
-  // Get assignment ID from URL
-  const assignmentId = new URLSearchParams(window.location.search).get('id') || 'default';
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchSubmissions();
-  }, [assignmentId]);
-
-  // Fetch submissions list
-  const fetchSubmissions = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      // This would call the backend API to fetch submissions
-      // const response = await SubmittedContentService.listFiles(assignmentId);
-      // setSubmissions(response);
-    } catch (err) {
-      setError('Failed to fetch submissions');
-      console.error(err);
+      const response = await SubmittedContentService.listFiles(resolvedParticipantId, folderPath);
+      const hasDirectArtifacts =
+        (response.files?.length ?? 0) > 0 ||
+        (response.folders?.length ?? 0) > 0 ||
+        (response.hyperlinks?.length ?? 0) > 0;
+      const shouldUseSummaryFallback =
+        !hasDirectArtifacts && folderPath === "/" && assignmentId > 0 && resolvedTeamId;
+
+      const nextContents = shouldUseSummaryFallback
+        ? await SubmittedContentService.getTeamSubmissionSummary(assignmentId, resolvedTeamId)
+        : response;
+
+      setFolderContents({
+        current_folder: nextContents.current_folder || folderPath,
+        files: nextContents.files ?? [],
+        folders: nextContents.folders ?? [],
+        hyperlinks: nextContents.hyperlinks ?? [],
+      });
+    } catch (loadError) {
+      setError(
+        buildErrorMessage(loadError, "Unable to load the submitted artifacts for this assignment.")
+      );
+      setFolderContents({
+        current_folder: folderPath,
+        files: [],
+        folders: [],
+        hyperlinks: [],
+      });
     } finally {
-      setLoading(false);
+      setIsLoadingArtifacts(false);
     }
-  }, [assignmentId]);
+  };
 
-  // File Upload Handler
-  const handleFileUpload = useCallback(
-    async (values: any) => {
-      try {
-        setFileModal((prev) => ({ ...prev, isSubmitting: true }));
-        setError(null);
+  useEffect(() => {
+    let ignore = false;
 
-        if (values.file && values.file.length > 0) {
-          const file = values.file[0];
-
-          // Validate file
-          const validation = await SubmittedContentService.validateFile(file);
-          if (!validation.isValid) {
-            setError(validation.error || 'Invalid file');
-            return;
-          }
-
-          // Submit file
-          const response = await SubmittedContentService.submitFile(assignmentId, file);
-          
-          // Add to files list
-          setFiles((prev) => [...prev, response.file]);
-          setSuccess('File uploaded successfully');
-
-          // Reset modal
-          setFileModal({ show: false, isSubmitting: false });
-
-          // Clear success message after 3 seconds
-          setTimeout(() => setSuccess(null), 3000);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to upload file');
-        console.error(err);
-      } finally {
-        setFileModal((prev) => ({ ...prev, isSubmitting: false }));
+    const resolveParticipant = async () => {
+      if (!assignmentId || !currentUserId) {
+        setParticipantId(null);
+        setIsResolvingParticipant(false);
+        setError("A valid assignment and logged-in student account are required to view submissions.");
+        return;
       }
-    },
-    [assignmentId]
-  );
 
-  // Hyperlink Submit Handler
-  const handleHyperlinkSubmit = useCallback(
-    async (values: any) => {
+      setIsResolvingParticipant(true);
+      setError(null);
+      setSuccess(null);
+      setCurrentFolder("/");
+
       try {
-        setHyperlinkModal((prev) => ({ ...prev, isSubmitting: true }));
-        setError(null);
-
-        // Validate URL
-        const validation = await SubmittedContentService.validateUrl(values.url);
-        if (!validation.isValid) {
-          setError(validation.error || 'Invalid URL');
-          return;
-        }
-
-        // Submit hyperlink
-        const response = await SubmittedContentService.submitHyperlink(
+        const participantContext = await SubmittedContentService.findParticipantContext(
           assignmentId,
-          values.url,
-          values.title || values.url
+          currentUserId
         );
 
-        // Add to hyperlinks list
-        setHyperlinks((prev) => [...prev, response.hyperlink]);
-        setSuccess('Hyperlink submitted successfully');
+        if (ignore) return;
 
-        // Reset modal
-        setHyperlinkModal({ show: false, isSubmitting: false });
+        setParticipantId(participantContext.participantId);
+        setTeamId(participantContext.teamId);
+      } catch (resolveError) {
+        if (ignore) return;
 
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(null), 3000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to submit hyperlink');
-        console.error(err);
+        setParticipantId(null);
+        setTeamId(null);
+        setFolderContents({
+          current_folder: "/",
+          files: [],
+          folders: [],
+          hyperlinks: [],
+        });
+        setError(
+          buildErrorMessage(
+            resolveError,
+            "We could not find a submission record for your account on this assignment."
+          )
+        );
       } finally {
-        setHyperlinkModal((prev) => ({ ...prev, isSubmitting: false }));
+        if (!ignore) {
+          setIsResolvingParticipant(false);
+        }
       }
-    },
-    [assignmentId]
-  );
+    };
 
-  // Remove Hyperlink Handler
-  const handleRemoveHyperlink = useCallback(
-    async (url: string) => {
-      try {
-        setError(null);
-        await SubmittedContentService.removeHyperlink(assignmentId, url);
-        setHyperlinks((prev) => prev.filter((h) => h.url !== url));
-        setSuccess('Hyperlink removed successfully');
-        setTimeout(() => setSuccess(null), 3000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to remove hyperlink');
-        console.error(err);
+    resolveParticipant();
+
+    return () => {
+      ignore = true;
+    };
+  }, [assignmentId, currentUserId]);
+
+  useEffect(() => {
+    if (!participantId) return;
+
+    loadFolderContents(participantId, currentFolder);
+  }, [currentFolder, participantId, teamId]);
+
+  useEffect(() => {
+    if (!success) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccess(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [success]);
+
+  const resolveParticipantForAction = async () => {
+    if (participantId) {
+      return participantId;
+    }
+
+    if (!assignmentId || !currentUserId) {
+      setError("A valid assignment and logged-in student account are required to submit work.");
+      return null;
+    }
+
+    setIsResolvingParticipant(true);
+    setError(null);
+
+    try {
+      const participantContext = await SubmittedContentService.findParticipantContext(
+        assignmentId,
+        currentUserId
+      );
+      setParticipantId(participantContext.participantId);
+      setTeamId(participantContext.teamId);
+      return participantContext.participantId;
+    } catch (resolveError) {
+      setError(
+        buildErrorMessage(
+          resolveError,
+          "We could not find a submission record for your account on this assignment."
+        )
+      );
+      return null;
+    } finally {
+      setIsResolvingParticipant(false);
+    }
+  };
+
+  const refreshArtifacts = async () => {
+    if (!participantId) return;
+    await loadFolderContents(participantId, currentFolder);
+  };
+
+  const handleOpenFolder = (folderName: string) => {
+    setCurrentFolder((previousFolder) =>
+      previousFolder === "/" ? `/${folderName}` : `${previousFolder}/${folderName}`
+    );
+  };
+
+  const handleOpenFile = async (fileName: string, shouldDownload: boolean) => {
+    if (!participantId) return;
+
+    const actionKey = `${shouldDownload ? "download" : "open"}:${currentFolder}:${fileName}`;
+    setActiveActionKey(actionKey);
+    setError(null);
+
+    try {
+      const response = await SubmittedContentService.downloadFile(
+        fileName,
+        participantId,
+        currentFolder
+      );
+      const fileBlob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], {
+              type: response.headers?.["content-type"] || "application/octet-stream",
+            });
+      const objectUrl = window.URL.createObjectURL(fileBlob);
+      const anchor = document.createElement("a");
+
+      anchor.href = objectUrl;
+
+      if (shouldDownload) {
+        anchor.download = fileName;
+        anchor.click();
+      } else {
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        anchor.click();
       }
-    },
-    [assignmentId]
-  );
 
-  // Download File Handler
-  const handleDownloadFile = useCallback(
-    async (file: IFile) => {
-      try {
-        setError(null);
-        await SubmittedContentService.downloadFile(assignmentId, file.id);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to download file');
-        console.error(err);
-      }
-    },
-    [assignmentId]
-  );
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+      }, 1000);
+    } catch (downloadError) {
+      setError(
+        buildErrorMessage(downloadError, `Unable to access ${fileName}. Please try again.`)
+      );
+    } finally {
+      setActiveActionKey(null);
+    }
+  };
 
-  // Delete File Handler
-  const handleDeleteFile = useCallback(
-    async (fileId: string) => {
-      try {
-        setError(null);
-        await SubmittedContentService.deleteFile(assignmentId, fileId);
-        setFiles((prev) => prev.filter((f) => f.id !== fileId));
-        setSuccess('File deleted successfully');
-        setTimeout(() => setSuccess(null), 3000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delete file');
-        console.error(err);
-      }
-    },
-    [assignmentId]
-  );
+  const handleDeleteEntry = async (entryName: string, entryType: "file" | "folder") => {
+    if (!participantId) return;
 
-  // Validation Schemas
-  const fileValidationSchema = Yup.object().shape({
-    file: Yup.mixed()
-      .required('File is required')
-      .test('fileSize', 'File is too large', (value: any) => {
-        if (!value || value.length === 0) return false;
-        return value[0].size <= 50 * 1024 * 1024; // 50MB limit
-      }),
-  });
+    const actionKey = `delete:${currentFolder}:${entryName}`;
+    setActiveActionKey(actionKey);
+    setError(null);
 
-  const hyperlinkValidationSchema = Yup.object().shape({
-    url: Yup.string().url('Invalid URL').required('URL is required'),
-    title: Yup.string().max(255, 'Title is too long'),
-  });
+    try {
+      await SubmittedContentService.deleteFile(entryName, participantId, currentFolder);
+      setSuccess(
+        `${entryType === "folder" ? "Folder" : "Artifact"} "${entryName}" was deleted successfully.`
+      );
+      await loadFolderContents(participantId, currentFolder);
+    } catch (deleteError) {
+      setError(
+        buildErrorMessage(
+          deleteError,
+          `Unable to delete ${entryName}. Please refresh and try again.`
+        )
+      );
+    } finally {
+      setActiveActionKey(null);
+    }
+  };
+
+  const handleRemoveHyperlink = async (index: number, hyperlink: string) => {
+    if (!participantId) return;
+
+    const actionKey = `link:${index}`;
+    setActiveActionKey(actionKey);
+    setError(null);
+
+    try {
+      await SubmittedContentService.removeHyperlink(participantId, index);
+      setSuccess(`Removed hyperlink "${hyperlink}".`);
+      await loadFolderContents(participantId, currentFolder);
+    } catch (removeError) {
+      setError(
+        buildErrorMessage(
+          removeError,
+          "Unable to remove the hyperlink. Please refresh and try again."
+        )
+      );
+    } finally {
+      setActiveActionKey(null);
+    }
+  };
+
+  const handleUploadButtonClick = async () => {
+    const resolvedParticipantId = await resolveParticipantForAction();
+    if (!resolvedParticipantId || !uploadInputRef.current) {
+      return;
+    }
+
+    uploadInputRef.current.value = "";
+    uploadInputRef.current.click();
+  };
+
+  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0] || null;
+    event.target.value = "";
+
+    if (!nextFile) {
+      return;
+    }
+
+    const resolvedParticipantId = await resolveParticipantForAction();
+    if (!resolvedParticipantId) {
+      return;
+    }
+
+    const validationResult = SubmittedContentService.validateFile(nextFile);
+    if (!validationResult.valid) {
+      setError(validationResult.error || "The selected file is not valid.");
+      return;
+    }
+
+    setIsSubmittingFile(true);
+    setError(null);
+
+    try {
+      await SubmittedContentService.submitFile(resolvedParticipantId, nextFile, currentFolder);
+      setSuccess(`Uploaded "${nextFile.name}" successfully.`);
+      await loadFolderContents(resolvedParticipantId, currentFolder, teamId);
+    } catch (submitError) {
+      setError(
+        buildErrorMessage(submitError, "Unable to upload the selected file. Please try again.")
+      );
+    } finally {
+      setIsSubmittingFile(false);
+    }
+  };
+
+  const handleOpenHyperlinkModal = async () => {
+    const resolvedParticipantId = await resolveParticipantForAction();
+    if (!resolvedParticipantId) {
+      return;
+    }
+
+    setShowHyperlinkModal(true);
+  };
+
+  const actionHelperMessage = isResolvingParticipant
+    ? "Preparing your submission workspace..."
+    : !participantId
+      ? "This student account needs an assignment participant and team before uploads or links can be submitted."
+      : "Files upload directly from your computer, and links open a short form.";
+
+  const handleHyperlinkSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!participantId) {
+      setError("A participant record is required before adding hyperlinks.");
+      return;
+    }
+
+    const trimmedUrl = hyperlinkUrl.trim();
+    const validationResult = SubmittedContentService.validateUrl(trimmedUrl);
+    if (!validationResult.valid) {
+      setError(validationResult.error || "The hyperlink is not valid.");
+      return;
+    }
+
+    setIsSubmittingHyperlink(true);
+    setError(null);
+
+    try {
+      await SubmittedContentService.submitHyperlink(trimmedUrl, participantId);
+      setSuccess("Hyperlink submitted successfully.");
+      setShowHyperlinkModal(false);
+      setHyperlinkUrl("");
+      await loadFolderContents(participantId, currentFolder, teamId);
+    } catch (submitError) {
+      setError(
+        buildErrorMessage(submitError, "Unable to submit the hyperlink. Please try again.")
+      );
+    } finally {
+      setIsSubmittingHyperlink(false);
+    }
+  };
 
   return (
-    <Container className="submitted-content-container py-5">
-      {/* Header */}
-      <Row className="mb-5">
-        <Col className="text-center">
-          <h1 className="submitted-content-title">📝 Submitted Content</h1>
-        </Col>
-      </Row>
-
-      {/* Alerts */}
-      {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-      {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>{success}</Alert>}
-
-      {/* Action Buttons Grid */}
-      <Row className="mb-5 justify-content-center">
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={() => setFileModal({ ...fileModal, show: true })}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            <FaFile style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
-            Upload File
-          </Button>
-        </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={() => setHyperlinkModal({ ...hyperlinkModal, show: true })}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            <FaLink style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
-            Add Hyperlink
-          </Button>
-        </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={fetchSubmissions}
-            disabled={loading}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              <>
-                <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📋</span>
-                View History
-              </>
-            )}
-          </Button>
-        </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={() => window.location.href = '/'}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔙</span>
-            Go Back
-          </Button>
-        </Col>
-      </Row>
-
-      {/* Submission History Table */}
-      {loading ? (
-        <Row className="mb-5">
-          <Col className="text-center">
-            <Spinner animation="border" />
+    <main>
+      <Container className="submitted-content-container py-3 py-md-4">
+        <Row className="align-items-center mb-3">
+          <Col md={8}>
+            <h1 className="submitted-content-title mb-1">View Submissions</h1>
+            <p className="submitted-content-subtitle mb-0">
+              {assignment?.name
+                ? `Student artifact view for ${assignment.name}`
+                : "Student artifact view for this assignment"}
+            </p>
+          </Col>
+          <Col md={4} className="d-flex justify-content-md-end mt-3 mt-md-0">
+            <Button
+              variant="outline-secondary"
+              onClick={refreshArtifacts}
+              disabled={!participantId || isLoadingArtifacts}
+            >
+              {isLoadingArtifacts ? (
+                <Spinner animation="border" size="sm" className="me-2" />
+              ) : (
+                <FaSyncAlt className="me-2" />
+              )}
+              Refresh
+            </Button>
           </Col>
         </Row>
-      ) : submissions.length > 0 ? (
-        <Row className="mb-5">
-          <Col>
-            <h3>📊 Submission History</h3>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Submission ID</th>
-                  <th>Type</th>
-                  <th>Submitted At</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{submission.id}</td>
-                    <td>{submission.type}</td>
-                    <td>{new Date(submission.submittedAt).toLocaleString()}</td>
-                    <td>{submission.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-      ) : null}
 
-      {/* Files Section */}
-      {files.length > 0 && (
-        <Row className="mb-5">
-          <Col>
-            <h3>📁 Uploaded Files</h3>
-            <div className="files-list">
-              {files.map((file) => (
-                <div key={file.id} className="file-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{file.name}</strong>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      {SubmittedContentService.formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <Button
-                      variant="link"
-                      onClick={() => handleDownloadFile(file)}
-                      title="Download"
-                      style={{ color: '#007bff', marginRight: '0.5rem' }}
-                    >
-                      <FaDownload />
-                    </Button>
-                    <Button
-                      variant="link"
-                      onClick={() => handleDeleteFile(file.id)}
-                      title="Delete"
-                      style={{ color: '#dc3545' }}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+        {error && (
+          <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-3">
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert variant="success" dismissible onClose={() => setSuccess(null)} className="mb-3">
+            {success}
+          </Alert>
+        )}
+
+        <div className="submitted-content-panel submitted-content-actions mb-3">
+          <input
+            ref={uploadInputRef}
+            type="file"
+            className="d-none"
+            onChange={handleFileSelection}
+            disabled={isSubmittingFile}
+          />
+          <div className="d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
+            <div>
+              <h2 className="submitted-content-section-title mb-1">Submit work</h2>
+              <p className="submitted-content-panel-copy mb-0">
+                Upload files or add links for the current assignment without leaving this page.
+              </p>
+              <p className="submitted-content-action-note mb-0">{actionHelperMessage}</p>
             </div>
-          </Col>
-        </Row>
-      )}
+            <div className="submitted-content-action-row">
+              <Button
+                className="submission-action-button"
+                onClick={handleUploadButtonClick}
+                disabled={isSubmittingFile || isResolvingParticipant}
+              >
+                {isSubmittingFile ? (
+                  <Spinner animation="border" size="sm" className="me-2" />
+                ) : (
+                  <FaUpload className="me-2" />
+                )}
+                {isSubmittingFile ? "Uploading..." : "Upload file"}
+              </Button>
+              <Button
+                variant="outline-primary"
+                className="submission-action-button"
+                onClick={handleOpenHyperlinkModal}
+                disabled={isSubmittingHyperlink || isResolvingParticipant}
+              >
+                {isSubmittingHyperlink ? (
+                  <Spinner animation="border" size="sm" className="me-2" />
+                ) : (
+                  <FaLink className="me-2" />
+                )}
+                Add hyperlink
+              </Button>
+            </div>
+          </div>
+        </div>
 
-      {/* Hyperlinks Section */}
-      {hyperlinks.length > 0 && (
-        <Row className="mb-5">
+        <Row className="mb-3">
           <Col>
-            <h3>🔗 Submitted Hyperlinks</h3>
-            <div className="hyperlinks-list">
-              {hyperlinks.map((hyperlink) => (
-                <div key={hyperlink.url} className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
-                  <div>
-                    <a href={hyperlink.url} target="_blank" rel="noopener noreferrer">
-                      <strong>{hyperlink.title}</strong>
-                    </a>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      Submitted: {new Date(hyperlink.submittedAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <Button
-                    variant="link"
-                    onClick={() => handleRemoveHyperlink(hyperlink.url)}
-                    title="Remove"
-                    style={{ color: '#dc3545' }}
+            <div className="submitted-content-panel">
+              <div className="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+                <div>
+                  <h2 className="submitted-content-section-title mb-1">Artifacts</h2>
+                  <p className="submitted-content-panel-copy mb-0">
+                    Open, download, or remove the artifacts submitted by your team.
+                  </p>
+                </div>
+                <div className="submitted-content-folder-indicator">
+                  <span className="fw-semibold">Current folder:</span> {currentFolder}
+                </div>
+              </div>
+
+              <Breadcrumb className="submitted-content-breadcrumb mb-2">
+                <Breadcrumb.Item
+                  active={currentFolder === "/"}
+                  linkAs="button"
+                  onClick={() => setCurrentFolder("/")}
+                >
+                  Root
+                </Breadcrumb.Item>
+                {pathSegments.map((segment) => (
+                  <Breadcrumb.Item
+                    key={segment.path}
+                    active={segment.path === currentFolder}
+                    linkAs="button"
+                    onClick={() => setCurrentFolder(segment.path)}
                   >
-                    <FaTrash />
-                  </Button>
+                    {segment.label}
+                  </Breadcrumb.Item>
+                ))}
+              </Breadcrumb>
+
+              {showLoadingState ? (
+                <div className="submitted-content-loading">
+                  <Spinner animation="border" role="status" />
+                  <span>Loading submitted artifacts...</span>
                 </div>
-              ))}
+              ) : participantId ? (
+                <>
+                  {folders.length === 0 && files.length === 0 ? (
+                    <Alert variant="info" className="mb-0">
+                      {EMPTY_MESSAGE}
+                    </Alert>
+                  ) : (
+                    <div className="table-responsive">
+                      <Table hover className="submitted-content-table mb-0">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Modified</th>
+                            <th className="text-end">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {folders.map((folder: IListedFolder) => {
+                            const deleteActionKey = `delete:${currentFolder}:${folder.name}`;
+
+                            return (
+                              <tr key={`folder-${folder.name}`}>
+                                <td className="fw-semibold">
+                                  <FaFolderOpen className="me-2 text-warning" />
+                                  {folder.name}
+                                </td>
+                                <td>Folder</td>
+                                <td>-</td>
+                                <td>{formatTimestamp(folder.modified_at)}</td>
+                                <td className="text-end">
+                                  <div className="artifact-actions">
+                                    <Button
+                                      size="sm"
+                                      variant="outline-primary"
+                                      onClick={() => handleOpenFolder(folder.name)}
+                                    >
+                                      Open
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline-danger"
+                                      onClick={() => handleDeleteEntry(folder.name, "folder")}
+                                      disabled={activeActionKey === deleteActionKey}
+                                    >
+                                      {activeActionKey === deleteActionKey ? (
+                                        <Spinner animation="border" size="sm" />
+                                      ) : (
+                                        <FaTrash />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {files.map((file: IListedFile) => {
+                            const openActionKey = `open:${currentFolder}:${file.name}`;
+                            const downloadActionKey = `download:${currentFolder}:${file.name}`;
+                            const deleteActionKey = `delete:${currentFolder}:${file.name}`;
+
+                            return (
+                              <tr key={`file-${file.name}`}>
+                                <td className="fw-semibold">{file.name}</td>
+                                <td>{file.type?.toUpperCase() || "File"}</td>
+                                <td>{SubmittedContentService.formatFileSize(file.size || 0)}</td>
+                                <td>{formatTimestamp(file.modified_at)}</td>
+                                <td className="text-end">
+                                  <div className="artifact-actions">
+                                    <Button
+                                      size="sm"
+                                      variant="outline-primary"
+                                      onClick={() => handleOpenFile(file.name, false)}
+                                      disabled={activeActionKey === openActionKey}
+                                    >
+                                      {activeActionKey === openActionKey ? (
+                                        <Spinner animation="border" size="sm" />
+                                      ) : (
+                                        <>
+                                          <FaExternalLinkAlt className="me-1" />
+                                          Open
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline-secondary"
+                                      onClick={() => handleOpenFile(file.name, true)}
+                                      disabled={activeActionKey === downloadActionKey}
+                                    >
+                                      {activeActionKey === downloadActionKey ? (
+                                        <Spinner animation="border" size="sm" />
+                                      ) : (
+                                        <>
+                                          <FaDownload className="me-1" />
+                                          Download
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline-danger"
+                                      onClick={() => handleDeleteEntry(file.name, "file")}
+                                      disabled={activeActionKey === deleteActionKey}
+                                    >
+                                      {activeActionKey === deleteActionKey ? (
+                                        <Spinner animation="border" size="sm" />
+                                      ) : (
+                                        <FaTrash />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </Table>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Alert variant="warning" className="mb-0">
+                  You are not currently associated with a submission-capable team for this
+                  assignment.
+                </Alert>
+              )}
             </div>
           </Col>
         </Row>
-      )}
 
-      {/* File Upload Modal */}
-      <Modal show={fileModal.show} onHide={() => setFileModal({ ...fileModal, show: false })}>
-        <Modal.Header closeButton>
-          <Modal.Title>Upload File</Modal.Title>
+        <Row>
+          <Col>
+            <div className="submitted-content-panel">
+              <div className="mb-2">
+                <h2 className="submitted-content-section-title mb-1">Hyperlinks</h2>
+                <p className="submitted-content-panel-copy mb-0">
+                  Submitted URLs are shown separately so you can open them directly or remove them.
+                </p>
+              </div>
+
+              {hyperlinks.length === 0 ? (
+                <Alert variant="light" className="mb-0">
+                  No hyperlinks have been submitted for this folder yet.
+                </Alert>
+              ) : (
+                <div className="table-responsive">
+                  <Table hover className="submitted-content-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Hyperlink</th>
+                        <th className="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hyperlinks.map((hyperlink, index) => {
+                        const actionKey = `link:${index}`;
+
+                        return (
+                          <tr key={`${hyperlink}-${index}`}>
+                            <td>
+                              <a href={hyperlink} target="_blank" rel="noopener noreferrer">
+                                {hyperlink}
+                              </a>
+                            </td>
+                            <td className="text-end">
+                              <div className="artifact-actions justify-content-end">
+                                <Button
+                                  size="sm"
+                                  variant="outline-primary"
+                                  as="a"
+                                  href={hyperlink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <FaExternalLinkAlt className="me-1" />
+                                  Open
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline-danger"
+                                  onClick={() => handleRemoveHyperlink(index, hyperlink)}
+                                  disabled={activeActionKey === actionKey}
+                                >
+                                  {activeActionKey === actionKey ? (
+                                    <Spinner animation="border" size="sm" />
+                                  ) : (
+                                    <FaTrash />
+                                  )}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </Col>
+        </Row>
+      </Container>
+
+      <Modal
+        show={showHyperlinkModal}
+        onHide={() => !isSubmittingHyperlink && setShowHyperlinkModal(false)}
+        centered
+      >
+        <Modal.Header closeButton={!isSubmittingHyperlink}>
+          <Modal.Title>Add hyperlink</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Formik
-            initialValues={{ file: null }}
-            validationSchema={fileValidationSchema}
-            onSubmit={handleFileUpload}
-          >
-            {({ isSubmitting, setFieldValue }) => (
-              <FormikForm>
-                <Form.Group className="mb-3">
-                  <Form.Label>Select File</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="file"
-                    onChange={(event) => {
-                      const files = (event.target as HTMLInputElement).files;
-                      setFieldValue('file', files);
-                    }}
-                    disabled={isSubmitting}
-                  />
-                  <ErrorMessage name="file" component="div" className="text-danger" />
-                </Form.Group>
-
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={isSubmitting || fileModal.isSubmitting}
-                  className="w-100"
-                >
-                  {isSubmitting || fileModal.isSubmitting ? 'Uploading...' : 'Upload'}
-                </Button>
-              </FormikForm>
-            )}
-          </Formik>
-        </Modal.Body>
+        <Form onSubmit={handleHyperlinkSubmit}>
+          <Modal.Body>
+            <Form.Group controlId="submitted-content-hyperlink">
+              <Form.Label>Hyperlink URL</Form.Label>
+              <Form.Control
+                type="url"
+                placeholder="https://example.com/project"
+                value={hyperlinkUrl}
+                onChange={(event) => setHyperlinkUrl(event.target.value)}
+                disabled={isSubmittingHyperlink}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowHyperlinkModal(false)}
+              disabled={isSubmittingHyperlink}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmittingHyperlink || !hyperlinkUrl.trim()}>
+              {isSubmittingHyperlink ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
+            </Button>
+          </Modal.Footer>
+        </Form>
       </Modal>
-
-      {/* Hyperlink Modal */}
-      <Modal show={hyperlinkModal.show} onHide={() => setHyperlinkModal({ ...hyperlinkModal, show: false })}>
-        <Modal.Header closeButton>
-          <Modal.Title>Add Hyperlink</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Formik
-            initialValues={{ url: '', title: '' }}
-            validationSchema={hyperlinkValidationSchema}
-            onSubmit={handleHyperlinkSubmit}
-          >
-            {({ isSubmitting }) => (
-              <FormikForm>
-                <Form.Group className="mb-3">
-                  <Form.Label>URL</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="url"
-                    name="url"
-                    placeholder="https://example.com"
-                    disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  />
-                  <ErrorMessage name="url" component="div" className="text-danger" />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Title (Optional)</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="text"
-                    name="title"
-                    placeholder="Link title"
-                    disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  />
-                  <ErrorMessage name="title" component="div" className="text-danger" />
-                </Form.Group>
-
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  className="w-100"
-                >
-                  {isSubmitting || hyperlinkModal.isSubmitting ? 'Submitting...' : 'Submit'}
-                </Button>
-              </FormikForm>
-            )}
-          </Formik>
-        </Modal.Body>
-      </Modal>
-    </Container>
+    </main>
   );
 };
 
