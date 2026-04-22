@@ -1,6 +1,5 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button, Tooltip, OverlayTrigger, Badge } from "react-bootstrap";
-import { BsBarChartFill } from "react-icons/bs";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 import { formatDate } from "../../utils/util";
 
@@ -211,13 +210,16 @@ export const courseColumns = (
 
         <OverlayTrigger overlay={<Tooltip>View Course Report</Tooltip>}>
           <Button
-            variant="link"
+            style={{
+              backgroundColor: "#8B4513",
+              borderColor: "#8B4513",
+              width: "25px",
+              height: "25px",
+            }}
             onClick={() => handleReport(row)}
             aria-label="View Course Report"
             className="p-0"
-          >
-            <BsBarChartFill size={20} color="#000000" />
-          </Button>
+          />
         </OverlayTrigger>
       </div>
     ),

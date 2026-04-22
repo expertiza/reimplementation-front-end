@@ -33,6 +33,7 @@ const Courses = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const isReportPage = location.pathname.includes("class_assignment_overview");
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -167,6 +168,10 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
     if (!assignmentResponse?.data) return new Set();
     return new Set(assignmentResponse.data.map((a: any) => a.course_id));
   }, [assignmentResponse?.data]);
+
+  if (isReportPage) {
+    return <Outlet />;
+  }
 
   return (
     <>
