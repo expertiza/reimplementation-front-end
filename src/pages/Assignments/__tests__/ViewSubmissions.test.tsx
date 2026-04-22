@@ -159,7 +159,7 @@ describe("ViewSubmissions", () => {
 
     await waitFor(() => {
       expect(sendRequestMock).toHaveBeenCalledWith({
-        url: "/assignments/1/view_submissions",
+        url: "/submitted_content/1/view_submissions",
       });
     });
 
