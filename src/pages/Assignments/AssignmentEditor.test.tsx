@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import AssignmentEditor from "./AssignmentEditor";
-import { transformAssignmentRequest, IAssignmentFormValues } from "./AssignmentUtil";
+import { transformAssignmentRequest, transformAssignmentResponse, IAssignmentFormValues } from "./AssignmentUtil";
 
 // Mock useAPI to avoid real network calls
 const sendRequestMock = vi.fn();
@@ -193,5 +193,58 @@ describe("transformAssignmentRequest", () => {
     const payload = JSON.parse(transformAssignmentRequest(values));
 
     expect(payload.assignment.vary_by_round).toBe(false);
+  });
+
+  it("maps topic rubric variation to vary_by_topic", () => {
+    const values: IAssignmentFormValues = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      review_rubric_varies_by_topic: true,
+      weights: [],
+      notification_limits: [],
+      use_date_updater: [],
+      submission_allowed: [],
+      review_allowed: [],
+      teammate_allowed: [],
+      metareview_allowed: [],
+      reminder: [],
+    };
+
+    const payload = JSON.parse(transformAssignmentRequest(values));
+
+    expect(payload.assignment.vary_by_topic).toBe(true);
+  });
+});
+
+describe("transformAssignmentResponse", () => {
+  it("prefills topic rubric variation from vary_by_topic", () => {
+    const assignment = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      vary_by_topic: true,
+      num_review_rounds: 1,
+      due_dates: [],
+      assignment_questionnaires: [],
+    };
+
+    const values = transformAssignmentResponse(JSON.stringify(assignment));
+
+    expect(values.review_rubric_varies_by_topic).toBe(true);
   });
 });
