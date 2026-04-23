@@ -94,9 +94,9 @@ const AssignedReviews: React.FC = () => {
       const questionnaireType = String(questionnaire?.questionnaire_type || "");
       const questionnaireName = String(questionnaire?.name || "");
       return (
-        /teammatereview/i.test(questionnaireType)
-        || /teammate\s*review/i.test(questionnaireType)
-        || /teammate\s*review/i.test(questionnaireName)
+        /teammatereview/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireName)
       );
     };
 
@@ -126,8 +126,8 @@ const AssignedReviews: React.FC = () => {
           : resolvedAssignmentId;
 
         const selectedQuestionnaire = isTeammateReview
-          ? (teammateQuestionnaire ?? normalReviewQuestionnaire)
-          : (normalReviewQuestionnaire ?? teammateQuestionnaire);
+          ? teammateQuestionnaire ?? normalReviewQuestionnaire
+          : normalReviewQuestionnaire ?? teammateQuestionnaire;
 
         let status: AssignedReviewRow["status"] = "Not saved";
         if (latestResponse) {
@@ -143,20 +143,15 @@ const AssignedReviews: React.FC = () => {
           responseId: latestResponse ? Number(latestResponse.id) : undefined,
           teamName,
           revieweeTeamId:
-            (map as any)._revieweeTeamId ??
-            Number(map.reviewee_team_id ?? map.reviewee_id),
+            (map as any)._revieweeTeamId ?? Number(map.reviewee_team_id ?? map.reviewee_id),
           assignmentId: mapAssignmentId,
           assignmentName: (map as any).assignment_name,
           status,
           questionnaireType: isTeammateReview ? "Teammate Review" : "Review",
-          questionnaireId: selectedQuestionnaire?.id
-            ? Number(selectedQuestionnaire.id)
-            : undefined,
+          questionnaireId: selectedQuestionnaire?.id ? Number(selectedQuestionnaire.id) : undefined,
           questionnaireName:
             selectedQuestionnaire?.name ||
-            (isTeammateReview
-              ? "Teammate Review Questionnaire"
-              : "Review Questionnaire"),
+            (isTeammateReview ? "Teammate Review Questionnaire" : "Review Questionnaire"),
         };
       });
 
@@ -200,8 +195,7 @@ const AssignedReviews: React.FC = () => {
               const previousTs = previous
                 ? new Date(previous.updated_at ?? previous.created_at ?? "").getTime() || 0
                 : -1;
-              if (!previous || timestamp > previousTs)
-                latestByMapId.set(mapId, response);
+              if (!previous || timestamp > previousTs) latestByMapId.set(mapId, response);
             });
 
             const filtered = responseMaps.filter(
@@ -236,9 +230,7 @@ const AssignedReviews: React.FC = () => {
       .get("/response_maps", { params: { reviewer_user_id: currentUser.id } })
       .then((res) => {
         if (cancelled) return;
-        const maps = Array.isArray(res.data?.response_maps)
-          ? res.data.response_maps
-          : [];
+        const maps = Array.isArray(res.data?.response_maps) ? res.data.response_maps : [];
         const backendRows = buildRows(maps);
         setAssignedReviews((prev) => {
           // Merge: backend rows take priority (by mapId), then add any localStorage-only rows
@@ -311,18 +303,11 @@ const AssignedReviews: React.FC = () => {
       <Row className="mb-4">
         <Col xs={12}>
           {assignedReviews.length === 0 ? (
-            <Alert
-              variant="light"
-              className="flash_note mb-0"
-              style={{ fontSize: 13 }}
-            >
+            <Alert variant="light" className="flash_note mb-0" style={{ fontSize: 13 }}>
               No reviews currently assigned to you.
             </Alert>
           ) : (
-            <table
-              className="table table-striped"
-              style={{ fontSize: 15, lineHeight: "1.428em" }}
-            >
+            <table className="table table-striped" style={{ fontSize: 15, lineHeight: "1.428em" }}>
               <thead>
                 <tr>
                   <th>Assignment</th>
@@ -333,29 +318,59 @@ const AssignedReviews: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {assignedReviews.map((review) => (
-                  <tr key={review.mapId}>
-                    <td>
-                      {review.assignmentName ||
-                        `Assignment #${review.assignmentId}`}
-                    </td>
-                    <td>{review.teamName}</td>
-                    <td>{review.questionnaireType}</td>
-                    <td>
-                      <strong>{review.status}</strong>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-secondary"
-                        className="btn btn-md"
-                        size="sm"
-                        onClick={() => openReview(review)}
-                      >
-                        {review.responseId ? "Open review" : "Start review"}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {assignedReviews.map((review) => {
+                  // --- Quiz/Review Gateway Logic ---
+                  // Mock: require_quiz and quiz_completed (replace with real backend fields if available)
+                  // For demo, treat all 'Review' as requiring quiz if assignmentName includes 'Quiz'
+                  // In real use, these should come from the assignment/review object
+                  const requireQuiz =
+                    review.assignmentName?.toLowerCase().includes("quiz") || false;
+                  // Simulate quiz completion: if status is 'Submitted' and questionnaireType is 'Quiz', treat as completed
+                  // In real use, this should be a backend field
+                  const quizCompleted =
+                    review.status === "Submitted" && review.questionnaireType === "Quiz";
+
+                  // If requireQuiz and not quizCompleted, show Take Quiz button
+                  // Otherwise, show Write Review button
+                  return (
+                    <tr key={review.mapId}>
+                      <td>{review.assignmentName || `Assignment #${review.assignmentId}`}</td>
+                      <td>{review.teamName}</td>
+                      <td>{review.questionnaireType}</td>
+                      <td>
+                        <strong>{review.status}</strong>
+                      </td>
+                      <td>
+                        {requireQuiz && !quizCompleted ? (
+                          <Button
+                            variant="warning"
+                            className="btn btn-md"
+                            size="sm"
+                            onClick={() => {
+                              // Route to QuizTaker (to be implemented)
+                              const params = new URLSearchParams({
+                                assignment_id: String(review.assignmentId),
+                                team_name: review.teamName,
+                              });
+                              navigate(`/quiz_taker?${params.toString()}`);
+                            }}
+                          >
+                            Take Quiz
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            className="btn btn-md"
+                            size="sm"
+                            onClick={() => openReview(review)}
+                          >
+                            {review.responseId ? "Open review" : "Start review"}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

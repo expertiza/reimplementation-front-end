@@ -82,8 +82,8 @@ export interface IAssignmentFormValues {
 
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
-  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
-  
+  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round?: number }[] = [];
+
   // Scan for all questionnaire_round_* fields dynamically (0-based indexing)
   // This works even if number_of_review_rounds is not set correctly
   Object.keys(values).forEach((key) => {
@@ -101,6 +101,14 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
       }
     }
   });
+
+  // Add quiz questionnaire if selected and required
+  if (values.require_quiz && values.selected_quiz_questionnaire) {
+    assignmentQuestionnaires.push({
+      questionnaire_id: parseInt(String(values.selected_quiz_questionnaire), 10)
+      // No used_in_round for quiz
+    });
+  }
 
   const assignment: IAssignmentRequest = {
     // Core fields

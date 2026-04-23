@@ -45,6 +45,7 @@ const FormSelect: React.FC<IFormPropsWithOption & { onChange?: (event: React.Cha
               {inputGroupPrepend}
               <Form.Select
                 {...field}
+                value={field.value ?? ""}
                 type={type}
                 disabled={disabled}
                 isInvalid={isInvalid}
@@ -58,7 +59,7 @@ const FormSelect: React.FC<IFormPropsWithOption & { onChange?: (event: React.Cha
               >
                 {options.map((option) => {
                   return (
-                    <option key={option.value} value={option.value} disabled={option.value === ""}>
+                    <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   );
