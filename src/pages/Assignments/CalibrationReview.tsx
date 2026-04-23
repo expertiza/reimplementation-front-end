@@ -2,20 +2,10 @@ import { useEffect, useState } from "react";
 import { Alert, Container, ListGroup, Spinner } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axiosClient from "../../utils/axios_client";
-
-interface CalibrationReportResponse {
-  map_id: number;
-  assignment_id: number;
-  reviewee_id: number;
-  rubric_items: unknown[];
-  instructor_response: unknown;
-  student_responses: unknown[];
-  per_item_summary: unknown[];
-  submitted_content?: {
-    hyperlinks?: string[];
-    files?: string[];
-  };
-}
+import {
+  normalizeCalibrationReport,
+  type CalibrationReportResponse,
+} from "./calibrationReportNormalize";
 
 const CalibrationReview = () => {
   const { assignmentId, mapId } = useParams();
@@ -48,6 +38,8 @@ const CalibrationReview = () => {
     loadReport();
   }, [assignmentId, mapId]);
 
+  const normalizedReport = report ? normalizeCalibrationReport(report) : null;
+
   return (
     <Container className="py-4">
       <h1>Calibration Report</h1>
@@ -69,7 +61,7 @@ const CalibrationReview = () => {
         </Alert>
       )}
 
-      {!loading && !error && report && (
+      {!loading && !error && report && normalizedReport && (
         <>
           <Alert variant="success">
             Calibration report loaded. This confirms the route and backend payload are wired.
@@ -83,13 +75,19 @@ const CalibrationReview = () => {
               <strong>Reviewee ID:</strong> {report.reviewee_id}
             </ListGroup.Item>
             <ListGroup.Item>
-              <strong>Rubric items:</strong> {report.rubric_items.length}
+              <strong>Rubric items:</strong> {normalizedReport.rubricDetailRows.length}
             </ListGroup.Item>
             <ListGroup.Item>
-              <strong>Student responses:</strong> {report.student_responses.length}
+              <strong>Student responses:</strong> {normalizedReport.latestStudentResponses.length}
             </ListGroup.Item>
             <ListGroup.Item>
-              <strong>Per-item summaries:</strong> {report.per_item_summary.length}
+              <strong>Per-item summaries:</strong> {normalizedReport.stackedChartData.length}
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <strong>Reviewer options:</strong> {normalizedReport.reviewerOptions.length}
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <strong>Default rubric-detail rows:</strong> {normalizedReport.rubricDetailRows.length}
             </ListGroup.Item>
             <ListGroup.Item>
               <strong>Submitted hyperlinks:</strong> {report.submitted_content?.hyperlinks?.length ?? 0}
