@@ -90,12 +90,19 @@ const SubmittedContent = () => {
     folders: [],
     hyperlinks: [],
   });
+  const [liveFolderContents, setLiveFolderContents] = useState<IListFilesResponse>({
+    current_folder: "/",
+    files: [],
+    folders: [],
+    hyperlinks: [],
+  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isResolvingParticipant, setIsResolvingParticipant] = useState(true);
   const [isLoadingArtifacts, setIsLoadingArtifacts] = useState(false);
   const [isSubmittingFile, setIsSubmittingFile] = useState(false);
   const [isSubmittingHyperlink, setIsSubmittingHyperlink] = useState(false);
+  const [isUsingSubmissionSummary, setIsUsingSubmissionSummary] = useState(false);
   const [activeActionKey, setActiveActionKey] = useState<string | null>(null);
   const [showHyperlinkModal, setShowHyperlinkModal] = useState(false);
   const [hyperlinkUrl, setHyperlinkUrl] = useState("");
@@ -109,6 +116,35 @@ const SubmittedContent = () => {
     isResolvingParticipant || (isLoadingArtifacts && !hasArtifacts && !error);
   const pathSegments = getPathSegments(currentFolder);
 
+  const resolveLiveHyperlinkIndex = (hyperlink: string, summaryIndex: number) => {
+    const liveHyperlinks = liveFolderContents.hyperlinks ?? [];
+    let seenMatches = 0;
+
+    for (let index = 0; index < liveHyperlinks.length; index += 1) {
+      if (liveHyperlinks[index] !== hyperlink) {
+        continue;
+      }
+
+      if (seenMatches === 0) {
+        if (summaryIndex === 0) {
+          return index;
+        }
+      }
+
+      const previousMatchingCount = hyperlinks
+        .slice(0, summaryIndex)
+        .filter((candidate) => candidate === hyperlink).length;
+
+      if (seenMatches === previousMatchingCount) {
+        return index;
+      }
+
+      seenMatches += 1;
+    }
+
+    return -1;
+  };
+
   const loadFolderContents = async (
     resolvedParticipantId: string,
     folderPath: string,
@@ -118,17 +154,22 @@ const SubmittedContent = () => {
     setError(null);
 
     try {
-      const response = await SubmittedContentService.listFiles(resolvedParticipantId, folderPath);
-      const hasDirectArtifacts =
-        (response.files?.length ?? 0) > 0 ||
-        (response.folders?.length ?? 0) > 0 ||
-        (response.hyperlinks?.length ?? 0) > 0;
-      const shouldUseSummaryFallback =
-        !hasDirectArtifacts && folderPath === "/" && assignmentId > 0 && resolvedTeamId;
+      const [liveResponse, summaryResponse] = await Promise.all([
+        SubmittedContentService.listFiles(resolvedParticipantId, folderPath),
+        folderPath === "/" && assignmentId > 0 && resolvedTeamId
+          ? SubmittedContentService.getTeamSubmissionSummary(assignmentId, resolvedTeamId)
+          : Promise.resolve(null),
+      ]);
 
-      const nextContents = shouldUseSummaryFallback
-        ? await SubmittedContentService.getTeamSubmissionSummary(assignmentId, resolvedTeamId)
-        : response;
+      const nextContents = summaryResponse || liveResponse;
+
+      setLiveFolderContents({
+        current_folder: liveResponse.current_folder || folderPath,
+        files: liveResponse.files ?? [],
+        folders: liveResponse.folders ?? [],
+        hyperlinks: liveResponse.hyperlinks ?? [],
+      });
+      setIsUsingSubmissionSummary(Boolean(summaryResponse));
 
       setFolderContents({
         current_folder: nextContents.current_folder || folderPath,
@@ -146,6 +187,13 @@ const SubmittedContent = () => {
         folders: [],
         hyperlinks: [],
       });
+      setLiveFolderContents({
+        current_folder: folderPath,
+        files: [],
+        folders: [],
+        hyperlinks: [],
+      });
+      setIsUsingSubmissionSummary(false);
     } finally {
       setIsLoadingArtifacts(false);
     }
@@ -183,6 +231,12 @@ const SubmittedContent = () => {
         setParticipantId(null);
         setTeamId(null);
         setFolderContents({
+          current_folder: "/",
+          files: [],
+          folders: [],
+          hyperlinks: [],
+        });
+        setLiveFolderContents({
           current_folder: "/",
           files: [],
           folders: [],
@@ -342,12 +396,21 @@ const SubmittedContent = () => {
   const handleRemoveHyperlink = async (index: number, hyperlink: string) => {
     if (!participantId) return;
 
+    const liveIndex = isUsingSubmissionSummary
+      ? resolveLiveHyperlinkIndex(hyperlink, index)
+      : index;
+
+    if (liveIndex < 0) {
+      setError("This hyperlink could not be matched to a live team submission for deletion.");
+      return;
+    }
+
     const actionKey = `link:${index}`;
     setActiveActionKey(actionKey);
     setError(null);
 
     try {
-      await SubmittedContentService.removeHyperlink(participantId, index);
+      await SubmittedContentService.removeHyperlink(participantId, liveIndex);
       setSuccess(`Removed hyperlink "${hyperlink}".`);
       await loadFolderContents(participantId, currentFolder);
     } catch (removeError) {
@@ -576,6 +639,13 @@ const SubmittedContent = () => {
                 ))}
               </Breadcrumb>
 
+              {isUsingSubmissionSummary && (
+                <Alert variant="secondary" className="mb-3">
+                  Showing your team&apos;s submissions from the assignment submission feed.
+                  Uploads and removals still use the live team submission workspace.
+                </Alert>
+              )}
+
               {showLoadingState ? (
                 <div className="submitted-content-loading">
                   <Spinner animation="border" role="status" />
@@ -625,7 +695,10 @@ const SubmittedContent = () => {
                                       size="sm"
                                       variant="outline-danger"
                                       onClick={() => handleDeleteEntry(folder.name, "folder")}
-                                      disabled={activeActionKey === deleteActionKey}
+                                      disabled={
+                                        isUsingSubmissionSummary ||
+                                        activeActionKey === deleteActionKey
+                                      }
                                     >
                                       {activeActionKey === deleteActionKey ? (
                                         <Spinner animation="border" size="sm" />
@@ -685,7 +758,10 @@ const SubmittedContent = () => {
                                       size="sm"
                                       variant="outline-danger"
                                       onClick={() => handleDeleteEntry(file.name, "file")}
-                                      disabled={activeActionKey === deleteActionKey}
+                                      disabled={
+                                        isUsingSubmissionSummary ||
+                                        activeActionKey === deleteActionKey
+                                      }
                                     >
                                       {activeActionKey === deleteActionKey ? (
                                         <Spinner animation="border" size="sm" />
@@ -739,6 +815,7 @@ const SubmittedContent = () => {
                     <tbody>
                       {hyperlinks.map((hyperlink, index) => {
                         const actionKey = `link:${index}`;
+                        const liveHyperlinkIndex = resolveLiveHyperlinkIndex(hyperlink, index);
 
                         return (
                           <tr key={`${hyperlink}-${index}`}>
@@ -764,7 +841,7 @@ const SubmittedContent = () => {
                                   size="sm"
                                   variant="outline-danger"
                                   onClick={() => handleRemoveHyperlink(index, hyperlink)}
-                                  disabled={activeActionKey === actionKey}
+                                  disabled={activeActionKey === actionKey || liveHyperlinkIndex < 0}
                                 >
                                   {activeActionKey === actionKey ? (
                                     <Spinner animation="border" size="sm" />
