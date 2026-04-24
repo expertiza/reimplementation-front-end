@@ -76,29 +76,26 @@ describe("normalizeCalibrationReport", () => {
     },
   };
 
-  test("builds stacked chart rows from per-item summaries", () => {
+  test("builds agreement buckets from per-item summaries relative to instructor score", () => {
     const normalized = normalizeCalibrationReport(report);
 
-    expect(normalized.bucketKeys).toEqual([
-      "score_0",
-      "score_1",
-      "score_2",
-      "score_3",
-      "score_4",
-      "score_5",
-    ]);
+    expect(normalized.bucketKeys).toEqual(["agreeCount", "nearCount", "disagreeCount"]);
     expect(normalized.stackedChartData).toEqual([
       expect.objectContaining({
         itemId: 11,
         itemLabel: "Code quality",
         instructorScore: 4,
-        score_3: 1,
+        agreeCount: 0,
+        nearCount: 1,
+        disagreeCount: 0,
       }),
       expect.objectContaining({
         itemId: 12,
         itemLabel: "Documentation",
         instructorScore: 5,
-        score_4: 1,
+        agreeCount: 0,
+        nearCount: 1,
+        disagreeCount: 0,
       }),
     ]);
   });

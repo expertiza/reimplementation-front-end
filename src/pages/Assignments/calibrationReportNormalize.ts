@@ -53,7 +53,10 @@ export interface StackedChartDataRow {
   itemLabel: string;
   itemSeq: number;
   instructorScore: number | null;
-  [scoreBucket: string]: number | string | null;
+  agreeCount: number;
+  nearCount: number;
+  disagreeCount: number;
+  totalResponses: number;
 }
 
 export interface ReviewerOption {
@@ -108,6 +111,33 @@ const latestStudentResponsesForMaps = (responses: CalibrationResponse[]) =>
 
 const scoreBucketKey = (score: string) => `score_${score}`;
 
+const agreementCountFor = (
+  summary: CalibrationPerItemSummary,
+  classification: "agree" | "near" | "disagree"
+) => {
+  if (summary.instructor_score === null) {
+    return 0;
+  }
+
+  return Object.entries(summary.bucket_counts).reduce((count, [score, bucketCount]) => {
+    const distance = Math.abs(Number(score) - summary.instructor_score!);
+
+    if (classification === "agree" && distance === 0) {
+      return count + bucketCount;
+    }
+
+    if (classification === "near" && distance === 1) {
+      return count + bucketCount;
+    }
+
+    if (classification === "disagree" && distance > 1) {
+      return count + bucketCount;
+    }
+
+    return count;
+  }, 0);
+};
+
 const buildRubricRows = (
   rubricItems: CalibrationRubricItem[],
   instructorResponse: CalibrationResponse,
@@ -137,35 +167,23 @@ const buildRubricRows = (
 export const normalizeCalibrationReport = (
   report: CalibrationReportResponse
 ): NormalizedCalibrationReport => {
-  const bucketKeys = Array.from(
-    new Set(
-      report.per_item_summary.flatMap((summary) =>
-        Object.keys(summary.bucket_counts)
-          .sort((left, right) => Number(left) - Number(right))
-          .map(scoreBucketKey)
-      )
-    )
-  ).sort((left, right) => Number(left.replace("score_", "")) - Number(right.replace("score_", "")));
+  const bucketKeys = ["agreeCount", "nearCount", "disagreeCount"];
 
   const stackedChartData = [...report.per_item_summary]
     .sort((left, right) => left.item_seq - right.item_seq)
-    .map((summary) => {
-      const row: StackedChartDataRow = {
+    .map((summary): StackedChartDataRow => {
+      const totalResponses = Object.values(summary.bucket_counts).reduce((total, count) => total + count, 0);
+
+      return {
         itemId: summary.item_id,
         itemLabel: summary.item_label,
         itemSeq: summary.item_seq,
         instructorScore: summary.instructor_score,
+        agreeCount: agreementCountFor(summary, "agree"),
+        nearCount: agreementCountFor(summary, "near"),
+        disagreeCount: agreementCountFor(summary, "disagree"),
+        totalResponses,
       };
-
-      bucketKeys.forEach((key) => {
-        row[key] = 0;
-      });
-
-      Object.entries(summary.bucket_counts).forEach(([score, count]) => {
-        row[scoreBucketKey(score)] = count;
-      });
-
-      return row;
     });
 
   const latestStudentResponses = latestStudentResponsesForMaps(report.student_responses);

@@ -6,6 +6,7 @@ import {
   normalizeCalibrationReport,
   type CalibrationReportResponse,
 } from "./calibrationReportNormalize";
+import CalibrationStackedChart from "./components/CalibrationStackedChart";
 
 const CalibrationReview = () => {
   const { assignmentId, mapId } = useParams();
@@ -66,6 +67,11 @@ const CalibrationReview = () => {
           <Alert variant="success">
             Calibration report loaded. This confirms the route and backend payload are wired.
           </Alert>
+
+          <CalibrationStackedChart
+            bucketKeys={normalizedReport.bucketKeys}
+            chartData={normalizedReport.stackedChartData}
+          />
 
           <ListGroup className="mb-4">
             <ListGroup.Item>
