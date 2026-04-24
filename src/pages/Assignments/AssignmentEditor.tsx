@@ -111,8 +111,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
   const { data: calibrationSubmissionsResponse, error: calibrationSubmissionsError, sendRequest: sendCalibrationSubmissionsRequest } = useAPI();
+  // Separate hook instances keep add/remove errors from overwriting list errors
+  // and let us trigger reloads only after a mutation succeeds.
+  const { data: addCalibrationResponse, error: addCalibrationError, sendRequest: sendAddCalibrationRequest } = useAPI();
+  const { data: removeCalibrationResponse, error: removeCalibrationError, sendRequest: sendRemoveCalibrationRequest } = useAPI();
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
+  const [calibrationUsername, setCalibrationUsername] = useState<string>("");
 
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
@@ -536,32 +541,42 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     coursesError && dispatch(alertActions.showAlert({ variant: "danger", message: coursesError }));
   }, [coursesError, dispatch]);
 
-  // Load calibration submissions on component mount
-  useEffect(() => {
-    // sendCalibrationSubmissionsRequest({
-    //   url: `/calibration_submissions/get_instructor_calibration_submissions/${assignmentData.id}`,
-    //   method: HttpMethod.GET,
-    // });
-    setCalibrationSubmissions([
-      {
-        id: 1,
-        participant_name: "Participant 1",
-        review_status: "not_started",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-      {
-        id: 2,
-        participant_name: "Participant 2",
-        review_status: "in_progress",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-    ]);
-  }, []);
+  // Fetch the calibration submitters for this assignment from the backend.
+  // Wrapped in useCallback so both the initial load and post-mutation
+  // refreshes call the exact same request.
+  const refreshCalibrationParticipants = useCallback(() => {
+    if (!assignmentData?.id) return;
+    sendCalibrationSubmissionsRequest({
+      url: `/assignments/${assignmentData.id}/review_mappings/calibration_participants`,
+      method: HttpMethod.GET,
+    });
+  }, [assignmentData?.id, sendCalibrationSubmissionsRequest]);
 
-  // Handle calibration submissions response
+  // Load calibration submitters on mount / when the assignment id resolves.
   useEffect(() => {
-    if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
-      setCalibrationSubmissions(calibrationSubmissionsResponse.data || []);
+    refreshCalibrationParticipants();
+  }, [refreshCalibrationParticipants]);
+
+  // Handle calibration submissions response. Backend returns
+  // { assignment_id, calibration_participants: [...] }, which we normalize
+  // into the shape the table expects.
+  useEffect(() => {
+    if (
+      calibrationSubmissionsResponse &&
+      calibrationSubmissionsResponse.status >= 200 &&
+      calibrationSubmissionsResponse.status < 300
+    ) {
+      const body: any = calibrationSubmissionsResponse.data || {};
+      const rows: any[] = Array.isArray(body)
+        ? body
+        : (body.calibration_participants || []);
+      setCalibrationSubmissions(
+        rows.map((row: any) => ({
+          participant_id: row.participant_id,
+          participant_name: row.full_name || row.username || row.handle || `Participant ${row.participant_id}`,
+          submitted_content: row.submissions || { hyperlinks: [], files: [] },
+        }))
+      );
     }
   }, [calibrationSubmissionsResponse]);
 
@@ -569,6 +584,60 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     calibrationSubmissionsError && dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
   }, [calibrationSubmissionsError, dispatch]);
+
+  // Success/error handling for adding a calibration participant. Refresh the
+  // list after a successful add so the new row shows up with its submissions.
+  useEffect(() => {
+    if (addCalibrationResponse && addCalibrationResponse.status >= 200 && addCalibrationResponse.status < 300) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Calibration participant added" }));
+      setCalibrationUsername("");
+      refreshCalibrationParticipants();
+    }
+  }, [addCalibrationResponse, dispatch, refreshCalibrationParticipants]);
+
+  useEffect(() => {
+    addCalibrationError && dispatch(alertActions.showAlert({ variant: "danger", message: addCalibrationError }));
+  }, [addCalibrationError, dispatch]);
+
+  // Success/error handling for removing a calibration participant.
+  useEffect(() => {
+    if (removeCalibrationResponse && removeCalibrationResponse.status >= 200 && removeCalibrationResponse.status < 300) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Calibration participant removed" }));
+      refreshCalibrationParticipants();
+    }
+  }, [removeCalibrationResponse, dispatch, refreshCalibrationParticipants]);
+
+  useEffect(() => {
+    removeCalibrationError && dispatch(alertActions.showAlert({ variant: "danger", message: removeCalibrationError }));
+  }, [removeCalibrationError, dispatch]);
+
+  const handleAddCalibrationParticipant = useCallback(() => {
+    const username = calibrationUsername.trim();
+    if (!username || !assignmentData?.id) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Enter a username to add as a calibration participant." }));
+      return;
+    }
+    sendAddCalibrationRequest({
+      url: `/assignments/${assignmentData.id}/review_mappings/calibration_participants`,
+      method: HttpMethod.POST,
+      data: { username },
+    }).catch(() => {
+      // useAPI already surfaces the error into addCalibrationError.
+    });
+  }, [assignmentData?.id, calibrationUsername, dispatch, sendAddCalibrationRequest]);
+
+  const handleRemoveCalibrationParticipant = useCallback(
+    (participantId: number | string) => {
+      if (!assignmentData?.id || !participantId) return;
+      sendRemoveCalibrationRequest({
+        url: `/assignments/${assignmentData.id}/review_mappings/calibration_participants/${participantId}`,
+        method: HttpMethod.DELETE,
+      }).catch(() => {
+        // useAPI already surfaces the error into removeCalibrationError.
+      });
+    },
+    [assignmentData?.id, sendRemoveCalibrationRequest]
+  );
 
 
   const onSubmit = (
@@ -1168,59 +1237,95 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
               {/* Calibration Tab */}
                 <Tab eventKey="calibration" title="Calibration">
-                  <h3>Submit reviews for calibration</h3>
+                  <h3>Calibration submitters</h3>
+                  <p className="text-muted" style={{ maxWidth: 720 }}>
+                    Designate one or more users whose submissions will be used for calibration reviews.
+                    Enter a username or email below. A team is created for the submitter and an
+                    instructor calibration review map is opened automatically.
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1.5rem', maxWidth: 520 }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Username or email"
+                      value={calibrationUsername}
+                      onChange={(e) => setCalibrationUsername(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCalibrationParticipant();
+                        }
+                      }}
+                      aria-label="Calibration participant username"
+                    />
+                    <Button
+                      variant="primary"
+                      onClick={handleAddCalibrationParticipant}
+                      disabled={!calibrationUsername.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+
                   <div>
                     <div style={{ display: 'ruby', marginTop: '30px' }}>
                       <Table
                         showColumnFilter={false}
                         showGlobalFilter={false}
                         showPagination={false}
-                        data={[
-                          ...calibrationSubmissions.map((calibrationSubmission: any) => ({
-                            id: calibrationSubmission.id,
-                            participant_name: calibrationSubmission.participant_name,
-                            review_status: calibrationSubmission.review_status,
-                            submitted_content: calibrationSubmission.submitted_content,
-                          })),
-                        ]}
+                        data={calibrationSubmissions.map((calibrationSubmission: any) => ({
+                          participant_id: calibrationSubmission.participant_id,
+                          participant_name: calibrationSubmission.participant_name,
+                          submitted_content: calibrationSubmission.submitted_content,
+                        }))}
                         columns={[
                           {
                             accessorKey: "participant_name", header: "Participant name", enableSorting: false, enableColumnFilter: false
                           },
                           {
-                            cell: ({ row }) => {
-                              if (row.original.review_status === "not_started") {
-                                return <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Begin</a>;
-                              } else {
-                                return <div style={{ display: 'flex', alignItems: 'center', columnGap: '5px' }}>
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>View</a>
-                                  |
-                                  <a style={{ color: '#986633', textDecoration: 'none' }} href={`/assignments/edit/${assignmentData.id}/calibration/${row.original.id}`}>Edit</a>
-                                </div>;
-                              }
-                            },
-                            accessorKey: "action", header: "Action", enableSorting: false, enableColumnFilter: false
+                            cell: ({ row }) => (
+                              <>
+                                <div>Hyperlinks:</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                  {(row.original.submitted_content?.hyperlinks || []).map((item: any, index: number) => (
+                                    <a style={{ color: '#986633', textDecoration: 'none' }} key={`hl-${index}`} href={item}>{item}</a>
+                                  ))}
+                                </div>
+                                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column' }}>Files:</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                  {(row.original.submitted_content?.files || []).map((item: any, index: number) => {
+                                    // Files may arrive as bare strings (report shape) or as
+                                    // { id, name, path, submitted_at, submitted_by } objects
+                                    // (participant-list shape). Handle both.
+                                    const href = typeof item === 'string' ? item : item.path;
+                                    const label = typeof item === 'string' ? item : (item.name || item.path);
+                                    return (
+                                      <a
+                                        style={{ color: '#986633', textDecoration: 'none' }}
+                                        key={`file-${index}`}
+                                        href={href}
+                                      >
+                                        {label}
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            ),
+                            accessorKey: "submitted_content", header: "Submitted items(s)", enableSorting: false, enableColumnFilter: false
                           },
                           {
-                            cell: ({ row }) => <>
-                              <div>Hyperlinks:</div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                {
-                                  row.original.submitted_content.hyperlinks.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
-                                  })
-                                }
-                              </div>
-                              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column' }}>Files:</div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                {
-                                  row.original.submitted_content.files.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
-                                  })
-                                }
-                              </div>
-                            </>,
-                            accessorKey: "submitted_content", header: "Submitted items(s)", enableSorting: false, enableColumnFilter: false
+                            cell: ({ row }) => (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleRemoveCalibrationParticipant(row.original.participant_id)}
+                              >
+                                Remove
+                              </Button>
+                            ),
+                            accessorKey: "remove", header: "", enableSorting: false, enableColumnFilter: false
                           },
                         ]}
                       />
