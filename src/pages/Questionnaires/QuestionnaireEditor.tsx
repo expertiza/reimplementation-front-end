@@ -98,6 +98,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
       seq: item.seq,
       break_before: item.break_before,
       _destroy: item._destroy || false,
+      correct_answer: item.correct_answer ?? "",
     })) : questionnaire?.items ?? [],
   };
 

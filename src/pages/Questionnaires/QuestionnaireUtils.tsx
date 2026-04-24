@@ -38,7 +38,12 @@ export interface IItem {
   questionnaire_id?: number;
   _destroy?: boolean;
   type?: string;
-  
+  correct_answer?: string;
+  textarea_width?: number;
+  textarea_height?: number;
+  textbox_width?: number;
+  col_names?: string;
+  row_names?: string;
 }
 
 

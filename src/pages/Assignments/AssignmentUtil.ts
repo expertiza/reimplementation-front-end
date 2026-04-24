@@ -105,6 +105,9 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Add quiz questionnaire if selected and required
   if (values.require_quiz && values.selected_quiz_questionnaire) {
     assignmentQuestionnaires.push({
+      id: values.assignment_questionnaire_quiz_id
+        ? parseInt(String(values.assignment_questionnaire_quiz_id), 10)
+        : undefined,
       questionnaire_id: parseInt(String(values.selected_quiz_questionnaire), 10)
       // No used_in_round for quiz
     });
@@ -259,6 +262,13 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
       const roundIndex = aq.used_in_round - 1; // Convert 1-based round to 0-based index
       assignmentValues[`questionnaire_round_${roundIndex}`] = aq.questionnaire_id;
       assignmentValues[`assignment_questionnaire_id_${roundIndex}`] = aq.id;
+    } else {
+      // Quiz questionnaire has no used_in_round — restore to the quiz select field
+      const qType = String(aq.questionnaire?.questionnaire_type || "");
+      if (!aq.used_in_round || /quizquestionnaire|quiz/i.test(qType)) {
+        assignmentValues.selected_quiz_questionnaire = aq.questionnaire_id ?? aq.questionnaire?.id;
+        assignmentValues.assignment_questionnaire_quiz_id = aq.id;
+      }
     }
   });
 

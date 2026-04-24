@@ -63,6 +63,29 @@ const AssignedReviews: React.FC = () => {
   const currentUser = auth.user;
 
   const [assignedReviews, setAssignedReviews] = useState<AssignedReviewRow[]>([]);
+  const [tasksByAssignment, setTasksByAssignment] = useState<Record<number, { require_quiz: boolean; quiz_taken: boolean; has_quiz_questionnaire: boolean; quiz_questionnaire_id?: number }>>({})
+
+  // Fetch student tasks to get authoritative require_quiz / quiz_taken per assignment
+  useEffect(() => {
+    axiosClient
+      .get('/student_tasks/list')
+      .then((res) => {
+        const tasks = Array.isArray(res.data) ? res.data : [];
+        const lookup: Record<number, { require_quiz: boolean; quiz_taken: boolean; has_quiz_questionnaire: boolean; quiz_questionnaire_id?: number }> = {};
+        tasks.forEach((task: any) => {
+          if (task.assignment_id != null) {
+            lookup[Number(task.assignment_id)] = {
+              require_quiz: Boolean(task.require_quiz),
+              quiz_taken: Boolean(task.quiz_taken),
+              has_quiz_questionnaire: Boolean(task.has_quiz_questionnaire),
+              quiz_questionnaire_id: task.quiz_questionnaire_id != null ? Number(task.quiz_questionnaire_id) : undefined,
+            };
+          }
+        });
+        setTasksByAssignment(lookup);
+      })
+      .catch(() => {});
+  }, []);
 
   // Resolve the assignment ID from the URL param if provided
   const resolvedAssignmentId = useMemo(() => {
@@ -100,8 +123,15 @@ const AssignedReviews: React.FC = () => {
       );
     };
 
+    const isQuizQuestionnaire = (questionnaire: any) => {
+      const questionnaireType = String(questionnaire?.questionnaire_type || "");
+      return /^quiz/i.test(questionnaireType);
+    };
+
     const teammateQuestionnaire = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
-    const normalReviewQuestionnaire = questionnaires.find((q: any) => !isTeammateQuestionnaire(q));
+    const normalReviewQuestionnaire = questionnaires.find(
+      (q: any) => !isTeammateQuestionnaire(q) && !isQuizQuestionnaire(q)
+    );
 
     const buildRows = (
       maps: {
@@ -319,19 +349,54 @@ const AssignedReviews: React.FC = () => {
               </thead>
               <tbody>
                 {assignedReviews.map((review) => {
-                  // --- Quiz/Review Gateway Logic ---
-                  // Mock: require_quiz and quiz_completed (replace with real backend fields if available)
-                  // For demo, treat all 'Review' as requiring quiz if assignmentName includes 'Quiz'
-                  // In real use, these should come from the assignment/review object
-                  const requireQuiz =
-                    review.assignmentName?.toLowerCase().includes("quiz") || false;
-                  // Simulate quiz completion: if status is 'Submitted' and questionnaireType is 'Quiz', treat as completed
-                  // In real use, this should be a backend field
-                  const quizCompleted =
-                    review.status === "Submitted" && review.questionnaireType === "Quiz";
+                  const taskInfo = review.assignmentId != null
+                    ? tasksByAssignment[review.assignmentId]
+                    : undefined;
+                  const requireQuiz = taskInfo?.require_quiz ?? false;
+                  const hasQuizQuestionnaire = taskInfo?.has_quiz_questionnaire ?? false;
+                  const quizCompleted = taskInfo?.quiz_taken ?? false;
+                  const quizQuestionnaireId = taskInfo?.quiz_questionnaire_id;
 
-                  // If requireQuiz and not quizCompleted, show Take Quiz button
-                  // Otherwise, show Write Review button
+                  // Build the review URL so we can redirect back after the quiz
+                  const buildReviewParams = () => {
+                    const p = new URLSearchParams({
+                      assignment_id: String(review.assignmentId),
+                      map_id: String(review.mapId),
+                      questionnaire_type: review.questionnaireType,
+                      questionnaire_name: review.questionnaireName,
+                      team_name: review.teamName,
+                    });
+                    if (review.questionnaireId) p.set('questionnaire_id', String(review.questionnaireId));
+                    if (review.responseId) p.set('response_id', String(review.responseId));
+                    if (review.revieweeTeamId) p.set('reviewee_team_id', String(review.revieweeTeamId));
+                    return `/response/new?${p.toString()}`;
+                  };
+
+                  const handleTakeQuiz = async () => {
+                    if (!review.assignmentId || !currentUser?.id) return;
+                    try {
+                      const res = await axiosClient.post('/quiz_response_maps', {
+                        assignment_id: review.assignmentId,
+                        reviewer_user_id: currentUser.id,
+                      });
+                      const quizMapId = res.data?.quiz_map_id;
+                      const quizQId = res.data?.quiz_questionnaire_id ?? quizQuestionnaireId;
+                      if (!quizMapId || !quizQId) return;
+                      const reviewUrl = buildReviewParams();
+                      const quizParams = new URLSearchParams({
+                        assignment_id: String(review.assignmentId),
+                        map_id: String(quizMapId),
+                        questionnaire_id: String(quizQId),
+                        questionnaire_type: 'Quiz',
+                        questionnaire_name: 'Quiz',
+                        team_name: review.teamName,
+                        redirect_after: reviewUrl,
+                      });
+                      navigate(`/response/new?${quizParams.toString()}`);
+                    } catch {
+                      // ignore — button stays visible
+                    }
+                  };
                   return (
                     <tr key={review.mapId}>
                       <td>{review.assignmentName || `Assignment #${review.assignmentId}`}</td>
@@ -341,19 +406,12 @@ const AssignedReviews: React.FC = () => {
                         <strong>{review.status}</strong>
                       </td>
                       <td>
-                        {requireQuiz && !quizCompleted ? (
+                        {requireQuiz && hasQuizQuestionnaire && !quizCompleted ? (
                           <Button
                             variant="warning"
                             className="btn btn-md"
                             size="sm"
-                            onClick={() => {
-                              // Route to QuizTaker (to be implemented)
-                              const params = new URLSearchParams({
-                                assignment_id: String(review.assignmentId),
-                                team_name: review.teamName,
-                              });
-                              navigate(`/quiz_taker?${params.toString()}`);
-                            }}
+                            onClick={handleTakeQuiz}
                           >
                             Take Quiz
                           </Button>

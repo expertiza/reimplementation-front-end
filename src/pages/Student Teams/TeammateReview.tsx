@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Form, Spinner, Table as BsTable } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import useAPI from '../../hooks/useAPI';
 import axiosClient from '../../utils/axios_client';
 
-type QuestionnaireType = 'Review' | 'Teammate Review';
+type QuestionnaireType = 'Review' | 'Teammate Review' | 'Quiz';
 
 type NormalizedItemType =
     | 'SectionHeader'
@@ -104,6 +104,7 @@ const getScoreBounds = (item: any, questionnaire: any): { min: number; max: numb
 
 const TeammateReview = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { data: assignmentResponse, sendRequest: fetchAssignment, isLoading: assignmentLoading } = useAPI();
     const { data: itemsResponse, sendRequest: fetchItems, isLoading: itemsLoading } = useAPI();
     const auth = useSelector((state: RootState) => state.authentication);
@@ -113,10 +114,31 @@ const TeammateReview = () => {
     const assignmentId = Number(query.get('assignment_id'));
     const questionnaireIdFromUrl = Number(query.get('questionnaire_id'));
     const questionnaireTypeFromUrl = query.get('questionnaire_type') as QuestionnaireType | null;
+    const redirectAfter = query.get('redirect_after');
+    const isQuizMode = questionnaireTypeFromUrl === 'Quiz';
     const questionnaireNameFromUrl = query.get('questionnaire_name');
     const teamName = query.get('team_name') || '';
     const revieweeTeamId = Number(query.get('reviewee_team_id')) || null;
     const [mapId, setMapId] = useState(() => Number(query.get('map_id')));
+
+    // Reset all form state when the URL changes (e.g. after quiz redirect navigates to review)
+    useEffect(() => {
+        setMapId(Number(query.get('map_id')));
+        setAnswers({});
+        setComments({});
+        setMultiSelections({});
+        setBooleanSelections({});
+        setFileSelections({});
+        setIsSubmitting(false);
+        setIsSaving(false);
+        setSubmitError(null);
+        setSubmitSuccess(false);
+        setQuizScore(null);
+        setSaveMessage(null);
+        setDraftResponseId(null);
+        setDraftIsSubmitted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
 
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
@@ -127,6 +149,7 @@ const TeammateReview = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [quizScore, setQuizScore] = useState<number | null>(null);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [draftResponseId, setDraftResponseId] = useState<number | null>(null);
     const [draftIsSubmitted, setDraftIsSubmitted] = useState(false);
@@ -144,22 +167,28 @@ const TeammateReview = () => {
     }, [assignmentResponse?.data]);
 
     const resolvedQuestionnaire = useMemo(() => {
-        if (questionnaireIdFromUrl) {
+        const isQuizQ = (q: any) => /^quiz/i.test(String(q?.questionnaire_type || ''));
+        if (questionnaireIdFromUrl && !isQuizMode) {
+            const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl && !isQuizQ(q));
+            if (byId) return byId;
+        }
+        if (questionnaireIdFromUrl && isQuizMode) {
             const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl);
             if (byId) return byId;
         }
         const teammateQ = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
-        const normalQ = questionnaires.find((q: any) => !isTeammateQuestionnaire(q));
+        const normalQ = questionnaires.find((q: any) => !isTeammateQuestionnaire(q) && !isQuizQ(q));
         if (questionnaireTypeFromUrl === 'Teammate Review') return teammateQ || normalQ;
         if (questionnaireTypeFromUrl === 'Review') return normalQ || teammateQ;
         return normalQ || teammateQ;
-    }, [questionnaires, questionnaireIdFromUrl, questionnaireTypeFromUrl]);
+    }, [questionnaires, questionnaireIdFromUrl, questionnaireTypeFromUrl, isQuizMode]);
 
     const resolvedQuestionnaireType: QuestionnaireType = useMemo(() => {
+        if (isQuizMode) return 'Quiz';
         if (resolvedQuestionnaire) return isTeammateQuestionnaire(resolvedQuestionnaire) ? 'Teammate Review' : 'Review';
         if (questionnaireTypeFromUrl === 'Teammate Review') return 'Teammate Review';
         return 'Review';
-    }, [resolvedQuestionnaire, questionnaireTypeFromUrl]);
+    }, [resolvedQuestionnaire, questionnaireTypeFromUrl, isQuizMode]);
 
     const resolvedQuestionnaireName = resolvedQuestionnaire?.name
         || questionnaireNameFromUrl
@@ -387,10 +416,17 @@ const TeammateReview = () => {
             });
 
             // Submit (lock + score)
-            await axiosClient.patch(`/responses/${responseId}/submit`);
+            const submitRes = await axiosClient.patch(`/responses/${responseId}/submit`);
+            if (isQuizMode) {
+                setQuizScore(submitRes.data?.total_score ?? null);
+            }
 
             setSubmitSuccess(true);
             setDraftIsSubmitted(true);
+            // After quiz submission, navigate to the actual review if a redirect URL was provided
+            if (redirectAfter) {
+                setTimeout(() => navigate(redirectAfter), 1200);
+            }
         } catch (err: any) {
             const msg = err?.response?.data?.error || err?.message || 'Submission failed';
             setSubmitError(msg);
@@ -418,7 +454,7 @@ const TeammateReview = () => {
             <h2 className="mb-1">{resolvedQuestionnaireName}</h2>
             <div className="mb-3" style={{ fontSize: 13, lineHeight: '30px', display: 'flex', flexDirection: 'column', gap: '4px', color: '#6c757d' }}>
                 <div>
-                    <Badge bg={resolvedQuestionnaireType === 'Teammate Review' ? 'info' : 'primary'}>
+                    <Badge bg={resolvedQuestionnaireType === 'Teammate Review' ? 'info' : resolvedQuestionnaireType === 'Quiz' ? 'warning' : 'primary'}>
                         {resolvedQuestionnaireType}
                     </Badge>
                 </div>
@@ -448,7 +484,7 @@ const TeammateReview = () => {
 
             {draftIsSubmitted && (
                 <Alert variant="info" className="flash_note mt-2">
-                    This review has already been submitted. The form is read-only.
+                    This {isQuizMode ? 'quiz' : 'review'} has already been submitted. The form is read-only.
                 </Alert>
             )}
 
@@ -681,7 +717,11 @@ const TeammateReview = () => {
                         <Alert variant="info" className="flash_note mt-3">{saveMessage}</Alert>
                     )}
                     {submitSuccess && (
-                        <Alert variant="success" className="flash_note mt-3">Review submitted successfully!</Alert>
+                        <Alert variant="success" className="flash_note mt-3">
+                            {isQuizMode
+                                ? `Quiz submitted! Score: ${quizScore !== null ? quizScore : '—'}. Opening your review\u2026`
+                                : 'Review submitted successfully!'}
+                        </Alert>
                     )}
                     {draftResponseId && !submitSuccess && !draftIsSubmitted && (
                         <div className="mt-2 text-muted" style={{ fontSize: 12 }}>
@@ -707,7 +747,7 @@ const TeammateReview = () => {
                             disabled={isSubmitting || isSaving || submitSuccess || draftIsSubmitted || !mapId}
                             onClick={handleSubmitReview}
                         >
-                            {isSubmitting ? 'Submitting...' : submitSuccess || draftIsSubmitted ? 'Submitted' : 'Submit Review'}
+                            {isSubmitting ? 'Submitting...' : submitSuccess || draftIsSubmitted ? 'Submitted' : isQuizMode ? 'Submit Quiz' : 'Submit Review'}
                         </Button>
                     </div>
                     {!mapId && (
