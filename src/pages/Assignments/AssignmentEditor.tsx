@@ -748,23 +748,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     label="Require quiz?"
                     name="require_quiz"
                   />
-                  {formik.values.require_quiz && (
-                    <FormSelect
-                      controlId="assignment-selected_quiz_questionnaire"
-                      label="Quiz Questionnaire"
-                      name="selected_quiz_questionnaire"
-                      options={[
-                        { label: "-- Select Quiz Questionnaire --", value: "" },
-                        ...((assignmentData.questionnaires || [])
-                          .filter((q: any) => {
-                            const type = String(q.questionnaire_type || "");
-                            return /quizquestionnaire|quiz/i.test(type);
-                          })
-                          .map((q: any) => ({ label: q.name, value: q.id }))
-                        )
-                      ]}
-                    />
-                  )}
                   <FormCheckbox
                     controlId="assignment-calibration_for_training"
                     label="Calibration for training?"

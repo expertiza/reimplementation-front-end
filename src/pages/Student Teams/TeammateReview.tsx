@@ -114,7 +114,10 @@ const TeammateReview = () => {
     const assignmentId = Number(query.get('assignment_id'));
     const questionnaireIdFromUrl = Number(query.get('questionnaire_id'));
     const questionnaireTypeFromUrl = query.get('questionnaire_type') as QuestionnaireType | null;
+    // E2619: URL param set by AssignedReviews when navigating here from the quiz gate;
+    // after quiz submission the page redirects here to the actual review.
     const redirectAfter = query.get('redirect_after');
+    // E2619: true when this page is being used for a quiz rather than a peer review.
     const isQuizMode = questionnaireTypeFromUrl === 'Quiz';
     const questionnaireNameFromUrl = query.get('questionnaire_name');
     const teamName = query.get('team_name') || '';
@@ -149,6 +152,7 @@ const TeammateReview = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    // E2619: stores the total_score returned by the backend after quiz submission.
     const [quizScore, setQuizScore] = useState<number | null>(null);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [draftResponseId, setDraftResponseId] = useState<number | null>(null);
@@ -167,14 +171,23 @@ const TeammateReview = () => {
     }, [assignmentResponse?.data]);
 
     const resolvedQuestionnaire = useMemo(() => {
+        // E2619: exclude quiz-type questionnaires when resolving the review questionnaire
+        // so that the quiz questionnaire is never accidentally used for the peer review form.
         const isQuizQ = (q: any) => /^quiz/i.test(String(q?.questionnaire_type || ''));
         if (questionnaireIdFromUrl && !isQuizMode) {
+            // In review mode, ignore quiz questionnaires even if the id matches.
             const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl && !isQuizQ(q));
             if (byId) return byId;
         }
-        if (questionnaireIdFromUrl && isQuizMode) {
-            const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl);
-            if (byId) return byId;
+        if (isQuizMode) {
+            // E2619: quiz questionnaires are team-owned and NOT in the assignment's
+            // assignment_questionnaires list. Never fall through to the review questionnaire
+            // in quiz mode — that would load review items instead of quiz items.
+            if (questionnaireIdFromUrl) {
+                const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl);
+                if (byId) return byId;
+            }
+            return null;
         }
         const teammateQ = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
         const normalQ = questionnaires.find((q: any) => !isTeammateQuestionnaire(q) && !isQuizQ(q));
@@ -194,13 +207,17 @@ const TeammateReview = () => {
         || questionnaireNameFromUrl
         || `${resolvedQuestionnaireType} Questionnaire`;
 
-    // Fetch questionnaire items once we know the questionnaire id
+    // Fetch questionnaire items once we know the questionnaire id.
+    // E2619: in quiz mode always use questionnaireIdFromUrl directly — the quiz questionnaire
+    // is team-owned and not in the assignment's questionnaire list, so resolvedQuestionnaire
+    // will be null for a quiz. Using resolvedQuestionnaire?.id here would cause items to be
+    // fetched for the wrong (review) questionnaire once the assignment data loads.
     useEffect(() => {
-        const qId = resolvedQuestionnaire?.id || questionnaireIdFromUrl;
+        const qId = isQuizMode ? questionnaireIdFromUrl : (resolvedQuestionnaire?.id || questionnaireIdFromUrl);
         if (qId) {
             fetchItems({ url: `/questionnaires/${qId}/items`, method: 'GET' });
         }
-    }, [resolvedQuestionnaire?.id, questionnaireIdFromUrl, fetchItems]);
+    }, [isQuizMode, resolvedQuestionnaire?.id, questionnaireIdFromUrl, fetchItems]);
 
     const items: any[] = useMemo(() => {
         const data = itemsResponse?.data;
@@ -417,13 +434,15 @@ const TeammateReview = () => {
 
             // Submit (lock + score)
             const submitRes = await axiosClient.patch(`/responses/${responseId}/submit`);
+            // E2619: capture the quiz score returned by aggregate_questionnaire_score so it
+            // can be shown in the success banner before the redirect fires.
             if (isQuizMode) {
                 setQuizScore(submitRes.data?.total_score ?? null);
             }
 
             setSubmitSuccess(true);
             setDraftIsSubmitted(true);
-            // After quiz submission, navigate to the actual review if a redirect URL was provided
+            // E2619: after quiz submission, redirect to the review URL encoded in redirect_after.
             if (redirectAfter) {
                 setTimeout(() => navigate(redirectAfter), 1200);
             }

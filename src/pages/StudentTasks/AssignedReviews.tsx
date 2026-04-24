@@ -52,6 +52,9 @@ interface AssignedReviewRow {
   questionnaireType: "Review" | "Teammate Review";
   questionnaireId?: number;
   questionnaireName: string;
+  // E2619: per-row quiz state — each reviewee team has its own quiz questionnaire
+  quizQuestionnaireId?: number;
+  quizTaken: boolean;
 }
 
 const AssignedReviews: React.FC = () => {
@@ -182,6 +185,12 @@ const AssignedReviews: React.FC = () => {
           questionnaireName:
             selectedQuestionnaire?.name ||
             (isTeammateReview ? "Teammate Review Questionnaire" : "Review Questionnaire"),
+          // E2619: per-row quiz state from the API — quiz_questionnaire_id and quiz_taken are
+          // included per review map so that students reviewing multiple teams are gated per team.
+          quizQuestionnaireId: (map as any).quiz_questionnaire_id != null
+            ? Number((map as any).quiz_questionnaire_id)
+            : undefined,
+          quizTaken: Boolean((map as any).quiz_taken),
         };
       });
 
@@ -353,9 +362,11 @@ const AssignedReviews: React.FC = () => {
                     ? tasksByAssignment[review.assignmentId]
                     : undefined;
                   const requireQuiz = taskInfo?.require_quiz ?? false;
-                  const hasQuizQuestionnaire = taskInfo?.has_quiz_questionnaire ?? false;
-                  const quizCompleted = taskInfo?.quiz_taken ?? false;
-                  const quizQuestionnaireId = taskInfo?.quiz_questionnaire_id;
+                  // E2619: use per-row quiz state (from the review map API response) rather
+                  // than the assignment-level task, so each team's quiz is tracked separately.
+                  const hasQuizQuestionnaire = review.quizQuestionnaireId != null;
+                  const quizCompleted = review.quizTaken;
+                  const quizQuestionnaireId = review.quizQuestionnaireId;
 
                   // Build the review URL so we can redirect back after the quiz
                   const buildReviewParams = () => {
@@ -378,6 +389,9 @@ const AssignedReviews: React.FC = () => {
                       const res = await axiosClient.post('/quiz_response_maps', {
                         assignment_id: review.assignmentId,
                         reviewer_user_id: currentUser.id,
+                        // E2619: always supply reviewee_team_id so the backend creates the quiz
+                        // map for the correct team when the student reviews multiple teams.
+                        reviewee_team_id: review.revieweeTeamId,
                       });
                       const quizMapId = res.data?.quiz_map_id;
                       const quizQId = res.data?.quiz_questionnaire_id ?? quizQuestionnaireId;

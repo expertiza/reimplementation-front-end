@@ -1,14 +1,14 @@
 // src/pages/Assignments/AssignReviewer.tsx
 import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../utils/axios_client";
 
 type Id = number;
 type ReviewStatus = "Not saved" | "Saved" | "Submitted";
 
 interface Assignment { id: Id; name: string }
-interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null }
+interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null; quiz_questionnaire_id?: Id | null }
 interface User { id: Id; name: string | null; full_name: string | null }
 interface TeamUser { team_id: Id; user_id: Id }
 interface Participant { id: Id; user_id: Id; parent_id: Id; team_id?: Id | null }
@@ -22,7 +22,7 @@ interface ResponseRow {
 
 interface IUserView { id: Id; username: string; fullName: string }
 interface IReviewerAssignment { id: Id; reviewer: IUserView; status: ReviewStatus }
-interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[] }
+interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[]; quiz_questionnaire_id?: Id | null }
 
 type Persist = {
   assignment: Assignment;
@@ -293,6 +293,8 @@ export function demo(asgId: Id): Persist {
 const AssignReviewer: React.FC = () => {
   const location = useLocation();
   const params = useParams();
+  // E2619: navigate used for "Create Quiz" button to open the questionnaire editor
+  const navigate = useNavigate();
   const maybeId = parseAssignmentId(location, params);
 
   // Hooks must be unconditionally called:
@@ -384,7 +386,7 @@ const AssignReviewer: React.FC = () => {
         })
         .filter(Boolean) as IReviewerAssignment[];
 
-      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers };
+      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers, quiz_questionnaire_id: t?.quiz_questionnaire_id ?? null };
     });
   }, [assignmentId, teams, usersById, teamsById, teamMembersByTeam, response_maps, latestResponseByMap, participantsById, tick]);
 
@@ -482,6 +484,15 @@ const AssignReviewer: React.FC = () => {
       // Also delete from backend DB
       ids.forEach(id => axiosClient.delete(`/response_maps/${id}`).catch(() => {}));
     });
+  }
+
+  // E2619: navigate to the questionnaire editor pre-filled as Quiz type.
+  // The editor will call PATCH /teams/:team_id/quiz_questionnaire after saving and then
+  // redirect back here via the return_to param.
+  function onCreateQuiz(teamId: Id) {
+    if (!hasValidId) return;
+    const returnTo = encodeURIComponent(`/assignments/edit/${assignmentId}/assignreviewer`);
+    navigate(`/questionnaires/new?type=Quiz&team_id=${teamId}&assignment_id=${assignmentId}&return_to=${returnTo}`);
   }
 
   const empty = teams.length === 0 && users.length === 0 && participants.length === 0 && response_maps.length === 0;
@@ -587,6 +598,15 @@ const AssignReviewer: React.FC = () => {
                   <div className="ex-actions">
                     <a role="button" className="ex-link" onClick={() => hasValidId && onAddReviewer(team.id)}>add reviewer</a>
                     <a role="button" className="ex-link" onClick={() => hasValidId && onDeleteAll(team.id)}>delete outstanding reviewers</a>
+                    {/* E2619: Create/Edit Quiz button — submitting team creates the quiz others must pass before reviewing them */}
+                    <a
+                      role="button"
+                      className="ex-link"
+                      style={{ color: team.quiz_questionnaire_id ? '#2c6b2f' : '#7a2c2c' }}
+                      onClick={() => hasValidId && onCreateQuiz(team.id)}
+                    >
+                      {team.quiz_questionnaire_id ? 'edit quiz' : 'create quiz'}
+                    </a>
                   </div>
                 </td>
 

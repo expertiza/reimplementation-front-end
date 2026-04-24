@@ -50,7 +50,13 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
   // the form values to the browser console.
   const onSubmit = async (values: QuestionnaireFormValues) => {
-  values.instructor_id = auth.user.id;
+  // E2619: only set instructor_id for non-quiz questionnaires. When team_id is present the
+  // creator is a student whose user type is not Instructor, so the STI-backed belongs_to
+  // :instructor validation would reject the record if we pass their user id.
+  const isTeamQuiz = !!searchParams.get("team_id");
+  if (!isTeamQuiz) {
+    values.instructor_id = auth.user.id;
+  }
   //values.instructor = auth.user.name;
   console.log("Submit:", values);
   const payload = transformQuestionnaireRequest(values);
@@ -66,6 +72,25 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     );
 
     console.log("Saved Questionnaire:", response.data);
+
+    // E2619: if this questionnaire was created from the AssignReviewer "Create Quiz" flow,
+    // link it to the team via PATCH /teams/:team_id/quiz_questionnaire, then navigate back.
+    const teamId = searchParams.get("team_id");
+    const returnTo = searchParams.get("return_to");
+    if (mode === "create" && teamId && response.data?.id) {
+      try {
+        await axiosClient.patch(
+          `/teams/${teamId}/quiz_questionnaire`,
+          { questionnaire_id: response.data.id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (linkErr) {
+        console.error("Failed to link quiz questionnaire to team:", linkErr);
+      }
+      navigate(returnTo ? decodeURIComponent(returnTo) : "/questionnaires");
+      return;
+    }
+
     navigate("/questionnaires");
   } catch (error) {
     console.error("Error submitting form:", error);
