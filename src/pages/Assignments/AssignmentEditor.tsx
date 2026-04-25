@@ -53,6 +53,117 @@ interface TopicData {
   updatedAt?: string;
 }
 
+interface ICalibrationSubmissionAsset {
+  url?: string;
+  display_name?: string;
+  name?: string;
+}
+
+interface ICalibrationSubmissionMember {
+  full_name?: string;
+  email?: string;
+}
+
+interface ICalibrationSubmissionResponse {
+  id?: number;
+  team_id?: number;
+  team_name?: string;
+  members?: ICalibrationSubmissionMember[];
+  links?: ICalibrationSubmissionAsset[];
+  files?: ICalibrationSubmissionAsset[];
+}
+
+interface ICalibrationSubmissionsApiResponse {
+  submissions?: ICalibrationSubmissionResponse[];
+}
+
+interface ICalibrationSubmissionItem {
+  label: string;
+  url?: string;
+}
+
+interface ICalibrationSubmissionRow {
+  id: number;
+  participant_name: string;
+  review_status: "not_started";
+  submitted_content: {
+    hyperlinks: ICalibrationSubmissionItem[];
+    files: ICalibrationSubmissionItem[];
+  };
+}
+
+const getCalibrationSubmissionLabel = (
+  submission: ICalibrationSubmissionResponse,
+  index: number
+) => {
+  if (submission.team_name?.trim()) {
+    return submission.team_name;
+  }
+
+  const memberNames = Array.isArray(submission.members)
+    ? submission.members
+        .map((member) => member.full_name?.trim() || member.email?.trim())
+        .filter((value): value is string => Boolean(value))
+    : [];
+
+  if (memberNames.length > 0) {
+    return memberNames.join(", ");
+  }
+
+  return `Submission ${index + 1}`;
+};
+
+const transformCalibrationAsset = (
+  asset: ICalibrationSubmissionAsset
+): ICalibrationSubmissionItem | null => {
+  const url = asset.url?.trim();
+  const label = asset.display_name?.trim() || asset.name?.trim() || url;
+
+  if (!label) {
+    return null;
+  }
+
+  return {
+    label,
+    url: url || undefined,
+  };
+};
+
+const transformCalibrationSubmissions = (
+  response?: ICalibrationSubmissionsApiResponse | null
+): ICalibrationSubmissionRow[] => {
+  const submissions = Array.isArray(response?.submissions) ? response.submissions : [];
+
+  return submissions
+    .map((submission, index) => {
+      const hyperlinks = Array.isArray(submission.links)
+        ? submission.links
+            .map(transformCalibrationAsset)
+            .filter((item): item is ICalibrationSubmissionItem => item !== null)
+        : [];
+      const files = Array.isArray(submission.files)
+        ? submission.files
+            .map(transformCalibrationAsset)
+            .filter((item): item is ICalibrationSubmissionItem => item !== null)
+        : [];
+
+      return {
+        id: submission.id ?? submission.team_id ?? index + 1,
+        participant_name: getCalibrationSubmissionLabel(submission, index),
+        review_status: "not_started" as const,
+        submitted_content: {
+          hyperlinks,
+          files,
+        },
+      };
+    })
+    .filter(
+      (submission) =>
+        submission.submitted_content.hyperlinks.length > 0 ||
+        submission.submitted_content.files.length > 0
+    );
+};
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -538,30 +649,29 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Load calibration submissions on component mount
   useEffect(() => {
-    // sendCalibrationSubmissionsRequest({
-    //   url: `/calibration_submissions/get_instructor_calibration_submissions/${assignmentData.id}`,
-    //   method: HttpMethod.GET,
-    // });
-    setCalibrationSubmissions([
-      {
-        id: 1,
-        participant_name: "Participant 1",
-        review_status: "not_started",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-      {
-        id: 2,
-        participant_name: "Participant 2",
-        review_status: "in_progress",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-    ]);
-  }, []);
+    if (mode !== "update" || !assignmentData?.id) {
+      setCalibrationSubmissions([]);
+      return;
+    }
+
+    sendCalibrationSubmissionsRequest({
+      url: `/submitted_content/${assignmentData.id}/view_submissions`,
+      method: HttpMethod.GET,
+    });
+  }, [assignmentData?.id, mode, sendCalibrationSubmissionsRequest]);
 
   // Handle calibration submissions response
   useEffect(() => {
-    if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
-      setCalibrationSubmissions(calibrationSubmissionsResponse.data || []);
+    if (
+      calibrationSubmissionsResponse &&
+      calibrationSubmissionsResponse.status >= 200 &&
+      calibrationSubmissionsResponse.status < 300
+    ) {
+      setCalibrationSubmissions(
+        transformCalibrationSubmissions(
+          calibrationSubmissionsResponse.data as ICalibrationSubmissionsApiResponse
+        )
+      );
     }
   }, [calibrationSubmissionsResponse]);
 
@@ -1206,16 +1316,24 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                               <div>Hyperlinks:</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {
-                                  row.original.submitted_content.hyperlinks.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  row.original.submitted_content.hyperlinks.map((item: ICalibrationSubmissionItem, index: number) => {
+                                    return item.url ? (
+                                      <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item.url}>{item.label}</a>
+                                    ) : (
+                                      <span key={index}>{item.label}</span>
+                                    );
                                   })
                                 }
                               </div>
                               <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column' }}>Files:</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {
-                                  row.original.submitted_content.files.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  row.original.submitted_content.files.map((item: ICalibrationSubmissionItem, index: number) => {
+                                    return item.url ? (
+                                      <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item.url}>{item.label}</a>
+                                    ) : (
+                                      <span key={index}>{item.label}</span>
+                                    );
                                   })
                                 }
                               </div>

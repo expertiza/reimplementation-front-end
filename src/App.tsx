@@ -110,6 +110,16 @@ function App() {
           loader: loadAssignment,
         },
         {
+          path: "assignments/:id/viewsubmissions",
+          element: <ProtectedRoute element={<SubmittedContent />} />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/:id/submitcontent",
+          element: <ProtectedRoute element={<SubmittedContent />} />,
+          loader: loadAssignment,
+        },
+        {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
           loader: loadAssignment,
@@ -313,6 +323,10 @@ function App() {
         },
         {
           path: "assignments/:id/review",
+          element: <ReviewReportPage />,
+        },
+        {
+          path: "assignments/:id/assign-grades",
           element: <ReviewReportPage />,
         },
         // Fixed the missing comma and added an opening curly brace
