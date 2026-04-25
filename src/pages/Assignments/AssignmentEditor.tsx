@@ -676,10 +676,16 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       return;
     }
 
-    // validate sum of weights = 100%
-    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
+    // validate sum of weights = 100% only when the user has actually entered weights
+    const filledWeights = (values.weights || []).filter(
+      (weight: any) => weight !== "" && weight !== null && weight !== undefined
+    );
+    const totalWeight = filledWeights.reduce(
+      (acc: number, curr: any) => acc + Number(curr),
+      0
+    );
 
-    const hasWeights = (values.weights?.length ?? 0) > 0;
+    const hasWeights = filledWeights.length > 0;
 
     if (hasWeights && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
@@ -950,12 +956,27 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       },
                       {
                         cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
+                          (() => {
+                            let questionnaireFieldName = `questionnaire_round_${row.original.id}`;
+                            let questionnaireControlId = `assignment-questionnaire_${row.original.id}`;
+
+                            if (row.original.title === "Author feedback:") {
+                              questionnaireFieldName = "author_feedback_questionnaire";
+                              questionnaireControlId = "assignment-author_feedback_questionnaire";
+                            } else if (row.original.title === "Teammate review:") {
+                              questionnaireFieldName = "teammate_review_questionnaire";
+                              questionnaireControlId = "assignment-teammate_review_questionnaire";
+                            }
+
+                            return (
                           <FormSelect
-                            controlId={`assignment-questionnaire_${row.original.id}`}
-                            name={`questionnaire_round_${row.original.id}`}
+                            controlId={questionnaireControlId}
+                            name={questionnaireFieldName}
                             options={row.original.questionnaire_options || []}
                           // Formik initialValues handles prefill via questionnaire_round_X fields
-                          />}
+                          />
+                            );
+                          })()}
                           {row.original.questionnaire_type === 'tag_prompts' &&
                             <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
                               <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
@@ -1374,7 +1395,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
             {/* Submit button */}
               <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
-                <Button type="submit" variant="outline-secondary">
+                <Button type="button" variant="outline-secondary" onClick={() => formik.submitForm()}>
                   Save
                 </Button> |
                 <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
