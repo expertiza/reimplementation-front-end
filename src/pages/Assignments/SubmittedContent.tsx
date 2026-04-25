@@ -117,6 +117,7 @@ const SubmittedContent = () => {
     isResolvingParticipant || (isLoadingArtifacts && !hasArtifacts && !error);
   const pathSegments = getPathSegments(currentFolder);
   const currentFolderLabel = currentFolder === "/" ? "Root" : currentFolder;
+  const isMissingParticipantState = !isResolvingParticipant && !participantId;
 
   const resolveLiveHyperlinkIndex = (hyperlink: string, summaryIndex: number) => {
     const liveHyperlinks = liveFolderContents.hyperlinks ?? [];
@@ -572,7 +573,7 @@ const SubmittedContent = () => {
             </div>
           </section>
 
-          {error && (
+          {error && !isMissingParticipantState && (
             <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-0">
               {error}
             </Alert>
@@ -584,22 +585,35 @@ const SubmittedContent = () => {
             </Alert>
           )}
 
-          <section className="submitted-content-panel submitted-content-actions">
-          <input
-            ref={uploadInputRef}
-            type="file"
-            className="d-none"
-            onChange={handleFileSelection}
-            disabled={isSubmittingFile}
-          />
+          {isMissingParticipantState ? (
+            <section className="submitted-content-panel submitted-content-empty-state">
+              <span className="submitted-content-empty-kicker">Submission access unavailable</span>
+              <h2 className="submitted-content-section-title mb-2">
+                You are not set up for submissions on this assignment.
+              </h2>
+              <p className="submitted-content-panel-copy mb-0">
+                {error ||
+                  "No participant record was found for the current user on this assignment."}
+              </p>
+            </section>
+          ) : (
+            <>
+              <section className="submitted-content-panel submitted-content-actions">
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  className="d-none"
+                  onChange={handleFileSelection}
+                  disabled={isSubmittingFile}
+                />
             <div className="submitted-content-actions-layout">
               <div className="submitted-content-actions-copy">
-              <h2 className="submitted-content-section-title mb-1">Submit work</h2>
-              <p className="submitted-content-panel-copy mb-0">
-                Upload files or add links for the current assignment without leaving this page.
-              </p>
-              <p className="submitted-content-action-note mb-0">{actionHelperMessage}</p>
-            </div>
+                <h2 className="submitted-content-section-title mb-1">Submit work</h2>
+                <p className="submitted-content-panel-copy mb-0">
+                  Upload files or add links for the current assignment without leaving this page.
+                </p>
+                <p className="submitted-content-action-note mb-0">{actionHelperMessage}</p>
+              </div>
               <div className="submitted-content-action-stack">
                 <div className="submitted-content-action-row">
                   <Button
@@ -630,11 +644,11 @@ const SubmittedContent = () => {
                 </div>
               </div>
             </div>
-          </section>
+              </section>
 
-          <Row className="g-3">
-            <Col xl={8}>
-              <div className="submitted-content-panel h-100">
+              <Row className="g-3">
+                <Col xl={8}>
+                  <div className="submitted-content-panel h-100">
                 <div className="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
                   <div>
                     <h2 className="submitted-content-section-title mb-1">Artifacts</h2>
@@ -696,7 +710,7 @@ const SubmittedContent = () => {
                     <Spinner animation="border" role="status" />
                     <span>Loading submitted artifacts...</span>
                   </div>
-                ) : participantId ? (
+                ) : (
                   <>
                     {folders.length === 0 && files.length === 0 ? (
                       <Alert variant="info" className="mb-0">
@@ -825,16 +839,11 @@ const SubmittedContent = () => {
                       </div>
                     )}
                   </>
-                ) : (
-                  <Alert variant="warning" className="mb-0">
-                    You are not currently associated with a submission-capable team for this
-                    assignment.
-                  </Alert>
                 )}
-              </div>
-            </Col>
-            <Col xl={4}>
-              <div className="submitted-content-panel h-100">
+                  </div>
+                </Col>
+                <Col xl={4}>
+                  <div className="submitted-content-panel h-100">
                 <div className="mb-2">
                   <h2 className="submitted-content-section-title mb-1">Hyperlinks</h2>
                   <p className="submitted-content-panel-copy mb-0">
@@ -908,9 +917,11 @@ const SubmittedContent = () => {
                     </Table>
                   </div>
                 )}
-              </div>
-            </Col>
-          </Row>
+                  </div>
+                </Col>
+              </Row>
+            </>
+          )}
         </div>
       </Container>
 

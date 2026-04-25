@@ -53,6 +53,95 @@ interface TopicData {
   updatedAt?: string;
 }
 
+interface ICalibrationSubmissionAsset {
+  url?: string;
+  display_name?: string;
+  name?: string;
+}
+
+interface ICalibrationSubmissionMember {
+  full_name?: string;
+  email?: string;
+}
+
+interface ICalibrationSubmissionResponse {
+  id?: number;
+  team_id?: number;
+  team_name?: string;
+  members?: ICalibrationSubmissionMember[];
+  links?: ICalibrationSubmissionAsset[];
+  files?: ICalibrationSubmissionAsset[];
+}
+
+interface ICalibrationSubmissionsApiResponse {
+  submissions?: ICalibrationSubmissionResponse[];
+}
+
+interface ICalibrationSubmissionRow {
+  id: number;
+  participant_name: string;
+  review_status: "not_started";
+  submitted_content: {
+    hyperlinks: string[];
+    files: string[];
+  };
+}
+
+const getCalibrationSubmissionLabel = (
+  submission: ICalibrationSubmissionResponse,
+  index: number
+) => {
+  if (submission.team_name?.trim()) {
+    return submission.team_name;
+  }
+
+  const memberNames = Array.isArray(submission.members)
+    ? submission.members
+        .map((member) => member.full_name?.trim() || member.email?.trim())
+        .filter((value): value is string => Boolean(value))
+    : [];
+
+  if (memberNames.length > 0) {
+    return memberNames.join(", ");
+  }
+
+  return `Submission ${index + 1}`;
+};
+
+const getCalibrationAssetLink = (asset: ICalibrationSubmissionAsset) =>
+  asset.url || asset.display_name || asset.name || "#";
+
+const transformCalibrationSubmissions = (
+  response?: ICalibrationSubmissionsApiResponse | null
+): ICalibrationSubmissionRow[] => {
+  const submissions = Array.isArray(response?.submissions) ? response.submissions : [];
+
+  return submissions
+    .map((submission, index) => {
+      const hyperlinks = Array.isArray(submission.links)
+        ? submission.links.map(getCalibrationAssetLink).filter(Boolean)
+        : [];
+      const files = Array.isArray(submission.files)
+        ? submission.files.map(getCalibrationAssetLink).filter(Boolean)
+        : [];
+
+      return {
+        id: submission.id ?? submission.team_id ?? index + 1,
+        participant_name: getCalibrationSubmissionLabel(submission, index),
+        review_status: "not_started" as const,
+        submitted_content: {
+          hyperlinks,
+          files,
+        },
+      };
+    })
+    .filter(
+      (submission) =>
+        submission.submitted_content.hyperlinks.length > 0 ||
+        submission.submitted_content.files.length > 0
+    );
+};
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -538,30 +627,29 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Load calibration submissions on component mount
   useEffect(() => {
-    // sendCalibrationSubmissionsRequest({
-    //   url: `/calibration_submissions/get_instructor_calibration_submissions/${assignmentData.id}`,
-    //   method: HttpMethod.GET,
-    // });
-    setCalibrationSubmissions([
-      {
-        id: 1,
-        participant_name: "Participant 1",
-        review_status: "not_started",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-      {
-        id: 2,
-        participant_name: "Participant 2",
-        review_status: "in_progress",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-    ]);
-  }, []);
+    if (mode !== "update" || !assignmentData?.id) {
+      setCalibrationSubmissions([]);
+      return;
+    }
+
+    sendCalibrationSubmissionsRequest({
+      url: `/submitted_content/${assignmentData.id}/view_submissions`,
+      method: HttpMethod.GET,
+    });
+  }, [assignmentData?.id, mode, sendCalibrationSubmissionsRequest]);
 
   // Handle calibration submissions response
   useEffect(() => {
-    if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
-      setCalibrationSubmissions(calibrationSubmissionsResponse.data || []);
+    if (
+      calibrationSubmissionsResponse &&
+      calibrationSubmissionsResponse.status >= 200 &&
+      calibrationSubmissionsResponse.status < 300
+    ) {
+      setCalibrationSubmissions(
+        transformCalibrationSubmissions(
+          calibrationSubmissionsResponse.data as ICalibrationSubmissionsApiResponse
+        )
+      );
     }
   }, [calibrationSubmissionsResponse]);
 
