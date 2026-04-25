@@ -151,82 +151,6 @@ export const transformResponse = (
   });
 };
 
-const buildFallbackSubmissions = (assignmentId: number): ISubmission[] => [
-  {
-    id: assignmentId * 100 + 1,
-    teamId: assignmentId * 10 + 1,
-    teamName: "Mock Team 01",
-    members: [
-      {
-        fullName: "Alice Johnson",
-        github: "alice-johnson",
-        email: "alice@example.com",
-      },
-      {
-        fullName: "Bob Carter",
-        github: "https://github.com/bobcarter",
-        email: "bob@example.com",
-      },
-    ],
-    links: [
-      {
-        id: 1,
-        displayName: "Project repository",
-        name: "Project repository",
-        url: "https://github.com/mock-team-01/project",
-        size: "-",
-        type: "Hyperlink",
-        modified: "2026-03-15T18:30:00Z",
-      },
-    ],
-    files: [
-      {
-        id: 2,
-        displayName: "design-spec.pdf",
-        name: "design-spec.pdf",
-        url: "https://example.com/mock/design-spec.pdf",
-        size: "128 KB",
-        type: "PDF",
-        modified: "2026-03-15T18:40:00Z",
-      },
-    ],
-  },
-  {
-    id: assignmentId * 100 + 2,
-    teamId: assignmentId * 10 + 2,
-    teamName: "Mock Team 02",
-    members: [
-      {
-        fullName: "Chris Lee",
-        github: "chrislee",
-        email: "chris@example.com",
-      },
-    ],
-    links: [
-      {
-        id: 3,
-        displayName: "Demo video",
-        name: "Demo video",
-        url: "https://example.com/mock/demo-video",
-        size: "-",
-        type: "Hyperlink",
-        modified: "2026-03-16T13:05:00Z",
-      },
-    ],
-    files: [
-      {
-        id: 4,
-        displayName: "slides.pptx",
-        name: "slides.pptx",
-        url: "https://example.com/mock/slides.pptx",
-        size: "2.3 MB",
-        type: "PowerPoint",
-        modified: "2026-03-16T13:10:00Z",
-      },
-    ],
-  },
-];
-
 const getLatestDueDate = (assignment: ViewSubmissionsLoaderData) => {
   const dueDateValues = Array.isArray(assignment?.due_dates)
     ? assignment.due_dates
@@ -270,11 +194,6 @@ const ViewSubmissions = () => {
 
   const [submissions, setSubmissions] = useState<ISubmission[]>([]);
 
-  const fallbackSubmissions = useMemo(
-    () => buildFallbackSubmissions(assignmentId || 1),
-    [assignmentId]
-  );
-
   const shouldShowAssignGrade = useMemo(() => {
     const latestDueDate = getLatestDueDate(assignment);
     return latestDueDate ? latestDueDate.getTime() < Date.now() : false;
@@ -299,14 +218,14 @@ const ViewSubmissions = () => {
       const transformedSubmissions = transformResponse(
         submissionsResponse.data as IViewSubmissionsResponse
       );
-      setSubmissions(transformedSubmissions ?? fallbackSubmissions);
+      setSubmissions(transformedSubmissions ?? []);
       return;
     }
 
-    if (!isLoading && (error || !submissionsResponse)) {
-      setSubmissions(fallbackSubmissions);
+    if (!isLoading && (error || !submissionsResponse?.data)) {
+      setSubmissions([]);
     }
-  }, [error, fallbackSubmissions, isLoading, submissionsResponse]);
+  }, [error, isLoading, submissionsResponse]);
 
   const columns = useMemo(
     () => [
@@ -413,10 +332,8 @@ const ViewSubmissions = () => {
           <Button
             size="sm"
             variant="outline-secondary"
-            onClick={(event) => {
-              event.stopPropagation();
-              navigate(`/submissions/history/${row.original.id}`);
-            }}
+            disabled
+            title="Submission history is not available in this frontend yet."
           >
             View history
           </Button>
