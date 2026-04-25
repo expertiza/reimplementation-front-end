@@ -571,11 +571,16 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         ? body
         : (body.calibration_participants || []);
       setCalibrationSubmissions(
-        rows.map((row: any) => ({
-          participant_id: row.participant_id,
-          participant_name: row.full_name || row.username || row.handle || `Participant ${row.participant_id}`,
-          submitted_content: row.submissions || { hyperlinks: [], files: [] },
-        }))
+        rows.map((row: any) => {
+          const personName = row.full_name || row.username || row.handle || `Participant ${row.participant_id}`;
+          return {
+            participant_id: row.participant_id,
+            participant_name: row.team_name || `Team_${personName}`,
+            instructor_review_map_id: row.instructor_review_map_id,
+            instructor_review_status: row.instructor_review_status || 'not_started',
+            submitted_content: row.submissions || { hyperlinks: [], files: [] },
+          };
+        })
       );
     }
   }, [calibrationSubmissionsResponse]);
@@ -1235,38 +1240,42 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
               </Tab>
 
-              {/* Calibration Tab */}
+              {/* Calibration Tab A team is created for the submitter and an
+                    instructor calibration review map is opened automatically.*/}
                 <Tab eventKey="calibration" title="Calibration">
-                  <h3>Calibration submitters</h3>
-                  <p className="text-muted" style={{ maxWidth: 720 }}>
-                    Designate one or more users whose submissions will be used for calibration reviews.
-                    Enter a username or email below. A team is created for the submitter and an
-                    instructor calibration review map is opened automatically.
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1.5rem', maxWidth: 520 }}>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Username or email"
-                      value={calibrationUsername}
-                      onChange={(e) => setCalibrationUsername(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddCalibrationParticipant();
-                        }
-                      }}
-                      aria-label="Calibration participant username"
-                    />
-                    <Button
-                      variant="primary"
-                      onClick={handleAddCalibrationParticipant}
-                      disabled={!calibrationUsername.trim()}
-                    >
-                      Add
-                    </Button>
+                  <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                    <label htmlFor="calibration-username" style={{ display: 'block', marginBottom: '0.25rem' }}>
+                      Search by username
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem', maxWidth: 420 }}>
+                      <input
+                        id="calibration-username"
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter username"
+                        value={calibrationUsername}
+                        onChange={(e) => setCalibrationUsername(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCalibrationParticipant();
+                          }
+                        }}
+                        aria-label="Calibration participant username"
+                        style={{ flex: 1, height: 38, lineHeight: '1.5', padding: '0.375rem 0.75rem', boxSizing: 'border-box' }}
+                      />
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleAddCalibrationParticipant}
+                        disabled={!calibrationUsername.trim()}
+                        style={{ height: 38, lineHeight: 1, padding: '0 1rem', boxSizing: 'border-box' }}
+                      >
+                        Add
+                      </Button>
+                    </div>
                   </div>
+
+                  <h3 style={{ marginTop: '1.5rem' }}>Select participants for submitting calibration artifacts</h3>
 
                   <div>
                     <div style={{ display: 'ruby', marginTop: '30px' }}>
@@ -1277,11 +1286,54 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         data={calibrationSubmissions.map((calibrationSubmission: any) => ({
                           participant_id: calibrationSubmission.participant_id,
                           participant_name: calibrationSubmission.participant_name,
+                          instructor_review_map_id: calibrationSubmission.instructor_review_map_id,
+                          instructor_review_status: calibrationSubmission.instructor_review_status,
                           submitted_content: calibrationSubmission.submitted_content,
                         }))}
                         columns={[
                           {
                             accessorKey: "participant_name", header: "Participant name", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            // Review column links point at routes assumed to be provided by
+                            // the existing review-flow (out of scope for this project). When
+                            // no instructor review exists yet we show a single "Begin" link;
+                            // once a response exists we show "View | Edit".
+                            cell: ({ row }) => {
+                              const mapId = row.original.instructor_review_map_id;
+                              const status = row.original.instructor_review_status;
+                              const reviewBase = mapId
+                                ? `/assignments/edit/${assignmentData.id}/calibration/${mapId}`
+                                : '#';
+                              const linkStyle: React.CSSProperties = { color: '#986633', textDecoration: 'none' };
+
+                              if (status === 'not_started') {
+                                return <a style={linkStyle} href={`${reviewBase}/begin`}>Begin</a>;
+                              }
+
+                              return (
+                                <span>
+                                  <a style={linkStyle} href={`${reviewBase}/view`}>View</a>
+                                  <span style={{ margin: '0 0.4rem', color: '#986633' }}>|</span>
+                                  <a style={linkStyle} href={`${reviewBase}/edit`}>Edit</a>
+                                </span>
+                              );
+                            },
+                            accessorKey: "review", header: "Review", enableSorting: false, enableColumnFilter: false
+                          },
+                          {
+                            cell: ({ row }) => {
+                              const mapId = row.original.instructor_review_map_id;
+                              const href = mapId
+                                ? `/assignments/edit/${assignmentData.id}/calibration/${mapId}`
+                                : '#';
+                              return (
+                                <a style={{ color: '#986633', textDecoration: 'none' }} href={href}>
+                                  View review report
+                                </a>
+                              );
+                            },
+                            accessorKey: "report", header: "Report", enableSorting: false, enableColumnFilter: false
                           },
                           {
                             cell: ({ row }) => (
