@@ -1,91 +1,247 @@
 .submitted-content-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  --submitted-surface: #fffdfc;
+  --submitted-surface-soft: #fff7f2;
+  --submitted-surface-muted: #f7fafc;
+  --submitted-border: #ead7d0;
+  --submitted-border-strong: #d8b7ac;
+  --submitted-text: #1f2937;
+  --submitted-text-muted: #667085;
+  --submitted-accent: #b42318;
+  --submitted-accent-soft: rgba(180, 35, 24, 0.08);
+  max-width: 1180px;
+}
+
+.submitted-content-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submitted-content-panel {
+  background:
+    radial-gradient(circle at top right, rgba(180, 35, 24, 0.06), transparent 30%),
+    linear-gradient(180deg, var(--submitted-surface) 0%, #ffffff 100%);
+  border: 1px solid var(--submitted-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+  padding: 1.35rem;
+}
+
+.submitted-content-hero {
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
+.submitted-content-hero::after {
+  background: linear-gradient(135deg, transparent 0%, rgba(180, 35, 24, 0.08) 100%);
+  content: "";
+  inset: auto -4rem -4rem auto;
+  position: absolute;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.submitted-content-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.submitted-content-kicker {
+  color: var(--submitted-accent);
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
 }
 
 .submitted-content-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: #333;
+  color: var(--submitted-text);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  max-width: 8ch;
 }
 
-.file-item,
-.hyperlink-item {
-  background-color: #f8f9fa;
-  transition: all 0.2s ease;
+.submitted-content-subtitle {
+  color: var(--submitted-text-muted);
+  font-size: 1.02rem;
+  max-width: 40rem;
 }
 
-.file-item:hover,
-.hyperlink-item:hover {
-  background-color: #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.submitted-content-section-title {
+  color: var(--submitted-text);
+  font-size: 1.2rem;
+  font-weight: 750;
 }
 
-.files-list,
-.hyperlinks-list {
-  margin-top: 1rem;
+.submitted-content-panel-copy {
+  color: var(--submitted-text-muted);
 }
 
-.file-item a,
-.hyperlink-item a {
+.submitted-content-actions-layout {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.95fr);
+}
+
+.submitted-content-actions-copy {
+  min-width: 0;
+}
+
+.submitted-content-action-stack {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+}
+
+.submitted-content-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.submitted-content-action-note {
+  color: #7a8699;
+  font-size: 0.92rem;
+  margin-top: 0.45rem;
+}
+
+.submitted-content-folder-indicator {
+  align-self: flex-start;
+  background-color: var(--submitted-surface-soft);
+  border: 1px solid var(--submitted-border);
+  border-radius: 999px;
+  color: #4a5568;
+  font-size: 0.92rem;
+  padding: 0.55rem 0.95rem;
+}
+
+.submitted-content-toolbar {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.submitted-content-refresh-button {
+  white-space: nowrap;
+}
+
+.submitted-content-breadcrumb {
+  margin-bottom: 0;
+}
+
+.submitted-content-breadcrumb button {
+  background: none;
+  border: 0;
+  color: #0d6efd;
+  padding: 0;
+}
+
+.submitted-content-breadcrumb .breadcrumb-item.active button {
+  color: #495057;
+  cursor: default;
+}
+
+.submitted-content-loading {
+  align-items: center;
+  color: #475569;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  min-height: 180px;
+}
+
+.submitted-content-table {
+  margin-bottom: 0;
+  vertical-align: middle;
+}
+
+.submitted-content-table th {
+  background-color: #f8f1ec;
+  border-bottom-color: var(--submitted-border-strong);
+  color: #4b5563;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.submitted-content-table td {
+  color: var(--submitted-text);
+}
+
+.submitted-content-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.submitted-content-link {
+  color: #0d6efd;
   text-decoration: none;
-  color: #007bff;
+  word-break: break-word;
 }
 
-.file-item a:hover,
-.hyperlink-item a:hover {
+.submitted-content-link:hover {
   text-decoration: underline;
 }
 
-/* Button styling */
-button {
-  transition: all 0.2s ease;
+.artifact-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.submission-action-button {
+  min-width: 168px;
 }
 
-/* Modal styling */
-.modal-header {
-  border-bottom: 2px solid #dee2e6;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-/* Table styling */
-.table {
-  margin-top: 1rem;
-}
-
-.table thead th {
-  background-color: #f8f9fa;
-  border-top: 2px solid #dee2e6;
-}
-
-/* Spinner styling */
-.spinner-border {
-  color: #007bff;
-}
-
-/* Alert styling */
-.alert {
-  margin-bottom: 1.5rem;
-  border-radius: 0.5rem;
-}
-
-/* Responsive grid */
-@media (max-width: 768px) {
-  .submitted-content-title {
-    font-size: 1.75rem;
+@media (max-width: 992px) {
+  .submitted-content-actions-layout {
+    grid-template-columns: 1fr;
   }
 
-  .file-item,
-  .hyperlink-item {
-    padding: 1rem !important;
+  .submitted-content-action-stack {
+    align-self: stretch;
+  }
+
+  .submitted-content-action-row {
+    justify-content: flex-start;
+  }
+
+  .submitted-content-toolbar {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .submitted-content-panel {
+    padding: 1rem;
+  }
+
+  .submitted-content-title {
+    font-size: 2rem;
+    max-width: none;
+  }
+
+  .submitted-content-action-row {
+    width: 100%;
+  }
+
+  .submission-action-button {
+    flex: 1 1 100%;
+  }
+
+  .artifact-actions {
+    justify-content: flex-start;
   }
 }

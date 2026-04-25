@@ -110,6 +110,16 @@ function App() {
           loader: loadAssignment,
         },
         {
+          path: "assignments/:id/viewsubmissions",
+          element: <ProtectedRoute element={<SubmittedContent />} />,
+          loader: loadAssignment,
+        },
+        {
+          path: "assignments/:id/submitcontent",
+          element: <ProtectedRoute element={<SubmittedContent />} />,
+          loader: loadAssignment,
+        },
+        {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
           loader: loadAssignment,
