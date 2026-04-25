@@ -9,7 +9,11 @@ type QuestionnairePackageImportModalProps = {
 };
 
 const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalProps> = ({ show, onHide, onImported }) => {
-  const [file, setFile] = useState<File | null>(null);
+  const [importMode, setImportMode] = useState<"package" | "csv">("csv");
+  const [packageFile, setPackageFile] = useState<File | null>(null);
+  const [questionnaireFile, setQuestionnaireFile] = useState<File | null>(null);
+  const [itemsFile, setItemsFile] = useState<File | null>(null);
+  const [questionAdvicesFile, setQuestionAdvicesFile] = useState<File | null>(null);
   const [duplicateAction, setDuplicateAction] = useState("");
   const [duplicateActions, setDuplicateActions] = useState<string[]>([]);
   const [status, setStatus] = useState("");
@@ -18,7 +22,11 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
   useEffect(() => {
     if (!show) return;
 
-    setFile(null);
+    setImportMode("csv");
+    setPackageFile(null);
+    setQuestionnaireFile(null);
+    setItemsFile(null);
+    setQuestionAdvicesFile(null);
     setStatus("");
 
     axiosClient.get("/questionnaire_packages/config")
@@ -33,8 +41,13 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
   }, [show]);
 
   const onImport = async () => {
-    if (!file) {
+    if (importMode === "package" && !packageFile) {
       setStatus("Please select a questionnaire template package zip file.");
+      return;
+    }
+
+    if (importMode === "csv" && !questionnaireFile) {
+      setStatus("Please select a questionnaire CSV file.");
       return;
     }
 
@@ -43,7 +56,17 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
 
     try {
       const formData = new FormData();
-      formData.append("package_file", file);
+      if (importMode === "package" && packageFile) {
+        formData.append("package_file", packageFile);
+      } else {
+        formData.append("questionnaire_file", questionnaireFile!);
+        if (itemsFile) {
+          formData.append("items_file", itemsFile);
+        }
+        if (questionAdvicesFile) {
+          formData.append("question_advices_file", questionAdvicesFile);
+        }
+      }
       if (duplicateAction) {
         formData.append("dup_action", duplicateAction);
       }
@@ -70,16 +93,64 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
       </Modal.Header>
       <Modal.Body>
         <p>
-          Import a questionnaire template package zip containing questionnaire, item, and question advice CSVs.
+          Import an exported package zip, or upload CSV files into the matching fields.
         </p>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Import source</Form.Label>
+          <Form.Check
+            type="radio"
+            id="questionnaire-import-csv"
+            label="Separate CSV files"
+            checked={importMode === "csv"}
+            onChange={() => setImportMode("csv")}
+          />
+          <Form.Check
+            type="radio"
+            id="questionnaire-import-package"
+            label="Exported zip package"
+            checked={importMode === "package"}
+            onChange={() => setImportMode("package")}
+          />
+        </Form.Group>
+
+        {importMode === "package" ? (
         <Form.Group className="mb-3">
           <Form.Label>Package file</Form.Label>
           <Form.Control
             type="file"
             accept=".zip,application/zip"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setFile(event.target.files?.[0] ?? null)}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPackageFile(event.target.files?.[0] ?? null)}
           />
         </Form.Group>
+        ) : (
+          <>
+            <Form.Group className="mb-3">
+              <Form.Label>Questionnaires CSV</Form.Label>
+              <Form.Control
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuestionnaireFile(event.target.files?.[0] ?? null)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Items CSV</Form.Label>
+              <Form.Control
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setItemsFile(event.target.files?.[0] ?? null)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Question Advices CSV</Form.Label>
+              <Form.Control
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setQuestionAdvicesFile(event.target.files?.[0] ?? null)}
+              />
+            </Form.Group>
+          </>
+        )}
 
         {duplicateActions.length > 0 && (
           <Form.Group className="mb-3">
