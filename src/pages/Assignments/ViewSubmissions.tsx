@@ -7,6 +7,7 @@ import Table from "components/Table/Table";
 import useAPI from "hooks/useAPI";
 import { alertActions } from "store/slices/alertSlice";
 import { IAssignmentResponse } from "utils/interfaces";
+import SubmittedContentService from "../../services/SubmittedContentService";
 
 export interface ISubmissionMember {
   fullName: string;
@@ -22,6 +23,8 @@ export interface ISubmissionLink {
   size?: number | string;
   type?: string;
   modified?: string;
+  participantId?: string;
+  folder?: string;
 }
 
 export interface ISubmission {
@@ -47,6 +50,8 @@ interface ISubmissionAssetResponse {
   size?: number | string;
   type?: string;
   modified?: string;
+  participant_id?: string;
+  folder?: string;
 }
 
 interface ISubmissionResponse {
@@ -54,6 +59,7 @@ interface ISubmissionResponse {
   submission_id?: number;
   team_id?: number;
   team_name?: string;
+  participant_id?: string;
   members?: ISubmissionMemberResponse[];
   links?: ISubmissionAssetResponse[];
   files?: ISubmissionAssetResponse[];
@@ -108,7 +114,8 @@ const formatModifiedValue = (value?: string) => {
 
 const transformAsset = (
   asset: ISubmissionAssetResponse,
-  index: number
+  index: number,
+  participantId?: string
 ): ISubmissionLink => ({
   id: asset.id ?? index + 1,
   url: asset.url,
@@ -117,6 +124,8 @@ const transformAsset = (
   size: asset.size ?? "-",
   type: asset.type ?? (asset.url ? "Link" : "File"),
   modified: asset.modified ?? "",
+  participantId: asset.participant_id ?? participantId,
+  folder: asset.folder ?? "/",
 });
 
 export const transformResponse = (
@@ -129,6 +138,7 @@ export const transformResponse = (
   return response.submissions.map((submission, index) => {
     const submissionId = submission.id ?? submission.submission_id ?? index + 1;
     const teamId = submission.team_id ?? submission.id ?? index + 1;
+    const participantId = submission.participant_id;
 
     return {
       id: submissionId,
@@ -142,10 +152,10 @@ export const transformResponse = (
           }))
         : [],
       links: Array.isArray(submission.links)
-        ? submission.links.map((link, linkIndex) => transformAsset(link, linkIndex))
+        ? submission.links.map((link, linkIndex) => transformAsset(link, linkIndex, participantId))
         : [],
       files: Array.isArray(submission.files)
-        ? submission.files.map((file, fileIndex) => transformAsset(file, fileIndex))
+        ? submission.files.map((file, fileIndex) => transformAsset(file, fileIndex, participantId))
         : [],
     };
   });
@@ -269,6 +279,8 @@ const ViewSubmissions = () => {
   const { error, isLoading, data: submissionsResponse, sendRequest: fetchSubmissions } = useAPI();
 
   const [submissions, setSubmissions] = useState<ISubmission[]>([]);
+  const [activeActionKey, setActiveActionKey] = useState<string | null>(null);
+  const [openError, setOpenError] = useState<string | null>(null);
 
   const fallbackSubmissions = useMemo(
     () => buildFallbackSubmissions(assignmentId || 1),
@@ -307,6 +319,52 @@ const ViewSubmissions = () => {
       setSubmissions(fallbackSubmissions);
     }
   }, [error, fallbackSubmissions, isLoading, submissionsResponse]);
+
+const handleOpenArtifact = async (artifact: ISubmissionLink, teamId: number) => {
+  const isExternalLink =
+    artifact.type === "Hyperlink" ||
+    (!artifact.participantId && artifact.url && /^https?:\/\//i.test(artifact.url));
+
+  if (isExternalLink && artifact.url) {
+    window.open(artifact.url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const actionKey = `open:${teamId}:${artifact.folder ?? "/"}:${artifact.name}`;
+  setActiveActionKey(actionKey);
+  setOpenError(null);
+
+  try {
+    const response = await SubmittedContentService.downloadFile(
+      artifact.name,
+      String(teamId),   // use teamId directly as the participant identifier
+      artifact.folder ?? "/"
+    );
+
+    const fileBlob =
+      response.data instanceof Blob
+        ? response.data
+        : new Blob([response.data], {
+            type: response.headers?.["content-type"] || "application/octet-stream",
+          });
+
+    const objectUrl = window.URL.createObjectURL(fileBlob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+    anchor.click();
+
+    window.setTimeout(() => {
+      window.URL.revokeObjectURL(objectUrl);
+    }, 1000);
+  } catch (err) {
+    console.error("handleOpenArtifact error:", err);
+    setOpenError(`Unable to open "${artifact.displayName}". Please try again.`);
+  } finally {
+    setActiveActionKey(null);
+  }
+};
 
   const columns = useMemo(
     () => [
@@ -382,25 +440,36 @@ const ViewSubmissions = () => {
                   <th>Size</th>
                   <th>Type</th>
                   <th>Date Modified</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
-                {artifacts.map((artifact) => (
-                  <tr key={`${row.original.id}-${artifact.id}-${artifact.name}`}>
-                    <td>
-                      {artifact.url ? (
-                        <a href={artifact.url} target="_blank" rel="noopener noreferrer">
-                          {artifact.displayName}
-                        </a>
-                      ) : (
-                        artifact.displayName
-                      )}
-                    </td>
-                    <td>{artifact.size ?? "-"}</td>
-                    <td>{artifact.type ?? "-"}</td>
-                    <td>{formatModifiedValue(artifact.modified)}</td>
-                  </tr>
-                ))}
+                {artifacts.map((artifact) => {
+                  const actionKey = `open:${row.original.teamId}:${artifact.folder ?? "/"}:${artifact.name}`;
+                  const isPending = activeActionKey === actionKey;
+
+                  return (
+                    <tr key={`${row.original.id}-${artifact.id}-${artifact.name}`}>
+                      <td>{artifact.displayName}</td>
+                      <td>{artifact.size ?? "-"}</td>
+                      <td>{artifact.type ?? "-"}</td>
+                      <td>{formatModifiedValue(artifact.modified)}</td>
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          disabled={isPending}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenArtifact(artifact, row.original.teamId);  // ← pass teamId
+                          }}
+                        >
+                          {isPending ? <Spinner animation="border" size="sm" /> : "Open"}
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           );
@@ -423,7 +492,7 @@ const ViewSubmissions = () => {
         ),
       }),
     ],
-    [assignmentId, navigate, shouldShowAssignGrade]
+    [assignmentId, navigate, shouldShowAssignGrade, activeActionKey]
   );
 
   const showLoadingState = isLoading && submissions.length === 0 && !submissionsResponse?.data;
@@ -439,6 +508,16 @@ const ViewSubmissions = () => {
           </Col>
           <hr />
         </Row>
+
+        {openError && (
+          <Row className="justify-content-center">
+            <Col md={10}>
+              <Alert variant="danger" dismissible onClose={() => setOpenError(null)}>
+                {openError}
+              </Alert>
+            </Col>
+          </Row>
+        )}
 
         {showLoadingState ? (
           <Row className="justify-content-center py-5">
