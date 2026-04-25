@@ -154,7 +154,7 @@ describe("ViewSubmissions", () => {
     mockNavigate.mockClear();
   });
 
-  it("renders team names, members, links, and history controls from API data", async () => {
+  it("renders team names, members, links, and available actions from API data", async () => {
     renderComponent();
 
     await waitFor(() => {
@@ -177,7 +177,7 @@ describe("ViewSubmissions", () => {
       "href",
       "https://example.com/files/design-doc.pdf"
     );
-    expect(screen.getByRole("button", { name: /view history/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /view history/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /view reviews/i })).toBeInTheDocument();
   });
 
@@ -216,7 +216,7 @@ describe("ViewSubmissions", () => {
     ).toBeInTheDocument();
   });
 
-  it("falls back to inline mock data and dispatches an alert when the API fails", async () => {
+  it("shows an empty state and dispatches an alert when the API fails", async () => {
     mockApiState = {
       error: "Backend unavailable",
       isLoading: false,
@@ -226,7 +226,9 @@ describe("ViewSubmissions", () => {
 
     const { store } = renderComponent();
 
-    expect(await screen.findByText("Mock Team 01")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No submissions are available for this assignment yet.")
+    ).toBeInTheDocument();
     await waitFor(() => {
       expect(store.getState().alert).toMatchObject({
         show: true,
@@ -236,16 +238,14 @@ describe("ViewSubmissions", () => {
     });
   });
 
-  it("navigates to the review and history pages from row actions", async () => {
+  it("navigates to the review page from row actions", async () => {
     const user = userEvent.setup();
 
     renderComponent();
 
     await user.click(await screen.findByRole("button", { name: /view reviews/i }));
     expect(mockNavigate).toHaveBeenCalledWith("/assignments/1/review?team_id=301");
-
-    await user.click(screen.getByRole("button", { name: /view history/i }));
-    expect(mockNavigate).toHaveBeenCalledWith("/submissions/history/901");
+    expect(screen.getByRole("button", { name: /view history/i })).toBeDisabled();
   });
 
   it("switches the primary action to assign grade after the due date passes", async () => {
