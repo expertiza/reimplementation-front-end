@@ -4,6 +4,7 @@ import RootLayout from "./layout/Root";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
+import CalibrationReview from "./pages/Assignments/CalibrationReview";
 import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
 import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
 import CreateTeams from "./pages/Assignments/CreateTeams";
@@ -123,6 +124,10 @@ function App() {
           path: "assignments/edit/:id/viewdelayedjobs",
           element: <ViewDelayedJobs />,
           loader: loadAssignment,
+        },
+        {
+          path: "assignments/edit/:assignmentId/calibration/:mapId",
+          element: <CalibrationReview />,
         },
 
         {
