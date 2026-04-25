@@ -11,11 +11,9 @@ import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
-import ExportModal from "../../components/Modals/ExportModal";
-import ImportModal from "../../components/Modals/ImportModal";
-
-
-
+import axiosClient from "../../utils/axios_client";
+import QuestionnairePackageExportModal from "./QuestionnairePackageExportModal";
+import QuestionnairePackageImportModal from "./QuestionnairePackageImportModal";
 
 const Questionnaires = () => {
   const navigate = useNavigate();
@@ -24,8 +22,6 @@ const Questionnaires = () => {
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showItemImportModal, setShowItemImportModal] = useState(false);
-  const [showAdviceImportModal, setShowAdviceImportModal] = useState(false);
   
   // loader option
   const questionnaireData :any = useLoaderData();
@@ -34,8 +30,6 @@ const Questionnaires = () => {
     setShowTypeModal(false);
     setShowExportModal(false);
     setShowImportModal(false);
-    setShowItemImportModal(false);
-    setShowAdviceImportModal(false);
   }, [location]);
 
   const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
@@ -87,6 +81,11 @@ const Questionnaires = () => {
 
   const handleClose = () => setShowTypeModal(false);
 
+  const refreshQuestionnaires = useCallback(async () => {
+    const response = await axiosClient.get("/questionnaires");
+    setTableData(response.data);
+  }, []);
+
   const handleRowClick = async (questionnaire: QuestionnaireResponse) => {
     setSelectedQuestionnaire(questionnaire);
     if (typeof questionnaire.id === "number") {
@@ -114,23 +113,7 @@ const Questionnaires = () => {
                 className="d-flex align-items-center gap-2 shadow-sm"
                 style={{ borderRadius: "8px", height: "48px" }}
               >
-                <span>Import Questionnaires</span>
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowItemImportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <span>Import Question Items</span>
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowAdviceImportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <span>Import Question Advices</span>
+                <span>Import Questionnaire Template Package</span>
               </Button>
               <Button
                 variant="outline-primary"
@@ -139,7 +122,7 @@ const Questionnaires = () => {
                 style={{ borderRadius: "8px", height: "48px" }}
               >
                 <img src="/assets/icons/export-temp.png" alt="Export questionnaires" width={18} height={18} />
-                <span>Export Questionnaires</span>
+                <span>Export Questionnaire Template Package</span>
               </Button>
               <Button
                 variant="success"
@@ -304,25 +287,15 @@ const Questionnaires = () => {
 )}
         </Container>
       </main>
-      <ExportModal
+      <QuestionnairePackageExportModal
         show={showExportModal}
         onHide={() => setShowExportModal(false)}
-        modelClass="Questionnaire"
+        selectedQuestionnaire={selectedQuestionnaire}
       />
-      <ImportModal
+      <QuestionnairePackageImportModal
         show={showImportModal}
         onHide={() => setShowImportModal(false)}
-        modelClass="Questionnaire"
-      />
-      <ImportModal
-        show={showItemImportModal}
-        onHide={() => setShowItemImportModal(false)}
-        modelClass="Item"
-      />
-      <ImportModal
-        show={showAdviceImportModal}
-        onHide={() => setShowAdviceImportModal(false)}
-        modelClass="QuestionAdvice"
+        onImported={refreshQuestionnaires}
       />
     </>
     
