@@ -115,6 +115,15 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   // and let us trigger reloads only after a mutation succeeds.
   const { data: addCalibrationResponse, error: addCalibrationError, sendRequest: sendAddCalibrationRequest } = useAPI();
   const { data: removeCalibrationResponse, error: removeCalibrationError, sendRequest: sendRemoveCalibrationRequest } = useAPI();
+  // DEMO_INSTRUCTOR_RESPONSE
+  // Demo-only: "Begin" on the Calibration tab seeds a mock instructor
+  // calibration response so the report has data to render. The real review
+  // form is out of scope of this project. When the real form ships, delete
+  // this hook, the handleBeginCalibrationReview callback, both useEffects
+  // that consume beginCalibrationResponse / beginCalibrationError, and
+  // switch the "Begin" button in the Review-column cell back to a plain
+  // anchor pointing at the real review URL.
+  const { data: beginCalibrationResponse, error: beginCalibrationError, sendRequest: sendBeginCalibrationRequest } = useAPI();
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
   const [calibrationUsername, setCalibrationUsername] = useState<string>("");
@@ -643,6 +652,38 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     },
     [assignmentData?.id, sendRemoveCalibrationRequest]
   );
+
+  // DEMO_INSTRUCTOR_RESPONSE
+  // Demo-only: kick off a mock instructor calibration response when the
+  // instructor clicks "Begin" on a calibration row. The backend materializes
+  // a submitted Response with default answers so the calibration report has
+  // data to display. Once it returns, refresh the participant list so the
+  // row's instructor_review_status flips from 'not_started' to 'submitted'.
+  const handleBeginCalibrationReview = useCallback(
+    (mapId: number | string | null | undefined) => {
+      if (!assignmentData?.id || !mapId) return;
+      sendBeginCalibrationRequest({
+        url: `/assignments/${assignmentData.id}/review_mappings/${mapId}/mock_instructor_response`,
+        method: HttpMethod.POST,
+      }).catch(() => {
+        // useAPI already surfaces the error into beginCalibrationError.
+      });
+    },
+    [assignmentData?.id, sendBeginCalibrationRequest]
+  );
+
+  // DEMO_INSTRUCTOR_RESPONSE: success/error effects for the demo seeder.
+  useEffect(() => {
+    if (beginCalibrationResponse && beginCalibrationResponse.status >= 200 && beginCalibrationResponse.status < 300) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Mock instructor and peer calibration responses submitted" }));
+      refreshCalibrationParticipants();
+    }
+  }, [beginCalibrationResponse, dispatch, refreshCalibrationParticipants]);
+
+  // DEMO_INSTRUCTOR_RESPONSE
+  useEffect(() => {
+    beginCalibrationError && dispatch(alertActions.showAlert({ variant: "danger", message: beginCalibrationError }));
+  }, [beginCalibrationError, dispatch]);
 
 
   const onSubmit = (
@@ -1295,10 +1336,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                             accessorKey: "participant_name", header: "Participant name", enableSorting: false, enableColumnFilter: false
                           },
                           {
-                            // Review column links point at routes assumed to be provided by
-                            // the existing review-flow (out of scope for this project). When
-                            // no instructor review exists yet we show a single "Begin" link;
-                            // once a response exists we show "View | Edit".
+                            // Review column. The real review form is out of scope of this
+                            // project, so:
+                            //   - "Begin" posts to the demo endpoint that seeds a mock
+                            //     instructor calibration response, then the row refreshes
+                            //     and flips to "View | Edit".
+                            //   - "View | Edit" link to placeholder routes assumed to be
+                            //     provided by the existing review flow.
                             cell: ({ row }) => {
                               const mapId = row.original.instructor_review_map_id;
                               const status = row.original.instructor_review_status;
@@ -1308,7 +1352,28 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                               const linkStyle: React.CSSProperties = { color: '#986633', textDecoration: 'none' };
 
                               if (status === 'not_started') {
-                                return <a style={linkStyle} href={`${reviewBase}/begin`}>Begin</a>;
+                                // DEMO_INSTRUCTOR_RESPONSE: when the real review
+                                // form ships, replace this button with a plain
+                                // <a style={linkStyle} href={`${reviewBase}/begin`}>Begin</a>
+                                // and remove handleBeginCalibrationReview.
+                                const beginStyle: React.CSSProperties = {
+                                  ...linkStyle,
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: 0,
+                                  cursor: mapId ? 'pointer' : 'not-allowed',
+                                  font: 'inherit',
+                                };
+                                return (
+                                  <button
+                                    type="button"
+                                    style={beginStyle}
+                                    disabled={!mapId}
+                                    onClick={() => handleBeginCalibrationReview(mapId)}
+                                  >
+                                    Begin
+                                  </button>
+                                );
                               }
 
                               return (
