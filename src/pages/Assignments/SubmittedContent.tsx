@@ -176,12 +176,19 @@ const SubmittedContent = () => {
       const liveResponse = liveResult.status === "fulfilled" ? liveResult.value : null;
       const summaryResponse =
         summaryResult.status === "fulfilled" ? summaryResult.value : null;
+      const summaryHasArtifacts =
+        Boolean(summaryResponse) &&
+        ((summaryResponse?.files?.length ?? 0) > 0 ||
+          (summaryResponse?.folders?.length ?? 0) > 0 ||
+          (summaryResponse?.hyperlinks?.length ?? 0) > 0);
 
       if (!liveResponse && !summaryResponse) {
         throw liveResult.status === "rejected" ? liveResult.reason : summaryResult.reason;
       }
 
-      const nextContents = preferLiveDisplay ? liveResponse || summaryResponse : summaryResponse || liveResponse;
+      const nextContents = preferLiveDisplay
+        ? liveResponse || (summaryHasArtifacts ? summaryResponse : null)
+        : (summaryHasArtifacts ? summaryResponse : null) || liveResponse;
 
       setLiveFolderContents({
         current_folder: liveResponse?.current_folder || folderPath,
@@ -189,7 +196,7 @@ const SubmittedContent = () => {
         folders: liveResponse?.folders ?? [],
         hyperlinks: liveResponse?.hyperlinks ?? [],
       });
-      setIsUsingSubmissionSummary(Boolean(summaryResponse) && !preferLiveDisplay);
+      setIsUsingSubmissionSummary(summaryHasArtifacts && !preferLiveDisplay);
 
       setFolderContents({
         current_folder: nextContents.current_folder || folderPath,
@@ -771,10 +778,12 @@ const SubmittedContent = () => {
                               );
                             })}
                             {files.map((file: IListedFile) => {
-                              const openActionKey = `open:${currentFolder}:${file.name}`;
-                              const downloadActionKey = `download:${currentFolder}:${file.name}`;
                               const deleteActionKey = `delete:${currentFolder}:${file.name}`;
                               const liveFileName = resolveLiveFileName(file.name);
+                              const resolvedFileName =
+                                isUsingSubmissionSummary ? liveFileName : file.name;
+                              const openActionKey = `open:${currentFolder}:${resolvedFileName ?? file.name}`;
+                              const downloadActionKey = `download:${currentFolder}:${resolvedFileName ?? file.name}`;
 
                               return (
                                 <tr key={`file-${file.name}`}>
@@ -787,8 +796,13 @@ const SubmittedContent = () => {
                                       <Button
                                         size="sm"
                                         variant="outline-primary"
-                                        onClick={() => handleOpenFile(file.name, false)}
-                                        disabled={activeActionKey === openActionKey}
+                                        onClick={() =>
+                                          resolvedFileName && handleOpenFile(resolvedFileName, false)
+                                        }
+                                        disabled={
+                                          (isUsingSubmissionSummary && !resolvedFileName) ||
+                                          activeActionKey === openActionKey
+                                        }
                                       >
                                         {activeActionKey === openActionKey ? (
                                           <Spinner animation="border" size="sm" />
@@ -802,8 +816,13 @@ const SubmittedContent = () => {
                                       <Button
                                         size="sm"
                                         variant="outline-secondary"
-                                        onClick={() => handleOpenFile(file.name, true)}
-                                        disabled={activeActionKey === downloadActionKey}
+                                        onClick={() =>
+                                          resolvedFileName && handleOpenFile(resolvedFileName, true)
+                                        }
+                                        disabled={
+                                          (isUsingSubmissionSummary && !resolvedFileName) ||
+                                          activeActionKey === downloadActionKey
+                                        }
                                       >
                                         {activeActionKey === downloadActionKey ? (
                                           <Spinner animation="border" size="sm" />

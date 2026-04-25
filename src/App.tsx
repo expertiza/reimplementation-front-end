@@ -325,6 +325,10 @@ function App() {
           path: "assignments/:id/review",
           element: <ReviewReportPage />,
         },
+        {
+          path: "assignments/:id/assign-grades",
+          element: <ReviewReportPage />,
+        },
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",

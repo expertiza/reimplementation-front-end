@@ -187,7 +187,7 @@
 .submitted-content-link {
   color: #0d6efd;
   text-decoration: none;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .submitted-content-link:hover {

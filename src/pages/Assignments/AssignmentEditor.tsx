@@ -77,13 +77,18 @@ interface ICalibrationSubmissionsApiResponse {
   submissions?: ICalibrationSubmissionResponse[];
 }
 
+interface ICalibrationSubmissionItem {
+  label: string;
+  url?: string;
+}
+
 interface ICalibrationSubmissionRow {
   id: number;
   participant_name: string;
   review_status: "not_started";
   submitted_content: {
-    hyperlinks: string[];
-    files: string[];
+    hyperlinks: ICalibrationSubmissionItem[];
+    files: ICalibrationSubmissionItem[];
   };
 }
 
@@ -108,8 +113,21 @@ const getCalibrationSubmissionLabel = (
   return `Submission ${index + 1}`;
 };
 
-const getCalibrationAssetLink = (asset: ICalibrationSubmissionAsset) =>
-  asset.url || asset.display_name || asset.name || "#";
+const transformCalibrationAsset = (
+  asset: ICalibrationSubmissionAsset
+): ICalibrationSubmissionItem | null => {
+  const url = asset.url?.trim();
+  const label = asset.display_name?.trim() || asset.name?.trim() || url;
+
+  if (!label) {
+    return null;
+  }
+
+  return {
+    label,
+    url: url || undefined,
+  };
+};
 
 const transformCalibrationSubmissions = (
   response?: ICalibrationSubmissionsApiResponse | null
@@ -119,10 +137,14 @@ const transformCalibrationSubmissions = (
   return submissions
     .map((submission, index) => {
       const hyperlinks = Array.isArray(submission.links)
-        ? submission.links.map(getCalibrationAssetLink).filter(Boolean)
+        ? submission.links
+            .map(transformCalibrationAsset)
+            .filter((item): item is ICalibrationSubmissionItem => item !== null)
         : [];
       const files = Array.isArray(submission.files)
-        ? submission.files.map(getCalibrationAssetLink).filter(Boolean)
+        ? submission.files
+            .map(transformCalibrationAsset)
+            .filter((item): item is ICalibrationSubmissionItem => item !== null)
         : [];
 
       return {
@@ -1294,16 +1316,24 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                               <div>Hyperlinks:</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {
-                                  row.original.submitted_content.hyperlinks.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  row.original.submitted_content.hyperlinks.map((item: ICalibrationSubmissionItem, index: number) => {
+                                    return item.url ? (
+                                      <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item.url}>{item.label}</a>
+                                    ) : (
+                                      <span key={index}>{item.label}</span>
+                                    );
                                   })
                                 }
                               </div>
                               <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column' }}>Files:</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {
-                                  row.original.submitted_content.files.map((item: any, index: number) => {
-                                    return <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item}>{item}</a>;
+                                  row.original.submitted_content.files.map((item: ICalibrationSubmissionItem, index: number) => {
+                                    return item.url ? (
+                                      <a style={{ color: '#986633', textDecoration: 'none' }} key={index} href={item.url}>{item.label}</a>
+                                    ) : (
+                                      <span key={index}>{item.label}</span>
+                                    );
                                   })
                                 }
                               </div>
