@@ -564,7 +564,7 @@ const SubmittedContent = () => {
           <section className="submitted-content-panel submitted-content-hero">
             <div className="submitted-content-hero-copy">
               <span className="submitted-content-kicker">Student Workspace</span>
-              <h1 className="submitted-content-title mb-2">View Submissions</h1>
+              <h1 className="submitted-content-title mb-2">{assignment.name} - View Submissions</h1>
               <p className="submitted-content-subtitle mb-0">
                 {assignment?.name
                   ? `Review, submit, and manage your team artifacts for ${assignment.name}.`
