@@ -103,6 +103,7 @@ const SubmittedContent = () => {
   const [isSubmittingFile, setIsSubmittingFile] = useState(false);
   const [isSubmittingHyperlink, setIsSubmittingHyperlink] = useState(false);
   const [isUsingSubmissionSummary, setIsUsingSubmissionSummary] = useState(false);
+  const [preferLiveContents, setPreferLiveContents] = useState(false);
   const [activeActionKey, setActiveActionKey] = useState<string | null>(null);
   const [showHyperlinkModal, setShowHyperlinkModal] = useState(false);
   const [hyperlinkUrl, setHyperlinkUrl] = useState("");
@@ -115,6 +116,7 @@ const SubmittedContent = () => {
   const showLoadingState =
     isResolvingParticipant || (isLoadingArtifacts && !hasArtifacts && !error);
   const pathSegments = getPathSegments(currentFolder);
+  const currentFolderLabel = currentFolder === "/" ? "Root" : currentFolder;
 
   const resolveLiveHyperlinkIndex = (hyperlink: string, summaryIndex: number) => {
     const liveHyperlinks = liveFolderContents.hyperlinks ?? [];
@@ -145,31 +147,48 @@ const SubmittedContent = () => {
     return -1;
   };
 
+  const resolveLiveFileName = (fileName: string) => {
+    const liveFiles = liveFolderContents.files ?? [];
+    const matchingFile = liveFiles.find((liveFile) => liveFile.name === fileName);
+    return matchingFile?.name ?? null;
+  };
+
   const loadFolderContents = async (
     resolvedParticipantId: string,
     folderPath: string,
-    resolvedTeamId: number | null = teamId
+    resolvedTeamId: number | null = teamId,
+    preferLiveDisplay: boolean = preferLiveContents
   ) => {
     setIsLoadingArtifacts(true);
     setError(null);
 
     try {
-      const [liveResponse, summaryResponse] = await Promise.all([
+      const shouldLoadSummary =
+        folderPath === "/" && assignmentId > 0 && resolvedTeamId && !preferLiveDisplay;
+      const [liveResult, summaryResult] = await Promise.allSettled([
         SubmittedContentService.listFiles(resolvedParticipantId, folderPath),
-        folderPath === "/" && assignmentId > 0 && resolvedTeamId
+        shouldLoadSummary
           ? SubmittedContentService.getTeamSubmissionSummary(assignmentId, resolvedTeamId)
           : Promise.resolve(null),
       ]);
 
-      const nextContents = summaryResponse || liveResponse;
+      const liveResponse = liveResult.status === "fulfilled" ? liveResult.value : null;
+      const summaryResponse =
+        summaryResult.status === "fulfilled" ? summaryResult.value : null;
+
+      if (!liveResponse && !summaryResponse) {
+        throw liveResult.status === "rejected" ? liveResult.reason : summaryResult.reason;
+      }
+
+      const nextContents = preferLiveDisplay ? liveResponse || summaryResponse : summaryResponse || liveResponse;
 
       setLiveFolderContents({
-        current_folder: liveResponse.current_folder || folderPath,
-        files: liveResponse.files ?? [],
-        folders: liveResponse.folders ?? [],
-        hyperlinks: liveResponse.hyperlinks ?? [],
+        current_folder: liveResponse?.current_folder || folderPath,
+        files: liveResponse?.files ?? [],
+        folders: liveResponse?.folders ?? [],
+        hyperlinks: liveResponse?.hyperlinks ?? [],
       });
-      setIsUsingSubmissionSummary(Boolean(summaryResponse));
+      setIsUsingSubmissionSummary(Boolean(summaryResponse) && !preferLiveDisplay);
 
       setFolderContents({
         current_folder: nextContents.current_folder || folderPath,
@@ -214,6 +233,7 @@ const SubmittedContent = () => {
       setError(null);
       setSuccess(null);
       setCurrentFolder("/");
+      setPreferLiveContents(false);
 
       try {
         const participantContext = await SubmittedContentService.findParticipantContext(
@@ -371,16 +391,31 @@ const SubmittedContent = () => {
   const handleDeleteEntry = async (entryName: string, entryType: "file" | "folder") => {
     if (!participantId) return;
 
+    const liveEntryName =
+      entryType === "file" && isUsingSubmissionSummary
+        ? resolveLiveFileName(entryName)
+        : entryName;
+
+    if (entryType === "file" && !liveEntryName) {
+      setError("This file could not be matched to a live team submission for deletion.");
+      return;
+    }
+
     const actionKey = `delete:${currentFolder}:${entryName}`;
     setActiveActionKey(actionKey);
     setError(null);
 
     try {
-      await SubmittedContentService.deleteFile(entryName, participantId, currentFolder);
+      await SubmittedContentService.deleteFile(
+        liveEntryName || entryName,
+        participantId,
+        currentFolder
+      );
+      setPreferLiveContents(true);
       setSuccess(
         `${entryType === "folder" ? "Folder" : "Artifact"} "${entryName}" was deleted successfully.`
       );
-      await loadFolderContents(participantId, currentFolder);
+      await loadFolderContents(participantId, currentFolder, teamId, true);
     } catch (deleteError) {
       setError(
         buildErrorMessage(
@@ -411,8 +446,9 @@ const SubmittedContent = () => {
 
     try {
       await SubmittedContentService.removeHyperlink(participantId, liveIndex);
+      setPreferLiveContents(true);
       setSuccess(`Removed hyperlink "${hyperlink}".`);
-      await loadFolderContents(participantId, currentFolder);
+      await loadFolderContents(participantId, currentFolder, teamId, true);
     } catch (removeError) {
       setError(
         buildErrorMessage(
@@ -459,8 +495,9 @@ const SubmittedContent = () => {
 
     try {
       await SubmittedContentService.submitFile(resolvedParticipantId, nextFile, currentFolder);
+      setPreferLiveContents(true);
       setSuccess(`Uploaded "${nextFile.name}" successfully.`);
-      await loadFolderContents(resolvedParticipantId, currentFolder, teamId);
+      await loadFolderContents(resolvedParticipantId, currentFolder, teamId, true);
     } catch (submitError) {
       setError(
         buildErrorMessage(submitError, "Unable to upload the selected file. Please try again.")
@@ -505,10 +542,11 @@ const SubmittedContent = () => {
 
     try {
       await SubmittedContentService.submitHyperlink(trimmedUrl, participantId);
+      setPreferLiveContents(true);
       setSuccess("Hyperlink submitted successfully.");
       setShowHyperlinkModal(false);
       setHyperlinkUrl("");
-      await loadFolderContents(participantId, currentFolder, teamId);
+      await loadFolderContents(participantId, currentFolder, teamId, true);
     } catch (submitError) {
       setError(
         buildErrorMessage(submitError, "Unable to submit the hyperlink. Please try again.")
@@ -521,44 +559,32 @@ const SubmittedContent = () => {
   return (
     <main>
       <Container className="submitted-content-container py-3 py-md-4">
-        <Row className="align-items-center mb-3">
-          <Col md={8}>
-            <h1 className="submitted-content-title mb-1">View Submissions</h1>
-            <p className="submitted-content-subtitle mb-0">
-              {assignment?.name
-                ? `Student artifact view for ${assignment.name}`
-                : "Student artifact view for this assignment"}
-            </p>
-          </Col>
-          <Col md={4} className="d-flex justify-content-md-end mt-3 mt-md-0">
-            <Button
-              variant="outline-secondary"
-              onClick={refreshArtifacts}
-              disabled={!participantId || isLoadingArtifacts}
-            >
-              {isLoadingArtifacts ? (
-                <Spinner animation="border" size="sm" className="me-2" />
-              ) : (
-                <FaSyncAlt className="me-2" />
-              )}
-              Refresh
-            </Button>
-          </Col>
-        </Row>
+        <div className="submitted-content-shell">
+          <section className="submitted-content-panel submitted-content-hero">
+            <div className="submitted-content-hero-copy">
+              <span className="submitted-content-kicker">Student Workspace</span>
+              <h1 className="submitted-content-title mb-2">View Submissions</h1>
+              <p className="submitted-content-subtitle mb-0">
+                {assignment?.name
+                  ? `Review, submit, and manage your team artifacts for ${assignment.name}.`
+                  : "Review, submit, and manage your team artifacts for this assignment."}
+              </p>
+            </div>
+          </section>
 
-        {error && (
-          <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-3">
-            {error}
-          </Alert>
-        )}
+          {error && (
+            <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-0">
+              {error}
+            </Alert>
+          )}
 
-        {success && (
-          <Alert variant="success" dismissible onClose={() => setSuccess(null)} className="mb-3">
-            {success}
-          </Alert>
-        )}
+          {success && (
+            <Alert variant="success" dismissible onClose={() => setSuccess(null)} className="mb-0">
+              {success}
+            </Alert>
+          )}
 
-        <div className="submitted-content-panel submitted-content-actions mb-3">
+          <section className="submitted-content-panel submitted-content-actions">
           <input
             ref={uploadInputRef}
             type="file"
@@ -566,301 +592,326 @@ const SubmittedContent = () => {
             onChange={handleFileSelection}
             disabled={isSubmittingFile}
           />
-          <div className="d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
-            <div>
+            <div className="submitted-content-actions-layout">
+              <div className="submitted-content-actions-copy">
               <h2 className="submitted-content-section-title mb-1">Submit work</h2>
               <p className="submitted-content-panel-copy mb-0">
                 Upload files or add links for the current assignment without leaving this page.
               </p>
               <p className="submitted-content-action-note mb-0">{actionHelperMessage}</p>
             </div>
-            <div className="submitted-content-action-row">
-              <Button
-                className="submission-action-button"
-                onClick={handleUploadButtonClick}
-                disabled={isSubmittingFile || isResolvingParticipant}
-              >
-                {isSubmittingFile ? (
-                  <Spinner animation="border" size="sm" className="me-2" />
-                ) : (
-                  <FaUpload className="me-2" />
-                )}
-                {isSubmittingFile ? "Uploading..." : "Upload file"}
-              </Button>
-              <Button
-                variant="outline-primary"
-                className="submission-action-button"
-                onClick={handleOpenHyperlinkModal}
-                disabled={isSubmittingHyperlink || isResolvingParticipant}
-              >
-                {isSubmittingHyperlink ? (
-                  <Spinner animation="border" size="sm" className="me-2" />
-                ) : (
-                  <FaLink className="me-2" />
-                )}
-                Add hyperlink
-              </Button>
+              <div className="submitted-content-action-stack">
+                <div className="submitted-content-action-row">
+                  <Button
+                    className="submission-action-button"
+                    onClick={handleUploadButtonClick}
+                    disabled={isSubmittingFile || isResolvingParticipant}
+                  >
+                    {isSubmittingFile ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaUpload className="me-2" />
+                    )}
+                    {isSubmittingFile ? "Uploading..." : "Upload file"}
+                  </Button>
+                  <Button
+                    variant="outline-primary"
+                    className="submission-action-button"
+                    onClick={handleOpenHyperlinkModal}
+                    disabled={isSubmittingHyperlink || isResolvingParticipant}
+                  >
+                    {isSubmittingHyperlink ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaLink className="me-2" />
+                    )}
+                    Add hyperlink
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <Row className="mb-3">
-          <Col>
-            <div className="submitted-content-panel">
-              <div className="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
-                <div>
-                  <h2 className="submitted-content-section-title mb-1">Artifacts</h2>
+          <Row className="g-3">
+            <Col xl={8}>
+              <div className="submitted-content-panel h-100">
+                <div className="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+                  <div>
+                    <h2 className="submitted-content-section-title mb-1">Artifacts</h2>
+                    <p className="submitted-content-panel-copy mb-0">
+                      Open, download, or remove the artifacts submitted by your team.
+                    </p>
+                  </div>
+                  <div className="submitted-content-toolbar">
+                    <Button
+                      size="sm"
+                      variant="outline-secondary"
+                      className="submitted-content-refresh-button"
+                      onClick={refreshArtifacts}
+                      disabled={!participantId || isLoadingArtifacts}
+                    >
+                      {isLoadingArtifacts ? (
+                        <Spinner animation="border" size="sm" className="me-2" />
+                      ) : (
+                        <FaSyncAlt className="me-2" />
+                      )}
+                      Refresh
+                    </Button>
+                    <div className="submitted-content-folder-indicator">
+                      <span className="fw-semibold">Current folder:</span> {currentFolderLabel}
+                    </div>
+                  </div>
+                </div>
+
+                <Breadcrumb className="submitted-content-breadcrumb mb-2">
+                  <Breadcrumb.Item
+                    active={currentFolder === "/"}
+                    linkAs="button"
+                    onClick={() => setCurrentFolder("/")}
+                  >
+                    Root
+                  </Breadcrumb.Item>
+                  {pathSegments.map((segment) => (
+                    <Breadcrumb.Item
+                      key={segment.path}
+                      active={segment.path === currentFolder}
+                      linkAs="button"
+                      onClick={() => setCurrentFolder(segment.path)}
+                    >
+                      {segment.label}
+                    </Breadcrumb.Item>
+                  ))}
+                </Breadcrumb>
+
+                {isUsingSubmissionSummary && (
+                  <Alert variant="secondary" className="mb-3">
+                    Showing your team&apos;s submissions from the assignment submission feed.
+                    Uploads and removals still use the live team submission workspace, so file
+                    deletion is only available when the visible file still exists there.
+                  </Alert>
+                )}
+
+                {showLoadingState ? (
+                  <div className="submitted-content-loading">
+                    <Spinner animation="border" role="status" />
+                    <span>Loading submitted artifacts...</span>
+                  </div>
+                ) : participantId ? (
+                  <>
+                    {folders.length === 0 && files.length === 0 ? (
+                      <Alert variant="info" className="mb-0">
+                        {EMPTY_MESSAGE}
+                      </Alert>
+                    ) : (
+                      <div className="table-responsive">
+                        <Table hover className="submitted-content-table mb-0">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Type</th>
+                              <th>Size</th>
+                              <th>Modified</th>
+                              <th className="text-end">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {folders.map((folder: IListedFolder) => {
+                              const deleteActionKey = `delete:${currentFolder}:${folder.name}`;
+
+                              return (
+                                <tr key={`folder-${folder.name}`}>
+                                  <td className="fw-semibold">
+                                    <FaFolderOpen className="me-2 text-warning" />
+                                    {folder.name}
+                                  </td>
+                                  <td>Folder</td>
+                                  <td>-</td>
+                                  <td>{formatTimestamp(folder.modified_at)}</td>
+                                  <td className="text-end">
+                                    <div className="artifact-actions">
+                                      <Button
+                                        size="sm"
+                                        variant="outline-primary"
+                                        onClick={() => handleOpenFolder(folder.name)}
+                                      >
+                                        Open
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline-danger"
+                                        onClick={() => handleDeleteEntry(folder.name, "folder")}
+                                        disabled={
+                                          isUsingSubmissionSummary ||
+                                          activeActionKey === deleteActionKey
+                                        }
+                                      >
+                                        {activeActionKey === deleteActionKey ? (
+                                          <Spinner animation="border" size="sm" />
+                                        ) : (
+                                          <FaTrash />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {files.map((file: IListedFile) => {
+                              const openActionKey = `open:${currentFolder}:${file.name}`;
+                              const downloadActionKey = `download:${currentFolder}:${file.name}`;
+                              const deleteActionKey = `delete:${currentFolder}:${file.name}`;
+                              const liveFileName = resolveLiveFileName(file.name);
+
+                              return (
+                                <tr key={`file-${file.name}`}>
+                                  <td className="fw-semibold">{file.name}</td>
+                                  <td>{file.type?.toUpperCase() || "File"}</td>
+                                  <td>{SubmittedContentService.formatFileSize(file.size || 0)}</td>
+                                  <td>{formatTimestamp(file.modified_at)}</td>
+                                  <td className="text-end">
+                                    <div className="artifact-actions">
+                                      <Button
+                                        size="sm"
+                                        variant="outline-primary"
+                                        onClick={() => handleOpenFile(file.name, false)}
+                                        disabled={activeActionKey === openActionKey}
+                                      >
+                                        {activeActionKey === openActionKey ? (
+                                          <Spinner animation="border" size="sm" />
+                                        ) : (
+                                          <>
+                                            <FaExternalLinkAlt className="me-1" />
+                                            Open
+                                          </>
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        onClick={() => handleOpenFile(file.name, true)}
+                                        disabled={activeActionKey === downloadActionKey}
+                                      >
+                                        {activeActionKey === downloadActionKey ? (
+                                          <Spinner animation="border" size="sm" />
+                                        ) : (
+                                          <>
+                                            <FaDownload className="me-1" />
+                                            Download
+                                          </>
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline-danger"
+                                        onClick={() => handleDeleteEntry(file.name, "file")}
+                                        disabled={
+                                          (isUsingSubmissionSummary && !liveFileName) ||
+                                          activeActionKey === deleteActionKey
+                                        }
+                                      >
+                                        {activeActionKey === deleteActionKey ? (
+                                          <Spinner animation="border" size="sm" />
+                                        ) : (
+                                          <FaTrash />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Alert variant="warning" className="mb-0">
+                    You are not currently associated with a submission-capable team for this
+                    assignment.
+                  </Alert>
+                )}
+              </div>
+            </Col>
+            <Col xl={4}>
+              <div className="submitted-content-panel h-100">
+                <div className="mb-2">
+                  <h2 className="submitted-content-section-title mb-1">Hyperlinks</h2>
                   <p className="submitted-content-panel-copy mb-0">
-                    Open, download, or remove the artifacts submitted by your team.
+                    Submitted URLs are shown separately so you can open them directly or remove them.
                   </p>
                 </div>
-                <div className="submitted-content-folder-indicator">
-                  <span className="fw-semibold">Current folder:</span> {currentFolder}
-                </div>
-              </div>
 
-              <Breadcrumb className="submitted-content-breadcrumb mb-2">
-                <Breadcrumb.Item
-                  active={currentFolder === "/"}
-                  linkAs="button"
-                  onClick={() => setCurrentFolder("/")}
-                >
-                  Root
-                </Breadcrumb.Item>
-                {pathSegments.map((segment) => (
-                  <Breadcrumb.Item
-                    key={segment.path}
-                    active={segment.path === currentFolder}
-                    linkAs="button"
-                    onClick={() => setCurrentFolder(segment.path)}
-                  >
-                    {segment.label}
-                  </Breadcrumb.Item>
-                ))}
-              </Breadcrumb>
+                {hyperlinks.length === 0 ? (
+                  <Alert variant="light" className="mb-0">
+                    No hyperlinks have been submitted for this folder yet.
+                  </Alert>
+                ) : (
+                  <div className="table-responsive">
+                    <Table hover className="submitted-content-table mb-0">
+                      <thead>
+                        <tr>
+                          <th>Hyperlink</th>
+                          <th className="text-end">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {hyperlinks.map((hyperlink, index) => {
+                          const actionKey = `link:${index}`;
+                          const liveHyperlinkIndex = resolveLiveHyperlinkIndex(hyperlink, index);
 
-              {isUsingSubmissionSummary && (
-                <Alert variant="secondary" className="mb-3">
-                  Showing your team&apos;s submissions from the assignment submission feed.
-                  Uploads and removals still use the live team submission workspace.
-                </Alert>
-              )}
-
-              {showLoadingState ? (
-                <div className="submitted-content-loading">
-                  <Spinner animation="border" role="status" />
-                  <span>Loading submitted artifacts...</span>
-                </div>
-              ) : participantId ? (
-                <>
-                  {folders.length === 0 && files.length === 0 ? (
-                    <Alert variant="info" className="mb-0">
-                      {EMPTY_MESSAGE}
-                    </Alert>
-                  ) : (
-                    <div className="table-responsive">
-                      <Table hover className="submitted-content-table mb-0">
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Size</th>
-                            <th>Modified</th>
-                            <th className="text-end">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {folders.map((folder: IListedFolder) => {
-                            const deleteActionKey = `delete:${currentFolder}:${folder.name}`;
-
-                            return (
-                              <tr key={`folder-${folder.name}`}>
-                                <td className="fw-semibold">
-                                  <FaFolderOpen className="me-2 text-warning" />
-                                  {folder.name}
-                                </td>
-                                <td>Folder</td>
-                                <td>-</td>
-                                <td>{formatTimestamp(folder.modified_at)}</td>
-                                <td className="text-end">
-                                  <div className="artifact-actions">
-                                    <Button
-                                      size="sm"
-                                      variant="outline-primary"
-                                      onClick={() => handleOpenFolder(folder.name)}
-                                    >
-                                      Open
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline-danger"
-                                      onClick={() => handleDeleteEntry(folder.name, "folder")}
-                                      disabled={
-                                        isUsingSubmissionSummary ||
-                                        activeActionKey === deleteActionKey
-                                      }
-                                    >
-                                      {activeActionKey === deleteActionKey ? (
-                                        <Spinner animation="border" size="sm" />
-                                      ) : (
-                                        <FaTrash />
-                                      )}
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          {files.map((file: IListedFile) => {
-                            const openActionKey = `open:${currentFolder}:${file.name}`;
-                            const downloadActionKey = `download:${currentFolder}:${file.name}`;
-                            const deleteActionKey = `delete:${currentFolder}:${file.name}`;
-
-                            return (
-                              <tr key={`file-${file.name}`}>
-                                <td className="fw-semibold">{file.name}</td>
-                                <td>{file.type?.toUpperCase() || "File"}</td>
-                                <td>{SubmittedContentService.formatFileSize(file.size || 0)}</td>
-                                <td>{formatTimestamp(file.modified_at)}</td>
-                                <td className="text-end">
-                                  <div className="artifact-actions">
-                                    <Button
-                                      size="sm"
-                                      variant="outline-primary"
-                                      onClick={() => handleOpenFile(file.name, false)}
-                                      disabled={activeActionKey === openActionKey}
-                                    >
-                                      {activeActionKey === openActionKey ? (
-                                        <Spinner animation="border" size="sm" />
-                                      ) : (
-                                        <>
-                                          <FaExternalLinkAlt className="me-1" />
-                                          Open
-                                        </>
-                                      )}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline-secondary"
-                                      onClick={() => handleOpenFile(file.name, true)}
-                                      disabled={activeActionKey === downloadActionKey}
-                                    >
-                                      {activeActionKey === downloadActionKey ? (
-                                        <Spinner animation="border" size="sm" />
-                                      ) : (
-                                        <>
-                                          <FaDownload className="me-1" />
-                                          Download
-                                        </>
-                                      )}
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline-danger"
-                                      onClick={() => handleDeleteEntry(file.name, "file")}
-                                      disabled={
-                                        isUsingSubmissionSummary ||
-                                        activeActionKey === deleteActionKey
-                                      }
-                                    >
-                                      {activeActionKey === deleteActionKey ? (
-                                        <Spinner animation="border" size="sm" />
-                                      ) : (
-                                        <FaTrash />
-                                      )}
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </Table>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Alert variant="warning" className="mb-0">
-                  You are not currently associated with a submission-capable team for this
-                  assignment.
-                </Alert>
-              )}
-            </div>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col>
-            <div className="submitted-content-panel">
-              <div className="mb-2">
-                <h2 className="submitted-content-section-title mb-1">Hyperlinks</h2>
-                <p className="submitted-content-panel-copy mb-0">
-                  Submitted URLs are shown separately so you can open them directly or remove them.
-                </p>
-              </div>
-
-              {hyperlinks.length === 0 ? (
-                <Alert variant="light" className="mb-0">
-                  No hyperlinks have been submitted for this folder yet.
-                </Alert>
-              ) : (
-                <div className="table-responsive">
-                  <Table hover className="submitted-content-table mb-0">
-                    <thead>
-                      <tr>
-                        <th>Hyperlink</th>
-                        <th className="text-end">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {hyperlinks.map((hyperlink, index) => {
-                        const actionKey = `link:${index}`;
-                        const liveHyperlinkIndex = resolveLiveHyperlinkIndex(hyperlink, index);
-
-                        return (
-                          <tr key={`${hyperlink}-${index}`}>
-                            <td>
-                              <a href={hyperlink} target="_blank" rel="noopener noreferrer">
-                                {hyperlink}
-                              </a>
-                            </td>
-                            <td className="text-end">
-                              <div className="artifact-actions justify-content-end">
-                                <Button
-                                  size="sm"
-                                  variant="outline-primary"
-                                  as="a"
+                          return (
+                            <tr key={`${hyperlink}-${index}`}>
+                              <td>
+                                <a
+                                  className="submitted-content-link"
                                   href={hyperlink}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
-                                  <FaExternalLinkAlt className="me-1" />
-                                  Open
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline-danger"
-                                  onClick={() => handleRemoveHyperlink(index, hyperlink)}
-                                  disabled={activeActionKey === actionKey || liveHyperlinkIndex < 0}
-                                >
-                                  {activeActionKey === actionKey ? (
-                                    <Spinner animation="border" size="sm" />
-                                  ) : (
-                                    <FaTrash />
-                                  )}
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
+                                  {hyperlink}
+                                </a>
+                              </td>
+                              <td className="text-end">
+                                <div className="artifact-actions justify-content-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline-primary"
+                                    as="a"
+                                    href={hyperlink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <FaExternalLinkAlt className="me-1" />
+                                    Open
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() => handleRemoveHyperlink(index, hyperlink)}
+                                    disabled={
+                                      activeActionKey === actionKey || liveHyperlinkIndex < 0
+                                    }
+                                  >
+                                    {activeActionKey === actionKey ? (
+                                      <Spinner animation="border" size="sm" />
+                                    ) : (
+                                      <FaTrash />
+                                    )}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </Col>
+          </Row>
+        </div>
       </Container>
 
       <Modal
