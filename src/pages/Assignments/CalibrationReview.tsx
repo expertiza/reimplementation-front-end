@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Container, ListGroup, Spinner } from "react-bootstrap";
+import { Alert, Card, Container, Spinner } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axiosClient from "../../utils/axios_client";
 import {
@@ -26,7 +26,7 @@ const CalibrationReview = () => {
         setLoading(true);
         setError(null);
         const response = await axiosClient.get<CalibrationReportResponse>(
-          `/assignments/${assignmentId}/review_mappings/${mapId}/calibration_report`
+          `/assignments/${assignmentId}/reports/calibration/${mapId}`
         );
         setReport(response.data);
       } catch (err: any) {
@@ -40,13 +40,31 @@ const CalibrationReview = () => {
   }, [assignmentId, mapId]);
 
   const normalizedReport = report ? normalizeCalibrationReport(report) : null;
+  const studentResponseCount = normalizedReport?.latestStudentResponses.length ?? 0;
+  const hyperlinks = report?.submitted_content?.hyperlinks ?? [];
+  const files = report?.submitted_content?.files ?? [];
+  const hasSubmittedContent = hyperlinks.length > 0 || files.length > 0;
+  const backHref = assignmentId ? `/assignments/edit/${assignmentId}` : "/assignments";
 
   return (
-    <Container className="py-4">
-      <h1>Calibration Report</h1>
-      <p className="text-muted mb-4">
-        Assignment {assignmentId}, calibration map {mapId}
-      </p>
+    <Container fluid className="py-4 px-4">
+      <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+          <h1 className="mb-1">Calibration Report</h1>
+          <p className="text-muted mb-0">
+            Assignment {assignmentId} · Calibration map {mapId}
+            {report && (
+              <>
+                {" "}
+                · {studentResponseCount} student response{studentResponseCount === 1 ? "" : "s"}
+              </>
+            )}
+          </p>
+        </div>
+        <Link to={backHref} className="btn btn-outline-secondary btn-sm">
+          ← Back to assignment
+        </Link>
+      </div>
 
       {loading && (
         <div className="d-flex align-items-center gap-2 mb-4">
@@ -64,50 +82,44 @@ const CalibrationReview = () => {
 
       {!loading && !error && report && normalizedReport && (
         <>
-          <Alert variant="success">
-            Calibration report loaded. This confirms the route and backend payload are wired.
-          </Alert>
-
           <CalibrationStackedChart
             bucketKeys={normalizedReport.bucketKeys}
             chartData={normalizedReport.stackedChartData}
           />
 
-          <ListGroup className="mb-4">
-            <ListGroup.Item>
-              <strong>Map ID:</strong> {report.map_id}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Reviewee ID:</strong> {report.reviewee_id}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Rubric items:</strong> {normalizedReport.rubricDetailRows.length}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Student responses:</strong> {normalizedReport.latestStudentResponses.length}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Per-item summaries:</strong> {normalizedReport.stackedChartData.length}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Reviewer options:</strong> {normalizedReport.reviewerOptions.length}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Default rubric-detail rows:</strong> {normalizedReport.rubricDetailRows.length}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Submitted hyperlinks:</strong> {report.submitted_content?.hyperlinks?.length ?? 0}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <strong>Submitted files:</strong> {report.submitted_content?.files?.length ?? 0}
-            </ListGroup.Item>
-          </ListGroup>
+          {hasSubmittedContent && (
+            <Card className="mb-4">
+              <Card.Body>
+                <Card.Title as="h5">Submitted content</Card.Title>
+                {hyperlinks.length > 0 && (
+                  <>
+                    <h6 className="mt-3 mb-2 text-muted">Hyperlinks</h6>
+                    <ul className="mb-3">
+                      {hyperlinks.map((link, idx) => (
+                        <li key={`${link}-${idx}`}>
+                          <a href={link} target="_blank" rel="noopener noreferrer">
+                            {link}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {files.length > 0 && (
+                  <>
+                    <h6 className="mt-3 mb-2 text-muted">Files</h6>
+                    <ul className="mb-0">
+                      {files.map((file, idx) => (
+                        <li key={`${file}-${idx}`}>{file}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </Card.Body>
+            </Card>
+          )}
         </>
       )}
-
-      <Link to={assignmentId ? `/assignments/edit/${assignmentId}` : "/assignments"}>
-        Back to assignment
-      </Link>
     </Container>
   );
 };

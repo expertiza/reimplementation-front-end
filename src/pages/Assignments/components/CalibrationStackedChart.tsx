@@ -3,7 +3,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -82,7 +81,6 @@ const CalibrationStackedChart = ({
                   }`;
                 }}
               />
-              <Legend formatter={(value) => bucketLabel(value)} />
               {bucketKeys.map((bucketKey) => (
                 <Bar
                   key={bucketKey}
