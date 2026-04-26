@@ -74,6 +74,12 @@ export interface RubricDetailRow {
   instructorComment: string;
   studentScore: number | null;
   studentComment: string;
+  agreeCount: number;
+  nearCount: number;
+  disagreeCount: number;
+  noScoreCount: number;
+  totalResponses: number;
+  averageScore: number | null;
 }
 
 export interface NormalizedCalibrationReport {
@@ -141,16 +147,30 @@ const agreementCountFor = (
 const buildRubricRows = (
   rubricItems: CalibrationRubricItem[],
   instructorResponse: CalibrationResponse,
+  perItemSummary: CalibrationPerItemSummary[],
   studentResponse?: CalibrationResponse
 ) => {
   const instructorAnswers = buildAnswersByItem(instructorResponse.answers);
   const studentAnswers = studentResponse ? buildAnswersByItem(studentResponse.answers) : {};
+  const summaryByItem = perItemSummary.reduce<Record<number, CalibrationPerItemSummary>>((byItem, summary) => {
+    byItem[summary.item_id] = summary;
+    return byItem;
+  }, {});
 
   return [...rubricItems]
     .sort((left, right) => left.seq - right.seq)
     .map((item) => {
       const instructorAnswer = instructorAnswers[item.id];
       const studentAnswer = studentAnswers[item.id];
+      const summary = summaryByItem[item.id];
+      const totalScoredResponses = summary
+        ? Object.values(summary.bucket_counts).reduce((total, count) => total + count, 0)
+        : 0;
+      const totalResponses = summary?.student_response_count ?? 0;
+      const averageScore = summary && totalScoredResponses > 0
+        ? Object.entries(summary.bucket_counts).reduce((total, [score, count]) => total + Number(score) * count, 0) /
+          totalScoredResponses
+        : null;
 
       return {
         itemId: item.id,
@@ -160,6 +180,12 @@ const buildRubricRows = (
         instructorComment: instructorAnswer?.comments ?? "",
         studentScore: studentAnswer?.score ?? null,
         studentComment: studentAnswer?.comments ?? "",
+        agreeCount: summary ? agreementCountFor(summary, "agree") : 0,
+        nearCount: summary ? agreementCountFor(summary, "near") : 0,
+        disagreeCount: summary ? agreementCountFor(summary, "disagree") : 0,
+        noScoreCount: Math.max(0, totalResponses - totalScoredResponses),
+        totalResponses,
+        averageScore,
       };
     });
 };
@@ -199,6 +225,7 @@ export const normalizeCalibrationReport = (
       rowsByReviewer[response.reviewer_id] = buildRubricRows(
         report.rubric_items,
         report.instructor_response,
+        report.per_item_summary,
         response
       );
       return rowsByReviewer;
@@ -214,7 +241,7 @@ export const normalizeCalibrationReport = (
     reviewerOptions,
     rubricDetailRows: defaultReviewerId
       ? rubricDetailRowsByReviewer[defaultReviewerId]
-      : buildRubricRows(report.rubric_items, report.instructor_response),
+      : buildRubricRows(report.rubric_items, report.instructor_response, report.per_item_summary),
     rubricDetailRowsByReviewer,
     latestStudentResponses,
     defaultReviewerId,

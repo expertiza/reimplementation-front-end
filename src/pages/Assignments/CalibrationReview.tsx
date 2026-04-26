@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Card, Container, Spinner } from "react-bootstrap";
+import { Alert, Card, Container, Spinner, Tab, Tabs } from "react-bootstrap";
 import { Link, useParams } from "react-router-dom";
 import axiosClient from "../../utils/axios_client";
 import {
@@ -7,12 +7,15 @@ import {
   type CalibrationReportResponse,
 } from "./calibrationReportNormalize";
 import CalibrationStackedChart from "./components/CalibrationStackedChart";
+import CalibrationRubricDetailPanel from "./components/CalibrationRubricDetailPanel";
 
 const CalibrationReview = () => {
   const { assignmentId, mapId } = useParams();
   const [report, setReport] = useState<CalibrationReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedReviewerId, setSelectedReviewerId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState("comparison");
 
   useEffect(() => {
     const loadReport = async () => {
@@ -40,11 +43,19 @@ const CalibrationReview = () => {
   }, [assignmentId, mapId]);
 
   const normalizedReport = report ? normalizeCalibrationReport(report) : null;
+  useEffect(() => {
+    setSelectedReviewerId(normalizedReport?.defaultReviewerId ?? null);
+  }, [normalizedReport?.defaultReviewerId]);
+
   const studentResponseCount = normalizedReport?.latestStudentResponses.length ?? 0;
   const hyperlinks = report?.submitted_content?.hyperlinks ?? [];
   const files = report?.submitted_content?.files ?? [];
   const hasSubmittedContent = hyperlinks.length > 0 || files.length > 0;
   const backHref = assignmentId ? `/assignments/edit/${assignmentId}` : "/assignments";
+  const rubricDetailRows =
+    normalizedReport && selectedReviewerId
+      ? normalizedReport.rubricDetailRowsByReviewer[selectedReviewerId] ?? normalizedReport.rubricDetailRows
+      : normalizedReport?.rubricDetailRows ?? [];
 
   return (
     <Container fluid className="py-4 px-4">
@@ -82,42 +93,63 @@ const CalibrationReview = () => {
 
       {!loading && !error && report && normalizedReport && (
         <>
-          <CalibrationStackedChart
-            bucketKeys={normalizedReport.bucketKeys}
-            chartData={normalizedReport.stackedChartData}
-          />
+          <Tabs
+            activeKey={activeTab}
+            className="mb-4"
+            id="calibration-report-tabs"
+            onSelect={(key) => setActiveTab(key ?? "comparison")}
+          >
+            <Tab eventKey="comparison" title="Class comparison (stacked)">
+              <div className="pt-3">
+                <CalibrationStackedChart
+                  bucketKeys={normalizedReport.bucketKeys}
+                  chartData={normalizedReport.stackedChartData}
+                />
+              </div>
+            </Tab>
+            <Tab eventKey="detail" title="Rubric detail">
+              <div className="pt-3">
+                <CalibrationRubricDetailPanel
+                  reviewerOptions={normalizedReport.reviewerOptions}
+                  selectedReviewerId={selectedReviewerId}
+                  rows={rubricDetailRows}
+                  onReviewerChange={setSelectedReviewerId}
+                />
 
-          {hasSubmittedContent && (
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title as="h5">Submitted content</Card.Title>
-                {hyperlinks.length > 0 && (
-                  <>
-                    <h6 className="mt-3 mb-2 text-muted">Hyperlinks</h6>
-                    <ul className="mb-3">
-                      {hyperlinks.map((link, idx) => (
-                        <li key={`${link}-${idx}`}>
-                          <a href={link} target="_blank" rel="noopener noreferrer">
-                            {link}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
+                {hasSubmittedContent && (
+                  <Card className="mb-4">
+                    <Card.Body>
+                      <Card.Title as="h5">Submitted content</Card.Title>
+                      {hyperlinks.length > 0 && (
+                        <>
+                          <h6 className="mt-3 mb-2 text-muted">Hyperlinks</h6>
+                          <ul className="mb-3">
+                            {hyperlinks.map((link, idx) => (
+                              <li key={`${link}-${idx}`}>
+                                <a href={link} target="_blank" rel="noopener noreferrer">
+                                  {link}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                      {files.length > 0 && (
+                        <>
+                          <h6 className="mt-3 mb-2 text-muted">Files</h6>
+                          <ul className="mb-0">
+                            {files.map((file, idx) => (
+                              <li key={`${file}-${idx}`}>{file}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </Card.Body>
+                  </Card>
                 )}
-                {files.length > 0 && (
-                  <>
-                    <h6 className="mt-3 mb-2 text-muted">Files</h6>
-                    <ul className="mb-0">
-                      {files.map((file, idx) => (
-                        <li key={`${file}-${idx}`}>{file}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </Card.Body>
-            </Card>
-          )}
+              </div>
+            </Tab>
+          </Tabs>
         </>
       )}
     </Container>
