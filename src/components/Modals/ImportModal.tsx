@@ -138,6 +138,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
   /* API hooks */
   const { isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
   const { error: importError, data: sendImportResponse, sendRequest: sendImport } = useAPI();
+  const { data: usersResponse, sendRequest: fetchUsers } = useAPI();
 
   /* ---------------------------------------------------------
    * Fetch import metadata from backend whenever modal opens
@@ -189,8 +190,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
       setFile(null);
       setUseHeader(true);
       fetchConfig();
+      if (modelClass === "AssignmentParticipant") {
+        fetchUsers({ url: "/users" });
+      }
     }
-  }, [show, fetchConfig]);
+  }, [show, fetchConfig, fetchUsers, modelClass]);
 
   /* ---------------------------------------------------------
    * Transform "column_name" → "Column name"
@@ -346,7 +350,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
   );
 
   const previewData = useMemo(() => {
-    return csvData.map((row) => {
+    const rawPreviewData = csvData.map((row) => {
       const obj: Record<string, any> = {};
       previewHeaders.forEach((h, i) => {
         const key = h || `col_${i}`;
@@ -354,7 +358,45 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
       });
       return obj;
     });
-  }, [csvData, previewHeaders]);
+
+    if (modelClass !== "AssignmentParticipant") {
+      return rawPreviewData;
+    }
+
+    // Assignment participant import accepts only usernames. Enrich the preview
+    // with read-only user details so instructors can confirm each row resolves
+    // to the intended existing user before importing.
+    const normalizeField = (field: string) =>
+      field
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+
+    const users = Array.isArray(usersResponse?.data) ? usersResponse.data : [];
+    const usersByName = new Map(users.map((user: any) => [String(user.name ?? ""), user]));
+
+    return rawPreviewData.map((row) => {
+      const normalizedRow = Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [normalizeField(key), value])
+      );
+      const userName = String(normalizedRow.user_name ?? "").trim();
+      const user: any = usersByName.get(userName);
+
+      return {
+        user_name: userName,
+        full_name: user?.full_name ?? "",
+        email: user?.email ?? "",
+        role: user?.role?.name ?? "",
+        parent: user?.parent?.name ?? "",
+        institution: user?.institution?.name ?? "",
+        email_on_review: user?.email_on_review ?? "",
+        email_on_submission: user?.email_on_submission ?? "",
+        email_on_review_of_review: user?.email_on_review_of_review ?? "",
+        import_status: user ? "Ready" : "User not found",
+      };
+    });
+  }, [csvData, modelClass, previewHeaders, usersResponse?.data]);
 
   const teamRowsWithoutParticipants = useMemo(() => {
     if (modelClass !== "Team") return 0;
@@ -378,9 +420,24 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
   }, [selectedFields, availableFields]);
 
   const previewColumns = useMemo<ColumnDef<any, any>[]>(() => {
-    return previewHeaders.map((header, idx) => ({
+    const assignmentParticipantPreviewHeaders = [
+      "user_name",
+      "full_name",
+      "email",
+      "role",
+      "parent",
+      "institution",
+      "email_on_review",
+      "email_on_submission",
+      "email_on_review_of_review",
+      "import_status",
+    ];
+    const headers =
+      modelClass === "AssignmentParticipant" ? assignmentParticipantPreviewHeaders : previewHeaders;
+
+    return headers.map((header, idx) => ({
       id: `col_${idx}`,
-      header: !useHeader ? (
+      header: !useHeader && modelClass !== "AssignmentParticipant" ? (
         <Form.Select
           aria-label="Select Column Header"
           value={selectedFields[idx] || ""}
@@ -405,7 +462,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
       accessorKey: header || `col_${idx}`,
       cell: (info: any) => info.getValue() ?? "—",
     }));
-  }, [previewHeaders, useHeader, selectedFields, availableFields]);
+  }, [previewHeaders, useHeader, modelClass, selectedFields, getAvailableOptions]);
 
   /* ============================================================================
    *  Render

@@ -9,6 +9,8 @@ import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
+import ExportModal from "../../components/Modals/ExportModal";
+import ImportModal from "../../components/Modals/ImportModal";
 import DeleteParticipant from "./ParticipantDelete";
 import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
 
@@ -36,6 +38,8 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     visible: boolean;
     data?: IParticipantResponse;
   }>({ visible: false });
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const participantsUrl = useMemo(() => {
     if (type === "assignments" || type === "student_tasks") {
@@ -48,6 +52,19 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchParticipants({ url: participantsUrl });
   }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, participantsUrl]);
+
+  const refreshParticipants = useCallback(() => {
+    fetchParticipants({ url: participantsUrl });
+  }, [fetchParticipants, participantsUrl]);
+
+  const closeImportModal = useCallback(() => {
+    setShowImportModal(false);
+    refreshParticipants();
+  }, [refreshParticipants]);
+
+  const closeExportModal = useCallback(() => {
+    setShowExportModal(false);
+  }, []);
 
   // Error alert
   useEffect(() => {
@@ -104,9 +121,28 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     [participantResponse?.data, isLoading]
   );
 
+  const assignmentContextParams = useMemo(
+    () => ({
+      assignment_id: assignmentId ?? id,
+    }),
+    [assignmentId, id]
+  );
+
   return (
     <>
       <Outlet />
+      <ImportModal
+        show={showImportModal}
+        onHide={closeImportModal}
+        modelClass="AssignmentParticipant"
+        contextParams={assignmentContextParams}
+      />
+      <ExportModal
+        show={showExportModal}
+        onHide={closeExportModal}
+        modelClass="AssignmentParticipant"
+        contextParams={assignmentContextParams}
+      />
       <main>
         <Container fluid className="px-md-4">
           <Row className="mt-md-2 mb-md-2">
@@ -115,8 +151,38 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
             </Col>
             <hr />
           </Row>
-          <Row>
-            <Col md={{ span: 1, offset: 11 }}>
+          <Row className="mb-3">
+            <Col className="d-flex justify-content-end gap-2">
+              {(type === "assignments" || type === "student_tasks") && (
+                <>
+                  <Button
+                    className="btn btn-md"
+                    variant="outline-secondary"
+                    onClick={() => setShowImportModal(true)}
+                  >
+                    <img
+                      src="/assets/icons/assign-survey-24.png"
+                      alt="Import"
+                      width="16"
+                      height="16"
+                    />{" "}
+                    Import CSV
+                  </Button>
+                  <Button
+                    className="btn btn-md"
+                    variant="outline-secondary"
+                    onClick={() => setShowExportModal(true)}
+                  >
+                    <img
+                      src="/assets/icons/export-temp.png"
+                      alt="Export"
+                      width="16"
+                      height="16"
+                    />{" "}
+                    Export CSV
+                  </Button>
+                </>
+              )}
               <Button
                 className="btn btn-md"
                 variant="success"
