@@ -24,6 +24,8 @@ import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
 import TopicsTab from "./tabs/TopicsTab";
 import DutyEditor from "pages/Duties/DutyEditor";
+// DEMO_INSTRUCTOR_RESPONSE: remove this import when the real review form ships.
+import useCalibrationInstructorDemo from "./hooks/useCalibrationInstructorDemo";
 
 interface TopicSettings {
   allowTopicSuggestions: boolean;
@@ -115,15 +117,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   // and let us trigger reloads only after a mutation succeeds.
   const { data: addCalibrationResponse, error: addCalibrationError, sendRequest: sendAddCalibrationRequest } = useAPI();
   const { data: removeCalibrationResponse, error: removeCalibrationError, sendRequest: sendRemoveCalibrationRequest } = useAPI();
-  // DEMO_INSTRUCTOR_RESPONSE
-  // Demo-only: "Begin" on the Calibration tab seeds a mock instructor
-  // calibration response so the report has data to render. The real review
-  // form is out of scope of this project. When the real form ships, delete
-  // this hook, the handleBeginCalibrationReview callback, both useEffects
-  // that consume beginCalibrationResponse / beginCalibrationError, and
-  // switch the "Begin" button in the Review-column cell back to a plain
-  // anchor pointing at the real review URL.
-  const { data: beginCalibrationResponse, error: beginCalibrationError, sendRequest: sendBeginCalibrationRequest } = useAPI();
   const [courses, setCourses] = useState<any[]>([]);
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
   const [calibrationUsername, setCalibrationUsername] = useState<string>("");
@@ -653,37 +646,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     [assignmentData?.id, sendRemoveCalibrationRequest]
   );
 
-  // DEMO_INSTRUCTOR_RESPONSE
-  // Demo-only: kick off a mock instructor calibration response when the
-  // instructor clicks "Begin" on a calibration row. The backend materializes
-  // a submitted Response with default answers so the calibration report has
-  // data to display. Once it returns, refresh the participant list so the
-  // row's instructor_review_status flips from 'not_started' to 'submitted'.
-  const handleBeginCalibrationReview = useCallback(
-    (mapId: number | string | null | undefined) => {
-      if (!assignmentData?.id || !mapId) return;
-      sendBeginCalibrationRequest({
-        url: `/assignments/${assignmentData.id}/review_mappings/${mapId}/mock_instructor_response`,
-        method: HttpMethod.POST,
-      }).catch(() => {
-        // useAPI already surfaces the error into beginCalibrationError.
-      });
-    },
-    [assignmentData?.id, sendBeginCalibrationRequest]
-  );
-
-  // DEMO_INSTRUCTOR_RESPONSE: success/error effects for the demo seeder.
-  useEffect(() => {
-    if (beginCalibrationResponse && beginCalibrationResponse.status >= 200 && beginCalibrationResponse.status < 300) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Mock instructor and peer calibration responses submitted" }));
-      refreshCalibrationParticipants();
-    }
-  }, [beginCalibrationResponse, dispatch, refreshCalibrationParticipants]);
-
-  // DEMO_INSTRUCTOR_RESPONSE
-  useEffect(() => {
-    beginCalibrationError && dispatch(alertActions.showAlert({ variant: "danger", message: beginCalibrationError }));
-  }, [beginCalibrationError, dispatch]);
+  // DEMO_INSTRUCTOR_RESPONSE: remove this call (and the import above) when the
+  // real review form ships. See useCalibrationInstructorDemo for the full
+  // removal checklist.
+  const { handleBeginCalibrationReview } = useCalibrationInstructorDemo({
+    assignmentId: assignmentData?.id,
+    onSuccess: refreshCalibrationParticipants,
+  });
 
 
   const onSubmit = (
@@ -1288,7 +1257,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     <label htmlFor="calibration-username" style={{ display: 'block', marginBottom: '0.25rem' }}>
                       Search by username
                     </label>
-                    <div style={{ display: 'flex', gap: '0.5rem', maxWidth: 420 }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', maxWidth: 280 }}>
                       <input
                         id="calibration-username"
                         type="text"
