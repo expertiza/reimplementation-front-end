@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Form, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { ColumnDef } from "@tanstack/react-table";
 import PreviewTable from "../../components/Table/Table";
 import axiosClient from "../../utils/axios_client";
@@ -43,6 +43,20 @@ const previewTableColumns: ColumnDef<any, any>[] = [
     cell: (info: any) => info.getValue() || "-"
   }
 ];
+
+const duplicateActionTooltip = (action: string) => {
+  if (action === "SkipRecordAction") {
+    return "Skip importing questionnaires that already exist in the system.";
+  }
+  if (action === "UpdateExistingRecordAction") {
+    return "Update matching questionnaires with template fields from the import package.";
+  }
+  if (action === "ChangeOffendingFieldAction") {
+    return "Rename duplicate questionnaires before importing them as copies.";
+  }
+
+  return "Controls how duplicate questionnaires are handled during import.";
+};
 
 const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalProps> = ({ show, onHide, onImported }) => {
   const [importMode, setImportMode] = useState<"package" | "csv">("csv");
@@ -348,17 +362,36 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
           <Form.Group className="mb-3">
             <Form.Label>Duplicate handling</Form.Label>
             {duplicateActions.map((action) => (
-              <Form.Check
-                key={action}
-                type="radio"
-                label={action}
-                name="questionnaire-package-duplicate-action"
-                checked={duplicateAction === action}
-                onChange={() => {
-                  setDuplicateAction(action);
-                  resetPreview();
-                }}
-              />
+              <div key={action} className="d-flex align-items-center mb-1">
+                <Form.Check
+                  type="radio"
+                  label={action}
+                  name="questionnaire-package-duplicate-action"
+                  checked={duplicateAction === action}
+                  onChange={() => {
+                    setDuplicateAction(action);
+                    resetPreview();
+                  }}
+                />
+                <OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <Tooltip id={`questionnaire-package-duplicate-action-${action}-tip`}>
+                      {duplicateActionTooltip(action)}
+                    </Tooltip>
+                  }
+                >
+                  <span style={{ cursor: "help", marginLeft: 6, display: "inline-flex" }}>
+                    <img
+                      src="/assets/images/info-icon-16.png"
+                      width={14}
+                      height={14}
+                      alt="info"
+                      style={{ verticalAlign: "middle" }}
+                    />
+                  </span>
+                </OverlayTrigger>
+              </div>
             ))}
           </Form.Group>
         )}

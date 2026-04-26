@@ -5,21 +5,29 @@ import axiosClient from "../../utils/axios_client";
 type QuestionnairePackageExportModalProps = {
   show: boolean;
   onHide: () => void;
-  selectedQuestionnaire?: {
+  selectedQuestionnaires?: Array<{
     id?: number;
     name?: string;
-  } | null;
+  }>;
+  initialScope?: "selected" | "all";
 };
 
-const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalProps> = ({ show, onHide, selectedQuestionnaire }) => {
+const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalProps> = ({ show, onHide, selectedQuestionnaires = [], initialScope = "selected" }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [status, setStatus] = useState("");
-  const [scope, setScope] = useState<"selected" | "all">("selected");
+  const [scope, setScope] = useState<"selected" | "all">(initialScope);
 
   const canExportSelected = useMemo(
-    () => typeof selectedQuestionnaire?.id === "number",
-    [selectedQuestionnaire]
+    () => selectedQuestionnaires.some((questionnaire) => typeof questionnaire.id === "number"),
+    [selectedQuestionnaires]
   );
+
+  React.useEffect(() => {
+    if (show) {
+      setScope(initialScope);
+      setStatus("");
+    }
+  }, [initialScope, show]);
 
   const downloadPackage = (filename: string, encodedData: string, contentType: string) => {
     const binary = atob(encodedData);
@@ -47,7 +55,7 @@ const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalP
     try {
       const payload =
         scope === "selected" && canExportSelected
-          ? { questionnaire_ids: [selectedQuestionnaire?.id] }
+          ? { questionnaire_ids: selectedQuestionnaires.map((questionnaire) => questionnaire.id).filter((id) => typeof id === "number") }
           : { export_all: true };
 
       const response = await axiosClient.post("/questionnaire_packages/export", payload, {
@@ -80,8 +88,8 @@ const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalP
             id="questionnaire-export-selected"
             label={
               canExportSelected
-                ? `Selected questionnaire: ${selectedQuestionnaire?.name}`
-                : "Selected questionnaire (select a questionnaire row first)"
+                ? `Selected questionnaires: ${selectedQuestionnaires.map((questionnaire) => questionnaire.name).join(", ")}`
+                : "Selected questionnaires (select one or more questionnaire rows first)"
             }
             checked={scope === "selected"}
             disabled={!canExportSelected}
