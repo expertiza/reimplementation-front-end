@@ -46,7 +46,7 @@ describe("normalizeCalibrationReport", () => {
         updated_at: "2026-04-23T16:00:00Z",
         answers: [
           { item_id: 11, score: 3, comments: "Latest code" },
-          { item_id: 12, score: 4, comments: "Latest docs" },
+          { item_id: 12, score: null, comments: "" },
         ],
       },
     ],
@@ -66,7 +66,7 @@ describe("normalizeCalibrationReport", () => {
         item_seq: 2,
         instructor_score: 5,
         instructor_comment: "Instructor docs",
-        bucket_counts: { "0": 0, "1": 0, "2": 0, "3": 0, "4": 1, "5": 0 },
+        bucket_counts: { "0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 },
         student_response_count: 1,
       },
     ],
@@ -94,8 +94,9 @@ describe("normalizeCalibrationReport", () => {
         itemLabel: "Documentation",
         instructorScore: 5,
         agreeCount: 0,
-        nearCount: 1,
+        nearCount: 0,
         disagreeCount: 0,
+        totalResponses: 0,
       }),
     ]);
   });
@@ -118,12 +119,16 @@ describe("normalizeCalibrationReport", () => {
         instructorScore: 4,
         studentScore: 3,
         studentComment: "Latest code",
+        noScoreCount: 0,
+        averageScore: 3,
       }),
       expect.objectContaining({
         itemId: 12,
         instructorScore: 5,
-        studentScore: 4,
-        studentComment: "Latest docs",
+        studentScore: null,
+        studentComment: "",
+        noScoreCount: 1,
+        averageScore: null,
       }),
     ]);
   });
