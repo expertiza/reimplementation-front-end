@@ -101,6 +101,27 @@ describe("normalizeCalibrationReport", () => {
     ]);
   });
 
+  test("returns empty chart data when there are no student responses", () => {
+    const emptyReport: CalibrationReportResponse = {
+      ...report,
+      student_responses: [],
+      per_item_summary: report.per_item_summary.map((s) => ({
+        ...s,
+        bucket_counts: { "0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 },
+        student_response_count: 0,
+      })),
+    };
+    const normalized = normalizeCalibrationReport(emptyReport);
+
+    expect(normalized.reviewerOptions).toHaveLength(0);
+    expect(normalized.defaultReviewerId).toBeNull();
+    normalized.stackedChartData.forEach((row) => {
+      expect(row.agreeCount).toBe(0);
+      expect(row.nearCount).toBe(0);
+      expect(row.disagreeCount).toBe(0);
+    });
+  });
+
   test("uses the latest submitted student response for rubric detail data", () => {
     const normalized = normalizeCalibrationReport(report);
 
