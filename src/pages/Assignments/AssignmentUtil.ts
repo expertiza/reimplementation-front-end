@@ -80,6 +80,18 @@ export interface IAssignmentFormValues {
 }
 
 
+/**
+ * Serialises {@link IAssignmentFormValues} to the JSON body expected by the Rails
+ * assignments API (`POST /assignments` or `PATCH /assignments/:id`).
+ *
+ * Gathers per-round questionnaire selections (stored as dynamic `questionnaire_round_*`
+ * keys) and the optional quiz questionnaire into a nested
+ * `assignment_questionnaires_attributes` array that Rails accepts via
+ * `accepts_nested_attributes_for`.
+ *
+ * @param values - The current Formik form values.
+ * @returns A JSON string ready to be sent as the request body.
+ */
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
   const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round?: number }[] = [];
@@ -188,6 +200,19 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   return JSON.stringify({ assignment });
 };
 
+/**
+ * Deserialises the raw JSON string returned by `GET /assignments/:id` into the
+ * shape expected by the assignment editor form ({@link IAssignmentFormValues}).
+ *
+ * Also maps existing `DueDate` records back to the `date_time` structure used by
+ * the date-picker components, and maps per-round `assignment_questionnaires` rows
+ * back to the dynamic `questionnaire_round_*` / `assignment_questionnaire_id_*`
+ * form fields so that editing an existing assignment pre-fills every dropdown.
+ *
+ * @param assignmentResponse - Raw JSON string from the axios response.
+ * @returns An {@link IAssignmentFormValues} object ready to be passed as Formik
+ *   `initialValues`.
+ */
 export const transformAssignmentResponse = (assignmentResponse: string) => {
   const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
 
@@ -275,6 +300,19 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
   return assignmentValues;
 };
 
+/**
+ * React Router loader for the assignment editor route.
+ *
+ * When an `:id` param is present the existing assignment is fetched from
+ * `GET /assignments/:id` (using {@link transformAssignmentResponse} as the
+ * axios `transformResponse`) and merged with a full questionnaire list so that
+ * rubric dropdowns are populated.  When no id is provided (create mode) an
+ * empty object is returned alongside the questionnaire list.
+ *
+ * @param context - The React Router loader context containing `params`.
+ * @returns An object combining the (optional) assignment data with the
+ *   `questionnaires` array.
+ */
 export async function loadAssignment({ params }: any) {
   let assignmentData = {};
   let questionnaires = []; // fetch questionnaire list for dropdown window selections in Rubrics tab

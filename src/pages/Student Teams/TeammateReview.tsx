@@ -298,6 +298,21 @@ const TeammateReview = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [items, draftResponseId]);
 
+    /**
+     * Builds the scores_attributes payload to be sent to PATCH /responses/:id.
+     *
+     * Each scorable item is mapped to an object containing:
+     * - `item_id`   – the numeric ID of the questionnaire item
+     * - `answer`    – a numeric value (Criterion/Scale), 0/1 (Checkbox), or null
+     *                 (text-based types where the value lives in `comments`)
+     * - `comments`  – the student's free-text input or selected option label;
+     *                 for quiz text/radio/checkbox items this column is what
+     *                 the backend scores against `item.correct_answer`
+     *
+     * Header-type items (SectionHeader, TableHeader, ColumnHeader) are excluded.
+     *
+     * @returns An array of score attribute objects ready for the API payload.
+     */
     const buildScoresAttributes = () => {
         const headerTypes: NormalizedItemType[] = ['SectionHeader', 'TableHeader', 'ColumnHeader'];
         return items
@@ -348,8 +363,20 @@ const TeammateReview = () => {
             });
     };
 
-    // Ensure a Response record exists (create or reuse draft) and return its ID.
-    // If the response map doesn't exist in the DB yet, create it first.
+    /**
+     * Ensures a Response record exists for the current response map and returns its ID.
+     *
+     * If a draft has already been created this session (`draftResponseId` is set),
+     * it is reused immediately without any API calls.
+     *
+     * On first call the function attempts to create a new Response via
+     * POST /responses. If the backend returns 404 (the ResponseMap row does not
+     * yet exist), it falls back to creating the ResponseMap on-the-fly via
+     * POST /response_maps and then retries the Response creation.
+     *
+     * @returns A promise that resolves to the numeric Response ID.
+     * @throws An error if any API call fails and the fallback cannot recover.
+     */
     const ensureResponseRecord = async (): Promise<number> => {
         if (draftResponseId) return draftResponseId;
 
@@ -389,7 +416,16 @@ const TeammateReview = () => {
         }
     };
 
-    // Save answers to an existing or new draft (no submit/lock)
+    /**
+     * Persists the current answers as a draft without locking the response.
+     *
+     * Calls {@link ensureResponseRecord} to obtain (or create) a Response record,
+     * then PATCHes the scores via {@link buildScoresAttributes}. The response
+     * remains unlocked (`is_submitted: false`) so the student can return and
+     * edit their answers later.
+     *
+     * Sets `saveMessage` on success or `submitError` on failure.
+     */
     const handleSaveDraft = async () => {
         if (!mapId) {
             setSubmitError('No response map ID found.');
@@ -414,6 +450,23 @@ const TeammateReview = () => {
         }
     };
 
+    /**
+     * Saves the current answers and locks the response for final submission.
+     *
+     * Workflow:
+     * 1. Calls {@link ensureResponseRecord} to obtain (or create) a Response record.
+     * 2. PATCHes the answers via {@link buildScoresAttributes}.
+     * 3. Calls PATCH /responses/:id/submit to lock the response and trigger
+     *    server-side scoring.
+     *
+     * In quiz mode the `total_score` returned by the backend is stored in
+     * `quizScore` and displayed to the student before they choose to proceed.
+     * No automatic redirect is performed — the student must click the
+     * "Proceed to Review" button that appears in the success banner.
+     *
+     * Sets `submitSuccess` and `draftIsSubmitted` on success, or
+     * `submitError` on failure.
+     */
     const handleSubmitReview = async () => {
         if (!mapId) {
             setSubmitError('No response map ID found. Please navigate here from Student Tasks.');
@@ -442,10 +495,6 @@ const TeammateReview = () => {
 
             setSubmitSuccess(true);
             setDraftIsSubmitted(true);
-            // E2619: after quiz submission, redirect to the review URL encoded in redirect_after.
-            if (redirectAfter) {
-                setTimeout(() => navigate(redirectAfter), 1200);
-            }
         } catch (err: any) {
             const msg = err?.response?.data?.error || err?.message || 'Submission failed';
             setSubmitError(msg);
@@ -504,6 +553,27 @@ const TeammateReview = () => {
             {draftIsSubmitted && (
                 <Alert variant="info" className="flash_note mt-2">
                     This {isQuizMode ? 'quiz' : 'review'} has already been submitted. The form is read-only.
+                </Alert>
+            )}
+
+            {submitSuccess && isQuizMode && (
+                <Alert variant="success" className="flash_note mt-3">
+                    <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                        Quiz submitted!
+                    </div>
+                    <div style={{ fontSize: 15, marginBottom: redirectAfter ? 10 : 0 }}>
+                        Your score: <strong>{quizScore !== null ? quizScore : '\u2014'}</strong>
+                    </div>
+                    {redirectAfter && (
+                        <Button
+                            variant="success"
+                            size="sm"
+                            className="mt-1"
+                            onClick={() => navigate(redirectAfter)}
+                        >
+                            Proceed to Review
+                        </Button>
+                    )}
                 </Alert>
             )}
 
@@ -735,11 +805,9 @@ const TeammateReview = () => {
                     {saveMessage && !submitError && (
                         <Alert variant="info" className="flash_note mt-3">{saveMessage}</Alert>
                     )}
-                    {submitSuccess && (
+                    {submitSuccess && !isQuizMode && (
                         <Alert variant="success" className="flash_note mt-3">
-                            {isQuizMode
-                                ? `Quiz submitted! Score: ${quizScore !== null ? quizScore : '—'}. Opening your review\u2026`
-                                : 'Review submitted successfully!'}
+                            Review submitted successfully!
                         </Alert>
                     )}
                     {draftResponseId && !submitSuccess && !draftIsSubmitted && (

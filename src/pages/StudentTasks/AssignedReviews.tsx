@@ -57,6 +57,21 @@ interface AssignedReviewRow {
   quizTaken: boolean;
 }
 
+/**
+ * Displays all review assignments for the currently logged-in student.
+ *
+ * Fetches review response maps from `GET /response_maps` (and optionally from
+ * `localStorage` data written by the AssignReviewer instructor page) and renders
+ * them in a table.  Each row shows the assignment name, reviewee team, review
+ * type, submission status, and an action button.
+ *
+ * E2619: each row also carries quiz state (`quizQuestionnaireId`, `quizTaken`)
+ * sourced directly from the API response.  When a quiz is required and not yet
+ * completed the action button becomes **"Take Quiz"** instead of the normal
+ * review link; clicking it posts to `POST /quiz_response_maps` to create/find a
+ * quiz map and then navigates to the quiz form with a `redirect_after` param so
+ * the student is returned here after finishing the quiz.
+ */
 const AssignedReviews: React.FC = () => {
   const navigate = useNavigate();
   const { assignmentId: assignmentIdParam } = useParams<{ assignmentId?: string }>();
@@ -116,6 +131,12 @@ const AssignedReviews: React.FC = () => {
       ? assignmentData.questionnaires
       : [];
 
+    /**
+     * Returns `true` when the given questionnaire is a teammate-review type,
+     * identified by either the `questionnaire_type` field or the questionnaire name.
+     *
+     * @param questionnaire - Raw questionnaire object from the assignment API response.
+     */
     const isTeammateQuestionnaire = (questionnaire: any) => {
       const questionnaireType = String(questionnaire?.questionnaire_type || "");
       const questionnaireName = String(questionnaire?.name || "");
@@ -126,6 +147,11 @@ const AssignedReviews: React.FC = () => {
       );
     };
 
+    /**
+     * Returns `true` when the given questionnaire is a Quiz type.
+     *
+     * @param questionnaire - Raw questionnaire object from the assignment API response.
+     */
     const isQuizQuestionnaire = (questionnaire: any) => {
       const questionnaireType = String(questionnaire?.questionnaire_type || "");
       return /^quiz/i.test(questionnaireType);
@@ -136,6 +162,20 @@ const AssignedReviews: React.FC = () => {
       (q: any) => !isTeammateQuestionnaire(q) && !isQuizQuestionnaire(q)
     );
 
+    /**
+     * Transforms raw response-map API records into {@link AssignedReviewRow} objects
+     * used to render the table.
+     *
+     * Each row picks the most appropriate questionnaire (teammate vs. regular review)
+     * based on whether the reviewer's team is also the reviewee team.  Per-row quiz
+     * state (`quizQuestionnaireId`, `quizTaken`) is forwarded directly from the map
+     * data so that each team's quiz is tracked independently.
+     *
+     * @param maps - Array of response-map objects from the API or localStorage.
+     * @param currentUserTeamId - Optional team id of the current user; used to
+     *   determine whether a map is a teammate-review.
+     * @returns An array of {@link AssignedReviewRow} objects ready for rendering.
+     */
     const buildRows = (
       maps: {
         id: number;
@@ -287,6 +327,14 @@ const AssignedReviews: React.FC = () => {
   }, [currentUser?.id, assignmentResponse?.data]);
 
   // Opens the review form for a given review assignment
+  /**
+   * Navigates to the review form for the given review row.
+   *
+   * Builds the query-string params expected by the `TeammateReview` page
+   * (`/response/new`) and calls `navigate`.
+   *
+   * @param review - The {@link AssignedReviewRow} whose form should be opened.
+   */
   const openReview = useCallback(
     (review: AssignedReviewRow) => {
       const effectiveAssignmentId = review.assignmentId ?? resolvedAssignmentId;
@@ -383,6 +431,15 @@ const AssignedReviews: React.FC = () => {
                     return `/response/new?${p.toString()}`;
                   };
 
+                  /**
+                   * Initiates the quiz flow for the given review row.
+                   *
+                   * Posts to `POST /quiz_response_maps` to obtain or create a quiz
+                   * response map for this student + team combination, then navigates
+                   * to the quiz form.  A `redirect_after` param is passed so that
+                   * `TeammateReview` can offer a "Proceed to Review" button once the
+                   * quiz is submitted.
+                   */
                   const handleTakeQuiz = async () => {
                     if (!review.assignmentId || !currentUser?.id) return;
                     try {

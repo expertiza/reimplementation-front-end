@@ -8,6 +8,17 @@ import { IFormikFieldProps, IFormPropsWithOption } from "./interfaces";
  * @author Ankur Mundra on May, 2023
  */
 
+/**
+ * A Formik-connected `<Form.Select>` element with optional label, tooltip, and validation feedback.
+ *
+ * Wraps a Bootstrap `Form.Select` inside a Formik `<Field>` render-prop so that the selected
+ * value is kept in Formik state. Supports an optional `onChange` callback that is called in
+ * addition to Formik's built-in field handler — used, for example, to trigger dependent
+ * institution lookups when the selected value changes.
+ *
+ * @param props - All {@link IFormPropsWithOption} props plus an optional `onChange` handler.
+ * @returns A Bootstrap form group containing a labelled `<select>` with validation feedback.
+ */
 const FormSelect: React.FC<IFormPropsWithOption & { onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void }> = (props) => {
   const {
     as,

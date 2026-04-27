@@ -132,6 +132,15 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Merge backend-loaded assignment data with frontend defaults:
   // for any field that is null/undefined in assignmentData, fall back to initialValues.
+/**
+ * Merges backend-loaded assignment data with the hardcoded `initialValues`
+ * defaults.  Any field that is `null` or `undefined` in the backend response
+ * falls back to the corresponding default so the form is never partially
+ * initialised.
+ *
+ * @returns Merged {@link IAssignmentFormValues} ready to pass as Formik
+ *   `initialValues`.
+ */
   const getInitialValues = (): IAssignmentFormValues => {
     if (mode !== "update" || !assignmentData) {
       return initialValues;
@@ -314,6 +323,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       setTopicsLoading(false);
     }
   }, [topicsApiError]);
+  /**
+   * Persists a changed topic setting immediately when that setting has a
+   * corresponding backend field (`allowBookmarks`, `allowAdvertiseForPartners`);
+   * otherwise updates local state only.
+   *
+   * @param setting - The {@link TopicSettings} key that changed.
+   * @param value - The new boolean value.
+   */
   const handleTopicSettingChange = useCallback(
     (setting: string, value: boolean) => {
       setTopicSettings((prev) => ({ ...prev, [setting]: value }));
@@ -346,6 +363,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     [id, updateAssignment]
   );
 
+  /**
+   * Removes a team from a sign-up topic via
+   * `DELETE /signed_up_teams/drop_team_from_topic`.
+   *
+   * @param topicId - The topic's string identifier.
+   * @param teamId - The team's string identifier.
+   */
   const handleDropTeam = useCallback(
     (topicId: string, teamId: string) => {
       if (!topicId || !teamId) return;
@@ -361,6 +385,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     [dropTeamRequest]
   );
 
+  /**
+   * Deletes a topic from this assignment via `DELETE /project_topics` and
+   * refreshes the topics list.
+   *
+   * @param topicIdentifier - The topic identifier string (may differ from the
+   *   database primary key).
+   */
   const handleDeleteTopic = useCallback(
     (topicIdentifier: string) => {
       console.log(`Delete topic ${topicIdentifier}`);
@@ -378,6 +409,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     [id, deleteTopic]
   );
 
+  /**
+   * Updates an existing topic via `PATCH /project_topics/:dbId` and refreshes
+   * the topics list.
+   *
+   * @param dbId - The database primary key of the topic to update.
+   * @param updatedData - Partial topic fields to apply.
+   */
   const handleEditTopic = useCallback(
     (dbId: string, updatedData: any) => {
       console.log(`Edit topic DB id ${dbId}`, updatedData);
@@ -400,6 +438,12 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     [id, updateTopic]
   );
 
+  /**
+   * Creates a new topic for this assignment via `POST /project_topics` and
+   * refreshes the topics list.
+   *
+   * @param topicData - The topic data collected from the topics tab form.
+   */
   const handleCreateTopic = useCallback(
     (topicData: any) => {
       console.log(`Create topic`, topicData);
@@ -514,6 +558,17 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
   }, [calibrationSubmissionsError, dispatch]);
 
+  /**
+   * Validates the assignment form and submits it to the API.
+   *
+   * Checks that the sum of rubric weights equals 100 % when weights are
+   * configured, then issues `POST /assignments` (create) or
+   * `PATCH /assignments/:id` (update) using {@link transformAssignmentRequest}
+   * as the axios `transformRequest`.
+   *
+   * @param values - The current Formik form values.
+   * @param submitProps - Formik helpers; used to clear the submitting flag.
+   */
   const onSubmit = (
     values: IAssignmentFormValues,
     submitProps: FormikHelpers<IAssignmentFormValues>
@@ -548,6 +603,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
+  /** Navigates away from the editor, returning to the assignments list or the
+   * previous route stored in `location.state.from`. */
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/assignments");
 
   // Map the currently selected questionnaire for each round (used to prefill dropdowns)

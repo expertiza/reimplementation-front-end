@@ -15,6 +15,11 @@ import {
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
 import { IItem } from "./QuestionnaireUtils";
 
+/**
+ * Question types for which a correct-answer field is rendered inside a Quiz questionnaire.
+ * These match the `question_type` strings stored by the frontend (spaced, display-friendly
+ * names) rather than the CamelCase variants used in the backend STI hierarchy.
+ */
 const QUIZ_ITEM_TYPES = ["Text field", "Multiple choice", "Multiple choice checkbox", "Scale", "Checkbox"];
 
 interface Props {
@@ -25,6 +30,28 @@ interface Props {
   questionnaireType: string;
 }
 
+/**
+ * A Formik `<FieldArray>` that renders the list of questionnaire items and the
+ * "Add items" controls at the bottom.
+ *
+ * Each existing (non-destroyed) item is displayed as a draggable row via
+ * `react-beautiful-dnd`.  The exact fields shown per row depend on
+ * `item.question_type` (e.g. alternatives for Multiple Choice, min/max labels for
+ * Scale, width/height for Text Area, etc.).
+ *
+ * E2619: when `questionnaireType` is `"Quiz"` and the item type is one of
+ * {@link QUIZ_ITEM_TYPES}, an additional "Correct answer" row is rendered below
+ * the main item row so instructors can specify the expected answer at authoring
+ * time.
+ *
+ * @param props.values - Current Formik values (needs `values.items`).
+ * @param props.errors - Formik errors object, used for inline validation messages.
+ * @param props.touched - Formik touched object.
+ * @param props.itemTypes - Array of available item type strings used to populate
+ *   the "Select item type" dropdown in the Add row.
+ * @param props.questionnaireType - The questionnaire's type string; controls
+ *   whether the correct-answer section and certain item types are shown.
+ */
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   values,
   errors,
