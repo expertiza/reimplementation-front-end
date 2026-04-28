@@ -674,11 +674,13 @@ const TopicsTab = ({
         show={showImportModal}
         onHide={handleCloseImport}
         modelClass="ProjectTopic"
+        contextParams={{ assignment_id: assignmentId }}
       />
       <ExportModal
         show={showExportModal}
         onHide={handleCloseExport}
         modelClass="ProjectTopic"
+        contextParams={{ assignment_id: assignmentId }}
       />
 
       {deleteState.visible && (
