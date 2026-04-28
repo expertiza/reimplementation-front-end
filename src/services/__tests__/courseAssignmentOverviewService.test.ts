@@ -153,32 +153,32 @@ describe("courseAssignmentOverviewService buildRows", () => {
     });
   });
 
-  it("computes the mean peer grade for each assignment using only numeric values", () => {
+  it("computes the mean peer grade for each assignment with null scores counted as zero", () => {
     const classAverageRow = buildRows(students, assignments).at(-1);
 
-    expect(classAverageRow?.a3_peerGrade).toBe(90);
-    expect(classAverageRow?.a5_peerGrade).toBe(60);
+    expect(classAverageRow?.a3_peerGrade).toBe(60);
+    expect(classAverageRow?.a5_peerGrade).toBe(30);
   });
 
-  it("computes the mean instructor grade for each assignment using only numeric values", () => {
+  it("computes the mean instructor grade for each assignment with null scores counted as zero", () => {
     const classAverageRow = buildRows(students, assignments).at(-1);
 
-    expect(classAverageRow?.a3_instructorGrade).toBe(90);
-    expect(classAverageRow?.a5_instructorGrade).toBe(70);
+    expect(classAverageRow?.a3_instructorGrade).toBe(30);
+    expect(classAverageRow?.a5_instructorGrade).toBe(35);
   });
 
-  it("computes the mean teammate score for each assignment using only numeric values", () => {
+  it("computes the mean teammate score for each assignment with null scores counted as zero", () => {
     const classAverageRow = buildRows(students, assignments).at(-1);
 
-    expect(classAverageRow?.a3_avgTeammateScore).toBe(60);
-    expect(classAverageRow?.a5_avgTeammateScore).toBe(80);
+    expect(classAverageRow?.a3_avgTeammateScore).toBe(40);
+    expect(classAverageRow?.a5_avgTeammateScore).toBe(40);
   });
 
-  it("computes the mean author feedback score for each assignment using only numeric values", () => {
+  it("computes the mean author feedback score for each assignment with null scores counted as zero", () => {
     const classAverageRow = buildRows(students, assignments).at(-1);
 
-    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBe(70);
-    expect(classAverageRow?.a5_avgAuthorFeedbackScore).toBe(90);
+    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBeCloseTo(46.67);
+    expect(classAverageRow?.a5_avgAuthorFeedbackScore).toBe(45);
   });
 
   it("sets the class average topic field to null for topic-enabled assignments", () => {
@@ -187,7 +187,7 @@ describe("courseAssignmentOverviewService buildRows", () => {
     expect(classAverageRow?.a3_topic).toBeNull();
   });
 
-  it("returns null averages when no student has a numeric value for that field", () => {
+  it("returns zero averages when student scores are null for that field", () => {
     const emptyAverageRows = buildRows(
       [
         {
@@ -209,10 +209,10 @@ describe("courseAssignmentOverviewService buildRows", () => {
 
     const classAverageRow = emptyAverageRows.at(-1);
 
-    expect(classAverageRow?.a3_peerGrade).toBeNull();
-    expect(classAverageRow?.a3_instructorGrade).toBeNull();
-    expect(classAverageRow?.a3_avgTeammateScore).toBeNull();
-    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBeNull();
+    expect(classAverageRow?.a3_peerGrade).toBe(0);
+    expect(classAverageRow?.a3_instructorGrade).toBe(0);
+    expect(classAverageRow?.a3_avgTeammateScore).toBe(0);
+    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBe(0);
   });
 
   it("still returns a class average row even when there are no students", () => {

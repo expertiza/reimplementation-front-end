@@ -72,6 +72,8 @@ export const buildRows = (
         if (typeof value === "number") {
           averages[columnKey].sum += value;
           averages[columnKey].count += 1;
+        } else if (value === null) {
+          averages[columnKey].count += 1;
         }
       });
     });
