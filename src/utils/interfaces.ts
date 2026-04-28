@@ -159,6 +159,7 @@ export interface IAssignmentRequest {
 
   // Per-round rubric configuration
   vary_by_round?: boolean;
+  vary_by_topic?: boolean;
   rounds_of_reviews?: number;
   assignment_questionnaires_attributes?: {
     id?: number;
@@ -253,6 +254,7 @@ export interface IAssignmentResponse {
   staggered_deadline:boolean;
   is_calibrated:boolean;
   vary_by_round?: boolean;
+  vary_by_topic?: boolean;
   varying_rubrics_by_round?: boolean;
   rounds_of_reviews?: number;
   due_dates?: { id: number; deadline_type_id: number }[];

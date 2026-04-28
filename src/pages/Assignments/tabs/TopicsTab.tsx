@@ -56,6 +56,19 @@ interface TopicData {
   updatedAt?: string;
 }
 
+interface RubricOption {
+  label: string;
+  value: number;
+}
+
+interface TopicRubricMapping {
+  id: number;
+  questionnaire_id: number;
+  questionnaire_name?: string;
+  project_topic_id: number | null;
+  used_in_round: number | null;
+}
+
 // Same as before
 interface TopicSettings {
   allowTopicSuggestions: boolean;
@@ -74,6 +87,11 @@ interface TopicsTabProps {
   topicsData: TopicData[]; // Ensure the data passed matches the updated TopicData interface
   topicsLoading?: boolean;
   topicsError?: string | null;
+  varyByTopic?: boolean;
+  varyByRound?: boolean;
+  reviewRounds?: number;
+  reviewRubricOptions?: RubricOption[];
+  topicRubricMappings?: TopicRubricMapping[];
   onTopicSettingChange: (setting: string, value: boolean) => void;
   // Add handlers for actions like drop team, delete topic, edit topic, create bookmark etc.
   onDropTeam: (topicId: string, teamId: string) => void;
@@ -82,6 +100,7 @@ interface TopicsTabProps {
   onCreateTopic?: (topicData: any) => void;
   // Handler for partner ad application submission
   onApplyPartnerAd: (topicId: string, applicationText: string) => void;
+  onTopicRubricChange?: (topicDatabaseId: number, questionnaireId: number | null, usedInRound: number | null) => void;
   onTopicsChanged?: () => void;
 }
 
@@ -94,12 +113,18 @@ const TopicsTab = ({
   topicsData,
   topicsLoading = false,
   topicsError = null,
+  varyByTopic = false,
+  varyByRound = false,
+  reviewRounds = 1,
+  reviewRubricOptions = [],
+  topicRubricMappings = [],
   onTopicSettingChange,
   onDropTeam,
   onDeleteTopic,
   onEditTopic,
   onCreateTopic,
   onApplyPartnerAd,
+  onTopicRubricChange,
   onTopicsChanged,
 }: TopicsTabProps) => {
   const [showPartnerAdModal, setShowPartnerAdModal] = useState(false);
@@ -311,6 +336,51 @@ const TopicsTab = ({
   const questionnaireVaries = topicsData.length > 0 &&
     topicsData.some(t => t.questionnaire !== topicsData[0].questionnaire);
 
+  const rubricRounds = varyByRound
+    ? Array.from({ length: Math.max(reviewRounds || 1, 1) }, (_, index) => index + 1)
+    : [null];
+
+  const findTopicRubricMapping = (topicDatabaseId?: number, usedInRound?: number | null) => {
+    if (!topicDatabaseId) return undefined;
+
+    return topicRubricMappings.find((mapping) =>
+      Number(mapping.project_topic_id) === Number(topicDatabaseId) &&
+      (mapping.used_in_round ?? null) === (usedInRound ?? null)
+    );
+  };
+
+  const renderRubricSelector = (topic: TopicData, usedInRound: number | null) => {
+    const mapping = findTopicRubricMapping(topic.databaseId, usedInRound);
+    const label = usedInRound ? `Round ${usedInRound}` : "Rubric";
+
+    return (
+      <div key={`${topic.databaseId}-${usedInRound ?? "default"}`} className="mb-2">
+        {varyByRound && <div className="small text-muted mb-1">{label}</div>}
+        <Form.Select
+          size="sm"
+          value={mapping?.questionnaire_id ?? ""}
+          disabled={reviewRubricOptions.length === 0}
+          aria-label={`${label} for ${topic.name}`}
+          onChange={(event) => {
+            const value = event.target.value;
+            onTopicRubricChange?.(
+              topic.databaseId,
+              value ? Number(value) : null,
+              usedInRound
+            );
+          }}
+        >
+          <option value="">Use assignment default rubric</option>
+          {reviewRubricOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </Form.Select>
+      </div>
+    );
+  };
+
   // --- Render Helper Functions ---
   // removed: renderTeamMembers (moved to TopicsTable renderDetails inline rendering)
 
@@ -320,7 +390,7 @@ const TopicsTab = ({
         <h4>Topics for {assignmentName} assignment</h4>
 
         {/* Topic Settings */}
-        <Form className="topics-settings-form">
+        <div className="topics-settings-form">
               <Form.Check
                 type="checkbox"
                 id="allowTopicSuggestions"
@@ -376,7 +446,7 @@ const TopicsTab = ({
                 checked={topicSettings.allowBiddingForReviewers}
                 onChange={(e) => onTopicSettingChange('allowBiddingForReviewers', e.target.checked)}
               />
-        </Form>
+        </div>
 
         {/* Error Message */}
         {topicsError && (
@@ -408,6 +478,24 @@ const TopicsTab = ({
           onToggleAll={handleSelectAll}
           onToggleRow={handleSelectTopic}
           extraColumns={[
+            ...(varyByTopic
+              ? [
+                  {
+                    id: "topicReviewRubric",
+                    header: varyByRound ? "Review Rubrics by Round" : "Review Rubric",
+                    cell: ({ row }: any) => {
+                      const topic = topicsData.find(t => t.id === row.original.id);
+                      if (!topic) return null;
+
+                      return (
+                        <div style={{ minWidth: varyByRound ? 260 : 220 }}>
+                          {rubricRounds.map((round) => renderRubricSelector(topic, round))}
+                        </div>
+                      );
+                    },
+                  },
+                ]
+              : []),
             ...(questionnaireVaries //displays the questionnaire column only if it varies across the topics
               ? [
                   {

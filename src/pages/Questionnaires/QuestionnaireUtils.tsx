@@ -2,6 +2,7 @@ import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
 export type QuestionnaireType =
+  | "Review"
   | "Author feedback"
   | "Teammate Review"
   | "Survey"
@@ -11,8 +12,8 @@ export type QuestionnaireType =
   | "Bookmark rating"
   | "Quiz";
 
-
 export const QuestionnaireTypes: QuestionnaireType[] = [
+  "Review",
   "Author feedback",
   "Teammate Review",
   "Survey",
@@ -21,6 +22,16 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
   "Course survey",
   "Bookmark rating",
   "Quiz",
+];
+
+export const QuestionItemTypes: string[] = [
+  "Criterion",
+  "Scale",
+  "Multiple choice",
+  "Dropdown",
+  "Text field",
+  "Text area",
+  "Grid",
 ];
 
 
@@ -94,11 +105,12 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
-  console.log("Original Form Values:", values);
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
-    questionnaire_type: values.questionnaire_type.replace(/\s+/g, ""),
+    questionnaire_type: values.questionnaire_type === "Review"
+      ? "ReviewQuestionnaire"
+      : values.questionnaire_type.replace(/\s+/g, ""),
     private: values.private,
     min_question_score: values.min_question_score,
     max_question_score: values.max_question_score,
@@ -111,7 +123,6 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
         }))
       : [],
   };
-  console.log("Transformed Questionnaire Request:", questionnaire);
   return { questionnaire };
 };
 

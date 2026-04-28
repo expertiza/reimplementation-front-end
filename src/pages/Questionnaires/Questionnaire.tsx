@@ -48,19 +48,18 @@ const Questionnaires = () => {
   const onDeleteQuestionnaireHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<QuestionnaireResponse>) => navigate(`/questionnaires/edit/${row.original.id}`),
     [navigate]
   );
 
   const onDeleteHandle = useCallback(
-     (row: TRow<QuestionnaireResponse>) => {
-    console.log("Delete clicked:", row.original);
-    setSelectedQuestionnaire(null);
-    setTimeout(() => {
-      setShowDeleteConfirmation({ visible: true, data: row.original });
-    }, 100);
-  },
-  []
+    (row: TRow<QuestionnaireResponse>) => {
+      setSelectedQuestionnaire(null);
+      setTimeout(() => {
+        setShowDeleteConfirmation({ visible: true, data: row.original });
+      }, 100);
+    },
+    []
   );
   
   

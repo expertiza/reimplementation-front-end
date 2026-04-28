@@ -77,6 +77,8 @@ export interface IAssignmentFormValues {
   assignment_questionnaires?: {
     id: number;
     used_in_round?: number;
+    project_topic_id?: number | null;
+    questionnaire_id?: number;
     questionnaire?: { id: number; name: string };
   }[];
   [key: string]: any;
@@ -177,6 +179,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
 
     // Per-round rubric configuration
     vary_by_round: values.review_rubric_varies_by_round,
+    vary_by_topic: values.review_rubric_varies_by_topic,
     rounds_of_reviews: values.number_of_review_rounds,
     assignment_questionnaires_attributes: assignmentQuestionnaires,
 
@@ -240,6 +243,7 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     // review rounds / rubrics
     review_rubric_varies_by_round:
       assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
+    review_rubric_varies_by_topic: (assignment as any).vary_by_topic ?? false,
     number_of_review_rounds: assignment.num_review_rounds,
     is_role_based: (assignment as any).is_role_based ?? false,
 
