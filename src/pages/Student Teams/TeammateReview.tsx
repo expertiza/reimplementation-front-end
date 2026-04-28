@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Form, Spinner, Table as BsTable } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import useAPI from '../../hooks/useAPI';
 import axiosClient from '../../utils/axios_client';
 
-type QuestionnaireType = 'Review' | 'Teammate Review';
+type QuestionnaireType = 'Review' | 'Teammate Review' | 'Quiz';
 
 type NormalizedItemType =
     | 'SectionHeader'
@@ -104,6 +104,7 @@ const getScoreBounds = (item: any, questionnaire: any): { min: number; max: numb
 
 const TeammateReview = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { data: assignmentResponse, sendRequest: fetchAssignment, isLoading: assignmentLoading } = useAPI();
     const { data: itemsResponse, sendRequest: fetchItems, isLoading: itemsLoading } = useAPI();
     const auth = useSelector((state: RootState) => state.authentication);
@@ -113,10 +114,34 @@ const TeammateReview = () => {
     const assignmentId = Number(query.get('assignment_id'));
     const questionnaireIdFromUrl = Number(query.get('questionnaire_id'));
     const questionnaireTypeFromUrl = query.get('questionnaire_type') as QuestionnaireType | null;
+    // E2619: URL param set by AssignedReviews when navigating here from the quiz gate;
+    // after quiz submission the page redirects here to the actual review.
+    const redirectAfter = query.get('redirect_after');
+    // E2619: true when this page is being used for a quiz rather than a peer review.
+    const isQuizMode = questionnaireTypeFromUrl === 'Quiz';
     const questionnaireNameFromUrl = query.get('questionnaire_name');
     const teamName = query.get('team_name') || '';
     const revieweeTeamId = Number(query.get('reviewee_team_id')) || null;
     const [mapId, setMapId] = useState(() => Number(query.get('map_id')));
+
+    // Reset all form state when the URL changes (e.g. after quiz redirect navigates to review)
+    useEffect(() => {
+        setMapId(Number(query.get('map_id')));
+        setAnswers({});
+        setComments({});
+        setMultiSelections({});
+        setBooleanSelections({});
+        setFileSelections({});
+        setIsSubmitting(false);
+        setIsSaving(false);
+        setSubmitError(null);
+        setSubmitSuccess(false);
+        setQuizScore(null);
+        setSaveMessage(null);
+        setDraftResponseId(null);
+        setDraftIsSubmitted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
 
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
@@ -127,6 +152,8 @@ const TeammateReview = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    // E2619: stores the total_score returned by the backend after quiz submission.
+    const [quizScore, setQuizScore] = useState<number | null>(null);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [draftResponseId, setDraftResponseId] = useState<number | null>(null);
     const [draftIsSubmitted, setDraftIsSubmitted] = useState(false);
@@ -144,34 +171,53 @@ const TeammateReview = () => {
     }, [assignmentResponse?.data]);
 
     const resolvedQuestionnaire = useMemo(() => {
-        if (questionnaireIdFromUrl) {
-            const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl);
+        // E2619: exclude quiz-type questionnaires when resolving the review questionnaire
+        // so that the quiz questionnaire is never accidentally used for the peer review form.
+        const isQuizQ = (q: any) => /^quiz/i.test(String(q?.questionnaire_type || ''));
+        if (questionnaireIdFromUrl && !isQuizMode) {
+            // In review mode, ignore quiz questionnaires even if the id matches.
+            const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl && !isQuizQ(q));
             if (byId) return byId;
         }
+        if (isQuizMode) {
+            // E2619: quiz questionnaires are team-owned and NOT in the assignment's
+            // assignment_questionnaires list. Never fall through to the review questionnaire
+            // in quiz mode — that would load review items instead of quiz items.
+            if (questionnaireIdFromUrl) {
+                const byId = questionnaires.find((q: any) => Number(q.id) === questionnaireIdFromUrl);
+                if (byId) return byId;
+            }
+            return null;
+        }
         const teammateQ = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
-        const normalQ = questionnaires.find((q: any) => !isTeammateQuestionnaire(q));
+        const normalQ = questionnaires.find((q: any) => !isTeammateQuestionnaire(q) && !isQuizQ(q));
         if (questionnaireTypeFromUrl === 'Teammate Review') return teammateQ || normalQ;
         if (questionnaireTypeFromUrl === 'Review') return normalQ || teammateQ;
         return normalQ || teammateQ;
-    }, [questionnaires, questionnaireIdFromUrl, questionnaireTypeFromUrl]);
+    }, [questionnaires, questionnaireIdFromUrl, questionnaireTypeFromUrl, isQuizMode]);
 
     const resolvedQuestionnaireType: QuestionnaireType = useMemo(() => {
+        if (isQuizMode) return 'Quiz';
         if (resolvedQuestionnaire) return isTeammateQuestionnaire(resolvedQuestionnaire) ? 'Teammate Review' : 'Review';
         if (questionnaireTypeFromUrl === 'Teammate Review') return 'Teammate Review';
         return 'Review';
-    }, [resolvedQuestionnaire, questionnaireTypeFromUrl]);
+    }, [resolvedQuestionnaire, questionnaireTypeFromUrl, isQuizMode]);
 
     const resolvedQuestionnaireName = resolvedQuestionnaire?.name
         || questionnaireNameFromUrl
         || `${resolvedQuestionnaireType} Questionnaire`;
 
-    // Fetch questionnaire items once we know the questionnaire id
+    // Fetch questionnaire items once we know the questionnaire id.
+    // E2619: in quiz mode always use questionnaireIdFromUrl directly — the quiz questionnaire
+    // is team-owned and not in the assignment's questionnaire list, so resolvedQuestionnaire
+    // will be null for a quiz. Using resolvedQuestionnaire?.id here would cause items to be
+    // fetched for the wrong (review) questionnaire once the assignment data loads.
     useEffect(() => {
-        const qId = resolvedQuestionnaire?.id || questionnaireIdFromUrl;
+        const qId = isQuizMode ? questionnaireIdFromUrl : (resolvedQuestionnaire?.id || questionnaireIdFromUrl);
         if (qId) {
             fetchItems({ url: `/questionnaires/${qId}/items`, method: 'GET' });
         }
-    }, [resolvedQuestionnaire?.id, questionnaireIdFromUrl, fetchItems]);
+    }, [isQuizMode, resolvedQuestionnaire?.id, questionnaireIdFromUrl, fetchItems]);
 
     const items: any[] = useMemo(() => {
         const data = itemsResponse?.data;
@@ -252,6 +298,21 @@ const TeammateReview = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [items, draftResponseId]);
 
+    /**
+     * Builds the scores_attributes payload to be sent to PATCH /responses/:id.
+     *
+     * Each scorable item is mapped to an object containing:
+     * - `item_id`   – the numeric ID of the questionnaire item
+     * - `answer`    – a numeric value (Criterion/Scale), 0/1 (Checkbox), or null
+     *                 (text-based types where the value lives in `comments`)
+     * - `comments`  – the student's free-text input or selected option label;
+     *                 for quiz text/radio/checkbox items this column is what
+     *                 the backend scores against `item.correct_answer`
+     *
+     * Header-type items (SectionHeader, TableHeader, ColumnHeader) are excluded.
+     *
+     * @returns An array of score attribute objects ready for the API payload.
+     */
     const buildScoresAttributes = () => {
         const headerTypes: NormalizedItemType[] = ['SectionHeader', 'TableHeader', 'ColumnHeader'];
         return items
@@ -302,8 +363,20 @@ const TeammateReview = () => {
             });
     };
 
-    // Ensure a Response record exists (create or reuse draft) and return its ID.
-    // If the response map doesn't exist in the DB yet, create it first.
+    /**
+     * Ensures a Response record exists for the current response map and returns its ID.
+     *
+     * If a draft has already been created this session (`draftResponseId` is set),
+     * it is reused immediately without any API calls.
+     *
+     * On first call the function attempts to create a new Response via
+     * POST /responses. If the backend returns 404 (the ResponseMap row does not
+     * yet exist), it falls back to creating the ResponseMap on-the-fly via
+     * POST /response_maps and then retries the Response creation.
+     *
+     * @returns A promise that resolves to the numeric Response ID.
+     * @throws An error if any API call fails and the fallback cannot recover.
+     */
     const ensureResponseRecord = async (): Promise<number> => {
         if (draftResponseId) return draftResponseId;
 
@@ -343,7 +416,16 @@ const TeammateReview = () => {
         }
     };
 
-    // Save answers to an existing or new draft (no submit/lock)
+    /**
+     * Persists the current answers as a draft without locking the response.
+     *
+     * Calls {@link ensureResponseRecord} to obtain (or create) a Response record,
+     * then PATCHes the scores via {@link buildScoresAttributes}. The response
+     * remains unlocked (`is_submitted: false`) so the student can return and
+     * edit their answers later.
+     *
+     * Sets `saveMessage` on success or `submitError` on failure.
+     */
     const handleSaveDraft = async () => {
         if (!mapId) {
             setSubmitError('No response map ID found.');
@@ -368,6 +450,23 @@ const TeammateReview = () => {
         }
     };
 
+    /**
+     * Saves the current answers and locks the response for final submission.
+     *
+     * Workflow:
+     * 1. Calls {@link ensureResponseRecord} to obtain (or create) a Response record.
+     * 2. PATCHes the answers via {@link buildScoresAttributes}.
+     * 3. Calls PATCH /responses/:id/submit to lock the response and trigger
+     *    server-side scoring.
+     *
+     * In quiz mode the `total_score` returned by the backend is stored in
+     * `quizScore` and displayed to the student before they choose to proceed.
+     * No automatic redirect is performed — the student must click the
+     * "Proceed to Review" button that appears in the success banner.
+     *
+     * Sets `submitSuccess` and `draftIsSubmitted` on success, or
+     * `submitError` on failure.
+     */
     const handleSubmitReview = async () => {
         if (!mapId) {
             setSubmitError('No response map ID found. Please navigate here from Student Tasks.');
@@ -387,7 +486,12 @@ const TeammateReview = () => {
             });
 
             // Submit (lock + score)
-            await axiosClient.patch(`/responses/${responseId}/submit`);
+            const submitRes = await axiosClient.patch(`/responses/${responseId}/submit`);
+            // E2619: capture the quiz score returned by aggregate_questionnaire_score so it
+            // can be shown in the success banner before the redirect fires.
+            if (isQuizMode) {
+                setQuizScore(submitRes.data?.total_score ?? null);
+            }
 
             setSubmitSuccess(true);
             setDraftIsSubmitted(true);
@@ -418,7 +522,7 @@ const TeammateReview = () => {
             <h2 className="mb-1">{resolvedQuestionnaireName}</h2>
             <div className="mb-3" style={{ fontSize: 13, lineHeight: '30px', display: 'flex', flexDirection: 'column', gap: '4px', color: '#6c757d' }}>
                 <div>
-                    <Badge bg={resolvedQuestionnaireType === 'Teammate Review' ? 'info' : 'primary'}>
+                    <Badge bg={resolvedQuestionnaireType === 'Teammate Review' ? 'info' : resolvedQuestionnaireType === 'Quiz' ? 'warning' : 'primary'}>
                         {resolvedQuestionnaireType}
                     </Badge>
                 </div>
@@ -448,7 +552,28 @@ const TeammateReview = () => {
 
             {draftIsSubmitted && (
                 <Alert variant="info" className="flash_note mt-2">
-                    This review has already been submitted. The form is read-only.
+                    This {isQuizMode ? 'quiz' : 'review'} has already been submitted. The form is read-only.
+                </Alert>
+            )}
+
+            {submitSuccess && isQuizMode && (
+                <Alert variant="success" className="flash_note mt-3">
+                    <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                        Quiz submitted!
+                    </div>
+                    <div style={{ fontSize: 15, marginBottom: redirectAfter ? 10 : 0 }}>
+                        Your score: <strong>{quizScore !== null ? quizScore : '\u2014'}</strong>
+                    </div>
+                    {redirectAfter && (
+                        <Button
+                            variant="success"
+                            size="sm"
+                            className="mt-1"
+                            onClick={() => navigate(redirectAfter)}
+                        >
+                            Proceed to Review
+                        </Button>
+                    )}
                 </Alert>
             )}
 
@@ -680,8 +805,10 @@ const TeammateReview = () => {
                     {saveMessage && !submitError && (
                         <Alert variant="info" className="flash_note mt-3">{saveMessage}</Alert>
                     )}
-                    {submitSuccess && (
-                        <Alert variant="success" className="flash_note mt-3">Review submitted successfully!</Alert>
+                    {submitSuccess && !isQuizMode && (
+                        <Alert variant="success" className="flash_note mt-3">
+                            Review submitted successfully!
+                        </Alert>
                     )}
                     {draftResponseId && !submitSuccess && !draftIsSubmitted && (
                         <div className="mt-2 text-muted" style={{ fontSize: 12 }}>
@@ -707,7 +834,7 @@ const TeammateReview = () => {
                             disabled={isSubmitting || isSaving || submitSuccess || draftIsSubmitted || !mapId}
                             onClick={handleSubmitReview}
                         >
-                            {isSubmitting ? 'Submitting...' : submitSuccess || draftIsSubmitted ? 'Submitted' : 'Submit Review'}
+                            {isSubmitting ? 'Submitting...' : submitSuccess || draftIsSubmitted ? 'Submitted' : isQuizMode ? 'Submit Quiz' : 'Submit Review'}
                         </Button>
                     </div>
                     {!mapId && (

@@ -1,14 +1,14 @@
 // src/pages/Assignments/AssignReviewer.tsx
 import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../utils/axios_client";
 
 type Id = number;
 type ReviewStatus = "Not saved" | "Saved" | "Submitted";
 
 interface Assignment { id: Id; name: string }
-interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null }
+interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null; quiz_questionnaire_id?: Id | null }
 interface User { id: Id; name: string | null; full_name: string | null }
 interface TeamUser { team_id: Id; user_id: Id }
 interface Participant { id: Id; user_id: Id; parent_id: Id; team_id?: Id | null }
@@ -22,7 +22,7 @@ interface ResponseRow {
 
 interface IUserView { id: Id; username: string; fullName: string }
 interface IReviewerAssignment { id: Id; reviewer: IUserView; status: ReviewStatus }
-interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[] }
+interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[]; quiz_questionnaire_id?: Id | null }
 
 type Persist = {
   assignment: Assignment;
@@ -39,6 +39,15 @@ type Persist = {
 
 const nowIso = () => new Date().toISOString();
 
+/**
+ * Attempts to resolve the assignment id from multiple sources:
+ * the route `:id` param, the current pathname, or the `assignment_id` query
+ * string param — in that order.
+ *
+ * @param location - The current React Router location object.
+ * @param params - The current React Router params record.
+ * @returns The numeric assignment id, or `undefined` if none could be found.
+ */
 function parseAssignmentId(location: ReturnType<typeof useLocation>, params: Readonly<Record<string, string | undefined>>): Id | undefined {
   const fromParam = params?.id ? Number(params.id) : undefined;
   if (Number.isFinite(fromParam)) return fromParam as number;
@@ -50,20 +59,52 @@ function parseAssignmentId(location: ReturnType<typeof useLocation>, params: Rea
   return q ? Number(q) : undefined;
 }
 
+/** Returns the localStorage key used to persist reviewer data for `asgId`. */
 function keyFor(asgId: Id) { return `assignreviewer:${asgId}`; }
+
+/**
+ * Reads and returns the persisted {@link Persist} object for `asgId` from
+ * localStorage, or `null` if nothing is stored or the data cannot be parsed.
+ */
 function read(asgId: Id): Persist | null {
   try { const s = localStorage.getItem(keyFor(asgId)); return s ? (JSON.parse(s) as Persist) : null; } catch { return null; }
 }
+
+/**
+ * Serialises `p` to localStorage under the key for `asgId`.
+ *
+ * @param asgId - The assignment id used as the storage key namespace.
+ * @param p - The {@link Persist} data to store.
+ */
 function write(asgId: Id, p: Persist) { localStorage.setItem(keyFor(asgId), JSON.stringify(p)); }
 
+/**
+ * Converts a raw `User` record (or a fallback numeric id) to the lightweight
+ * {@link IUserView} shape used for display in the table.
+ *
+ * @param u - The `User` record, or `null`/`undefined` if unavailable.
+ * @param fallbackId - A numeric user id to use when `u` is absent.
+ * @returns An {@link IUserView} or `undefined` if neither source is available.
+ */
 function toView(u?: User | null, fallbackId?: Id): IUserView | undefined {
   if (u) return { id: u.id, username: u.name ?? `user_${u.id}`, fullName: u.full_name ?? u.name ?? `user_${u.id}` };
   if (fallbackId !== undefined) return { id: fallbackId, username: `user_${fallbackId}`, fullName: `user_${fallbackId}` };
   return undefined;
 }
 
+/** Type guard that asserts `x` is an array of `T`. */
 function isArr<T>(x: any): x is T[] { return Array.isArray(x); }
 
+/**
+ * Sanitises an arbitrary object read from localStorage into a well-typed
+ * {@link Persist} value, filling in safe defaults for any missing or
+ * malformed fields.
+ *
+ * @param asgId - The assignment id; used to reconstruct the assignment name
+ *   if the stored name is missing.
+ * @param raw - The raw object parsed from localStorage.
+ * @returns A valid {@link Persist} object.
+ */
 function normalizePersist(asgId: Id, raw: any): Persist {
   const safe: Persist = {
     assignment: raw?.assignment && typeof raw.assignment === "object"
@@ -95,6 +136,12 @@ const ASG_NAME: Record<number, string> = {
   8: "seize",
 };
 
+/**
+ * Returns a new empty {@link Persist} shell for the given assignment id with
+ * no teams, users, participants, or response maps.
+ *
+ * @param asgId - The assignment id.
+ */
 function makeEmpty(asgId: Id): Persist {
   return {
     assignment: { id: asgId, name: ASG_NAME[asgId] ?? `Assignment ${asgId}` },
@@ -111,6 +158,16 @@ function makeEmpty(asgId: Id): Persist {
 }
 
 /* Demo data: 4 teams per assignment id with varied reviewer counts (1, 2, 3, 0) */
+/**
+ * Generates a realistic demo {@link Persist} snapshot for the given assignment
+ * id, containing four teams with varied reviewer counts and pre-built response
+ * records in different states (Not saved / Saved / Submitted).
+ *
+ * This is used for UI development and manual testing without a live backend.
+ *
+ * @param asgId - The assignment id to generate demo data for.
+ * @returns A fully-populated {@link Persist} object.
+ */
 export function demo(asgId: Id): Persist {
   let uid = 1000, pid = 2000, mid = 3000, rid = 4000;
 
@@ -293,6 +350,8 @@ export function demo(asgId: Id): Persist {
 const AssignReviewer: React.FC = () => {
   const location = useLocation();
   const params = useParams();
+  // E2619: navigate used for "Create Quiz" button to open the questionnaire editor
+  const navigate = useNavigate();
   const maybeId = parseAssignmentId(location, params);
 
   // Hooks must be unconditionally called:
@@ -384,7 +443,7 @@ const AssignReviewer: React.FC = () => {
         })
         .filter(Boolean) as IReviewerAssignment[];
 
-      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers };
+      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers, quiz_questionnaire_id: t?.quiz_questionnaire_id ?? null };
     });
   }, [assignmentId, teams, usersById, teamsById, teamMembersByTeam, response_maps, latestResponseByMap, participantsById, tick]);
 
@@ -396,6 +455,14 @@ const AssignReviewer: React.FC = () => {
     setTimeout(() => setTick(v => v + 1), 0);
   }
 
+  /**
+   * Prompts the instructor for a reviewer user id, creates a local
+   * {@link ResponseMapRow} entry immediately (optimistic update), then
+   * persists the mapping to `POST /response_maps`.  If the backend responds
+   * with a real database id, the local entry is patched in place.
+   *
+   * @param teamId - The team being reviewed.
+   */
   async function onAddReviewer(teamId: number) {
     if (!hasValidId) return;
     const raw = window.prompt("Enter reviewer user_id to add for this team:");
@@ -452,6 +519,13 @@ const AssignReviewer: React.FC = () => {
     }
   }
 
+  /**
+   * Removes a reviewer assignment from localStorage and fires
+   * `DELETE /response_maps/:mappingId` to remove it from the database.
+   *
+   * @param _teamId - The reviewee team id (unused; kept for API symmetry).
+   * @param mappingId - The id of the response map to delete.
+   */
   function onDeleteReviewer(_teamId: number, mappingId: number) {
     if (!hasValidId) return;
     mutate(p => {
@@ -462,6 +536,13 @@ const AssignReviewer: React.FC = () => {
     axiosClient.delete(`/response_maps/${mappingId}`).catch(() => {});
   }
 
+  /**
+   * Adds a new unsaved response record for the given mapping in localStorage,
+   * effectively rolling back its status to "Not saved".
+   *
+   * @param _teamId - The reviewee team id (unused; kept for API symmetry).
+   * @param mappingId - The id of the response map whose status should be reset.
+   */
   function onUnsubmit(_teamId: number, mappingId: number) {
     if (!hasValidId) return;
     mutate(p => {
@@ -469,6 +550,12 @@ const AssignReviewer: React.FC = () => {
     });
   }
 
+  /**
+   * Removes all reviewer assignments for `teamId` from localStorage and fires
+   * `DELETE /response_maps/:id` for each one.
+   *
+   * @param teamId - The reviewee team whose reviewers should all be removed.
+   */
   function onDeleteAll(teamId: number) {
     if (!hasValidId) return;
     mutate(p => {
@@ -482,6 +569,24 @@ const AssignReviewer: React.FC = () => {
       // Also delete from backend DB
       ids.forEach(id => axiosClient.delete(`/response_maps/${id}`).catch(() => {}));
     });
+  }
+
+  // E2619: navigate to the questionnaire editor pre-filled as Quiz type.
+  // The editor will call PATCH /teams/:team_id/quiz_questionnaire after saving and then
+  // redirect back here via the return_to param.
+  /**
+   * Navigates to the questionnaire editor pre-filled for Quiz creation.
+   *
+   * Passes `?type=Quiz&team_id=<teamId>&assignment_id=<assignmentId>&return_to=<url>`
+   * so that after saving the questionnaire the editor automatically links it to
+   * the team and redirects back to the AssignReviewer page.
+   *
+   * @param teamId - The team id whose quiz questionnaire is being created.
+   */
+  function onCreateQuiz(teamId: Id) {
+    if (!hasValidId) return;
+    const returnTo = encodeURIComponent(`/assignments/edit/${assignmentId}/assignreviewer`);
+    navigate(`/questionnaires/new?type=Quiz&team_id=${teamId}&assignment_id=${assignmentId}&return_to=${returnTo}`);
   }
 
   const empty = teams.length === 0 && users.length === 0 && participants.length === 0 && response_maps.length === 0;
@@ -587,6 +692,15 @@ const AssignReviewer: React.FC = () => {
                   <div className="ex-actions">
                     <a role="button" className="ex-link" onClick={() => hasValidId && onAddReviewer(team.id)}>add reviewer</a>
                     <a role="button" className="ex-link" onClick={() => hasValidId && onDeleteAll(team.id)}>delete outstanding reviewers</a>
+                    {/* E2619: Create/Edit Quiz button — submitting team creates the quiz others must pass before reviewing them */}
+                    <a
+                      role="button"
+                      className="ex-link"
+                      style={{ color: team.quiz_questionnaire_id ? '#2c6b2f' : '#7a2c2c' }}
+                      onClick={() => hasValidId && onCreateQuiz(team.id)}
+                    >
+                      {team.quiz_questionnaire_id ? 'edit quiz' : 'create quiz'}
+                    </a>
                   </div>
                 </td>
 

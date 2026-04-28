@@ -52,8 +52,26 @@ interface AssignedReviewRow {
   questionnaireType: "Review" | "Teammate Review";
   questionnaireId?: number;
   questionnaireName: string;
+  // E2619: per-row quiz state — each reviewee team has its own quiz questionnaire
+  quizQuestionnaireId?: number;
+  quizTaken: boolean;
 }
 
+/**
+ * Displays all review assignments for the currently logged-in student.
+ *
+ * Fetches review response maps from `GET /response_maps` (and optionally from
+ * `localStorage` data written by the AssignReviewer instructor page) and renders
+ * them in a table.  Each row shows the assignment name, reviewee team, review
+ * type, submission status, and an action button.
+ *
+ * E2619: each row also carries quiz state (`quizQuestionnaireId`, `quizTaken`)
+ * sourced directly from the API response.  When a quiz is required and not yet
+ * completed the action button becomes **"Take Quiz"** instead of the normal
+ * review link; clicking it posts to `POST /quiz_response_maps` to create/find a
+ * quiz map and then navigates to the quiz form with a `redirect_after` param so
+ * the student is returned here after finishing the quiz.
+ */
 const AssignedReviews: React.FC = () => {
   const navigate = useNavigate();
   const { assignmentId: assignmentIdParam } = useParams<{ assignmentId?: string }>();
@@ -63,6 +81,29 @@ const AssignedReviews: React.FC = () => {
   const currentUser = auth.user;
 
   const [assignedReviews, setAssignedReviews] = useState<AssignedReviewRow[]>([]);
+  const [tasksByAssignment, setTasksByAssignment] = useState<Record<number, { require_quiz: boolean; quiz_taken: boolean; has_quiz_questionnaire: boolean; quiz_questionnaire_id?: number }>>({})
+
+  // Fetch student tasks to get authoritative require_quiz / quiz_taken per assignment
+  useEffect(() => {
+    axiosClient
+      .get('/student_tasks/list')
+      .then((res) => {
+        const tasks = Array.isArray(res.data) ? res.data : [];
+        const lookup: Record<number, { require_quiz: boolean; quiz_taken: boolean; has_quiz_questionnaire: boolean; quiz_questionnaire_id?: number }> = {};
+        tasks.forEach((task: any) => {
+          if (task.assignment_id != null) {
+            lookup[Number(task.assignment_id)] = {
+              require_quiz: Boolean(task.require_quiz),
+              quiz_taken: Boolean(task.quiz_taken),
+              has_quiz_questionnaire: Boolean(task.has_quiz_questionnaire),
+              quiz_questionnaire_id: task.quiz_questionnaire_id != null ? Number(task.quiz_questionnaire_id) : undefined,
+            };
+          }
+        });
+        setTasksByAssignment(lookup);
+      })
+      .catch(() => {});
+  }, []);
 
   // Resolve the assignment ID from the URL param if provided
   const resolvedAssignmentId = useMemo(() => {
@@ -90,19 +131,51 @@ const AssignedReviews: React.FC = () => {
       ? assignmentData.questionnaires
       : [];
 
+    /**
+     * Returns `true` when the given questionnaire is a teammate-review type,
+     * identified by either the `questionnaire_type` field or the questionnaire name.
+     *
+     * @param questionnaire - Raw questionnaire object from the assignment API response.
+     */
     const isTeammateQuestionnaire = (questionnaire: any) => {
       const questionnaireType = String(questionnaire?.questionnaire_type || "");
       const questionnaireName = String(questionnaire?.name || "");
       return (
-        /teammatereview/i.test(questionnaireType)
-        || /teammate\s*review/i.test(questionnaireType)
-        || /teammate\s*review/i.test(questionnaireName)
+        /teammatereview/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireType) ||
+        /teammate\s*review/i.test(questionnaireName)
       );
     };
 
-    const teammateQuestionnaire = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
-    const normalReviewQuestionnaire = questionnaires.find((q: any) => !isTeammateQuestionnaire(q));
+    /**
+     * Returns `true` when the given questionnaire is a Quiz type.
+     *
+     * @param questionnaire - Raw questionnaire object from the assignment API response.
+     */
+    const isQuizQuestionnaire = (questionnaire: any) => {
+      const questionnaireType = String(questionnaire?.questionnaire_type || "");
+      return /^quiz/i.test(questionnaireType);
+    };
 
+    const teammateQuestionnaire = questionnaires.find((q: any) => isTeammateQuestionnaire(q));
+    const normalReviewQuestionnaire = questionnaires.find(
+      (q: any) => !isTeammateQuestionnaire(q) && !isQuizQuestionnaire(q)
+    );
+
+    /**
+     * Transforms raw response-map API records into {@link AssignedReviewRow} objects
+     * used to render the table.
+     *
+     * Each row picks the most appropriate questionnaire (teammate vs. regular review)
+     * based on whether the reviewer's team is also the reviewee team.  Per-row quiz
+     * state (`quizQuestionnaireId`, `quizTaken`) is forwarded directly from the map
+     * data so that each team's quiz is tracked independently.
+     *
+     * @param maps - Array of response-map objects from the API or localStorage.
+     * @param currentUserTeamId - Optional team id of the current user; used to
+     *   determine whether a map is a teammate-review.
+     * @returns An array of {@link AssignedReviewRow} objects ready for rendering.
+     */
     const buildRows = (
       maps: {
         id: number;
@@ -126,8 +199,8 @@ const AssignedReviews: React.FC = () => {
           : resolvedAssignmentId;
 
         const selectedQuestionnaire = isTeammateReview
-          ? (teammateQuestionnaire ?? normalReviewQuestionnaire)
-          : (normalReviewQuestionnaire ?? teammateQuestionnaire);
+          ? teammateQuestionnaire ?? normalReviewQuestionnaire
+          : normalReviewQuestionnaire ?? teammateQuestionnaire;
 
         let status: AssignedReviewRow["status"] = "Not saved";
         if (latestResponse) {
@@ -143,20 +216,21 @@ const AssignedReviews: React.FC = () => {
           responseId: latestResponse ? Number(latestResponse.id) : undefined,
           teamName,
           revieweeTeamId:
-            (map as any)._revieweeTeamId ??
-            Number(map.reviewee_team_id ?? map.reviewee_id),
+            (map as any)._revieweeTeamId ?? Number(map.reviewee_team_id ?? map.reviewee_id),
           assignmentId: mapAssignmentId,
           assignmentName: (map as any).assignment_name,
           status,
           questionnaireType: isTeammateReview ? "Teammate Review" : "Review",
-          questionnaireId: selectedQuestionnaire?.id
-            ? Number(selectedQuestionnaire.id)
-            : undefined,
+          questionnaireId: selectedQuestionnaire?.id ? Number(selectedQuestionnaire.id) : undefined,
           questionnaireName:
             selectedQuestionnaire?.name ||
-            (isTeammateReview
-              ? "Teammate Review Questionnaire"
-              : "Review Questionnaire"),
+            (isTeammateReview ? "Teammate Review Questionnaire" : "Review Questionnaire"),
+          // E2619: per-row quiz state from the API — quiz_questionnaire_id and quiz_taken are
+          // included per review map so that students reviewing multiple teams are gated per team.
+          quizQuestionnaireId: (map as any).quiz_questionnaire_id != null
+            ? Number((map as any).quiz_questionnaire_id)
+            : undefined,
+          quizTaken: Boolean((map as any).quiz_taken),
         };
       });
 
@@ -200,8 +274,7 @@ const AssignedReviews: React.FC = () => {
               const previousTs = previous
                 ? new Date(previous.updated_at ?? previous.created_at ?? "").getTime() || 0
                 : -1;
-              if (!previous || timestamp > previousTs)
-                latestByMapId.set(mapId, response);
+              if (!previous || timestamp > previousTs) latestByMapId.set(mapId, response);
             });
 
             const filtered = responseMaps.filter(
@@ -236,9 +309,7 @@ const AssignedReviews: React.FC = () => {
       .get("/response_maps", { params: { reviewer_user_id: currentUser.id } })
       .then((res) => {
         if (cancelled) return;
-        const maps = Array.isArray(res.data?.response_maps)
-          ? res.data.response_maps
-          : [];
+        const maps = Array.isArray(res.data?.response_maps) ? res.data.response_maps : [];
         const backendRows = buildRows(maps);
         setAssignedReviews((prev) => {
           // Merge: backend rows take priority (by mapId), then add any localStorage-only rows
@@ -256,6 +327,14 @@ const AssignedReviews: React.FC = () => {
   }, [currentUser?.id, assignmentResponse?.data]);
 
   // Opens the review form for a given review assignment
+  /**
+   * Navigates to the review form for the given review row.
+   *
+   * Builds the query-string params expected by the `TeammateReview` page
+   * (`/response/new`) and calls `navigate`.
+   *
+   * @param review - The {@link AssignedReviewRow} whose form should be opened.
+   */
   const openReview = useCallback(
     (review: AssignedReviewRow) => {
       const effectiveAssignmentId = review.assignmentId ?? resolvedAssignmentId;
@@ -311,18 +390,11 @@ const AssignedReviews: React.FC = () => {
       <Row className="mb-4">
         <Col xs={12}>
           {assignedReviews.length === 0 ? (
-            <Alert
-              variant="light"
-              className="flash_note mb-0"
-              style={{ fontSize: 13 }}
-            >
+            <Alert variant="light" className="flash_note mb-0" style={{ fontSize: 13 }}>
               No reviews currently assigned to you.
             </Alert>
           ) : (
-            <table
-              className="table table-striped"
-              style={{ fontSize: 15, lineHeight: "1.428em" }}
-            >
+            <table className="table table-striped" style={{ fontSize: 15, lineHeight: "1.428em" }}>
               <thead>
                 <tr>
                   <th>Assignment</th>
@@ -333,29 +405,101 @@ const AssignedReviews: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {assignedReviews.map((review) => (
-                  <tr key={review.mapId}>
-                    <td>
-                      {review.assignmentName ||
-                        `Assignment #${review.assignmentId}`}
-                    </td>
-                    <td>{review.teamName}</td>
-                    <td>{review.questionnaireType}</td>
-                    <td>
-                      <strong>{review.status}</strong>
-                    </td>
-                    <td>
-                      <Button
-                        variant="outline-secondary"
-                        className="btn btn-md"
-                        size="sm"
-                        onClick={() => openReview(review)}
-                      >
-                        {review.responseId ? "Open review" : "Start review"}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {assignedReviews.map((review) => {
+                  const taskInfo = review.assignmentId != null
+                    ? tasksByAssignment[review.assignmentId]
+                    : undefined;
+                  const requireQuiz = taskInfo?.require_quiz ?? false;
+                  // E2619: use per-row quiz state (from the review map API response) rather
+                  // than the assignment-level task, so each team's quiz is tracked separately.
+                  const hasQuizQuestionnaire = review.quizQuestionnaireId != null;
+                  const quizCompleted = review.quizTaken;
+                  const quizQuestionnaireId = review.quizQuestionnaireId;
+
+                  // Build the review URL so we can redirect back after the quiz
+                  const buildReviewParams = () => {
+                    const p = new URLSearchParams({
+                      assignment_id: String(review.assignmentId),
+                      map_id: String(review.mapId),
+                      questionnaire_type: review.questionnaireType,
+                      questionnaire_name: review.questionnaireName,
+                      team_name: review.teamName,
+                    });
+                    if (review.questionnaireId) p.set('questionnaire_id', String(review.questionnaireId));
+                    if (review.responseId) p.set('response_id', String(review.responseId));
+                    if (review.revieweeTeamId) p.set('reviewee_team_id', String(review.revieweeTeamId));
+                    return `/response/new?${p.toString()}`;
+                  };
+
+                  /**
+                   * Initiates the quiz flow for the given review row.
+                   *
+                   * Posts to `POST /quiz_response_maps` to obtain or create a quiz
+                   * response map for this student + team combination, then navigates
+                   * to the quiz form.  A `redirect_after` param is passed so that
+                   * `TeammateReview` can offer a "Proceed to Review" button once the
+                   * quiz is submitted.
+                   */
+                  const handleTakeQuiz = async () => {
+                    if (!review.assignmentId || !currentUser?.id) return;
+                    try {
+                      const res = await axiosClient.post('/quiz_response_maps', {
+                        assignment_id: review.assignmentId,
+                        reviewer_user_id: currentUser.id,
+                        // E2619: always supply reviewee_team_id so the backend creates the quiz
+                        // map for the correct team when the student reviews multiple teams.
+                        reviewee_team_id: review.revieweeTeamId,
+                      });
+                      const quizMapId = res.data?.quiz_map_id;
+                      const quizQId = res.data?.quiz_questionnaire_id ?? quizQuestionnaireId;
+                      if (!quizMapId || !quizQId) return;
+                      const reviewUrl = buildReviewParams();
+                      const quizParams = new URLSearchParams({
+                        assignment_id: String(review.assignmentId),
+                        map_id: String(quizMapId),
+                        questionnaire_id: String(quizQId),
+                        questionnaire_type: 'Quiz',
+                        questionnaire_name: 'Quiz',
+                        team_name: review.teamName,
+                        redirect_after: reviewUrl,
+                      });
+                      navigate(`/response/new?${quizParams.toString()}`);
+                    } catch {
+                      // ignore — button stays visible
+                    }
+                  };
+                  return (
+                    <tr key={review.mapId}>
+                      <td>{review.assignmentName || `Assignment #${review.assignmentId}`}</td>
+                      <td>{review.teamName}</td>
+                      <td>{review.questionnaireType}</td>
+                      <td>
+                        <strong>{review.status}</strong>
+                      </td>
+                      <td>
+                        {requireQuiz && hasQuizQuestionnaire && !quizCompleted ? (
+                          <Button
+                            variant="warning"
+                            className="btn btn-md"
+                            size="sm"
+                            onClick={handleTakeQuiz}
+                          >
+                            Take Quiz
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            className="btn btn-md"
+                            size="sm"
+                            onClick={() => openReview(review)}
+                          >
+                            {review.responseId ? "Open review" : "Start review"}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

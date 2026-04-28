@@ -9,6 +9,21 @@ import { useSelector} from "react-redux";
 import { RootState } from "../../store/store";
 
 
+/**
+ * Editor page for creating and updating questionnaires.
+ *
+ * When `mode` is `"create"` the form starts empty (or pre-typed via the `?type=` URL
+ * parameter).  When `mode` is `"update"` the existing questionnaire is loaded via the
+ * React Router loader and items are re-fetched individually so that the correct-answer
+ * fields are available.
+ *
+ * E2619: supports a team-quiz creation flow triggered by the AssignReviewer page.  When
+ * `?team_id=<id>` is present in the URL, the saved questionnaire is automatically linked
+ * to the team via `PATCH /teams/:team_id/quiz_questionnaire` and the user is redirected
+ * back to the URL given in `?return_to=`.
+ *
+ * @param props - {@link IEditor} props; `mode` must be `"create"` or `"update"`.
+ */
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const token = localStorage.getItem("token");
   const questionnaire :any = useLoaderData();
@@ -21,6 +36,11 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
 
   useEffect(() => {
+  /**
+   * Fetches the items for the questionnaire being edited so that the
+   * correct-answer fields (added by E2619) are available in the form.
+   * Only runs in `"update"` mode when a questionnaire id is known.
+   */
   const fetchItemsForQuestionnaire = async () => {
     if (mode === "update" && questionnaire?.id) {
       try {
@@ -49,8 +69,26 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
 
   // the form values to the browser console.
+  /**
+   * Handles questionnaire form submission for both create and update modes.
+   *
+   * Transforms form values via {@link transformQuestionnaireRequest} and posts
+   * to `POST /questionnaires` (create) or `PUT /questionnaires/:id` (update).
+   *
+   * E2619 quiz flow: when `?team_id` is present the newly saved questionnaire is
+   * linked to the team via `PATCH /teams/:team_id/quiz_questionnaire` and the
+   * user is redirected to the URL stored in `?return_to` (decoded).
+   *
+   * @param values - The submitted {@link QuestionnaireFormValues}.
+   */
   const onSubmit = async (values: QuestionnaireFormValues) => {
-  values.instructor_id = auth.user.id;
+  // E2619: only set instructor_id for non-quiz questionnaires. When team_id is present the
+  // creator is a student whose user type is not Instructor, so the STI-backed belongs_to
+  // :instructor validation would reject the record if we pass their user id.
+  const isTeamQuiz = !!searchParams.get("team_id");
+  if (!isTeamQuiz) {
+    values.instructor_id = auth.user.id;
+  }
   //values.instructor = auth.user.name;
   console.log("Submit:", values);
   const payload = transformQuestionnaireRequest(values);
@@ -66,6 +104,25 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     );
 
     console.log("Saved Questionnaire:", response.data);
+
+    // E2619: if this questionnaire was created from the AssignReviewer "Create Quiz" flow,
+    // link it to the team via PATCH /teams/:team_id/quiz_questionnaire, then navigate back.
+    const teamId = searchParams.get("team_id");
+    const returnTo = searchParams.get("return_to");
+    if (mode === "create" && teamId && response.data?.id) {
+      try {
+        await axiosClient.patch(
+          `/teams/${teamId}/quiz_questionnaire`,
+          { questionnaire_id: response.data.id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (linkErr) {
+        console.error("Failed to link quiz questionnaire to team:", linkErr);
+      }
+      navigate(returnTo ? decodeURIComponent(returnTo) : "/questionnaires");
+      return;
+    }
+
     navigate("/questionnaires");
   } catch (error) {
     console.error("Error submitting form:", error);
@@ -98,6 +155,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
       seq: item.seq,
       break_before: item.break_before,
       _destroy: item._destroy || false,
+      correct_answer: item.correct_answer ?? "",
     })) : questionnaire?.items ?? [],
   };
 

@@ -15,6 +15,13 @@ import {
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
 import { IItem } from "./QuestionnaireUtils";
 
+/**
+ * Question types for which a correct-answer field is rendered inside a Quiz questionnaire.
+ * These match the `question_type` strings stored by the frontend (spaced, display-friendly
+ * names) rather than the CamelCase variants used in the backend STI hierarchy.
+ */
+const QUIZ_ITEM_TYPES = ["Text field", "Multiple choice", "Multiple choice checkbox", "Scale", "Checkbox"];
+
 interface Props {
   values: any;
   errors: any;
@@ -23,6 +30,28 @@ interface Props {
   questionnaireType: string;
 }
 
+/**
+ * A Formik `<FieldArray>` that renders the list of questionnaire items and the
+ * "Add items" controls at the bottom.
+ *
+ * Each existing (non-destroyed) item is displayed as a draggable row via
+ * `react-beautiful-dnd`.  The exact fields shown per row depend on
+ * `item.question_type` (e.g. alternatives for Multiple Choice, min/max labels for
+ * Scale, width/height for Text Area, etc.).
+ *
+ * E2619: when `questionnaireType` is `"Quiz"` and the item type is one of
+ * {@link QUIZ_ITEM_TYPES}, an additional "Correct answer" row is rendered below
+ * the main item row so instructors can specify the expected answer at authoring
+ * time.
+ *
+ * @param props.values - Current Formik values (needs `values.items`).
+ * @param props.errors - Formik errors object, used for inline validation messages.
+ * @param props.touched - Formik touched object.
+ * @param props.itemTypes - Array of available item type strings used to populate
+ *   the "Select item type" dropdown in the Add row.
+ * @param props.questionnaireType - The questionnaire's type string; controls
+ *   whether the correct-answer section and certain item types are shown.
+ */
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   values,
   errors,
@@ -377,6 +406,88 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               )}
                             </div>
 
+                            {questionnaireType === "Quiz" && QUIZ_ITEM_TYPES.includes(item.question_type) && (
+                              <div className="d-flex gap-1 align-items-center mt-1">
+                                <span
+                                  style={{ fontSize: "13px", width: "100px", color: "#555" }}
+                                  className="flex-shrink-0"
+                                >
+                                  Correct answer
+                                </span>
+
+                                {/* Checkbox: toggle correct/incorrect */}
+                                {item.question_type === "Checkbox" && (
+                                  <div className="form-check">
+                                    <Field
+                                      type="checkbox"
+                                      name={`items[${index}].correct_answer`}
+                                      className="form-check-input"
+                                      id={`correct_answer_${index}`}
+                                      checked={item.correct_answer === "true" || item.correct_answer === true as any}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setFieldValue(`items[${index}].correct_answer`, String(e.target.checked))
+                                      }
+                                    />
+                                    <label
+                                      className="form-check-label"
+                                      htmlFor={`correct_answer_${index}`}
+                                      style={{ fontSize: "13px" }}
+                                    >
+                                      Is correct
+                                    </label>
+                                  </div>
+                                )}
+
+                                {/* Scale: numeric value within the scale range */}
+                                {item.question_type === "Scale" && (
+                                  <Field
+                                    name={`items[${index}].correct_answer`}
+                                    type="number"
+                                    placeholder={`e.g. 1–${item.weight || 5}`}
+                                    className="form-control"
+                                    min={1}
+                                    max={item.weight || undefined}
+                                    style={{ width: "120px" }}
+                                  />
+                                )}
+
+                                {/* Multiple choice: select one of the alternatives */}
+                                {(item.question_type === "Multiple choice" || item.question_type === "Multiple choice checkbox") && (
+                                  <Field
+                                    as="select"
+                                    name={`items[${index}].correct_answer`}
+                                    className="form-control"
+                                    style={{ width: "220px" }}
+                                  >
+                                    <option value="">— Select correct answer —</option>
+                                    {(item.alternatives || "")
+                                      .split(",")
+                                      .map((opt: string) => opt.trim())
+                                      .filter((opt: string) => opt !== "")
+                                      .map((opt: string) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                      ))}
+                                  </Field>
+                                )}
+
+                                {/* Text field: plain text input */}
+                                {item.question_type === "Text field" && (
+                                  <Field
+                                    name={`items[${index}].correct_answer`}
+                                    placeholder="Correct answer"
+                                    className="form-control"
+                                    style={{ width: "220px" }}
+                                  />
+                                )}
+
+                                <ErrorMessage
+                                  name={`items[${index}].correct_answer`}
+                                  component="div"
+                                  className="text-danger"
+                                />
+                              </div>
+                            )}
+
                             <ErrorMessage
                               name={`items[${index}].txt`}
                               component="div"
@@ -417,6 +528,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                     min_label: "",
                     max_label: "",
                     seq: values.items.length + 1,
+                    correct_answer: "",
                   });
                 }
                 setNumQuestions("");
