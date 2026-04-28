@@ -27,6 +27,7 @@ interface TableProps {
   showGlobalFilter?: boolean;
   showColumnFilter?: boolean;
   showPagination?: boolean;
+  disablePaginationRowModel?: boolean;
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
@@ -42,6 +43,7 @@ const Table: React.FC<TableProps> = ({
   showGlobalFilter = false,
   showColumnFilter = true,
   showPagination = true,
+  disablePaginationRowModel = false,
   onSelectionChange,
    onRowClick,
   columnVisibility = {},
@@ -141,7 +143,7 @@ const Table: React.FC<TableProps> = ({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: disablePaginationRowModel ? undefined : getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
   });
 

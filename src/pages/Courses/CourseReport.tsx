@@ -30,6 +30,14 @@ const CourseReport = () => {
   const students = reportData?.students ?? [];
 
   const rows = useMemo(() => buildRows(students, assignments), [students, assignments]);
+  const classAverageRow = useMemo(
+    () => rows.find((row) => row.isClassAverage),
+    [rows]
+  );
+  const studentRows = useMemo(
+    () => rows.filter((row) => !row.isClassAverage),
+    [rows]
+  );
   const columns = useMemo(
     () => buildColumns(assignments, visibleFields),
     [assignments, visibleFields]
@@ -131,13 +139,28 @@ const CourseReport = () => {
             </div>
           </Col>
         </Row>
+        {classAverageRow && (
+          <Row className="mb-2">
+            <Table
+              key={`${tableKey}-class-average`}
+              data={[classAverageRow]}
+              columns={columns}
+              columnVisibility={columnVisibility}
+              showPagination={false}
+              disablePaginationRowModel
+              showGlobalFilter={false}
+              showColumnFilter={false}
+            />
+          </Row>
+        )}
         <Row>
           <Table
             key={tableKey}
-            data={rows}
+            data={studentRows}
             columns={columns}
             columnVisibility={columnVisibility}
             showPagination={false}
+            disablePaginationRowModel
             showGlobalFilter={false}
           />
         </Row>
