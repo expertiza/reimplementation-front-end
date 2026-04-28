@@ -112,6 +112,8 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
     (fields: string[]) => fields.filter((field) => field.startsWith("participant_")),
     []
   );
+  // Present the repeated participant_N columns as one UI option, then expand
+  // that option back to the backend's concrete columns when exporting.
   const normalizeTeamFieldList = useCallback(
     (fields: string[]) => {
       if (modelClass !== "Team") return fields;

@@ -18,6 +18,8 @@ interface IGradeRow {
 
 const columnHelper = createColumnHelper<IGradeRow>();
 
+// Parse the grade export CSV enough for preview: commas inside quoted fields
+// and escaped quotes are preserved.
 const parseCsvLine = (line: string) => {
   const values: string[] = [];
   let current = "";
@@ -82,6 +84,7 @@ const ViewScores: React.FC = () => {
     setIsLoadingGrades(true);
     setGradesError("");
 
+    // Reuse the export endpoint so the on-screen table matches the downloaded CSV.
     axiosClient
       .get(`/grades/${assignment.id}/export`, {
         params: { include_email: true },

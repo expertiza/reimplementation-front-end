@@ -398,6 +398,8 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
     });
   }, [csvData, modelClass, previewHeaders, usersResponse?.data]);
 
+  // Team imports allow creating named teams, but rows without participant
+  // values are worth surfacing so instructors can catch accidental blanks.
   const teamRowsWithoutParticipants = useMemo(() => {
     if (modelClass !== "Team") return 0;
 
