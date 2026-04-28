@@ -24,6 +24,7 @@ interface TableProps {
   data: Record<string, any>[];
   columns: ColumnDef<any, any>[];
   disableGlobalFilter?: boolean;
+  disablePaginationRowModel?: boolean;
   showGlobalFilter?: boolean;
   showColumnFilter?: boolean;
   showPagination?: boolean;
