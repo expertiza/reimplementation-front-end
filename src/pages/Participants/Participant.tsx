@@ -46,7 +46,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
       return `/participants/assignment/${assignmentId ?? id}`;
     }
 
-    return `/participants/${type}/${id}`;
+    return `/participants/course/${id}`;
   }, [assignmentId, id, type]);
 
   useEffect(() => {
@@ -121,11 +121,16 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
     [participantResponse?.data, isLoading]
   );
 
-  const assignmentContextParams = useMemo(
-    () => ({
-      assignment_id: assignmentId ?? id,
-    }),
-    [assignmentId, id]
+  const participantModelClass = type === "courses" ? "CourseParticipant" : "AssignmentParticipant";
+
+  const participantContextParams = useMemo(
+    () =>
+      type === "courses"
+        ? { course_id: id }
+        : {
+            assignment_id: assignmentId ?? id,
+          },
+    [assignmentId, id, type]
   );
 
   return (
@@ -134,14 +139,14 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
       <ImportModal
         show={showImportModal}
         onHide={closeImportModal}
-        modelClass="AssignmentParticipant"
-        contextParams={assignmentContextParams}
+        modelClass={participantModelClass}
+        contextParams={participantContextParams}
       />
       <ExportModal
         show={showExportModal}
         onHide={closeExportModal}
-        modelClass="AssignmentParticipant"
-        contextParams={assignmentContextParams}
+        modelClass={participantModelClass}
+        contextParams={participantContextParams}
       />
       <main>
         <Container fluid className="px-md-4">
@@ -153,7 +158,7 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
           </Row>
           <Row className="mb-3">
             <Col className="d-flex justify-content-end gap-2">
-              {(type === "assignments" || type === "student_tasks") && (
+              {(type === "assignments" || type === "student_tasks" || type === "courses") && (
                 <>
                   <Button
                     className="btn btn-md"
