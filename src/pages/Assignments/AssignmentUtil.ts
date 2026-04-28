@@ -27,6 +27,7 @@ export interface IAssignmentFormValues {
   review_rubric_varies_by_round?: boolean;
   review_rubric_varies_by_topic?: boolean;
   review_rubric_varies_by_role?: boolean;
+  is_role_based?: boolean;
   has_max_review_limit?: boolean;
   set_allowed_number_of_reviews_per_reviewer?: number;
   set_required_number_of_reviews_per_reviewer?: number;
@@ -129,6 +130,7 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     review_rubric_varies_by_round: values.review_rubric_varies_by_round ?? false,
     review_rubric_varies_by_topic: values.review_rubric_varies_by_topic ?? false,
     review_rubric_varies_by_role: values.review_rubric_varies_by_role ?? false,
+    is_role_based: values.is_role_based ?? false,
     has_max_review_limit: values.has_max_review_limit ?? false,
     set_allowed_number_of_reviews_per_reviewer: values.set_allowed_number_of_reviews_per_reviewer,
     set_required_number_of_reviews_per_reviewer: values.set_required_number_of_reviews_per_reviewer,
@@ -239,6 +241,7 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     review_rubric_varies_by_round:
       assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
     number_of_review_rounds: assignment.num_review_rounds,
+    is_role_based: (assignment as any).is_role_based ?? false,
 
     // precomputed date/time fields for the Due dates tab
     date_time: dateTimeMap as any,
