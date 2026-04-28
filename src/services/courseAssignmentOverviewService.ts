@@ -33,6 +33,7 @@ export const buildRows = (
     { suffix: "peerGrade", key: "peer_grade" as const },
     { suffix: "instructorGrade", key: "instructor_grade" as const },
     { suffix: "avgTeammateScore", key: "avg_teammate_score" as const },
+    { suffix: "avgAuthorFeedbackScore", key: "avg_author_feedback_score" as const },
   ];
 
   const averages = assignments.reduce<Record<string, { sum: number; count: number }>>(
@@ -148,6 +149,14 @@ export const buildColumns = (
             renderCellValue(getValue(), row.original.isClassAverage),
           enableSorting: true,
           meta: { requestedVisible: visibleFields.avgTeammateScore },
+        }),
+        columnHelper.accessor(`a${assignment.assignment_id}_avgAuthorFeedbackScore`, {
+          id: `a${assignment.assignment_id}_avgAuthorFeedbackScore`,
+          header: "Avg. Author Feedback Score",
+          cell: ({ row, getValue }) =>
+            renderCellValue(getValue(), row.original.isClassAverage),
+          enableSorting: true,
+          meta: { requestedVisible: visibleFields.avgAuthorFeedbackScore },
         }),
       ],
     })

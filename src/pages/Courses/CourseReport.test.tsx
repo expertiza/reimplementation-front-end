@@ -53,6 +53,7 @@ const reportResponse = {
           peer_grade: 88,
           instructor_grade: 91,
           avg_teammate_score: 77,
+          avg_author_feedback_score: 82,
           topic: "Topic A",
         },
         "5": null,
@@ -67,12 +68,14 @@ const reportResponse = {
           peer_grade: 92,
           instructor_grade: null,
           avg_teammate_score: 73,
+          avg_author_feedback_score: 78,
         },
         "5": {
           participant_id: 202,
           peer_grade: 81,
           instructor_grade: 84,
           avg_teammate_score: 79,
+          avg_author_feedback_score: 75,
         },
       },
     },
@@ -150,6 +153,7 @@ describe("CourseReport", () => {
     expect(screen.getByRole("checkbox", { name: "Peer Grade" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Instructor Grade" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Avg. Teammate Score" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Avg. Author Feedback Score" })).toBeChecked();
   });
 
   it("passes the class average row to the first table and student rows to the second table", () => {
@@ -188,7 +192,7 @@ describe("CourseReport", () => {
     expect(mockTable.mock.calls[1][0].columnVisibility.a3_topic).toBe(false);
   });
 
-  it("updates peer, instructor, and teammate column visibility when their checkboxes are toggled", async () => {
+  it("updates peer, instructor, teammate, and author feedback column visibility when their checkboxes are toggled", async () => {
     const user = userEvent.setup();
 
     render(<CourseReport />);
@@ -197,6 +201,7 @@ describe("CourseReport", () => {
     await user.click(screen.getByRole("checkbox", { name: "Peer Grade" }));
     await user.click(screen.getByRole("checkbox", { name: "Instructor Grade" }));
     await user.click(screen.getByRole("checkbox", { name: "Avg. Teammate Score" }));
+    await user.click(screen.getByRole("checkbox", { name: "Avg. Author Feedback Score" }));
 
     await waitFor(() => expect(mockTable).toHaveBeenCalled());
     const latestProps = mockTable.mock.calls.at(-1)?.[0];
@@ -204,8 +209,10 @@ describe("CourseReport", () => {
     expect(latestProps.columnVisibility.a3_peerGrade).toBe(false);
     expect(latestProps.columnVisibility.a3_instructorGrade).toBe(false);
     expect(latestProps.columnVisibility.a3_avgTeammateScore).toBe(false);
+    expect(latestProps.columnVisibility.a3_avgAuthorFeedbackScore).toBe(false);
     expect(latestProps.columnVisibility.a5_peerGrade).toBe(false);
     expect(latestProps.columnVisibility.a5_instructorGrade).toBe(false);
     expect(latestProps.columnVisibility.a5_avgTeammateScore).toBe(false);
+    expect(latestProps.columnVisibility.a5_avgAuthorFeedbackScore).toBe(false);
   });
 });

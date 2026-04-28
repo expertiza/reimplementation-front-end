@@ -55,6 +55,8 @@ const CourseReport = () => {
             visibleFields.instructorGrade;
           acc[`a${assignment.assignment_id}_avgTeammateScore`] =
             visibleFields.avgTeammateScore;
+          acc[`a${assignment.assignment_id}_avgAuthorFeedbackScore`] =
+            visibleFields.avgAuthorFeedbackScore;
           return acc;
         },
         { studentName: true }
@@ -135,6 +137,13 @@ const CourseReport = () => {
                 label="Avg. Teammate Score"
                 checked={visibleFields.avgTeammateScore}
                 onChange={handleFieldToggle("avgTeammateScore")}
+              />
+              <Form.Check
+                type="checkbox"
+                id="course-report-avg-author-feedback-score"
+                label="Avg. Author Feedback Score"
+                checked={visibleFields.avgAuthorFeedbackScore}
+                onChange={handleFieldToggle("avgAuthorFeedbackScore")}
               />
             </div>
           </Col>

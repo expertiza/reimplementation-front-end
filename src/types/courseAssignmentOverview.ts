@@ -9,6 +9,7 @@ export interface AssignmentFieldData {
   peer_grade: number | null;
   instructor_grade: number | null;
   avg_teammate_score: number | null;
+  avg_author_feedback_score: number | null;
   topic?: string;
 }
 
@@ -30,6 +31,7 @@ export type VisibleFields = {
   peerGrade: boolean;
   instructorGrade: boolean;
   avgTeammateScore: boolean;
+  avgAuthorFeedbackScore: boolean;
 };
 
 export const DEFAULT_VISIBLE_FIELDS: VisibleFields = {
@@ -37,4 +39,5 @@ export const DEFAULT_VISIBLE_FIELDS: VisibleFields = {
   peerGrade: true,
   instructorGrade: true,
   avgTeammateScore: true,
+  avgAuthorFeedbackScore: true,
 };

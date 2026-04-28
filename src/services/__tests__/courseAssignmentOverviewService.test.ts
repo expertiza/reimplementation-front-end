@@ -32,6 +32,7 @@ const students: StudentReportEntry[] = [
         peer_grade: 80,
         instructor_grade: 90,
         avg_teammate_score: 70,
+        avg_author_feedback_score: 65,
         topic: "Topic Alpha",
       },
       "5": null,
@@ -46,12 +47,14 @@ const students: StudentReportEntry[] = [
         peer_grade: 100,
         instructor_grade: null,
         avg_teammate_score: 50,
+        avg_author_feedback_score: 75,
       },
       "5": {
         participant_id: 202,
         peer_grade: 60,
         instructor_grade: 70,
         avg_teammate_score: 80,
+        avg_author_feedback_score: 90,
       },
     },
   },
@@ -64,6 +67,7 @@ const students: StudentReportEntry[] = [
         peer_grade: null,
         instructor_grade: null,
         avg_teammate_score: null,
+        avg_author_feedback_score: null,
         topic: "Topic Gamma",
       },
       "5": {
@@ -71,6 +75,7 @@ const students: StudentReportEntry[] = [
         peer_grade: null,
         instructor_grade: null,
         avg_teammate_score: null,
+        avg_author_feedback_score: null,
       },
     },
   },
@@ -81,6 +86,7 @@ const visibleFields: VisibleFields = {
   peerGrade: true,
   instructorGrade: false,
   avgTeammateScore: true,
+  avgAuthorFeedbackScore: true,
 };
 
 describe("courseAssignmentOverviewService buildRows", () => {
@@ -102,6 +108,7 @@ describe("courseAssignmentOverviewService buildRows", () => {
     expect(aliceRow.a3_peerGrade).toBe(80);
     expect(aliceRow.a3_instructorGrade).toBe(90);
     expect(aliceRow.a3_avgTeammateScore).toBe(70);
+    expect(aliceRow.a3_avgAuthorFeedbackScore).toBe(65);
   });
 
   it("includes a topic key when the assignment has topics", () => {
@@ -122,6 +129,7 @@ describe("courseAssignmentOverviewService buildRows", () => {
     expect("a5_peerGrade" in aliceRow).toBe(false);
     expect("a5_instructorGrade" in aliceRow).toBe(false);
     expect("a5_avgTeammateScore" in aliceRow).toBe(false);
+    expect("a5_avgAuthorFeedbackScore" in aliceRow).toBe(false);
   });
 
   it("treats a missing topic on a topic-enabled assignment as null", () => {
@@ -166,6 +174,13 @@ describe("courseAssignmentOverviewService buildRows", () => {
     expect(classAverageRow?.a5_avgTeammateScore).toBe(80);
   });
 
+  it("computes the mean author feedback score for each assignment using only numeric values", () => {
+    const classAverageRow = buildRows(students, assignments).at(-1);
+
+    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBe(70);
+    expect(classAverageRow?.a5_avgAuthorFeedbackScore).toBe(90);
+  });
+
   it("sets the class average topic field to null for topic-enabled assignments", () => {
     const classAverageRow = buildRows(students, assignments).at(-1);
 
@@ -184,6 +199,7 @@ describe("courseAssignmentOverviewService buildRows", () => {
               peer_grade: null,
               instructor_grade: null,
               avg_teammate_score: null,
+              avg_author_feedback_score: null,
             },
           },
         },
@@ -196,6 +212,7 @@ describe("courseAssignmentOverviewService buildRows", () => {
     expect(classAverageRow?.a3_peerGrade).toBeNull();
     expect(classAverageRow?.a3_instructorGrade).toBeNull();
     expect(classAverageRow?.a3_avgTeammateScore).toBeNull();
+    expect(classAverageRow?.a3_avgAuthorFeedbackScore).toBeNull();
   });
 
   it("still returns a class average row even when there are no students", () => {
@@ -252,6 +269,13 @@ describe("courseAssignmentOverviewService buildColumns", () => {
     expect(columns[2].columns.map((column: any) => column.id)).toContain("a5_avgTeammateScore");
   });
 
+  it("creates author feedback score columns for every assignment", () => {
+    const columns = buildColumns(assignments, visibleFields) as any[];
+
+    expect(columns[1].columns.map((column: any) => column.id)).toContain("a3_avgAuthorFeedbackScore");
+    expect(columns[2].columns.map((column: any) => column.id)).toContain("a5_avgAuthorFeedbackScore");
+  });
+
   it("marks every generated assignment sub-column as sortable", () => {
     const columns = buildColumns(assignments, visibleFields) as any[];
     const assignmentColumns = [...columns[1].columns, ...columns[2].columns];
@@ -274,6 +298,9 @@ describe("courseAssignmentOverviewService buildColumns", () => {
     ).toEqual({ requestedVisible: false });
     expect(
       assignmentThreeColumns.find((column: any) => column.id === "a3_avgTeammateScore").meta
+    ).toEqual({ requestedVisible: true });
+    expect(
+      assignmentThreeColumns.find((column: any) => column.id === "a3_avgAuthorFeedbackScore").meta
     ).toEqual({ requestedVisible: true });
   });
 
