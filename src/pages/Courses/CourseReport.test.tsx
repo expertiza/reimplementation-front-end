@@ -104,12 +104,12 @@ describe("CourseReport", () => {
     setUseApiState();
   });
 
-  it("requests assignment records for the current course id", async () => {
+  it("requests course reports for the current course id", async () => {
     render(<CourseReport />);
 
     await waitFor(() =>
       expect(mockSendRequest).toHaveBeenCalledWith({
-        url: "/assignment_records?course_id=44",
+        url: "/course_reports?course_id=44",
       })
     );
   });

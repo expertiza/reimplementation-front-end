@@ -21,7 +21,7 @@ const CourseReport = () => {
 
   useEffect(() => {
     if (courseId) {
-      sendRequest({ url: `/assignment_records?course_id=${courseId}` });
+      sendRequest({ url: `/course_reports?course_id=${courseId}` });
     }
   }, [courseId, sendRequest]);
 
