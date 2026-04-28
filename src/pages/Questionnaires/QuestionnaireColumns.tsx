@@ -7,10 +7,42 @@ import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { QuestionnaireResponse as IQuestionnaire } from "./QuestionnaireUtils";
 
 type Fn = (row: Row<IQuestionnaire>) => void;
+type SelectionOptions = {
+  selectAll: boolean;
+  isSelected: (id: number | string | undefined) => boolean;
+  onToggleAll: () => void;
+  onToggleRow: (id: number | string | undefined) => void;
+};
 const columnHelper = createColumnHelper<IQuestionnaire>();
 
 
-export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn) => [
+export const questionnaireColumns = (handleEdit: Fn, handleDelete: Fn, selection?: SelectionOptions) => [
+  ...(selection
+    ? [
+        columnHelper.display({
+          id: "select",
+          header: () => (
+            <input
+              type="checkbox"
+              aria-label="Select all questionnaires"
+              checked={selection.selectAll}
+              onChange={() => selection.onToggleAll()}
+            />
+          ),
+          cell: ({ row }) => (
+            <input
+              type="checkbox"
+              aria-label={`Select questionnaire ${row.original.name}`}
+              checked={selection.isSelected(row.original.id)}
+              onClick={(event) => event.stopPropagation()}
+              onChange={() => selection.onToggleRow(row.original.id)}
+            />
+          ),
+          enableSorting: false,
+          enableColumnFilter: false,
+        }),
+      ]
+    : []),
   columnHelper.accessor("id", {
     header: "ID",
   }),

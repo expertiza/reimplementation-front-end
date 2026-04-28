@@ -2,7 +2,6 @@ import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
-import { RiHealthBookLine } from "react-icons/ri";
 import { QuestionnaireResponse } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
@@ -11,11 +10,45 @@ import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
-import ExportModal from "../../components/Modals/ExportModal";
-import ImportModal from "../../components/Modals/ImportModal";
+import axiosClient from "../../utils/axios_client";
+import QuestionnairePackageExportModal from "./QuestionnairePackageExportModal";
+import QuestionnairePackageImportModal from "./QuestionnairePackageImportModal";
 
+const STANDARD_TEXT: React.CSSProperties = {
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "13px",
+  lineHeight: "30px",
+};
 
+const toolbarLinkBase: React.CSSProperties = {
+  ...STANDARD_TEXT,
+  color: "#8b5e3c",
+  background: "transparent",
+  border: "none",
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  textDecoration: "none",
+};
 
+const toolbarLinkDisabled: React.CSSProperties = {
+  ...toolbarLinkBase,
+  color: "#8a8f98",
+  cursor: "not-allowed",
+};
+
+const pipe: React.CSSProperties = { margin: "0 8px", color: "#8b5e3c" };
+
+const ToolbarLink: React.FC<{
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}> = ({ onClick, disabled = false, children }) => (
+  <button type="button" style={disabled ? toolbarLinkDisabled : toolbarLinkBase} onClick={onClick} disabled={disabled}>
+    {children}
+  </button>
+);
 
 const Questionnaires = () => {
   const navigate = useNavigate();
@@ -24,8 +57,7 @@ const Questionnaires = () => {
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showItemImportModal, setShowItemImportModal] = useState(false);
-  const [showAdviceImportModal, setShowAdviceImportModal] = useState(false);
+  const [exportScope, setExportScope] = useState<"selected" | "all">("selected");
   
   // loader option
   const questionnaireData :any = useLoaderData();
@@ -34,8 +66,6 @@ const Questionnaires = () => {
     setShowTypeModal(false);
     setShowExportModal(false);
     setShowImportModal(false);
-    setShowItemImportModal(false);
-    setShowAdviceImportModal(false);
   }, [location]);
 
   const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
@@ -47,6 +77,7 @@ const Questionnaires = () => {
   }>({ visible: false });
 
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireResponse | null>(null);
+  const [selectedQuestionnaireIds, setSelectedQuestionnaireIds] = useState<Set<number>>(new Set());
 
   const { error, isLoading, data: itemsResponse, sendRequest: fetchItems } = useAPI();
   useEffect(() => {
@@ -80,18 +111,79 @@ const Questionnaires = () => {
     }
   }, [error, dispatch]);
 
+  const selectedQuestionnaires = useMemo(
+    () => tableData.filter((questionnaire) => typeof questionnaire.id === "number" && selectedQuestionnaireIds.has(questionnaire.id)),
+    [selectedQuestionnaireIds, tableData]
+  );
+
+  const selectAllQuestionnaires = tableData.length > 0 && selectedQuestionnaireIds.size === tableData.length;
+
   const tableColumns = useMemo(
-    () => questionnaireColumns(onEditHandle, onDeleteHandle),
-    [onDeleteHandle, onEditHandle]
+    () => questionnaireColumns(
+      onEditHandle,
+      onDeleteHandle,
+      {
+        selectAll: selectAllQuestionnaires,
+        isSelected: (id) => typeof id === "number" && selectedQuestionnaireIds.has(id),
+        onToggleAll: () => {
+          setSelectedQuestionnaireIds((currentSelection) => {
+            if (currentSelection.size === tableData.length) {
+              return new Set();
+            }
+
+            return new Set(tableData.map((questionnaire) => questionnaire.id).filter((id): id is number => typeof id === "number"));
+          });
+        },
+        onToggleRow: (id) => {
+          if (typeof id !== "number") return;
+
+          setSelectedQuestionnaireIds((currentSelection) => {
+            const nextSelection = new Set(currentSelection);
+            if (nextSelection.has(id)) {
+              nextSelection.delete(id);
+            } else {
+              nextSelection.add(id);
+            }
+            return nextSelection;
+          });
+        },
+      }
+    ),
+    [onDeleteHandle, onEditHandle, selectAllQuestionnaires, selectedQuestionnaireIds, tableData]
+  );
+
+  const tableRows = useMemo(
+    () => tableData.map((questionnaire) => ({
+      ...questionnaire,
+      isSelected: typeof questionnaire.id === "number" && selectedQuestionnaireIds.has(questionnaire.id),
+    })),
+    [selectedQuestionnaireIds, tableData]
   );
 
   const handleClose = () => setShowTypeModal(false);
+
+  const refreshQuestionnaires = useCallback(async () => {
+    const response = await axiosClient.get("/questionnaires");
+    setTableData(response.data);
+  }, []);
 
   const handleRowClick = async (questionnaire: QuestionnaireResponse) => {
     setSelectedQuestionnaire(questionnaire);
     if (typeof questionnaire.id === "number") {
       await fetchItems({ url: `/questionnaires/${questionnaire.id}/items` });
     }
+  };
+
+  const handleShowSelectedExport = () => {
+    if (selectedQuestionnaires.length === 0) return;
+
+    setExportScope("selected");
+    setShowExportModal(true);
+  };
+
+  const handleShowAllExport = () => {
+    setExportScope("all");
+    setShowExportModal(true);
   };
 
 
@@ -106,56 +198,6 @@ const Questionnaires = () => {
             </Col>
             <hr />
           </Row>
-          <Row className="mb-2">
-            <Col className="d-flex justify-content-end gap-2" style={{ maxWidth: "1400px", margin: "0 auto" }}>
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowImportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <span>Import Questionnaires</span>
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowItemImportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <span>Import Question Items</span>
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={() => setShowAdviceImportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <span>Import Question Advices</span>
-              </Button>
-              <Button
-                variant="outline-primary"
-                onClick={() => setShowExportModal(true)}
-                className="d-flex align-items-center gap-2 shadow-sm"
-                style={{ borderRadius: "8px", height: "48px" }}
-              >
-                <img src="/assets/icons/export-temp.png" alt="Export questionnaires" width={18} height={18} />
-                <span>Export Questionnaires</span>
-              </Button>
-              <Button
-                variant="success"
-                onClick={() => setShowTypeModal(true)}
-                className="d-flex align-items-center shadow-sm"
-                style={{
-                  borderRadius: "8px",
-                  width: "48px",
-                  height: "48px",
-                }}
-              >
-                <RiHealthBookLine size={24} />
-              </Button>
-            </Col>
-          </Row>
-
           <Row>
             {showTypeModal && (
               <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -170,7 +212,7 @@ const Questionnaires = () => {
           </Row>
           <Row>
             <Table
-              data={tableData}
+              data={tableRows}
               columns={tableColumns}
               showColumnFilter={false}
               columnVisibility={{
@@ -179,6 +221,19 @@ const Questionnaires = () => {
               }}
               onRowClick={handleRowClick}
             />
+            <Row className="mt-3 mb-3">
+              <Col style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+                <ToolbarLink onClick={() => setShowTypeModal(true)}>New questionnaire</ToolbarLink>
+                <span style={pipe}>|</span>
+                <ToolbarLink onClick={() => setShowImportModal(true)}>Import questionnaires</ToolbarLink>
+                <span style={pipe}>|</span>
+                <ToolbarLink onClick={handleShowSelectedExport} disabled={selectedQuestionnaires.length === 0}>
+                  Export selected questionnaires ({selectedQuestionnaires.length})
+                </ToolbarLink>
+                <span style={pipe}>|</span>
+                <ToolbarLink onClick={handleShowAllExport}>Export all questionnaires</ToolbarLink>
+              </Col>
+            </Row>
             {selectedQuestionnaire && !showDeleteConfirmation.visible && (
    <Modal
                 show={true}
@@ -304,25 +359,16 @@ const Questionnaires = () => {
 )}
         </Container>
       </main>
-      <ExportModal
+      <QuestionnairePackageExportModal
         show={showExportModal}
         onHide={() => setShowExportModal(false)}
-        modelClass="Questionnaire"
+        selectedQuestionnaires={selectedQuestionnaires}
+        initialScope={exportScope}
       />
-      <ImportModal
+      <QuestionnairePackageImportModal
         show={showImportModal}
         onHide={() => setShowImportModal(false)}
-        modelClass="Questionnaire"
-      />
-      <ImportModal
-        show={showItemImportModal}
-        onHide={() => setShowItemImportModal(false)}
-        modelClass="Item"
-      />
-      <ImportModal
-        show={showAdviceImportModal}
-        onHide={() => setShowAdviceImportModal(false)}
-        modelClass="QuestionAdvice"
+        onImported={refreshQuestionnaires}
       />
     </>
     
