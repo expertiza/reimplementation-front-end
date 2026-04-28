@@ -4,7 +4,7 @@ import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
@@ -51,6 +51,12 @@ interface TopicData {
   partnerAd?: any;
   createdAt?: string;
   updatedAt?: string;
+}
+
+interface AssignmentDutyConfig {
+  duty_id: number;
+  duty_name: string;
+  max_members_for_duty: number;
 }
 
 const initialValues: IAssignmentFormValues = {
@@ -124,6 +130,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: assignmentDutiesResponse, error: assignmentDutiesError, sendRequest: fetchAssignmentDuties } = useAPI();
   const { error: addAssignmentDutyError, sendRequest: addAssignmentDuty } = useAPI();
   const { error: removeAssignmentDutyError, sendRequest: removeAssignmentDuty } = useAPI();
+  const { data: createDutyResponse, error: createDutyError, sendRequest: createDuty } = useAPI();
+  const { data: createDutyMappingResponse, error: createDutyMappingError, sendRequest: createDutyMapping } = useAPI();
+  const { data: deleteDutyMappingResponse, error: deleteDutyMappingError, sendRequest: deleteDutyMapping } = useAPI();
+  const { data: updateDutyLimitResponse, error: updateDutyLimitError, sendRequest: updateDutyLimit } = useAPI();
 
  
 
@@ -133,6 +143,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   );
   // authentication state not required in this editor
   const assignmentData: any = useLoaderData();
+  const [assignmentDuties, setAssignmentDuties] = useState<AssignmentDutyConfig[]>(assignmentData.assignment_duties || []);
+  const [accessibleDuties, setAccessibleDuties] = useState<any[]>([]);
+  const [selectedDutyId, setSelectedDutyId] = useState<string>("");
+  const [newDutyName, setNewDutyName] = useState<string>("");
+  const [showCreateRoleInline, setShowCreateRoleInline] = useState<boolean>(false);
 
   // Merge backend-loaded assignment data with frontend defaults:
   // for any field that is null/undefined in assignmentData, fall back to initialValues.
@@ -165,6 +180,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAssignmentDuties(assignmentData.assignment_duties || []);
+  }, [assignmentData.assignment_duties]);
 
 
    useEffect(() => {
@@ -281,6 +300,90 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(alertActions.showAlert({ variant: "danger", message: dropTeamError }));
     }
   }, [dropTeamError, dispatch]);
+
+  useEffect(() => {
+    if (mode === "update") {
+      fetchAccessibleDuties({ url: "/duties/accessible_duties", method: HttpMethod.GET });
+    }
+  }, [mode, fetchAccessibleDuties]);
+
+  useEffect(() => {
+    if (accessibleDutiesResponse?.data) {
+      setAccessibleDuties(accessibleDutiesResponse.data || []);
+    }
+  }, [accessibleDutiesResponse]);
+
+  useEffect(() => {
+    if (accessibleDutiesError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: accessibleDutiesError }));
+    }
+  }, [accessibleDutiesError, dispatch]);
+
+  useEffect(() => {
+    if (createDutyResponse?.data) {
+      const createdDuty = createDutyResponse.data;
+      setAccessibleDuties((prev) => {
+        const alreadyExists = prev.some((duty: any) => duty.id === createdDuty.id);
+        if (alreadyExists) {
+          return prev;
+        }
+        return [...prev, createdDuty];
+      });
+      setSelectedDutyId(String(createdDuty.id));
+      setNewDutyName("");
+      setShowCreateRoleInline(false);
+      dispatch(alertActions.showAlert({ variant: "success", message: "Role created" }));
+      fetchAccessibleDuties({ url: "/duties/accessible_duties", method: HttpMethod.GET });
+    }
+  }, [createDutyResponse, dispatch, fetchAccessibleDuties]);
+
+  useEffect(() => {
+    if (createDutyError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: createDutyError }));
+    }
+  }, [createDutyError, dispatch]);
+
+  useEffect(() => {
+    if (createDutyMappingResponse?.data) {
+      setAssignmentDuties(createDutyMappingResponse.data || []);
+      setSelectedDutyId("");
+      dispatch(alertActions.showAlert({ variant: "success", message: "Role added to assignment" }));
+    }
+  }, [createDutyMappingResponse, dispatch]);
+
+  useEffect(() => {
+    if (createDutyMappingError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: createDutyMappingError }));
+    }
+  }, [createDutyMappingError, dispatch]);
+
+  useEffect(() => {
+    if (deleteDutyMappingResponse?.status === 204) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Role removed from assignment" }));
+    }
+  }, [deleteDutyMappingResponse, dispatch]);
+
+  useEffect(() => {
+    if (deleteDutyMappingError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: deleteDutyMappingError }));
+    }
+  }, [deleteDutyMappingError, dispatch]);
+
+  useEffect(() => {
+    if (updateDutyLimitResponse?.data) {
+      const updated = updateDutyLimitResponse.data;
+      setAssignmentDuties((prev) =>
+        prev.map((duty) => (duty.duty_id === updated.duty_id ? { ...duty, max_members_for_duty: updated.max_members_for_duty } : duty))
+      );
+      dispatch(alertActions.showAlert({ variant: "success", message: "Role limit updated" }));
+    }
+  }, [updateDutyLimitResponse, dispatch]);
+
+  useEffect(() => {
+    if (updateDutyLimitError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: updateDutyLimitError }));
+    }
+  }, [updateDutyLimitError, dispatch]);
 
   // Load topics for this assignment
     useEffect(() => {
@@ -625,6 +728,73 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   }));
 
   const reviewRounds = assignmentData.number_of_review_rounds;
+  const assignedRoleDuties: string[] = assignmentDuties
+    .map((assignmentDuty: any) => assignmentDuty?.duty_name || assignmentDuty?.dutyName || assignmentDuty?.name)
+    .filter(Boolean);
+
+  const unassignedDuties = useMemo(
+    () =>
+      accessibleDuties.filter(
+        (duty: any) => !assignmentDuties.some((assignedDuty) => assignedDuty.duty_id === duty.id)
+      ),
+    [accessibleDuties, assignmentDuties]
+  );
+
+  const handleAddRoleDuty = () => {
+    if (!id || !selectedDutyId) {
+      return;
+    }
+
+    createDutyMapping({
+      url: `/assignments/${id}/duties`,
+      method: HttpMethod.POST,
+      params: { duty_id: selectedDutyId },
+    });
+  };
+
+  const handleRemoveRoleDuty = (dutyId: number) => {
+    if (!id) {
+      return;
+    }
+
+    deleteDutyMapping({
+      url: `/assignments/${id}/duties/${dutyId}`,
+      method: HttpMethod.DELETE,
+    });
+    setAssignmentDuties((prev) => prev.filter((duty) => duty.duty_id !== dutyId));
+  };
+
+  const handleUpdateRoleLimit = (dutyId: number, maxMembersForDuty: number) => {
+    if (!id || Number.isNaN(maxMembersForDuty) || maxMembersForDuty < 1) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Max members per role must be at least 1" }));
+      return;
+    }
+
+    updateDutyLimit({
+      url: `/assignments/${id}/duties/${dutyId}/limit`,
+      method: HttpMethod.PATCH,
+      data: { max_members_for_duty: maxMembersForDuty },
+    });
+  };
+
+  const handleCreateRoleDuty = () => {
+    const trimmedName = newDutyName.trim();
+    if (!trimmedName) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: "Role name is required" }));
+      return;
+    }
+
+    createDuty({
+      url: "/duties",
+      method: HttpMethod.POST,
+      data: {
+        duty: {
+          name: trimmedName,
+          private: false,
+        },
+      },
+    });
+  };
 
   // Build initial form values from existing assignment data (update) or defaults (create)
   const formInitialValues: IAssignmentFormValues & Record<string, any> = {
@@ -761,7 +931,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <div style={{ marginTop: '20px' }}></div>
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_round" label="Review rubric varies by round?" name="review_rubric_varies_by_round" />
                 <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
 
                 <div style={{ marginTop: '20px' }}>
                   <Table
@@ -827,12 +996,27 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         title: "Teammate review:",
                         questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                         questionnaire_type: 'dropdown',
+                        weight_index: 101,
+                        notification_index: (formik.values.number_of_review_rounds ?? 0) + 1,
                       },
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
                         title: "Add tag prompts",
                         questionnaire_type: 'tag_prompts',
                       },
+                      ...(formik.values.review_rubric_varies_by_role && assignedRoleDuties.length > 0
+                        ? assignedRoleDuties.flatMap((roleName: string, index: number) => {
+                          const roleRowId = 10_000 + index;
+                          return [{
+                            id: roleRowId,
+                            title: `Teammate Review for ${roleName}`,
+                            questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
+                            questionnaire_type: 'dropdown',
+                            weight_index: 20_000 + index,
+                            notification_index: roleRowId,
+                          }];
+                        })
+                        : []),
                     ]}
                     columns={[
                       {
@@ -861,14 +1045,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           // Use distinct indices in the weights array so that
                           // different rows (review rubric, author feedback,
                           // teammate review, etc.) do not overwrite each other.
-                          let weightIndex: number;
-                          if (row.original.title === "Author feedback:") {
-                            weightIndex = 100; // separate slot for author feedback
-                          } else if (row.original.title === "Teammate review:") {
-                            weightIndex = 101; // separate slot for teammate review
-                          } else {
-                            weightIndex = row.original.id;
-                          }
+                          const weightIndex = row.original.weight_index ?? (row.original.title === "Author feedback:" ? 100 : row.original.id);
 
                           return (
                             <div style={{ marginRight: '10px' }}>
@@ -887,7 +1064,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       },
                       {
                         cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
+                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.notification_index ?? row.original.id}]`} type="number" />%</div></>}</>,
                         accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
                       },
                     ]}
@@ -910,6 +1087,85 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     ]}
                   />
                 </div>
+                <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Is role based?" name="review_rubric_varies_by_role" />
+                {formik.values.review_rubric_varies_by_role && (
+                  <div style={{ marginTop: '10px', marginBottom: '12px' }}>
+                    <div style={{ border: '1px solid #d5dee8', backgroundColor: '#f7fafc', borderRadius: '8px', padding: '10px', marginBottom: '10px' }}>
+                      <div style={{ fontWeight: 600, marginBottom: '8px' }}>Assign existing role</div>
+                      <div style={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+                        <div style={{ width: '260px' }}>
+                          <select
+                            id="assignment-role-duty"
+                            value={selectedDutyId}
+                            onChange={(e) => setSelectedDutyId(e.target.value)}
+                            style={{ width: '100%', height: '38px', borderRadius: '4px', border: '1px solid #ced4da', padding: '0 8px' }}
+                          >
+                            <option value="">-- Select role --</option>
+                            {unassignedDuties.map((duty: any) => (
+                              <option key={duty.id} value={duty.id}>
+                                {duty.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <Button type="button" variant="outline-secondary" onClick={handleAddRoleDuty} disabled={!selectedDutyId}>
+                          Add Role to Assignment
+                        </Button>
+                      </div>
+                      {!showCreateRoleInline && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCreateRoleInline(true)}
+                          style={{ marginTop: '8px', padding: 0, border: 'none', background: 'none', color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer', transform: 'none', transition: 'none', lineHeight: 1.2, verticalAlign: 'baseline' }}
+                        >
+                          Create a new role
+                        </button>
+                      )}
+                    </div>
+
+                    {showCreateRoleInline && (
+                      <div style={{ border: '1px solid #d5dee8', backgroundColor: '#fffaf5', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+                        <div style={{ fontWeight: 600, marginBottom: '8px' }}>Create new role</div>
+                        <div style={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+                          <input
+                            id="assignment-create-role-duty"
+                            type="text"
+                            value={newDutyName}
+                            onChange={(e) => setNewDutyName(e.target.value)}
+                            placeholder="Role name"
+                            style={{ width: '260px', height: '38px', borderRadius: '4px', border: '1px solid #ced4da', padding: '0 8px' }}
+                          />
+                          <Button type="button" variant="outline-primary" onClick={handleCreateRoleDuty} disabled={!newDutyName.trim()}>
+                            Create Role
+                          </Button>
+                          <Button type="button" variant="outline-secondary" onClick={() => setShowCreateRoleInline(false)}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {assignmentDuties.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', rowGap: '8px' }}>
+                        {assignmentDuties.map((duty) => (
+                          <div key={duty.duty_id} style={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+                            <div style={{ minWidth: '180px' }}>{duty.duty_name}</div>
+                            <label style={{ marginBottom: 0 }}>Max members:</label>
+                            <input
+                              type="number"
+                              min={1}
+                              defaultValue={duty.max_members_for_duty}
+                              style={{ width: '80px' }}
+                              onBlur={(e) => handleUpdateRoleLimit(duty.duty_id, Number(e.target.value))}
+                            />
+                            <Button type="button" variant="outline-danger" size="sm" onClick={() => handleRemoveRoleDuty(duty.duty_id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {formik.values.has_topics && (
                   <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
                     <label className="form-label">Review topic threshold (k):</label>
