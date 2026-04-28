@@ -473,7 +473,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [dropTeamRequest]);
       
         const handleDeleteTopic = useCallback((topicIdentifier: string) => {
-          console.log(`Delete topic ${topicIdentifier}`);
           if (id) {
             deleteTopic({
               url: `/project_topics`,
@@ -487,7 +486,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, deleteTopic]);
       
         const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
-          console.log(`Edit topic DB id ${dbId}`, updatedData);
           updateTopic({
             url: `/project_topics/${dbId}`,
             method: 'PATCH',
@@ -506,7 +504,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, updateTopic]);
       
         const handleCreateTopic = useCallback((topicData: any) => {
-          console.log(`Create topic`, topicData);
           if (id) {
             createTopic({
               url: `/project_topics`,
@@ -528,7 +525,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, createTopic]);
       
         const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
-          console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
           // TODO: Implement partner ad application logic
         }, []);
 
@@ -700,7 +696,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     }
     // to be used to display message when assignment is created
     assignmentData.name = values.name;
-    console.log(values);
     sendRequest({
       url: url,
       method: method,

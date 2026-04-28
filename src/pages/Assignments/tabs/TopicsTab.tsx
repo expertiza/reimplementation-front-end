@@ -390,7 +390,7 @@ const TopicsTab = ({
         <h4>Topics for {assignmentName} assignment</h4>
 
         {/* Topic Settings */}
-        <Form className="topics-settings-form">
+        <div className="topics-settings-form">
               <Form.Check
                 type="checkbox"
                 id="allowTopicSuggestions"
@@ -446,7 +446,7 @@ const TopicsTab = ({
                 checked={topicSettings.allowBiddingForReviewers}
                 onChange={(e) => onTopicSettingChange('allowBiddingForReviewers', e.target.checked)}
               />
-        </Form>
+        </div>
 
         {/* Error Message */}
         {topicsError && (

@@ -105,7 +105,6 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
-  console.log("Original Form Values:", values);
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
@@ -124,7 +123,6 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
         }))
       : [],
   };
-  console.log("Transformed Questionnaire Request:", questionnaire);
   return { questionnaire };
 };
 

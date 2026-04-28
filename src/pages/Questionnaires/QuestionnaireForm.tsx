@@ -16,10 +16,8 @@
   
 
     useEffect(() => {
-          
-            fetchItemTypes({ url: "/questions/types" });
-          console.log(itemTypes?.data);
-        }, [fetchItemTypes]);
+      fetchItemTypes({ url: "/questions/types" });
+    }, [fetchItemTypes]);
       
 
     const itemFields = Yup.object().shape({

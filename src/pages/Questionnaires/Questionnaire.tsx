@@ -53,14 +53,13 @@ const Questionnaires = () => {
   );
 
   const onDeleteHandle = useCallback(
-     (row: TRow<QuestionnaireResponse>) => {
-    console.log("Delete clicked:", row.original);
-    setSelectedQuestionnaire(null);
-    setTimeout(() => {
-      setShowDeleteConfirmation({ visible: true, data: row.original });
-    }, 100);
-  },
-  []
+    (row: TRow<QuestionnaireResponse>) => {
+      setSelectedQuestionnaire(null);
+      setTimeout(() => {
+        setShowDeleteConfirmation({ visible: true, data: row.original });
+      }, 100);
+    },
+    []
   );
   
   

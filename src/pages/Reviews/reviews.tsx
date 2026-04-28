@@ -78,7 +78,6 @@ const Reviews: React.FC = () => {
   }
 
   useEffect(() => {
-    console.log('Component mounted or reviewSetId changed');
     const items = getReviewItems(reviewSetId);
     const feedback = getFeedbackItems(reviewSetId);
     setReviewItems(items);
@@ -105,7 +104,6 @@ const Reviews: React.FC = () => {
   }, [rubricResponse]);
 
   if (!reviewItems.length) {
-    console.log('No review items to display');
     return <div>No reviews available.</div>;
   }
 
@@ -123,7 +121,6 @@ const Reviews: React.FC = () => {
   };
 
   const handleShareReview = () => {
-    console.log("Handle Share Review");
   };
 
   const getScoreColor = (score: number) => {
