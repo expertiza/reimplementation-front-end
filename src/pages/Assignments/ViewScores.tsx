@@ -3,8 +3,9 @@ import { Button, Container, Row, Col, Modal } from 'react-bootstrap';
 import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useLoaderData } from 'react-router-dom';
-import { BsGraphUp } from 'react-icons/bs';
+import { BsDownload, BsGraphUp } from 'react-icons/bs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import GradesExportModal from '../../components/Modals/GradesExportModal';
 
 interface IScore {
   id: number;
@@ -17,6 +18,7 @@ const columnHelper = createColumnHelper<IScore>();
 const ViewScores: React.FC = () => {
   const assignment: any = useLoaderData();
   const [showGraph, setShowGraph] = useState(false);
+  const [showGradesExportModal, setShowGradesExportModal] = useState(false);
 
   const scores = useMemo(() => [
     { id: 1, student: 'Team 1', score: 85 },
@@ -76,8 +78,15 @@ const ViewScores: React.FC = () => {
         </Col>
         <hr />
       </Row>
-      <Row>
-        <Col md={{ span: 1, offset: 11 }}>
+      <Row className="mb-3">
+        <Col className="d-flex justify-content-end gap-2">
+          <Button
+            variant="outline-primary"
+            onClick={() => setShowGradesExportModal(true)}
+            className="d-flex align-items-center"
+          >
+            <span className="me-1">Export Grades</span> <BsDownload />
+          </Button>
           <Button variant="outline-info" onClick={handleShowGraph} className="d-flex align-items-center">
             <span className="me-1">Graph</span> <BsGraphUp />
           </Button>
@@ -111,6 +120,12 @@ const ViewScores: React.FC = () => {
           </ResponsiveContainer>
         </Modal.Body>
       </Modal>
+      <GradesExportModal
+        show={showGradesExportModal}
+        onHide={() => setShowGradesExportModal(false)}
+        assignmentId={assignment?.id}
+        assignmentName={assignment?.name}
+      />
     </Container>
   );
 };

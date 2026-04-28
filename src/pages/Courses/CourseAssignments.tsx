@@ -7,6 +7,7 @@ import { assignmentColumns as getBaseAssignmentColumns } from "../Assignments/As
 import { useLocation, useNavigate } from "react-router-dom";
 import { IAssignmentResponse } from "../../utils/interfaces";
 import AssignmentDelete from "../Assignments/AssignmentDelete";
+import GradesExportModal from "../../components/Modals/GradesExportModal";
 
 const formatDateTime = (value: string | Date | null | undefined): string => {
   if (!value) return "—";
@@ -43,6 +44,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     visible: boolean;
     data?: IAssignmentResponse;
   }>({ visible: false });
+  const [exportAssignment, setExportAssignment] = useState<IAssignmentResponse | null>(null);
 
   const onDeleteAssignmentHandler = () => setShowDeleteConfirmation({ visible: false });
 
@@ -71,6 +73,9 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
 
   const onViewReportsHandle = (row: TRow<IAssignmentResponse>) =>
     navigate(`/assignments/edit/${row.original.id}/viewreports`);
+
+  const onExportGradesHandle = (row: TRow<IAssignmentResponse>) =>
+    setExportAssignment(row.original);
 
   const actionHandlers: ActionHandler[] = useMemo(
     () => [
@@ -132,10 +137,8 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
       },
       {
         icon: "/assets/icons/export-temp.png",
-        label: "Export",
-        handler: (row: TRow<any>) => {
-          console.log("Export assignment:", row.original);
-        },
+        label: "Export Grades",
+        handler: onExportGradesHandle,
         className: "text-primary",
       },
     ],
@@ -145,6 +148,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
       onCreateTeamsHandle,
       onDeleteHandle,
       onEditHandle,
+      onExportGradesHandle,
       onViewReportsHandle,
       onViewScoresHandle,
       onViewSubmissionsHandle,
@@ -228,6 +232,12 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
         showColumnFilter={false}
         showPagination={false}
         tableSize={{ span: 12, offset: 0 }}
+      />
+      <GradesExportModal
+        show={exportAssignment !== null}
+        onHide={() => setExportAssignment(null)}
+        assignmentId={exportAssignment?.id}
+        assignmentName={exportAssignment?.name}
       />
     </div>
   );
