@@ -11,9 +11,11 @@ interface EditParticipantModalProps {
   show: boolean;
   onHide: () => void;
   onSave: (updatedParticipant: Participant) => void;
+  errorMessage?: string | null;
 }
 
-function EditParticipantModal({ participant, roleOptions, show, onHide, onSave }: EditParticipantModalProps) {
+/** Modal form for editing a participant; parent controls closing after save succeeds. */
+function EditParticipantModal({ participant, roleOptions, show, onHide, onSave, errorMessage }: EditParticipantModalProps) {
   const [updatedParticipant, setUpdatedParticipant] = useState<Participant>(participant);
 
   useEffect(() => {
@@ -82,17 +84,21 @@ function EditParticipantModal({ participant, roleOptions, show, onHide, onSave }
           </Form.Group>
         </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button
-          className="btn btn-md"
-          variant="danger"
-          onClick={() => {
-            onSave(updatedParticipant);
-            onHide();
-          }}
-        >
-          Save changes
-        </Button>
+      <Modal.Footer className="d-flex flex-column align-items-stretch">
+        {errorMessage && (
+          <div className="alert alert-danger mb-2" role="alert">
+            {errorMessage}
+          </div>
+        )}
+        <div className="d-flex justify-content-end">
+          <Button
+            className="btn btn-md"
+            variant="danger"
+            onClick={() => onSave(updatedParticipant)}
+          >
+            Save changes
+          </Button>
+        </div>
       </Modal.Footer>
     </Modal>
   );

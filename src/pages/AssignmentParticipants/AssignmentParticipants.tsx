@@ -48,6 +48,7 @@ function AssignmentParticipants() {
   const [modalShow, setModalShow] = useState({ edit: false, remove: false });
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const { assignmentId } = useParams();
 
@@ -129,6 +130,7 @@ function AssignmentParticipants() {
   /** Opens the edit modal for the chosen participant. */
   const openEditModal = (participant: Participant) => {
     setSelectedParticipant(participant);
+    setSaveError(null);
     setModalShow({ edit: true, remove: false });
   };
 
@@ -146,26 +148,47 @@ function AssignmentParticipants() {
     }
   };
 
-  /** Persists participant authorization and user profile/role edits. */
-  const handleSave = (updatedParticipant: Participant) => {
+  /**
+   * Persists participant authorization and user profile/role edits.
+   * Awaits both backend writes; only closes the modal on success and surfaces an
+   * inline error on failure or when the role id cannot be resolved.
+   */
+  const handleSave = async (updatedParticipant: Participant) => {
     const roleId = resolveRoleId(updatedParticipant.role);
 
-    updateParticipant({
-      url: `/participants/${updatedParticipant.id}/${updatedParticipant.participantRole}`,
-      method: HttpMethod.PATCH,
-    });
+    if (roleId == null) {
+      setSaveError(
+        `Could not resolve a role id for "${updatedParticipant.role}". Please refresh and try again.`
+      );
+      return;
+    }
 
-    updateUser({
-      url: `/users/${updatedParticipant.user_id}`,
-      method: HttpMethod.PATCH,
-      data: {
-        full_name: updatedParticipant.name,
-        email: updatedParticipant.email,
-        ...(roleId != null ? { role_id: roleId } : {}),
-      },
-    });
+    setSaveError(null);
 
-    setModalShow({ edit: false, remove: false });
+    try {
+      await Promise.all([
+        updateParticipant({
+          url: `/participants/${updatedParticipant.id}/${updatedParticipant.participantRole}`,
+          method: HttpMethod.PATCH,
+        }),
+        updateUser({
+          url: `/users/${updatedParticipant.user_id}`,
+          method: HttpMethod.PATCH,
+          data: {
+            full_name: updatedParticipant.name,
+            email: updatedParticipant.email,
+            role_id: roleId,
+          },
+        }),
+      ]);
+      setModalShow({ edit: false, remove: false });
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ??
+        err?.message ??
+        'Failed to save participant. Please try again.';
+      setSaveError(message);
+    }
   };
 
   /** Validates lookup input and adds a matched user as an assignment participant. */
@@ -286,8 +309,12 @@ function AssignmentParticipants() {
           show={modalShow.edit}
           participant={selectedParticipant}
           roleOptions={roleOptions}
-          onHide={() => setModalShow({ ...modalShow, edit: false })}
+          onHide={() => {
+            setSaveError(null);
+            setModalShow({ ...modalShow, edit: false });
+          }}
           onSave={handleSave}
+          errorMessage={saveError}
         />
       )}
       <ConfirmRemoveModal
