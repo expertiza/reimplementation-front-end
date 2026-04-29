@@ -3,7 +3,6 @@ import './AssignmentParticipants.css';
 import { useEffect, useMemo, useState } from 'react';
 import EditParticipantModal from './EditParticipantModal';
 import ConfirmRemoveModal from './ConfirmRemoveModal';
-import ToastNotification from './ToastNotification';
 import ParticipantTable from './ParticipantsTable';
 import {
   assignmentTableFlagsFromResponse,
@@ -18,17 +17,18 @@ import { IAssignmentResponse } from 'utils/interfaces';
 import { HttpMethod } from 'utils/httpMethods';
 import { Form, Button } from 'react-bootstrap';
 
-const ROLE_NAME_TO_BACKEND: Record<string, string> = {
+const UI_ROLE_TO_API_ROLE_NAME: Record<string, string> = {
   admin: 'administrator',
   student: 'student',
   instructor: 'instructor',
 };
 
-const BACKEND_ROLE_TO_UI: Record<string, string> = {
+const API_ROLE_TO_UI_ROLE: Record<string, string> = {
   'Administrator': Role.Admin,
   'Super Administrator': Role.Admin,
 };
 
+/** Manages assignment participant listing, filtering, and participant CRUD actions. */
 function AssignmentParticipants() {
   const { data: participantsResponse, sendRequest: fetchParticipants } = useAPI();
   const { data: usersResponse, sendRequest: fetchUsers } = useAPI();
@@ -47,9 +47,7 @@ function AssignmentParticipants() {
   const [selectedFilterRole, setSelectedFilterRole] = useState<Role | 'All'>('All');
   const [modalShow, setModalShow] = useState({ edit: false, remove: false });
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
-  const [toast, setToast] = useState<{ message: string; onUndo: () => void } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastDeletedParticipant, setLastDeletedParticipant] = useState<Participant | null>(null);
 
   const { assignmentId } = useParams();
 
@@ -63,14 +61,16 @@ function AssignmentParticipants() {
 
   const roleOptions = useMemo<string[]>(() => [Role.Admin, Role.Instructor, Role.Student], []);
 
+  /** Maps a UI role label to its API role id from the fetched roles list. */
   const resolveRoleId = (uiRoleName: string): number | undefined => {
-    const backendName = ROLE_NAME_TO_BACKEND[uiRoleName.toLowerCase().trim()] ?? uiRoleName.toLowerCase().trim();
+    const backendName = UI_ROLE_TO_API_ROLE_NAME[uiRoleName.toLowerCase().trim()] ?? uiRoleName.toLowerCase().trim();
     const match = (rolesResponse?.data ?? []).find(
       (r: any) => String(r?.name ?? '').toLowerCase().trim() === backendName
     );
     return match?.id;
   };
 
+  /** Refreshes assignment, users, participants, and roles after modal/API state changes. */
   useEffect(() => {
     if (!modalShow.edit && !modalShow.remove) {
       fetchParticipants({ url: `/participants/assignment/${assignmentId}` });
@@ -86,6 +86,7 @@ function AssignmentParticipants() {
     deleteParticipantResponse,
   ]);
 
+  /** Normalizes API participant payload into table-ready participant rows. */
   useEffect(() => {
     if (participantsResponse?.data && assignmentResponse?.data) {
       const assignment = assignmentResponse.data as IAssignmentResponse;
@@ -98,7 +99,7 @@ function AssignmentParticipants() {
             user_id: user.id,
             name: displayNameForUser(user),
             email: user.email ?? "",
-            role: BACKEND_ROLE_TO_UI[user.role?.name] ?? user.role?.name ?? Role.Student,
+            role: API_ROLE_TO_UI_ROLE[user.role?.name] ?? user.role?.name ?? Role.Student,
             parent: assignment.name,
             permissions: {
               review: participant.can_review ? IsEnabled.Yes : IsEnabled.No,
@@ -114,6 +115,7 @@ function AssignmentParticipants() {
     }
   }, [participantsResponse, assignmentResponse]);
 
+  /** Filters participants by selected role and search text. */
   const filteredParticipants = useMemo(() => {
     return participants.filter((participant) => {
       return (
@@ -124,24 +126,27 @@ function AssignmentParticipants() {
     });
   }, [participants, searchTerm, selectedFilterRole]);
 
+  /** Opens the edit modal for the chosen participant. */
   const openEditModal = (participant: Participant) => {
     setSelectedParticipant(participant);
     setModalShow({ edit: true, remove: false });
   };
 
+  /** Opens the remove confirmation modal for the chosen participant. */
   const openRemoveModal = (participant: Participant) => {
     setSelectedParticipant(participant);
     setModalShow({ edit: false, remove: true });
   };
 
+  /** Deletes the selected participant and closes the remove modal. */
   const handleRemove = () => {
     if (selectedParticipant) {
-      setLastDeletedParticipant(selectedParticipant);
       deleteParticipant({ url: `/participants/${selectedParticipant.id}`, method: 'DELETE' });
       setModalShow({ edit: false, remove: false });
     }
   };
 
+  /** Persists participant authorization and user profile/role edits. */
   const handleSave = (updatedParticipant: Participant) => {
     const roleId = resolveRoleId(updatedParticipant.role);
 
@@ -163,6 +168,7 @@ function AssignmentParticipants() {
     setModalShow({ edit: false, remove: false });
   };
 
+  /** Validates lookup input and adds a matched user as an assignment participant. */
   const handleAddUser = () => {
     if (!newUserName.trim()) {
       setError('Name must not be empty.');
@@ -289,18 +295,11 @@ function AssignmentParticipants() {
         onHide={() => setModalShow({ ...modalShow, remove: false })}
         onConfirm={handleRemove}
       />
-
-      {toast && (
-        <ToastNotification
-          message={toast.message}
-          onUndo={toast.onUndo}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }
 
+/** Returns the enabled/disabled permission icon for a permission cell. */
 export function permissionIcon(permission: IsEnabled) {
   return permission === IsEnabled.Yes ? <img
     src="/assets/icons/Check-icon.png"

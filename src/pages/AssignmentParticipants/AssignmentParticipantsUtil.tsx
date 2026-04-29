@@ -1,6 +1,8 @@
 import { AssignmentProperties, IsEnabled, ParticipantRole, Role } from "./AssignmentParticipantsTypes";
 import type { IAssignmentResponse } from "utils/interfaces";
 
+/** Pure helper functions for assignment participant mapping and display logic. */
+
 /** Resolves a row label when /users omits or blanks full_name and name (common with seeds). */
 export function displayNameForUser(user: {
   full_name?: string | null;
@@ -40,10 +42,12 @@ export function assignmentTableFlagsFromResponse(assignment: IAssignmentResponse
   };
 }
 
+/** Computes table colspan based on optional quiz and mentor permission columns. */
 export function assignmentColSpan(assignmentProps: AssignmentProperties): number {
   return assignmentProps.hasQuiz && assignmentProps.hasMentor ? 12 : assignmentProps.hasQuiz || assignmentProps.hasMentor ? 11 : 10;
 }
 
+/** Returns the CSS class used to color a participant's role label. */
 export function classForRole(role: Role): string {
   switch (role) {
     case Role.Student:
@@ -63,10 +67,12 @@ export function iconForRole(role: Role): JSX.Element {
   return <></>;
 }
 
+/** Returns the CSS class used to style enabled/disabled permission cells. */
 export function classForStatus(isEnabled: IsEnabled): string {
   return isEnabled === IsEnabled.Yes ? "status-yes" : "status-no";
 }
 
+/** Returns the help text shown for each participant authorization option. */
 export function participantRoleInfo(role: ParticipantRole): string {
   switch (role) {
     case ParticipantRole.Participant:

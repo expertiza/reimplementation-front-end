@@ -12,6 +12,7 @@ interface ParticipantTableProps {
   openRemoveModal: (participant: Participant) => void;
 }
 
+/** Renders the assignment participants table with permission and action columns. */
 function ParticipantTable({
   participants,
   assignmentProps,
