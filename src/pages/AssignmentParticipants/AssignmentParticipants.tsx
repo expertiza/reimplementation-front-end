@@ -140,11 +140,26 @@ function AssignmentParticipants() {
     setModalShow({ edit: false, remove: true });
   };
 
-  /** Deletes the selected participant and closes the remove modal. */
-  const handleRemove = () => {
-    if (selectedParticipant) {
-      deleteParticipant({ url: `/participants/${selectedParticipant.id}`, method: 'DELETE' });
+  /**
+   * Deletes the selected participant. Awaits the DELETE response and only closes
+   * the confirmation modal on success; surfaces an error message on failure.
+   */
+  const handleRemove = async () => {
+    if (!selectedParticipant) return;
+
+    try {
+      await deleteParticipant({
+        url: `/participants/${selectedParticipant.id}`,
+        method: 'DELETE',
+      });
+      setError(null);
       setModalShow({ edit: false, remove: false });
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ??
+        err?.message ??
+        'Failed to remove participant. Please try again.';
+      setError(message);
     }
   };
 
