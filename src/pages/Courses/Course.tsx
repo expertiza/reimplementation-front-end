@@ -33,6 +33,7 @@ const Courses = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const isReportPage = location.pathname.includes("class_assignment_overview");
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
@@ -102,6 +103,11 @@ const Courses = () => {
     []
   );
 
+  const onReportHandle = useCallback(
+    (row: TRow<ICourseResponse>) => navigate(`${row.original.id}/class_assignment_overview`),
+    [navigate]
+  );
+
 const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
 	return (
 	  <CourseAssignments
@@ -112,8 +118,8 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
   }, []);
 
   const tableColumns = useMemo(
-    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
-    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle]
+    () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle, onReportHandle),
+    [onDeleteHandle, onEditHandle, onTAHandle, onCopyHandle, onReportHandle]
   );
 
   const tableData = useMemo(
@@ -162,6 +168,10 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
     if (!assignmentResponse?.data) return new Set();
     return new Set(assignmentResponse.data.map((a: any) => a.course_id));
   }, [assignmentResponse?.data]);
+
+  if (isReportPage) {
+    return <Outlet />;
+  }
 
   return (
     <>
