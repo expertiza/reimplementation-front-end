@@ -1,13 +1,14 @@
 // src/pages/Assignments/AssignReviewer.tsx
 import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import axiosClient from "../../utils/axios_client";
 
 type Id = number;
 type ReviewStatus = "Not saved" | "Saved" | "Submitted";
 
 interface Assignment { id: Id; name: string }
-interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null }
+interface Team { id: Id; name: string; parent_id: Id; mentor_id?: Id | null; quiz_questionnaire_id?: Id | null }
 interface User { id: Id; name: string | null; full_name: string | null }
 interface TeamUser { team_id: Id; user_id: Id }
 interface Participant { id: Id; user_id: Id; parent_id: Id; team_id?: Id | null }
@@ -21,7 +22,7 @@ interface ResponseRow {
 
 interface IUserView { id: Id; username: string; fullName: string }
 interface IReviewerAssignment { id: Id; reviewer: IUserView; status: ReviewStatus }
-interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[] }
+interface ITeamRow { id: Id; name: string; mentor?: IUserView; members: IUserView[]; reviewers: IReviewerAssignment[]; quiz_questionnaire_id?: Id | null }
 
 type Persist = {
   assignment: Assignment;
@@ -292,6 +293,7 @@ export function demo(asgId: Id): Persist {
 const AssignReviewer: React.FC = () => {
   const location = useLocation();
   const params = useParams();
+  const navigate = useNavigate();
   const maybeId = parseAssignmentId(location, params);
 
   // Hooks must be unconditionally called:
@@ -383,7 +385,7 @@ const AssignReviewer: React.FC = () => {
         })
         .filter(Boolean) as IReviewerAssignment[];
 
-      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers };
+      return { id: teamId, name: t?.name ?? `Team #${teamId}`, mentor, members, reviewers, quiz_questionnaire_id: t?.quiz_questionnaire_id ?? null };
     });
   }, [assignmentId, teams, usersById, teamsById, teamMembersByTeam, response_maps, latestResponseByMap, participantsById, tick]);
 
@@ -395,12 +397,15 @@ const AssignReviewer: React.FC = () => {
     setTimeout(() => setTick(v => v + 1), 0);
   }
 
-  function onAddReviewer(teamId: number) {
+  async function onAddReviewer(teamId: number) {
     if (!hasValidId) return;
     const raw = window.prompt("Enter reviewer user_id to add for this team:");
     if (!raw) return;
     const reviewerUserId = Number(raw);
     if (!Number.isFinite(reviewerUserId)) { window.alert("Invalid user_id."); return; }
+
+    // Track local map id so we can patch it after the backend responds
+    let localMapId: number | null = null;
 
     mutate(p => {
       let reviewerPart = p.participants.find(x => x.user_id === reviewerUserId && x.parent_id === assignmentId);
@@ -412,8 +417,9 @@ const AssignReviewer: React.FC = () => {
           p.users.push({ id: reviewerUserId, name: `user_${reviewerUserId}`, full_name: `user_${reviewerUserId}` });
         }
       }
+      localMapId = p.nextMapId++;
       p.response_maps.push({
-        id: p.nextMapId++,
+        id: localMapId,
         reviewed_object_id: assignmentId,
         reviewer_id: reviewerPart.id,
         reviewer_user_id: reviewerUserId,
@@ -421,6 +427,30 @@ const AssignReviewer: React.FC = () => {
         reviewee_team_id: teamId,
       });
     });
+
+    // Persist to backend and patch localStorage with the real DB id
+    try {
+      const res = await axiosClient.post('/response_maps', {
+        assignment_id:    assignmentId,
+        reviewer_user_id: reviewerUserId,
+        reviewee_team_id: teamId,
+      });
+      const realMapId: number = res.data.id;
+      const realParticipantId: number = res.data.reviewer_id;
+
+      if (localMapId !== null) {
+        mutate(p => {
+          const map = p.response_maps.find(m => m.id === localMapId);
+          if (map) {
+            map.id = realMapId;
+            map.reviewer_id = realParticipantId;
+          }
+          p.responses.forEach(r => { if (r.map_id === localMapId!) r.map_id = realMapId; });
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to persist response map to backend — local ID will be used:', err);
+    }
   }
 
   function onDeleteReviewer(_teamId: number, mappingId: number) {
@@ -429,6 +459,8 @@ const AssignReviewer: React.FC = () => {
       p.response_maps = p.response_maps.filter(m => m.id !== mappingId);
       p.responses = p.responses.filter(r => r.map_id !== mappingId);
     });
+    // Also delete from backend DB
+    axiosClient.delete(`/response_maps/${mappingId}`).catch(() => {});
   }
 
   function onUnsubmit(_teamId: number, mappingId: number) {
@@ -448,7 +480,18 @@ const AssignReviewer: React.FC = () => {
       );
       p.response_maps = p.response_maps.filter(m => !ids.has(m.id));
       p.responses = p.responses.filter(r => !ids.has(r.map_id));
+      // Also delete from backend DB
+      ids.forEach(id => axiosClient.delete(`/response_maps/${id}`).catch(() => {}));
     });
+  }
+
+  // E2619: navigate to the questionnaire editor pre-filled as Quiz type.
+  // The editor will call PATCH /teams/:team_id/quiz_questionnaire after saving and then
+  // redirect back here via the return_to param.
+  function onCreateQuiz(teamId: Id) {
+    if (!hasValidId) return;
+    const returnTo = encodeURIComponent(`/assignments/edit/${assignmentId}/assignreviewer`);
+    navigate(`/questionnaires/new?type=Quiz&team_id=${teamId}&assignment_id=${assignmentId}&return_to=${returnTo}`);
   }
 
   const empty = teams.length === 0 && users.length === 0 && participants.length === 0 && response_maps.length === 0;
@@ -554,6 +597,15 @@ const AssignReviewer: React.FC = () => {
                   <div className="ex-actions">
                     <a role="button" className="ex-link" onClick={() => hasValidId && onAddReviewer(team.id)}>add reviewer</a>
                     <a role="button" className="ex-link" onClick={() => hasValidId && onDeleteAll(team.id)}>delete outstanding reviewers</a>
+                    {/* E2619: Create/Edit Quiz button — submitting team creates the quiz others must pass before reviewing them */}
+                    <a
+                      role="button"
+                      className="ex-link"
+                      style={{ color: team.quiz_questionnaire_id ? '#2c6b2f' : '#7a2c2c' }}
+                      onClick={() => hasValidId && onCreateQuiz(team.id)}
+                    >
+                      {team.quiz_questionnaire_id ? 'edit quiz' : 'create quiz'}
+                    </a>
                   </div>
                 </td>
 

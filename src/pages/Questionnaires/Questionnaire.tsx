@@ -48,7 +48,7 @@ const Questionnaires = () => {
   const onDeleteQuestionnaireHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
-    (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<QuestionnaireResponse>) => navigate(`/questionnaires/edit/${row.original.id}`),
     [navigate]
   );
 

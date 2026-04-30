@@ -50,7 +50,11 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
   // the form values to the browser console.
   const onSubmit = async (values: QuestionnaireFormValues) => {
-  values.instructor_id = auth.user.id;
+  // Skip instructor_id for student-created quizzes (team_id present)
+  const isTeamQuiz = !!searchParams.get("team_id");
+  if (!isTeamQuiz) {
+    values.instructor_id = auth.user.id;
+  }
   //values.instructor = auth.user.name;
   console.log("Submit:", values);
   const payload = transformQuestionnaireRequest(values);
@@ -66,6 +70,24 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     );
 
     console.log("Saved Questionnaire:", response.data);
+
+    // Link quiz to team and navigate back if created from AssignReviewer
+    const teamId = searchParams.get("team_id");
+    const returnTo = searchParams.get("return_to");
+    if (mode === "create" && teamId && response.data?.id) {
+      try {
+        await axiosClient.patch(
+          `/teams/${teamId}/quiz_questionnaire`,
+          { questionnaire_id: response.data.id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (linkErr) {
+        console.error("Failed to link quiz questionnaire to team:", linkErr);
+      }
+      navigate(returnTo ? decodeURIComponent(returnTo) : "/questionnaires");
+      return;
+    }
+
     navigate("/questionnaires");
   } catch (error) {
     console.error("Error submitting form:", error);
@@ -98,6 +120,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
       seq: item.seq,
       break_before: item.break_before,
       _destroy: item._destroy || false,
+      correct_answer: item.correct_answer ?? "",
     })) : questionnaire?.items ?? [],
   };
 
