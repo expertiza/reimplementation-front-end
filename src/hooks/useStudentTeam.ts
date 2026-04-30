@@ -13,6 +13,7 @@ export const useStudentTeam = (studentId: string) => {
     const fetchJoinTeamRequestsAPI = useAPI();
     const acceptJoinRequestAPI = useAPI();
     const declineJoinRequestAPI = useAPI();
+    const updateDutyAPI = useAPI();
 
     const fetchTeam = () =>
         teamAPI.sendRequest({ url: `/student_teams/view?student_id=${studentId}` });
@@ -80,6 +81,12 @@ export const useStudentTeam = (studentId: string) => {
         method: "PATCH"
     })
 
+    const updateDuty = (participantId: number, dutyId: number | null) => updateDutyAPI.sendRequest({
+        url: `/participants/${participantId}/duty`,
+        method: "PATCH",
+        data: { duty_id: dutyId }
+    })
+
     return {
         teamAPI,
         inviteAPI,
@@ -103,8 +110,10 @@ export const useStudentTeam = (studentId: string) => {
         fetchJoinTeamRequestsAPI,
         acceptJoinRequestAPI,
         declineJoinRequestAPI,
+        updateDutyAPI,
         fetchJoinTeamRequests,
         acceptJoinRequest,
         declineJoinRequest,
+        updateDuty,
     };
 };
