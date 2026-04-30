@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ReviewTableRow from '../ReviewTableRow';
 import '@testing-library/jest-dom';
+import type { Mock } from 'vitest';
 
 const sampleRow = {
   itemNumber: '1',
@@ -19,7 +20,7 @@ describe('ReviewTableRow', () => {
   // Suppress specific deprecation warning from react-dom test utils about act
   const originalConsoleError = console.error;
   beforeAll(() => {
-    jest.spyOn(console, 'error').mockImplementation((...args: any[]) => {
+    vi.spyOn(console, 'error').mockImplementation((...args: any[]) => {
       const msg = args?.[0] ? String(args[0]) : '';
       if (msg.includes('ReactDOMTestUtils.act') || msg.includes('is deprecated in favor of `React.act`')) {
         return;
@@ -28,7 +29,7 @@ describe('ReviewTableRow', () => {
     });
   });
   afterAll(() => {
-    (console.error as jest.Mock).mockRestore();
+    (console.error as Mock).mockRestore();
   });
 
   it('renders truncated text and expands on click of dots', () => {
@@ -47,7 +48,7 @@ describe('ReviewTableRow', () => {
   });
 
   it('sets data-question attribute on review cells for tooltip use and clicks call handler', () => {
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     render(<table><tbody><ReviewTableRow row={sampleRow as any} showToggleQuestion={false} onReviewClick={(i) => onClick(i)} /></tbody></table>);
     const cells = screen.getAllByRole('cell');
     // verify there is at least one cell with data-question attribute

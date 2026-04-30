@@ -20,3 +20,8 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+Object.defineProperty(window, 'alert', {
+  writable: true,
+  value: vi.fn(),
+});

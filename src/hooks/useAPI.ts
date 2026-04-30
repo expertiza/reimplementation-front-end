@@ -19,7 +19,7 @@ const useAPI = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Learn about Axios Request Config at https://github.com/axios/axios#request-config
-  const sendRequest = useCallback((requestConfig: AxiosRequestConfig & { transformRequest?: (data: any) => any }) => {
+  const sendRequest = useCallback(async (requestConfig: AxiosRequestConfig & { transformRequest?: (data: any) => any }) => {
     const token = getAuthToken();
     if (token) {
       requestConfig.headers = {
@@ -38,37 +38,39 @@ const useAPI = () => {
     setIsLoading(true);
     setError("");
 
-    axios(requestConfig)
-      .then((response) => {
-        setData(response);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        let errorMessage = "";
+    try {
+      const response = await axios(requestConfig);
+      setData(response);
+      setErrorStatus(null);
+      return response;
+    } catch (err: any) {
+      let errorMessage = "";
 
-        if (err.response) {
-          console.log(err.response)
-          const errors = err.response.data;
-          const messages = Object.entries(errors).flatMap(([field, messages]) => {
-            if (Array.isArray(messages)) return messages.map((m) => `${field} ${m}`);
-            return `${field}: ${messages}`;
-          });
-          errorMessage = messages.join(", ");
-        } else if (err.request) {
-          console.log("The request was made but no response was received", err);
-          errorMessage = err.request.message || err.message || "Something went wrong!";
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log("Error", err.message);
-          errorMessage = err.message || "Something went wrong!";
-        }
-        const { status } = err.response
-        if (errorMessage) setError(errorMessage);
-        if (status) setErrorStatus(status.toString())
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      if (err.response) {
+        console.log(err.response);
+        const errors = err.response.data;
+        const messages = Object.entries(errors).flatMap(([field, messages]) => {
+          if (Array.isArray(messages)) return messages.map((m) => `${field} ${m}`);
+          return `${field}: ${messages}`;
+        });
+        errorMessage = messages.join(", ");
+        if (err.response.status) setErrorStatus(err.response.status.toString());
+      } else if (err.request) {
+        console.log("The request was made but no response was received", err);
+        errorMessage = err.request.message || err.message || "Something went wrong!";
+        setErrorStatus(null);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", err.message);
+        errorMessage = err.message || "Something went wrong!";
+        setErrorStatus(null);
+      }
+
+      if (errorMessage) setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const reset = (error: boolean, data: boolean) => {

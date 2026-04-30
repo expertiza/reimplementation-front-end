@@ -193,9 +193,8 @@ describe('ReviewTableau Component', () => {
       expect(screen.getByText('Reviews By student1')).toBeInTheDocument();
     });
     
-    expect(screen.getByText('Mixed Question Types Rubric')).toBeInTheDocument();
-    
     expect(screen.getByTestId('mock-table')).toBeInTheDocument();
+    expect(screen.getByText(/Rate quality/i)).toBeInTheDocument();
     
     // Verify API calls
     expect(mockGradesService.getReviewTableauData).toHaveBeenCalledWith({
