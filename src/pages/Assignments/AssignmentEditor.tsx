@@ -925,7 +925,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         title: "Add tag prompts",
                         questionnaire_type: 'tag_prompts',
                       },
-                      ...(formik.values.is_role_based && assignedRoleDuties.length > 0
+                      ...(formik.values.review_rubric_varies_by_role && assignedRoleDuties.length > 0
                         ? assignedRoleDuties.flatMap((roleName: string, index: number) => {
                           const roleRowId = 10_000 + index;
                           return [{
