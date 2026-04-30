@@ -38,7 +38,12 @@ export interface IItem {
   questionnaire_id?: number;
   _destroy?: boolean;
   type?: string;
-  
+  correct_answer?: string;
+  textarea_width?: number;
+  textarea_height?: number;
+  textbox_width?: number;
+  col_names?: string;
+  row_names?: string;
 }
 
 
@@ -82,6 +87,13 @@ export interface QuestionnaireRequest {
   items_attributes: IItem[];
 }
 
+/**
+ * Extracts the unique, non-null questionnaire type strings from an array of
+ * questionnaire response objects.
+ *
+ * @param quest - Array of {@link QuestionnaireResponse} objects from the API.
+ * @returns A de-duplicated array of questionnaire type strings.
+ */
 export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] {
   return Array.from(
     new Set(
@@ -93,6 +105,18 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 }
 
 
+/**
+ * Transforms {@link QuestionnaireFormValues} into the request shape expected by
+ * the Rails questionnaires API.
+ *
+ * Strips whitespace from `questionnaire_type` (e.g. `"Quiz Questionnaire"` →
+ * `"QuizQuestionnaire"`), re-sequences items by their current array index, and
+ * ensures every item has `break_before` set.
+ *
+ * @param values - The current Formik form values from the questionnaire editor.
+ * @returns An object `{ questionnaire: QuestionnaireRequest }` ready to be
+ *   passed as the request body.
+ */
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
   const questionnaire: QuestionnaireRequest = {
@@ -115,6 +139,13 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
   return { questionnaire };
 };
 
+/**
+ * Transforms a raw questionnaire API response into {@link QuestionnaireFormValues}
+ * for use as Formik initial values.
+ *
+ * @param data - Raw object returned by `GET /questionnaires/:id`.
+ * @returns A {@link QuestionnaireFormValues} instance ready to hydrate the form.
+ */
 export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValues => {
   return {
     id: data.id,
@@ -132,6 +163,17 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
 };
 
 
+/**
+ * React Router loader for the questionnaire editor route.
+ *
+ * When a `:id` param is present, fetches and transforms the single questionnaire
+ * at `GET /questionnaires/:id`.  Otherwise fetches the full list from
+ * `GET /questionnaires` and transforms every entry.
+ *
+ * @param context - The React Router loader context containing `params`.
+ * @returns A single {@link QuestionnaireFormValues} in edit mode, or an array
+ *   of them in list mode.
+ */
 export async function loadQuestionnaire({ params }: any) {
   if (params.id) {
     const response = await axiosClient.get(`/questionnaires/${params.id}`);

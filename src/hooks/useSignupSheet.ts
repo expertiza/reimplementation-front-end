@@ -35,7 +35,7 @@ export const useSignupSheet = (assignmentId: string) => {
 
       // Fetch sign up topics for the assignment
       const topicsResponse = await axios.get<SignUpTopic[]>(
-        `${API_BASE_URL}/sign_up_topics`,
+        `${API_BASE_URL}/project_topics`,
         {
           params: { assignment_id: assignmentId },
           headers,

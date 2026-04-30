@@ -62,7 +62,7 @@ export interface IAssignmentFormValues {
   has_quizzes?: boolean;
   calibration_for_training?: boolean;
   available_to_students?: boolean;
-  allow_topic_suggestion_from_students?: boolean;
+  allow_suggestions?: boolean;
   enable_bidding_for_topics?: boolean;
   enable_bidding_for_reviews?: boolean;
   enable_authors_to_review_other_topics?: boolean;
@@ -83,20 +83,49 @@ export interface IAssignmentFormValues {
 }
 
 
+/**
+ * Serializes {@link IAssignmentFormValues} to the JSON body expected by the Rails
+ * assignments API (`POST /assignments` or `PATCH /assignments/:id`).
+ *
+ * Gathers per-round questionnaire selections (stored as dynamic `questionnaire_round_*`
+ * keys) and the optional quiz questionnaire into a nested
+ * `assignment_questionnaires_attributes` array that Rails accepts via
+ * `accepts_nested_attributes_for`.
+ *
+ * @param values - The current Formik form values.
+ * @returns A JSON string ready to be sent as the request body.
+ */
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
-  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
-  const roundCount = values.number_of_review_rounds ?? 0;
-  for (let i = 1; i <= roundCount; i += 1) {
-    const questionnaireId = values[`questionnaire_round_${i}`];
-    if (questionnaireId) {
-      const existingId = values[`assignment_questionnaire_id_${i}`];
-      assignmentQuestionnaires.push({
-        id: existingId,
-        questionnaire_id: questionnaireId,
-        used_in_round: i,
-      });
+  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round?: number }[] = [];
+
+  // Scan for all questionnaire_round_* fields dynamically (0-based indexing)
+  // This works even if number_of_review_rounds is not set correctly
+  Object.keys(values).forEach((key) => {
+    const match = key.match(/^questionnaire_round_(\d+)$/);
+    if (match) {
+      const roundIndex = parseInt(match[1], 10);
+      const questionnaireId = values[key];
+      if (questionnaireId) {
+        const existingId = values[`assignment_questionnaire_id_${roundIndex}`];
+        assignmentQuestionnaires.push({
+          id: existingId ? parseInt(String(existingId), 10) : undefined,
+          questionnaire_id: parseInt(String(questionnaireId), 10),  // Ensure number type
+          used_in_round: roundIndex + 1,  // Convert 0-based index to 1-based round number
+        });
+      }
     }
+  });
+
+  // Add quiz questionnaire if selected and required
+  if (values.require_quiz && values.selected_quiz_questionnaire) {
+    assignmentQuestionnaires.push({
+      id: values.assignment_questionnaire_quiz_id
+        ? parseInt(String(values.assignment_questionnaire_quiz_id), 10)
+        : undefined,
+      questionnaire_id: parseInt(String(values.selected_quiz_questionnaire), 10)
+      // No used_in_round for quiz
+    });
   }
 
   const assignment: IAssignmentRequest = {
@@ -163,17 +192,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     reminder: values.reminder ?? [],
 
     // Misc flags from other tabs
-    allow_tag_prompts: values.allow_tag_prompts ?? false,
-    has_quizzes: values.has_quizzes ?? false,
-    calibration_for_training: values.calibration_for_training ?? false,
     available_to_students: values.available_to_students ?? false,
-    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
-    allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
-    staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
+    allow_suggestions: values.allow_suggestions ?? false,
 
     // Per-round rubric configuration
     vary_by_round: values.review_rubric_varies_by_round,
@@ -184,6 +204,19 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   return JSON.stringify({ assignment });
 };
 
+/**
+ * Deserializes the raw JSON string returned by `GET /assignments/:id` into the
+ * shape expected by the assignment editor form ({@link IAssignmentFormValues}).
+ *
+ * Also maps existing `DueDate` records back to the `date_time` structure used by
+ * the date-picker components, and maps per-round `assignment_questionnaires` rows
+ * back to the dynamic `questionnaire_round_*` / `assignment_questionnaire_id_*`
+ * form fields so that editing an existing assignment pre-fills every dropdown.
+ *
+ * @param assignmentResponse - Raw JSON string from the axios response.
+ * @returns An {@link IAssignmentFormValues} object ready to be passed as Formik
+ *   `initialValues`.
+ */
 export const transformAssignmentResponse = (assignmentResponse: string) => {
   const assignment: IAssignmentResponse = JSON.parse(assignmentResponse);
 
@@ -250,9 +283,41 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     due_dates: assignment.due_dates,
     assignment_questionnaires: assignment.assignment_questionnaires,
   };
+
+  // Map existing assignment_questionnaires back to individual form fields (questionnaire_round_*, assignment_questionnaire_id_*)
+  // so that when submitting, the IDs are included and Rails updates existing records instead of creating new ones
+  const assignmentQuestionnaires: any[] = assignment.assignment_questionnaires || [];
+  assignmentQuestionnaires.forEach((aq: any) => {
+    if (typeof aq.used_in_round === "number" && aq.used_in_round > 0) {
+      const roundIndex = aq.used_in_round - 1; // Convert 1-based round to 0-based index
+      assignmentValues[`questionnaire_round_${roundIndex}`] = aq.questionnaire_id;
+      assignmentValues[`assignment_questionnaire_id_${roundIndex}`] = aq.id;
+    } else {
+      // Quiz questionnaire has no used_in_round — restore to the quiz select field
+      const qType = String(aq.questionnaire?.questionnaire_type || "");
+      if (!aq.used_in_round || /quizquestionnaire|quiz/i.test(qType)) {
+        assignmentValues.selected_quiz_questionnaire = aq.questionnaire_id ?? aq.questionnaire?.id;
+        assignmentValues.assignment_questionnaire_quiz_id = aq.id;
+      }
+    }
+  });
+
   return assignmentValues;
 };
 
+/**
+ * React Router loader for the assignment editor route.
+ *
+ * When an `:id` param is present the existing assignment is fetched from
+ * `GET /assignments/:id` (using {@link transformAssignmentResponse} as the
+ * axios `transformResponse`) and merged with a full questionnaire list so that
+ * rubric dropdowns are populated.  When no id is provided (create mode) an
+ * empty object is returned alongside the questionnaire list.
+ *
+ * @param context - The React Router loader context containing `params`.
+ * @returns An object combining the (optional) assignment data with the
+ *   `questionnaires` array.
+ */
 export async function loadAssignment({ params }: any) {
   let assignmentData = {};
   let questionnaires = []; // fetch questionnaire list for dropdown window selections in Rubrics tab
