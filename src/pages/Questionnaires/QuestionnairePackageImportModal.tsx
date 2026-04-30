@@ -58,6 +58,8 @@ const duplicateActionTooltip = (action: string) => {
   return "Controls how duplicate questionnaires are handled during import.";
 };
 
+const optionalCsvGroups = new Set(["items", "question_advices"]);
+
 const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalProps> = ({ show, onHide, onImported }) => {
   const [importMode, setImportMode] = useState<"package" | "csv">("csv");
   const [packageFile, setPackageFile] = useState<File | null>(null);
@@ -138,7 +140,10 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
     return `Download Sample ${templateName.replace(/_/g, " ")} CSV`;
   };
 
-  const formatHeaderGroupLabel = (headerGroup: string) => `${headerGroup.replace(/_/g, " ")} CSV`;
+  const formatHeaderGroupLabel = (headerGroup: string) => {
+    const label = `${headerGroup.replace(/_/g, " ")} CSV`;
+    return optionalCsvGroups.has(headerGroup) ? `${label} (optional)` : label;
+  };
 
   const downloadTemplate = async (templateName: string) => {
     try {
@@ -253,6 +258,9 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
         <p>
           Import an exported package zip, or upload CSV files into the matching fields.
         </p>
+        <p>
+          For separate CSV uploads, the questionnaires CSV is required. Items and question advices CSVs are optional.
+        </p>
 
         {templateNames.length > 0 && (
           <Form.Group className="mb-3">
@@ -334,7 +342,7 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Items CSV</Form.Label>
+              <Form.Label>Items CSV (optional)</Form.Label>
               <Form.Control
                 type="file"
                 accept=".csv,text/csv"
@@ -345,7 +353,7 @@ const QuestionnairePackageImportModal: React.FC<QuestionnairePackageImportModalP
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Question Advices CSV</Form.Label>
+              <Form.Label>Question Advices CSV (optional)</Form.Label>
               <Form.Control
                 type="file"
                 accept=".csv,text/csv"

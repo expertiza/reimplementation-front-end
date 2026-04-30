@@ -9,25 +9,24 @@ type QuestionnairePackageExportModalProps = {
     id?: number;
     name?: string;
   }>;
-  initialScope?: "selected" | "all";
 };
 
-const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalProps> = ({ show, onHide, selectedQuestionnaires = [], initialScope = "selected" }) => {
+const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalProps> = ({ show, onHide, selectedQuestionnaires = [] }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [status, setStatus] = useState("");
-  const [scope, setScope] = useState<"selected" | "all">(initialScope);
+  const [includeQuestionAdvices, setIncludeQuestionAdvices] = useState(true);
 
-  const canExportSelected = useMemo(
-    () => selectedQuestionnaires.some((questionnaire) => typeof questionnaire.id === "number"),
+  const selectedQuestionnaire = useMemo(
+    () => selectedQuestionnaires.find((questionnaire) => typeof questionnaire.id === "number"),
     [selectedQuestionnaires]
   );
 
   React.useEffect(() => {
     if (show) {
-      setScope(initialScope);
       setStatus("");
+      setIncludeQuestionAdvices(true);
     }
-  }, [initialScope, show]);
+  }, [show]);
 
   const downloadPackage = (filename: string, encodedData: string, contentType: string) => {
     const binary = atob(encodedData);
@@ -53,14 +52,21 @@ const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalP
     setStatus("Generating questionnaire template package...");
 
     try {
-      const payload =
-        scope === "selected" && canExportSelected
-          ? { questionnaire_ids: selectedQuestionnaires.map((questionnaire) => questionnaire.id).filter((id) => typeof id === "number") }
-          : { export_all: true };
+      if (!selectedQuestionnaire?.id) {
+        setStatus("Select one questionnaire before exporting.");
+        return;
+      }
 
-      const response = await axiosClient.post("/questionnaire_packages/export", payload, {
-        timeout: 120000
-      });
+      const response = await axiosClient.post(
+        "/questionnaire_packages/export",
+        {
+          questionnaire_ids: [selectedQuestionnaire.id],
+          include_question_advices: includeQuestionAdvices,
+        },
+        {
+          timeout: 120000
+        }
+      );
       downloadPackage(response.data.filename, response.data.data, response.data.content_type);
       setStatus(response.data.message);
       setTimeout(() => onHide(), 800);
@@ -81,28 +87,17 @@ const QuestionnairePackageExportModal: React.FC<QuestionnairePackageExportModalP
           Export questionnaires, their items, and question advices as a single zip package of CSV files.
           Answers, responses, and quiz data are excluded from this template package.
         </p>
-        <Form.Group className="mb-3">
-          <Form.Label>Export scope</Form.Label>
-          <Form.Check
-            type="radio"
-            id="questionnaire-export-selected"
-            label={
-              canExportSelected
-                ? `Selected questionnaires: ${selectedQuestionnaires.map((questionnaire) => questionnaire.name).join(", ")}`
-                : "Selected questionnaires (select one or more questionnaire rows first)"
-            }
-            checked={scope === "selected"}
-            disabled={!canExportSelected}
-            onChange={() => setScope("selected")}
-          />
-          <Form.Check
-            type="radio"
-            id="questionnaire-export-all"
-            label="All questionnaires"
-            checked={scope === "all"}
-            onChange={() => setScope("all")}
-          />
-        </Form.Group>
+        <p>
+          <strong>Selected questionnaire:</strong>{" "}
+          {selectedQuestionnaire?.name || "None selected"}
+        </p>
+        <Form.Check
+          type="checkbox"
+          id="questionnaire-export-advices"
+          label="Include question advices"
+          checked={includeQuestionAdvices}
+          onChange={(event) => setIncludeQuestionAdvices(event.currentTarget.checked)}
+        />
         {status && <div>{status}</div>}
       </Modal.Body>
       <Modal.Footer>

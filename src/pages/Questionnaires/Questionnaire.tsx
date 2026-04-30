@@ -57,7 +57,6 @@ const Questionnaires = () => {
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [exportScope, setExportScope] = useState<"selected" | "all">("selected");
   
   // loader option
   const questionnaireData :any = useLoaderData();
@@ -116,40 +115,22 @@ const Questionnaires = () => {
     [selectedQuestionnaireIds, tableData]
   );
 
-  const selectAllQuestionnaires = tableData.length > 0 && selectedQuestionnaireIds.size === tableData.length;
-
   const tableColumns = useMemo(
     () => questionnaireColumns(
       onEditHandle,
       onDeleteHandle,
       {
-        selectAll: selectAllQuestionnaires,
         isSelected: (id) => typeof id === "number" && selectedQuestionnaireIds.has(id),
-        onToggleAll: () => {
-          setSelectedQuestionnaireIds((currentSelection) => {
-            if (currentSelection.size === tableData.length) {
-              return new Set();
-            }
-
-            return new Set(tableData.map((questionnaire) => questionnaire.id).filter((id): id is number => typeof id === "number"));
-          });
-        },
         onToggleRow: (id) => {
           if (typeof id !== "number") return;
 
           setSelectedQuestionnaireIds((currentSelection) => {
-            const nextSelection = new Set(currentSelection);
-            if (nextSelection.has(id)) {
-              nextSelection.delete(id);
-            } else {
-              nextSelection.add(id);
-            }
-            return nextSelection;
+            return currentSelection.has(id) ? new Set() : new Set([id]);
           });
         },
       }
     ),
-    [onDeleteHandle, onEditHandle, selectAllQuestionnaires, selectedQuestionnaireIds, tableData]
+    [onDeleteHandle, onEditHandle, selectedQuestionnaireIds]
   );
 
   const tableRows = useMemo(
@@ -175,14 +156,8 @@ const Questionnaires = () => {
   };
 
   const handleShowSelectedExport = () => {
-    if (selectedQuestionnaires.length === 0) return;
+    if (selectedQuestionnaires.length !== 1) return;
 
-    setExportScope("selected");
-    setShowExportModal(true);
-  };
-
-  const handleShowAllExport = () => {
-    setExportScope("all");
     setShowExportModal(true);
   };
 
@@ -227,11 +202,9 @@ const Questionnaires = () => {
                 <span style={pipe}>|</span>
                 <ToolbarLink onClick={() => setShowImportModal(true)}>Import questionnaires</ToolbarLink>
                 <span style={pipe}>|</span>
-                <ToolbarLink onClick={handleShowSelectedExport} disabled={selectedQuestionnaires.length === 0}>
-                  Export selected questionnaires ({selectedQuestionnaires.length})
+                <ToolbarLink onClick={handleShowSelectedExport} disabled={selectedQuestionnaires.length !== 1}>
+                  Export selected questionnaire
                 </ToolbarLink>
-                <span style={pipe}>|</span>
-                <ToolbarLink onClick={handleShowAllExport}>Export all questionnaires</ToolbarLink>
               </Col>
             </Row>
             {selectedQuestionnaire && !showDeleteConfirmation.visible && (
@@ -363,7 +336,6 @@ const Questionnaires = () => {
         show={showExportModal}
         onHide={() => setShowExportModal(false)}
         selectedQuestionnaires={selectedQuestionnaires}
-        initialScope={exportScope}
       />
       <QuestionnairePackageImportModal
         show={showImportModal}
