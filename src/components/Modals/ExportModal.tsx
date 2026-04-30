@@ -89,6 +89,8 @@ type ExportFilePayload = {
   contents: string;
 };
 
+const TEAM_PARTICIPANT_USERNAMES_FIELD = "participant_usernames";
+
 /* =============================================================================
    Component (dummy mode – no backend)
 ============================================================================= */
@@ -112,7 +114,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
     (fields: string[]) => fields.filter((field) => field.startsWith("participant_")),
     []
   );
-  // Present the repeated participant_N columns as one UI option, then expand
+  // Present the repeated participant_N username columns as one UI option, then expand
   // that option back to the backend's concrete columns when exporting.
   const normalizeTeamFieldList = useCallback(
     (fields: string[]) => {
@@ -122,17 +124,17 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
       if (participantFields.length === 0) return fields;
 
       const nonParticipantFields = fields.filter((field) => !field.startsWith("participant_"));
-      return [...nonParticipantFields, "participant_ids"];
+      return [...nonParticipantFields, TEAM_PARTICIPANT_USERNAMES_FIELD];
     },
     [modelClass, teamParticipantFields]
   );
   const expandTeamFieldSelection = useCallback(
     (fields: string[], sourceFields: string[]) => {
-      if (modelClass !== "Team" || !fields.includes("participant_ids")) return fields;
+      if (modelClass !== "Team" || !fields.includes(TEAM_PARTICIPANT_USERNAMES_FIELD)) return fields;
 
       const participantFields = teamParticipantFields(sourceFields);
       const expandedFields = fields.flatMap((field) =>
-        field === "participant_ids" ? participantFields : [field]
+        field === TEAM_PARTICIPANT_USERNAMES_FIELD ? participantFields : [field]
       );
 
       return Array.from(new Set(expandedFields));
@@ -160,7 +162,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   }, [contextParams, fetchExports, modelClass]);
 
   const transformField = (field: string) => {
-    if (field === "participant_ids") return "Participant IDs";
+    if (field === TEAM_PARTICIPANT_USERNAMES_FIELD) return "Participant usernames";
     let f = field.replace(/_/g, " ");
     return f.charAt(0).toUpperCase() + f.slice(1);
   };
@@ -185,7 +187,9 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
   useEffect(() => {
     if (exportResponse) {
       const normalizedMandatoryFields = normalizeTeamFieldList(exportResponse.data.mandatory_fields);
-      const normalizedOptionalFields = normalizeTeamFieldList(exportResponse.data.optional_fields);
+      const normalizedOptionalFields = normalizeTeamFieldList(exportResponse.data.optional_fields).filter(
+        (field) => !normalizedMandatoryFields.includes(field)
+      );
 
       setMandatoryFields(normalizedMandatoryFields);
       setOptionalFields(normalizedOptionalFields);
@@ -427,7 +431,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass, contextP
                           id={`export-field-${field}`}
                           checked={selectedFields.includes(field)}
                           onChange={() => toggleField(field)}
-                          label={field}
+                          label={transformField(field)}
                           disabled={mandatoryFields.includes(field)}
                         />
                         <div className="d-flex gap-1">

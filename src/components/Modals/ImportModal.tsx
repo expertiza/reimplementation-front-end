@@ -200,6 +200,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass, con
    * Transform "column_name" → "Column name"
    * --------------------------------------------------------- */
   const transformField = (field: string) => {
+    if (modelClass === "Team" && field.startsWith("participant_")) {
+      const index = field.replace("participant_", "");
+      return `Participant username ${index}`;
+    }
+
     let f = field.replace(/_/g, " ");
     return f.charAt(0).toUpperCase() + f.slice(1);
   };
