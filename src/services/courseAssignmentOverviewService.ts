@@ -1,3 +1,9 @@
+/*
+ * Transforms the raw course report API response into the rows and column
+ * definitions consumed by Table.tsx. Keeping this logic outside the React
+ * component makes it independently testable.
+ */
+
 import React from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
@@ -15,6 +21,10 @@ type CourseReportRow = {
 
 const columnHelper = createColumnHelper<CourseReportRow>();
 
+/*
+ * Shared cell renderer used by every column. Class average cells render in
+ * bold, while null values render as empty strings rather than "null".
+ */
 const renderCellValue = (
   value: number | string | boolean | null | undefined,
   isClassAverage: boolean | undefined
@@ -25,10 +35,18 @@ const renderCellValue = (
     value === null || value === undefined ? "" : String(value)
   );
 
+/*
+ * Builds flat table rows from students and assignment metadata. Dynamic flat
+ * keys like a{assignmentId}_peerGrade are used because TanStack Table requires
+ * flat accessor keys; null assignment entries for non-participants are skipped.
+ * Null numeric values are preserved on student rows but counted as zero for
+ * class average calculations, and the class average row is always appended last.
+ */
 export const buildRows = (
   students: StudentReportEntry[],
   assignments: AssignmentMetadata[]
 ): CourseReportRow[] => {
+  // Drives both row key generation and running sum accumulation for class averages.
   const numericFields = [
     { suffix: "peerGrade", key: "peer_grade" as const },
     { suffix: "instructorGrade", key: "instructor_grade" as const },
@@ -101,6 +119,13 @@ export const buildRows = (
   return [...rows, classAverageRow];
 };
 
+/*
+ * Builds TanStack column definitions from assignment metadata and checkbox
+ * visibility state. The column exclusion rule is enforced here, not at render
+ * time: the topic sub-column is only created when has_topics is true regardless
+ * of the topic checkbox state. All other sub-columns are always created and
+ * controlled only by columnVisibility in the page component.
+ */
 export const buildColumns = (
   assignments: AssignmentMetadata[],
   visibleFields: VisibleFields
