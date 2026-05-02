@@ -12,7 +12,8 @@ export const courseColumns = (
   handleEdit: Fn,
   handleDelete: Fn,
   handleTA: Fn,
-  handleCopy: Fn
+  handleCopy: Fn,
+  handleReport: Fn
 ) => [
   columnHelper.accessor("name", {
     id: "name",
@@ -205,6 +206,20 @@ export const courseColumns = (
               style={{ width: "25px", height: "25px" }}
             />
           </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger overlay={<Tooltip>View Course Report</Tooltip>}>
+          <Button
+            style={{
+              backgroundColor: "#8B4513",
+              borderColor: "#8B4513",
+              width: "25px",
+              height: "25px",
+            }}
+            onClick={() => handleReport(row)}
+            aria-label="View Course Report"
+            className="p-0"
+          />
         </OverlayTrigger>
       </div>
     ),
