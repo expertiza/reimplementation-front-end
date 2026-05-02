@@ -32,7 +32,11 @@ const renderCellValue = (
   React.createElement(
     "span",
     { className: isClassAverage ? "fw-bold" : undefined },
-    value === null || value === undefined ? "" : String(value)
+    value === null || value === undefined
+      ? ""
+      : typeof value === "number"
+        ? value.toFixed(2)
+        : String(value)
   );
 
 /*
