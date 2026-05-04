@@ -3,6 +3,45 @@ import type { IAssignmentResponse } from "utils/interfaces";
 
 /** Pure helper functions for assignment participant mapping and display logic. */
 
+/** Maps backend `user.role.name` to a UI role; unrecognized values become `Role.Unknown`. */
+export function normalizeUserRole(apiRoleName: string | undefined | null): Role {
+  if (apiRoleName == null || String(apiRoleName).trim() === "") return Role.Unknown;
+  const raw = String(apiRoleName).trim();
+  const aliases: Record<string, Role> = {
+    Administrator: Role.Admin,
+    "Super Administrator": Role.Admin,
+    Student: Role.Student,
+    Instructor: Role.Instructor,
+    Admin: Role.Admin,
+    "Teaching Assistant": Role.TeachingAssistant,
+  };
+  const byAlias = aliases[raw];
+  if (byAlias !== undefined) return byAlias;
+  const lower = raw.toLowerCase();
+  if (lower === "student") return Role.Student;
+  if (lower === "instructor") return Role.Instructor;
+  if (lower === "admin" || lower === "administrator") return Role.Admin;
+  if (lower === "teaching assistant") return Role.TeachingAssistant;
+  for (const v of Object.values(Role) as Role[]) {
+    if (v === Role.Unknown) continue;
+    if (v === raw) return v;
+  }
+  return Role.Unknown;
+}
+
+/** Maps backend `participant.authorization` to `ParticipantRole`; unrecognized → `Unknown`. */
+export function normalizeParticipantRole(authorization: string | undefined | null): ParticipantRole {
+  if (authorization == null || String(authorization).trim() === "") {
+    return ParticipantRole.Participant;
+  }
+  const raw = String(authorization).trim();
+  for (const pr of Object.values(ParticipantRole) as ParticipantRole[]) {
+    if (pr === ParticipantRole.Unknown) continue;
+    if (pr === raw || pr.toLowerCase() === raw.toLowerCase()) return pr;
+  }
+  return ParticipantRole.Unknown;
+}
+
 /** Resolves a row label when /users omits or blanks full_name and name (common with seeds). */
 export function displayNameForUser(user: {
   full_name?: string | null;
@@ -57,6 +96,10 @@ export function classForRole(role: Role): string {
       return "role-instructor";
     case Role.Admin:
       return "role-admin";
+    case Role.TeachingAssistant:
+      return "role-instructor";
+    case Role.Unknown:
+      return "role-unknown";
     default:
       return "";
   }
@@ -85,6 +128,8 @@ export function participantRoleInfo(role: ParticipantRole): string {
       return "A submitter can only submit artifacts.";
     case ParticipantRole.Mentor:
       return "A mentor can submit, review, take quizzes, and has mentor permissions.";
+    case ParticipantRole.Unknown:
+      return "Authorization role could not be matched to a known participant role.";
     default:
       return "";
   }

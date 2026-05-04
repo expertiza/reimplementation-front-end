@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Participant, ParticipantPermissions, ParticipantRole, Role } from './AssignmentParticipantsTypes';
+import { useEffect, useMemo, useState } from 'react';
+import { Participant, ParticipantRole, Role } from './AssignmentParticipantsTypes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -31,8 +31,24 @@ function EditParticipantModal({ participant, roleOptions, show, onHide, onSave, 
       ? Role.Admin
       : updatedParticipant.role;
 
+  const userRoleSelectOptions = useMemo(() => {
+    const opts = [...roleOptions];
+    if (updatedParticipant.role === Role.Unknown && !opts.includes(Role.Unknown)) {
+      opts.push(Role.Unknown);
+    }
+    return opts;
+  }, [roleOptions, updatedParticipant.role]);
+
+  const participantRoleSelectOptions = useMemo(
+    () =>
+      Object.values(ParticipantRole).filter(
+        (r) => r !== ParticipantRole.Unknown || updatedParticipant.participantRole === ParticipantRole.Unknown
+      ),
+    [updatedParticipant.participantRole]
+  );
+
   return (
-    <Modal show={show} onHide={onHide} centered>
+    <Modal show={show} onHide={onHide} centered dialogClassName="edit-participant-modal">
       <Modal.Header closeButton>
         <Modal.Title>Edit participant</Modal.Title>
       </Modal.Header>
@@ -61,7 +77,7 @@ function EditParticipantModal({ participant, roleOptions, show, onHide, onSave, 
               value={selectedRoleValue}
               onChange={(e) => handleChange('role', e.target.value)}
             >
-              {roleOptions.map((role) => (
+              {userRoleSelectOptions.map((role) => (
                 <option key={role} value={role}>
                   {role}
                 </option>
@@ -75,7 +91,7 @@ function EditParticipantModal({ participant, roleOptions, show, onHide, onSave, 
               value={updatedParticipant.participantRole}
               onChange={(e) => handleChange('participantRole', e.target.value)}
             >
-              {Object.values(ParticipantRole).map((role) => (
+              {participantRoleSelectOptions.map((role) => (
                 <option key={role} value={role}>
                   {role}
                 </option>

@@ -7,7 +7,9 @@ export enum Role {
   Student = "Student",
   Instructor = "Instructor",
   Admin = "Admin",
-  //TeachingAssistant = "Teaching Assistant", //to be added after merging the teaching assistant feature
+  TeachingAssistant = "Teaching Assistant",
+  /** Backend sent a role name we do not model; avoid silent string casts. */
+  Unknown = "Unknown",
 }
 
 export enum ParticipantRole {
@@ -16,6 +18,8 @@ export enum ParticipantRole {
   Reviewer = "reviewer",
   Submitter = "submitter",
   Mentor = "mentor",
+  /** Authorization string from API did not match a known participant role. */
+  Unknown = "unknown",
 }
 
 export interface ParticipantPermissions {

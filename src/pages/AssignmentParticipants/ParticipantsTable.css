@@ -115,6 +115,11 @@
     font-weight: 500;
 }
 
+.role-unknown {
+    color: #6b7280;
+    font-weight: 500;
+}
+
 .remove-user-button {
     color: #ef4444;
     font-weight: 600;

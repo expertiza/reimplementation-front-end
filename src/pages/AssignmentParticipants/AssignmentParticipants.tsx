@@ -8,6 +8,8 @@ import {
   assignmentTableFlagsFromResponse,
   displayNameForUser,
   findUserByIdentifier,
+  normalizeParticipantRole,
+  normalizeUserRole,
   participantRoleInfo,
 } from './AssignmentParticipantsUtil';
 import { AssignmentProperties, IsEnabled, Participant, ParticipantRole, Role } from './AssignmentParticipantsTypes';
@@ -22,11 +24,7 @@ const UI_ROLE_TO_API_ROLE_NAME: Record<string, string> = {
   admin: 'administrator',
   student: 'student',
   instructor: 'instructor',
-};
-
-const API_ROLE_TO_UI_ROLE: Record<string, string> = {
-  'Administrator': Role.Admin,
-  'Super Administrator': Role.Admin,
+  'teaching assistant': 'teaching assistant',
 };
 
 /** Manages assignment participant listing, filtering, and participant CRUD actions. */
@@ -62,7 +60,10 @@ function AssignmentParticipants() {
 
   const assignmentName = (assignmentResponse?.data as IAssignmentResponse | undefined)?.name ?? "assignment";
 
-  const roleOptions = useMemo<string[]>(() => [Role.Admin, Role.Instructor, Role.Student], []);
+  const roleOptions = useMemo<string[]>(
+    () => [Role.Admin, Role.Instructor, Role.Student, Role.TeachingAssistant],
+    []
+  );
 
   /** Maps a UI role label to its API role id from the fetched roles list. */
   const resolveRoleId = (uiRoleName: string): number | undefined => {
@@ -104,7 +105,7 @@ function AssignmentParticipants() {
             user_id: user.id,
             name: displayNameForUser(user),
             email: user.email ?? "",
-            role: API_ROLE_TO_UI_ROLE[user.role?.name] ?? user.role?.name ?? Role.Student,
+            role: normalizeUserRole(user.role?.name),
             parent: assignment.name,
             permissions: {
               review: participant.can_review ? IsEnabled.Yes : IsEnabled.No,
@@ -112,7 +113,7 @@ function AssignmentParticipants() {
               takeQuiz: participant.can_take_quiz ? IsEnabled.Yes : IsEnabled.No,
               mentor: participant.can_mentor ? IsEnabled.Yes : IsEnabled.No,
             },
-            participantRole: participant.authorization || ParticipantRole.Participant,
+            participantRole: normalizeParticipantRole(participant.authorization),
           };
         })
         .filter(Boolean) as Participant[];
@@ -274,7 +275,9 @@ function AssignmentParticipants() {
         </div>
 
         <div className="role-radio-group">
-          {Object.values(ParticipantRole).map((role) => (
+          {Object.values(ParticipantRole)
+            .filter((role) => role !== ParticipantRole.Unknown)
+            .map((role) => (
             <label key={role} className="role-radio-option">
               <input
                 type="radio"
