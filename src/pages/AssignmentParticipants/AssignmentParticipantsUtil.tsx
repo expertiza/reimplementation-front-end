@@ -37,7 +37,8 @@ export function findUserByIdentifier<T extends { id: number; name?: string | nul
 /** Table column visibility for quiz / mentor from GET /assignments/:id (snake_case from API). */
 export function assignmentTableFlagsFromResponse(assignment: IAssignmentResponse): AssignmentProperties {
   return {
-    hasQuiz: Boolean(assignment.require_quiz) || Boolean(assignment.has_quizzes),
+    // Require both flags so we do not show "Take quiz" when quizzes exist but are not required.
+    hasQuiz: Boolean(assignment.require_quiz) && Boolean(assignment.has_quizzes),
     hasMentor: Boolean(assignment.has_mentors),
   };
 }
@@ -61,9 +62,8 @@ export function classForRole(role: Role): string {
   }
 }
 
-export function iconForRole(role: Role): JSX.Element {
-  // Role icons are intentionally omitted to follow the project icon guidelines
-  // (use the standardized icon assets under public/assets/icons for actions).
+/** Intentionally empty: role row uses text styling only (project icon guidelines). */
+export function iconForRole(_role: Role): JSX.Element {
   return <></>;
 }
 
@@ -90,6 +90,7 @@ export function participantRoleInfo(role: ParticipantRole): string {
   }
 }
 
+/** Reads a dotted path from an object; only stops on null/undefined intermediates (not on false/0/""). */
 export function getNestedValue<T>(obj: T, path: string): any {
-  return path.split('.').reduce((acc: any, key: string) => (acc ? acc[key as keyof typeof acc] : undefined), obj);
+  return path.split(".").reduce((acc: any, key: string) => (acc == null ? undefined : acc[key]), obj);
 }

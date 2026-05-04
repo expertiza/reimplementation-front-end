@@ -45,7 +45,7 @@ function ParticipantTable({
       enableSorting: true,
       cell: ({ row }: { row: any }) => (
         <div className={`permission-column ${classForStatus(row.original.permissions.review)}`}>
-          {permissionIcon(row.original.permissions.review)}
+          {permissionIcon(row.original.permissions.review, "Review permission")}
         </div>
       ),
     },
@@ -56,7 +56,7 @@ function ParticipantTable({
       enableSorting: true,
       cell: ({ row }: { row: any }) => (
         <div className={`permission-column ${classForStatus(row.original.permissions.submit)}`}>
-          {permissionIcon(row.original.permissions.submit)}
+          {permissionIcon(row.original.permissions.submit, "Submit permission")}
         </div>
       ),
     },
@@ -78,7 +78,7 @@ function ParticipantTable({
       enableSorting: true,
       cell: ({ row }: { row: any }) => (
         <div className={`permission-column ${classForStatus(row.original.permissions.mentor)}`}>
-          {permissionIcon(row.original.permissions.mentor)}
+          {permissionIcon(row.original.permissions.mentor, "Mentor permission")}
         </div>
       ),
     },

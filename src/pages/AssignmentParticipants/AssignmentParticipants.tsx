@@ -16,7 +16,7 @@ import { useParams } from 'react-router-dom';
 import { IAssignmentResponse } from 'utils/interfaces';
 import { HttpMethod } from 'utils/httpMethods';
 import { FaCheck, FaInfoCircle, FaTimes } from 'react-icons/fa';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const UI_ROLE_TO_API_ROLE_NAME: Record<string, string> = {
   admin: 'administrator',
@@ -50,6 +50,7 @@ function AssignmentParticipants() {
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const { assignmentId } = useParams();
 
@@ -82,6 +83,8 @@ function AssignmentParticipants() {
     }
   }, [
     assignmentId,
+    modalShow.edit,
+    modalShow.remove,
     addParticipantResponse,
     updateParticipantResponse,
     updateUserResponse,
@@ -153,14 +156,14 @@ function AssignmentParticipants() {
         url: `/participants/${selectedParticipant.id}`,
         method: 'DELETE',
       });
-      setError(null);
+      setRemoveError(null);
       setModalShow({ edit: false, remove: false });
     } catch (err: any) {
       const message =
         err?.response?.data?.message ??
         err?.message ??
         'Failed to remove participant. Please try again.';
-      setError(message);
+      setRemoveError(message);
     }
   };
 
@@ -208,7 +211,7 @@ function AssignmentParticipants() {
   };
 
   /** Validates lookup input and adds a matched user as an assignment participant. */
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUserName.trim()) {
       setError('Name must not be empty.');
       return;
@@ -226,18 +229,24 @@ function AssignmentParticipants() {
       return;
     }
 
-    setError(null);
-
-    addParticipant({
-      url: `/participants/${selectedRole}`,
-      method: 'POST',
-      data: {
-        user_id: user.id,
-        assignment_id: Number(assignmentId),
-      }
-    });
-
-    setNewUserName('');
+    try {
+      await addParticipant({
+        url: `/participants/${selectedRole}`,
+        method: 'POST',
+        data: {
+          user_id: user.id,
+          assignment_id: Number(assignmentId),
+        },
+      });
+      setError(null);
+      setNewUserName('');
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ??
+        err?.message ??
+        'Failed to add participant. Please try again.';
+      setError(message);
+    }
   };
 
   return (
@@ -275,12 +284,14 @@ function AssignmentParticipants() {
                 onChange={() => setSelectedRole(role as ParticipantRole)}
               />
               {role}
-              <FaInfoCircle
-                className="ms-2 text-secondary"
-                size={16}
-                aria-label={participantRoleInfo(role)}
-                title={participantRoleInfo(role)}
-              />
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id={`role-help-${role}`}>{participantRoleInfo(role)}</Tooltip>}
+              >
+                <span className="ms-2 d-inline-flex" tabIndex={0} role="button" aria-label={participantRoleInfo(role)}>
+                  <FaInfoCircle className="text-secondary" size={16} aria-hidden />
+                </span>
+              </OverlayTrigger>
             </label>
           ))}
         </div>
@@ -333,19 +344,33 @@ function AssignmentParticipants() {
       )}
       <ConfirmRemoveModal
         show={modalShow.remove}
-        onHide={() => setModalShow({ ...modalShow, remove: false })}
+        errorMessage={removeError}
+        onHide={() => {
+          setRemoveError(null);
+          setModalShow({ ...modalShow, remove: false });
+        }}
         onConfirm={handleRemove}
       />
     </div>
   );
 }
 
-/** Returns the enabled/disabled permission icon for a permission cell. */
-export function permissionIcon(permission: IsEnabled) {
-  return permission === IsEnabled.Yes ? (
-    <FaCheck size={20} className="text-success" aria-label="Yes" />
+/**
+ * Renders an accessible icon for a permission cell.
+ * @param permission Whether the permission is granted.
+ * @param permissionLabel Short column label for screen readers, e.g. "Review permission".
+ */
+export function permissionIcon(permission: IsEnabled, permissionLabel?: string) {
+  const yes = permission === IsEnabled.Yes;
+  const ariaLabel = permissionLabel
+    ? `${permissionLabel}: ${yes ? "Yes" : "No"}`
+    : yes
+      ? "Permission enabled"
+      : "Permission disabled";
+  return yes ? (
+    <FaCheck size={20} className="text-success" aria-label={ariaLabel} role="img" />
   ) : (
-    <FaTimes size={20} className="text-secondary" aria-label="No" />
+    <FaTimes size={20} className="text-secondary" aria-label={ariaLabel} role="img" />
   );
 }
 
