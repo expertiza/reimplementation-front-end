@@ -15,6 +15,7 @@ import useAPI from 'hooks/useAPI';
 import { useParams } from 'react-router-dom';
 import { IAssignmentResponse } from 'utils/interfaces';
 import { HttpMethod } from 'utils/httpMethods';
+import { FaCheck, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import { Form, Button } from 'react-bootstrap';
 
 const UI_ROLE_TO_API_ROLE_NAME: Record<string, string> = {
@@ -274,13 +275,11 @@ function AssignmentParticipants() {
                 onChange={() => setSelectedRole(role as ParticipantRole)}
               />
               {role}
-              <img
-                src="/assets/icons/info.png"
-                alt="Info"
+              <FaInfoCircle
+                className="ms-2 text-secondary"
+                size={16}
+                aria-label={participantRoleInfo(role)}
                 title={participantRoleInfo(role)}
-                width="16"
-                height="16"
-                className="ms-2"
               />
             </label>
           ))}
@@ -343,15 +342,11 @@ function AssignmentParticipants() {
 
 /** Returns the enabled/disabled permission icon for a permission cell. */
 export function permissionIcon(permission: IsEnabled) {
-  return permission === IsEnabled.Yes ? <img
-    src="/assets/icons/Check-icon.png"
-    width="20"
-    height="20"
-  /> : <img
-    src="/assets/icons/Uncheck-icon.png"
-    width="20"
-    height="20"
-  />;
+  return permission === IsEnabled.Yes ? (
+    <FaCheck size={20} className="text-success" aria-label="Yes" />
+  ) : (
+    <FaTimes size={20} className="text-secondary" aria-label="No" />
+  );
 }
 
 export default AssignmentParticipants;

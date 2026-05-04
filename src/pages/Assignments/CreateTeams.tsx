@@ -957,6 +957,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom';
 
 import ImportModal from "../../components/Modals/ImportModal";
 import ExportModal from "../../components/Modals/ExportModal";
+import { publicUrl } from "../../utils/publicUrl";
 
 /* =============================================================================
    Types
@@ -989,25 +990,7 @@ interface LoaderPayload {
    Assets (icons used only where required)
 ============================================================================= */
 
-// Safe base URL (no import.meta)
-const getBaseUrl = (): string => {
-  // 1) <base href="..."> if present
-  if (typeof document !== 'undefined') {
-    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, '');
-  }
-  // 2) Optional global you can set from Rails/layout, etc.
-  const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
-
-  // 3) CRA-style env if available in tests/builds
-  const fromProcess =
-    (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
-  return String(fromProcess).replace(/\/$/, '');
-};
-
-const assetUrl = (rel: string) =>
-  `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
+const assetUrl = (rel: string) => publicUrl(rel.replace(/^\//, ""));
 
 const ICONS = {
   add: 'assets/icons/add-participant-24.png',

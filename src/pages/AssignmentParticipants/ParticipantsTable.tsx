@@ -4,6 +4,7 @@ import { classForRole, classForStatus } from "./AssignmentParticipantsUtil";
 import "./ParticipantsTable.css";
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
 import Table from "components/Table/Table";
+import { publicUrl } from "utils/publicUrl";
 
 interface ParticipantTableProps {
   participants: Participant[];
@@ -95,7 +96,7 @@ function ParticipantTable({
               style={{ cursor: "pointer" }}
               aria-label="Edit participant"
             >
-              <img src="/assets/icons/edit-icon-24.png" alt="Edit" width={20} height={20} />
+              <img src={publicUrl("assets/images/edit-icon-24.png")} alt="Edit" width={20} height={20} />
             </Button>
           </OverlayTrigger>
 
@@ -106,7 +107,7 @@ function ParticipantTable({
               style={{ cursor: "pointer" }}
               aria-label="Delete participant"
             >
-              <img src="/assets/icons/delete-icon-24.png" alt="Delete" width={20} height={20} />
+              <img src={publicUrl("assets/images/delete-icon-24.png")} alt="Delete" width={20} height={20} />
             </Button>
           </OverlayTrigger>
         </div>

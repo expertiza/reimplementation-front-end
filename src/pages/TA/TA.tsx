@@ -14,6 +14,7 @@ import { ITAResponse, ROLE } from "../../utils/interfaces";
 import { TAColumns as TA_COLUMNS } from "./TAColumns";
 import ColumnButton from "../../components/ColumnButton";
 import DeleteTA from "./TADelete";
+import { publicUrl } from "../../utils/publicUrl";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -95,7 +96,7 @@ const TAs = () => {
                   onClick={() => navigate("new")}
                   tooltip="Add TA to this course"
                   icon={<img
-              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+              src={publicUrl("assets/images/add-ta-24.png")}
               alt="Assign TA"
               style={{ width: "20px", height: "20px" }}
             />}

@@ -4,6 +4,7 @@ import { Button } from "react-bootstrap";
 import { BsPersonXFill } from "react-icons/bs";
 import { ITAResponse as ITA } from "../../utils/interfaces";
 import ColumnButton from "../../components/ColumnButton";
+import { publicUrl } from "../../utils/publicUrl";
 
 /**
  * @author Atharva Thorve, on December, 2023
@@ -47,7 +48,7 @@ export const TAColumns = (handleDelete: Fn) => [
           onClick={() => handleDelete(row)}
           tooltip="Delete TA"
           icon={<img
-              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              src={publicUrl("assets/images/delete-icon-24.png")}
               alt="Delete"
               style={{ width: "20px", height: "20px" }}
             />}
