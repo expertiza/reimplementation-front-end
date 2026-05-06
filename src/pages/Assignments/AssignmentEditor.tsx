@@ -918,7 +918,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                         questionnaire_type: 'dropdown',
                         weight_index: 101,
-                        notification_index: (formik.values.number_of_review_rounds ?? 0) + 1,
                       },
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
@@ -934,7 +933,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                             questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                             questionnaire_type: 'dropdown',
                             weight_index: 20_000 + index,
-                            notification_index: roleRowId,
                           }];
                         })
                         : []),
@@ -985,7 +983,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       },
                       {
                         cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.notification_index ?? row.original.id}]`} type="number" />%</div></>}</>,
+                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
                         accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
                       },
                     ]}
