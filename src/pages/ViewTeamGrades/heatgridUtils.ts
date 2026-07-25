@@ -7,7 +7,9 @@ export type RoundRow = ReviewData | SectionHeaderData;
 export const isHeader = (row: RoundRow): row is SectionHeaderData =>
   (row as SectionHeaderData).type === "header";
 
-// Helper function to normalize data from old format (questionNumber/questionText) to new format (itemNumber/itemText)
+// Compatibility shim: accepts data in either the old shape (questionNumber/questionText/questionType)
+// or the new shape (itemNumber/itemText/itemType) and returns a ReviewData using the current field names,
+// so the rest of the code only needs to handle one shape.
 export const normalizeReviewData = (data: any): ReviewData => {
   return {
     itemNumber: data.itemNumber || data.questionNumber || '',
@@ -19,7 +21,7 @@ export const normalizeReviewData = (data: any): ReviewData => {
   };
 };
 
-// Normalize an array of review data, passing SectionHeader sentinels through unchanged.
+// Same shim as normalizeReviewData applied to an array; SectionHeader sentinels are passed through unchanged.
 export const normalizeReviewDataArray = (dataArray: any[]): RoundRow[] => {
   return dataArray.map(item => {
     if (item && item.type === "header") return item as SectionHeaderData;

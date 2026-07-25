@@ -47,8 +47,7 @@ interface ReviewComment {
 
 interface Review {
   questionNumber: string;
-  questionText?: string;
-  itemText?: string; // alias used by ReviewData from App.tsx
+  itemText: string; // full rubric criterion/question text shown in the "Item" column
   itemType?: string;
   reviews: ReviewComment[];
   RowAvg: number;
@@ -204,7 +203,7 @@ const CollapsibleReview: React.FC<{
           {roundData.map((question, j) => (
             <div key={`question-${j}-review-${reviewIndex}`} className="review-block" style={{ marginBottom: "15px", minWidth: "max-content" }}>
               <div className="question" style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "14px", whiteSpace: "nowrap" }}>
-                {j + 1}. {question.itemText || question.questionText}
+                {j + 1}. {question.itemText}
               </div>
               <div className="score-container" style={{ marginLeft: "15px" }}>
                 {question.reviews[reviewIndex].score !== undefined ? (
@@ -220,6 +219,7 @@ const CollapsibleReview: React.FC<{
                     </span>
                     {question.reviews[reviewIndex].comment && (
                       <div className="comment" style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                        {/* wordLimit: comments longer than 50 words are clipped with a "more" toggle */}
                         <TruncatableText text={question.reviews[reviewIndex].comment!} wordLimit={50} />
                       </div>
                     )}

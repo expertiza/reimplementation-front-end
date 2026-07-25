@@ -173,7 +173,7 @@
   padding: 8px 12px;
   border-radius: 4px;
   bottom: 130%;
-  /* Centre the tooltip over the cell; clamp prevents left/right overflow */
+  /* Center the tooltip over the cell; clamp prevents left/right overflow */
   left: 50%;
   transform: translateX(-50%);
   white-space: normal;
@@ -392,6 +392,29 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
+
+/* Shared between ReviewTableRow and FeedbackTable — item number cell layout */
+.itemCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Circled max-score indicator next to item number; omitted when maxScore === 1 */
+.weightCircle {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid #b00404;
+  color: #b00404;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
 
 .toggle-container {
   margin-left: auto;

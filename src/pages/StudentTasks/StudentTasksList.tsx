@@ -28,12 +28,16 @@ export type Revision = {
   participantId: number;
 };
 
-// Students teamed with data structure: course name -> list of teammate full names
+// Students teamed with data structure: course name -> list of teammate names
 type StudentsTeamedWith = {
   [course: string]: string[];
 };
 
 interface StudentTasksListProps {
+  // All of the student's tasks. Despite the name, each Revision entry represents any assignment
+  // the student is participating in — not only ones in a revision stage. The component filters
+  // this list into two sections: tasks where started=false ("not yet started") and tasks where
+  // submissionUpdated=true ("revisions", i.e. work submitted but feedback received and pending action).
   revisions: Revision[];
 }
 
@@ -55,7 +59,7 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
   );
 
   // Returns days remaining until dueDate. Returns 0 (not negative) for past dates.
-  const calculateDaysLeft = (dueDate: string) => {
+  const daysLeft = (dueDate: string) => {
     const today = new Date();
     const due = new Date(dueDate);
     const timeDiff = due.getTime() - today.getTime();
@@ -72,7 +76,7 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
         <span className={styles.badge}>{notStartedTasks.length}</span>&nbsp;
         <strong>Tasks not yet started</strong>
         {notStartedTasks.map((task, index) => {
-          const daysLeft = calculateDaysLeft(task.dueDate);
+          const daysLeft = daysLeft(task.dueDate);
           return (
             <div key={index}>
               &raquo; {task.name} {task.currentStage} ({daysLeft} day{daysLeft !== 1 ? 's' : ''} left)
@@ -85,7 +89,7 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
         <span className={styles.greyBadge}>{submissionUpdateddTasks.length}</span>&nbsp;
         <strong>Revisions</strong>
         {submissionUpdateddTasks.map((task, index) => {
-          const daysLeft = calculateDaysLeft(task.dueDate);
+          const daysLeft = daysLeft(task.dueDate);
           return (
             <div key={index}>
               &raquo;{' '}

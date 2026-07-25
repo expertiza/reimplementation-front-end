@@ -19,37 +19,36 @@
  *     advances to the midpoint of the current stage node.
  *   - Date parsing handles both ISO (YYYY-MM-DD) and legacy dd-mm-yyyy formats from the API.
  *
- * "Your feedback" link navigates to /view-team-grades?assignmentId=X, using the
- * assignmentId passed via router state (participant.parent_id on the backend).
  */
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import styles from "./StudentTaskDetail.module.css";
 import axiosClient from "utils/axios_client";
 
+/** One entry in the assignment timeline returned by GET /participants/:id/timeline. */
 interface DueDates {
-  id: number | null;
-  type: number;
-  name: string;
-  date: string;
-  round: number | null;
+  id: number | null;       // response ID if the student submitted one; null for unsubmitted deadlines
+  type: number;            // numeric stage type code from the backend
+  name: string;            // human-readable stage label, e.g. "Submission deadline"
+  date: string;            // ISO 8601 or legacy dd-mm-yyyy date string
+  round: number | null;    // review round this deadline belongs to; null for non-review stages
 }
 
+/** Summary fields passed via React Router link state from the StudentTasks dashboard. */
 interface TaskData {
-  assignment: string;
-  badges: boolean;
+  assignment: string;      // assignment name shown in the page heading
   course: string;
-  currentStage: string;
-  id: number;
-  publishingRights: boolean;
-  reviewGrade: string;
-  stageDeadline: string;
+  currentStage: string;    // active stage name, e.g. "submission" — used to highlight the timeline node
+  id: number;              // participant ID (also used as the URL param)
+  showAsExample: boolean;  // whether the student has opted to share their work as an example
+  stageDeadline: string;   // deadline for the current stage
   topic: string;
 }
 
+/** Shape of location.state passed by StudentTasks when navigating to this page. */
 interface StateData {
   task: TaskData;
-  assignmentId?: number;
+  assignmentId?: number;   // participant.parent_id — used to build the "Your feedback" link
 }
 
 const StudentTaskDetail: React.FC = () => {
@@ -104,6 +103,7 @@ const StudentTaskDetail: React.FC = () => {
   // Permissions from the participant object in the API response
   const canSubmit = apiData?.participant?.can_submit !== false;
   const canReview = apiData?.participant?.can_review !== false;
+  const canTakeQuiz = apiData?.participant?.can_take_quiz === true;
 
   // Router state has camelCase summary fields; API has snake_case + due_dates
   const assignment = apiData?.assignment || stateData?.task?.assignment || "Unknown Assignment";
@@ -172,7 +172,7 @@ const StudentTaskDetail: React.FC = () => {
   // Compute how far along the timeline track line should be filled red.
   // Uses step-based calculation (each node occupies 100/N %) rather than wall-clock time,
   // so equally spaced nodes visually represent equal progress regardless of real duration.
-  // The active node's midpoint is used so the red line ends at the centre of the current dot.
+  // The active node's midpoint is used so the red line ends at the center of the current dot.
   const progressPercent = (() => {
     const totalCount = due_dates.length;
     if (totalCount === 0) return 0;
@@ -205,7 +205,7 @@ const StudentTaskDetail: React.FC = () => {
           to="/email_the_author"
           className={styles.emailButton}
         >
-          Send Email To Reviewers
+          Send email to reviewers
         </Link>
         <ul className={styles.taskList}>
           <li className={styles.taskItem}>
@@ -218,12 +218,19 @@ const StudentTaskDetail: React.FC = () => {
               <span className={styles.taskDescription}> (View your work)</span>
             </li>
           )}
-          {canReview && (
+          {canTakeQuiz && (
+            <li className={styles.taskItem}>
+              <Link to="/student_quizzes" className={styles.clickableLink}>Take quiz</Link>
+              <span className={styles.taskDescription}> (Take a quiz before reviewing others' work)</span>
+            </li>
+          )}
+          {(canReview || canTakeQuiz) && (
             <li className={styles.taskItem}>
               <Link to="/reviews" className={styles.clickableLink}>Others' work</Link>
               <span className={styles.taskDescription}> (Give feedback to others on their work)</span>
             </li>
           )}
+          {/* Links to /view-team-grades using assignmentId (participant.parent_id on the backend) */}
           {(stateData?.assignmentId ?? apiData?.participant?.parent_id) != null && (
             <li className={styles.taskItem}>
               <Link
@@ -251,13 +258,18 @@ const StudentTaskDetail: React.FC = () => {
             {due_dates.map((due_date: DueDates, index: number) => (
               <div
                 key={`${due_date.name}-date-${index}`}
-                style={{ flex: 1, textAlign: 'center', whiteSpace: 'nowrap' }}
+                style={{ flex: 1, minWidth: 0, textAlign: 'center', fontSize: '12px', lineHeight: '1.3' }}
               >
                 {(() => {
                   const d = new Date(due_date.date);
                   const datePart = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
                   const timePart = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-                  return `${datePart} ${timePart}`;
+                  return (
+                    <>
+                      <div>{datePart}</div>
+                      <div>{timePart}</div>
+                    </>
+                  );
                 })()}
               </div>
             ))}
@@ -294,7 +306,7 @@ const StudentTaskDetail: React.FC = () => {
                       title={due_date.name}
                       style={{
                         margin: 0, // Clears the layout shifting from stylesheet margin-top
-                        backgroundColor: isPast || isCurrent ? '#dc3545' : '#FFFFFF',
+                        backgroundColor: isPast || isCurrent ? '#dc3545' : 'var(--dot-pending-bg)',
                         border: isPast || isCurrent ? 'none' : '2px solid #D6DCE0',
                         boxShadow: isCurrent ? '0 0 0 5px rgba(220, 53, 69, 0.25)' : 'none',
                         width: isCurrent ? '24px' : '18px',

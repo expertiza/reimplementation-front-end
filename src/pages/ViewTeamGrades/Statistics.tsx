@@ -16,7 +16,7 @@ const Statistics: React.FC<StatisticsProps> = ({ roundsSource = null }) => {
       return;
     }
 
-    // Use the first round as a reference for the stats calculation (legacy behaviour preserved)
+    // Use the first round as a reference for the stats calculation (legacy behavior preserved)
     const firstRound = roundsSource[0] || [];
     const normalizedData = normalizeReviewDataArray(firstRound);
     const { sortedData } = calculateAverages(

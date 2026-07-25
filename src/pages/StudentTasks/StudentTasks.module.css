@@ -57,7 +57,7 @@ td:last-child {
   border-right: none;
 }
 
-/* Table row striping — matches the scores heatgrid alternating row colours:
+/* Table row striping — matches the scores heatgrid alternating row colors:
    odd rows #fff (same as scores table first/odd rows), even rows #f5f5f5 */
 tr:nth-child(odd) {
   background-color: #fff;

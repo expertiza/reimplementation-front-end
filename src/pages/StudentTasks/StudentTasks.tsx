@@ -1,5 +1,5 @@
 /**
- * StudentTasks — the student's "My Assignments" dashboard.
+ * StudentTasks — the student's "Assignments" dashboard.
  *
  * This component replaced an earlier version that rendered a topic sign-up sheet
  * (with optimistic slot counters, bookmark state, waitlist logic, and 4+ API hooks).
@@ -10,9 +10,9 @@
  *
  * 1. Data fetching — one GET /student_tasks/list call returns all assignments the
  *    logged-in student participates in. Each item contains the participant record,
- *    current stage, review grade, stage deadline, and derived flags (submissionUpdated, notStarted).
+ *    current stage, stage deadline, and derived flags (submissionUpdated, notStarted).
  *
- * 2. Parsing — parseStudentTasks() normalises the raw API shape into a typed Task[].
+ * 2. Parsing — parseStudentTasks() normalizes the raw API shape into a typed Task[].
  *    Fields are read with ?? fallbacks to tolerate both flat and nested response shapes
  *    (the API embeds some fields directly on the item and others inside item.participant).
  *
@@ -21,8 +21,7 @@
  *
  * 4. Columns — filteredColumns builds the TanStack Table column definitions:
  *    - "Assignment" links to /student_task_detail/:participantId (full task detail page).
- *    - "Review Grade" renders a ToolTip if a grade exists; shows "NA" otherwise.
- *    - "Badges" column is conditionally included only when at least one task has badges.
+ *    - "Topic" is hidden when no tasks have a topic value.
  *    - "Show as Example?" is a client-side-only toggle (optimistic local state update).
  *
  * 5. Sidebar — StudentTasksBox (StudentTasksList) shows tasks not yet started, revisions
@@ -37,18 +36,15 @@ import { CellContext } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import { formatDate, capitalizeFirstWord } from "utils/dataFormatter";
 import axiosClient from "utils/axios_client";
-import ToolTip from "../../components/ToolTip";
 import { Container } from "react-bootstrap";
 
 type Task = {
   id: number;
-  assignmentId: number;
+  assignmentId: number | null;
   assignment: string;
   course: string;
   topic: string;
   currentStage: string;
-  reviewGrade: string;
-  badges: string | boolean;
   stageDeadline: string;
   showAsExample: boolean;
   submissionUpdated: boolean;
@@ -76,7 +72,7 @@ const StudentTasks: React.FC = () => {
   }, [studentTasksData]);
 
   /**
-   * Normalises the raw /student_tasks/list response into typed Task objects.
+   * Normalizes the raw /student_tasks/list response into typed Task objects.
    * The API embeds some fields directly on the item and others inside item.participant,
    * so ?? chaining is used to try the top-level key first and fall back to the nested one.
    * assignmentId is used later to build the "Your feedbacks" link in StudentTaskDetail.
@@ -93,8 +89,6 @@ const StudentTasks: React.FC = () => {
         course: courseName,
         topic: item.topic ?? participant.topic ?? "N/A",
         currentStage: item.current_stage ?? participant.current_stage ?? "N/A",
-        reviewGrade: item.review_grade ?? "N/A",
-        badges: item.badges ?? false,
         stageDeadline: item.stage_deadline ?? participant.stage_deadline ?? "",
         showAsExample: item.permission_granted ?? participant.permission_granted ?? false,
         submissionUpdated: item.submission_updated ?? false,
@@ -128,9 +122,8 @@ const StudentTasks: React.FC = () => {
     );
   }, []);
 
-  // Only show the Badges column if at least one task has a badge value — avoids an empty
-  // column for assignments that don't use the badge feature.
-  const showBadges = tasks.some((task) => task.badges);
+  // Hide topic column when no task has a meaningful topic value.
+  const showTopic = tasks.some((task) => task.topic && task.topic !== "N/A");
 
   const filteredColumns = useMemo(() => {
     return [
@@ -150,19 +143,8 @@ const StudentTasks: React.FC = () => {
           );
         },
       },
-      { accessorKey: "topic", header: "Topic" },
+      ...(showTopic ? [{ accessorKey: "topic", header: "Topic" }] : []),
       { accessorKey: "currentStage", header: "Current Stage" },
-      {
-        accessorKey: "reviewGrade",
-        header: "Review Grade",
-        cell: (info: CellContext<Task, Task["reviewGrade"]>) =>
-          info.getValue() === "N/A" ? (
-            "NA"
-          ) : (
-            <ToolTip id={String(info.row.original.id)} info={info.row.original.reviewGrade || ""} />
-          ),
-      },
-      ...(showBadges ? [{ accessorKey: "badges", header: "Badges" }] : []),
       {
         accessorKey: "stageDeadline",
         header: "Stage Deadline",
@@ -182,7 +164,7 @@ const StudentTasks: React.FC = () => {
       ...rest,
       header: capitalizeFirstWord(header as string),
     }));
-  }, [showBadges, toggleShowAsExample]);
+  }, [showTopic, toggleShowAsExample]);
 
   // Apply display-layer formatting (date localisation, capitalisation, fallbacks) separately
   // from the raw Task data so the original Task[] stays clean and is usable by other derivations.
@@ -191,8 +173,6 @@ const StudentTasks: React.FC = () => {
       ...task,
       topic: capitalizeFirstWord(task.topic) || "-",
       course: capitalizeFirstWord(task.course),
-      reviewGrade: task.reviewGrade || "N/A",
-      badges: task.badges || "",
       stageDeadline: formatDate(task.stageDeadline) || "No deadline",
       showAsExample: task.showAsExample || false,
     }));
@@ -213,7 +193,7 @@ const StudentTasks: React.FC = () => {
   }, [formattedAssignments]);
 
   return (
-    <div className="assignments-page">
+    <div className={styles['assignments-page']}>
       <h1 className={styles['assignments-title']}>Assignments</h1>
       <div className={styles.pageLayout}>
         <aside className={styles.sidebar}>

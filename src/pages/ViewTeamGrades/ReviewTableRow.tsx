@@ -5,7 +5,7 @@
  *   - Column 1 (sticky, 52 px): item number + weight badge (circled max-score).
  *     The weight badge is omitted for binary items (maxScore === 1) — a ✓ tick is shown instead.
  *   - Column 2 (sticky, 340 px): full question text. No truncation.
- *   - Columns 3..N: one cell per reviewer, colour-coded by score via getColorClass().
+ *   - Columns 3..N: one cell per reviewer, color-coded by score via getColorClass().
  *     Color classes (c1–c5, cf) are declared :global in ViewTeamGrades.module.scss so they
  *     work as plain strings returned by getColorClass().
  *
@@ -16,6 +16,7 @@
 import React from "react";
 import { getColorClass } from "./heatgridUtils";
 import { ReviewData } from "./App";
+import styles from "./ViewTeamGrades.module.scss";
 
 interface ReviewTableRowProps {
   row: ReviewData;
@@ -117,17 +118,10 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReview
   return (
     <tr style={{ background: bg }}>
       <td style={stickyNo(bg)}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+        <div className={styles.itemCell}>
           <span style={{ fontWeight: "bold" }}>{row.itemNumber}</span>
           {row.maxScore !== 1 && (
-            <span style={{
-              width: 15, height: 15, borderRadius: "50%",
-              border: "1px solid #b00404", color: "#b00404",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, fontWeight: "bold", flexShrink: 0,
-            }}>
-              {row.maxScore}
-            </span>
+            <span className={styles.weightCircle}>{row.maxScore}</span>
           )}
         </div>
       </td>

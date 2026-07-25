@@ -18,7 +18,7 @@ export interface SectionHeaderData {
 // Interface defining the structure of ReviewData
 export interface ReviewData {
   itemNumber: string;
-  itemText: string;
+  itemText: string;  // full rubric criterion/question text shown in the "Item" column
   itemType?: string; // Type of item (Scale, Criterion, TextArea, etc.)
   reviews: {
     name?: string; // reviewer name (populated by convertBackendRoundArray)

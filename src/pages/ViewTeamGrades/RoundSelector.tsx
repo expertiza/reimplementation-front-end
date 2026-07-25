@@ -1,13 +1,12 @@
 /**
  * RoundSelector — a styled <select> dropdown for choosing which round to display.
  *
- * Replaced the original static button row that hard-coded "Round 1" / "Round 2".
- * Options are now generated dynamically from `roundsData.length`, so the selector
+ * Options are generated dynamically from `roundsData.length`, so the selector
  * automatically adapts to any number of rounds returned by the backend.
  *
  * Value encoding: -1 = "All Rounds", 0 = round index 0 (Round 1), 1 = round index 1 (Round 2), …
  * The native <select> is styled to match the Scores/Feedback toggle height (36 px) and
- * brand colour (#b00404). `appearance: none` removes the OS-default dropdown arrow so
+ * brand color (#b00404). `appearance: none` removes the OS-default dropdown arrow so
  * the custom ▼ caret can be positioned consistently across browsers.
  */
 import React from "react";

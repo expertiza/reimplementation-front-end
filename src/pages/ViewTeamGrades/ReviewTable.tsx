@@ -11,7 +11,7 @@
  *
  * 2. Scores / Feedback toggle: the original page had a separate review list below the
  *    heatgrid. These were merged into a single content area with a toggle button group —
- *    "Scores" renders the colour-coded heatgrid per round; "Feedback" renders FeedbackTable
+ *    "Scores" renders the color-coded heatgrid per round; "Feedback" renders FeedbackTable
  *    which shows full question text and reviewer comments side-by-side.
  *
  * 3. Sticky columns on the score heatgrid: the old layout had an optional "Show item
@@ -81,13 +81,15 @@ const ReviewTable: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [assignmentName, setAssignmentName] = useState<string>("");
   const [teamName, setTeamName] = useState<string>("");
   const [teamGrade, setTeamGrade] = useState<number | string>("");
   const [teamComment, setTeamComment] = useState<string>("");
   const [submissionLinks, setSubmissionLinks] = useState<string[] | null>(null);
   const [teamFetchError, setTeamFetchError] = useState<string | null>(null);
+  // 'scores' renders the color-coded heatgrid; 'feedback' toggles to FeedbackTable which shows full item text and reviewer comments.
   const [viewMode, setViewMode] = useState<'scores' | 'feedback'>('scores');
-  const [averageFinalScore, setAverageFinalScore] = useState<string | number | null>(null);
+  const [averageScore, setAverageScore] = useState<string | number | null>(null);
   const authUser = useSelector((state: any) => state.authentication?.user);
 
   // Re-fetch whenever the assignmentId query parameter changes
@@ -112,13 +114,18 @@ const ReviewTable: React.FC = () => {
 
       if (res?.data?.reviews_of_our_work) {
         // Populate heatgrid / feedback table
+        // backendRoundsObj: the raw API value — a keyed object where each key is a round
+        // identifier (e.g. "round_1", "round_2") and each value is an array of review rows.
         const backendRoundsObj = res.data.reviews_of_our_work;
+        // Sort by key so rounds appear in chronological order regardless of response order.
         const orderedRounds = Object.keys(backendRoundsObj).sort().map((k) => backendRoundsObj[k]);
         setRoundsData(convertBackendRoundArray(orderedRounds));
 
+        if (res.data.assignment_name) setAssignmentName(res.data.assignment_name);
+
         // Average score
         if (res.data.avg_score_of_our_work != null) {
-          setAverageFinalScore(res.data.avg_score_of_our_work);
+          setAverageScore(res.data.avg_score_of_our_work);
         }
 
         // Team metadata — embedded by the backend, no follow-up requests needed
@@ -159,7 +166,7 @@ const ReviewTable: React.FC = () => {
   /**
    * Renders the score heatgrid for a single round.
    * Layout mirrors FeedbackTable exactly: overflowX scroll wrapper, borderCollapse separate,
-   * sticky # and Question columns, scrollable colour-coded reviewer columns.
+   * sticky # and Question columns, scrollable color-coded reviewer columns.
    * borderCollapse:"separate" + borderSpacing:0 is required so sticky cells keep an
    * opaque background and don't bleed through when the table scrolls horizontally.
    */
@@ -215,7 +222,7 @@ const ReviewTable: React.FC = () => {
                   Question
                 </th>
 
-                {/* Reviewer columns */}
+                {/* Reviewer columns, one for each reviewer */}
                 {Array.from({ length: numReviewers }, (_, i) => {
                   const reviewerName = (firstScored as any)?.reviews[i]?.name || `Review ${i + 1}`;
                   const isStudent = authUser?.role === "Student";
@@ -297,7 +304,8 @@ const ReviewTable: React.FC = () => {
 
   return (
     <div className={styles['page-wrapper']} style={{ padding: "24px 96px" }}>
-      <h2><strong>Summary Report: Program 2</strong></h2>
+      <h2><strong>Summary report{assignmentName ? `: ${assignmentName}` : ""}</strong></h2>
+      <p style={{ marginTop: 0, color: "#666", fontSize: "13px" }}>Peer review scores for your team's work</p>
       <h5><strong>Team:</strong> {teamName || "Loading..."}</h5>
       {fetchError && (
         <div className="mb-3">
@@ -314,7 +322,7 @@ const ReviewTable: React.FC = () => {
         ))}
       </span>
       <div className="ml-4 mt-2">
-        <h5><strong>Average final score:</strong> <span style={{ fontWeight: "normal", fontSize: "inherit" }}>{averageFinalScore || "N/A"}</span></h5>
+        <h5><strong>Average score:</strong> <span style={{ fontWeight: "normal", fontSize: "inherit" }}>{averageScore || "N/A"}</span></h5>
       </div>
       <div className="mt-2">
         <h5><strong>Submission links</strong></h5>

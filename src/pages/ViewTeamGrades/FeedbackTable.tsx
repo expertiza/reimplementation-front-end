@@ -1,8 +1,17 @@
+/**
+ * FeedbackTable — the "Feedback" view of the ViewTeamGrades page. The page offers two
+ * views toggled by the user: "Scores" renders a color-coded heatgrid (ReviewTable); this
+ * view replaces it with a detailed table that shows each rubric item's full text alongside
+ * every reviewer's score and comment. Renders one sub-table per review round. The # and
+ * Item columns are sticky (they stay put while you scroll) so the item number and text remain
+ * visible when there are many reviewer columns.
+ */
 import React from "react";
 import { ReviewData, SectionHeaderData } from "./App";
 import { getColorClass, isHeader, RoundRow } from "./heatgridUtils";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import styles from "./ViewTeamGrades.module.scss";
 
 interface FeedbackTableProps {
   /** All rounds of review data — each round is a mixed array of ReviewData and SectionHeaderData */
@@ -62,8 +71,8 @@ const reviewerCell: React.CSSProperties = {
   verticalAlign: "top",
 };
 
-/** Colour-coded score badge */
-const ScoreBadge: React.FC<{ score: number; maxScore: number }> = ({ score, maxScore }) => (
+/** Score displayed with a color that reflects its relative weight (see getColorClass). */
+const ColoredScore: React.FC<{ score: number; maxScore: number }> = ({ score, maxScore }) => (
   <span
     className={`score ${getColorClass(score, maxScore)}`}
     style={{ fontWeight: "bold", fontSize: "13px" }}
@@ -88,7 +97,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ marginBottom: 8 }}>Round {roundIndex + 1}</h2>
 
-      {/* Outer wrapper with horizontal scroll */}
+      {/* Outer wrapper: scrolls horizontally if there are too many reviewer columns to fit in the window */}
       <div style={{ overflowX: "auto", position: "relative" }}>
         <table
           style={{
@@ -114,7 +123,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                 #
               </th>
 
-              {/* Sticky header: Question */}
+              {/* Sticky header: Item */}
               <th
                 style={{
                   ...stickyQ,
@@ -124,7 +133,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                   fontWeight: "bold",
                 }}
               >
-                Question
+                Item
               </th>
 
               {/* One column per reviewer */}
@@ -185,13 +194,20 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                   );
                 }
 
+                // scoredRowIdx counts only data rows (headers are skipped above), so alternating
+                // background colors are based on rubric-item rows only and don't reset per section.
                 const rowIdx = scoredRowIdx++;
                 const bg = rowIdx % 2 === 0 ? "#fff" : "#f5f5f5";
                 return (
                   <tr key={idx} style={{ background: bg }}>
-                    {/* Sticky: # — explicit opaque background prevents scrolling rows bleeding through */}
+                    {/* Sticky: # with circled max-score badge (omitted for binary maxScore===1 items) */}
                     <td style={{ ...stickyNo, background: bg }}>
-                      {row.itemNumber}
+                      <div className={styles.itemCell}>
+                        <span style={{ fontWeight: "bold" }}>{row.itemNumber}</span>
+                        {row.maxScore !== 1 && (
+                          <span className={styles.weightCircle}>{row.maxScore}</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Sticky: Question text */}
@@ -205,10 +221,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                         {review.score !== undefined ? (
                           <>
                             <div>
-                              <ScoreBadge score={review.score} maxScore={row.maxScore} />
-                              <span style={{ marginLeft: 6, color: "#666", fontSize: "12px" }}>
-                                / {row.maxScore}
-                              </span>
+                              <ColoredScore score={review.score} maxScore={row.maxScore} />
                             </div>
                             {review.comment && (
                               <div style={{ marginTop: 5, color: "#444", fontSize: "12px" }}>
