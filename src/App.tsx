@@ -47,6 +47,7 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
 import StudentTasks from "./pages/StudentTasks/StudentTasks";
+import StudentTaskDetail from "pages/StudentTasks/StudentTaskDetail";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
@@ -75,7 +76,12 @@ function App() {
           path: "edit-questionnaire",
           element: <ProtectedRoute element={<Questionnaire />} />,
         },
-
+        {
+          path: "student_task_detail/:id",
+          element: (
+            <ProtectedRoute element={<StudentTaskDetail />} leastPrivilegeRole={ROLE.STUDENT} />
+          ),
+        },
         {
           path: "assignments/edit/:id",
           element: <AssignmentEditor mode="update" />,

@@ -1,16 +1,43 @@
-import React, { useEffect, useState, useRef } from "react";
+/**
+ * ReviewTable — the main page component for "View Team Grades" (student-facing).
+ *
+ * Key design decisions made during this implementation:
+ *
+ * 1. Single API call: the original implementation made 6+ sequential API calls
+ *    (view_our_scores, then participants/user/:id, teams_participants/:id/list_participants,
+ *    and one /users/:id per team member). All that waterfall was replaced by embedding
+ *    `team_members` directly in the `view_our_scores` response on the backend, so the
+ *    entire page now loads with one GET /grades/:id/view_our_scores.
+ *
+ * 2. Scores / Feedback toggle: the original page had a separate review list below the
+ *    heatgrid. These were merged into a single content area with a toggle button group —
+ *    "Scores" renders the color-coded heatgrid per round; "Feedback" renders FeedbackTable
+ *    which shows full question text and reviewer comments side-by-side.
+ *
+ * 3. Sticky columns on the score heatgrid: the old layout had an optional "Show item
+ *    prompts" checkbox that inserted a second column. When checked, the tooltip on the
+ *    first column was obscured by the new column. The toggle was removed entirely and the
+ *    layout was redesigned to match FeedbackTable — sticky # column (52 px) + sticky
+ *    Question column (340 px) with horizontally scrollable reviewer columns.
+ *
+ * 4. CSS Modules: the old side-effect import `import "./grades.scss"` was converted to
+ *    `import styles from "./ViewTeamGrades.module.scss"`. Classes used as plain strings by
+ *    other components (c1–c5, score, review-block, etc.) are wrapped in `:global {}` so
+ *    they keep their original names after hashing.
+ *
+ * 5. Reviewer anonymisation: `authUser` from Redux is still used to check whether the
+ *    logged-in user is a Student — if so, reviewer names are replaced with "Review N".
+ */
+import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
 import axiosClient from "../../utils/axios_client";
-import { calculateAverages, normalizeReviewDataArray, convertBackendRoundArray } from "./utils";
+import { calculateAverages, normalizeReviewDataArray, convertBackendRoundArray, isHeader, RoundRow } from "./heatgridUtils";
 import { TeamMember } from "./App";
-import "./grades.scss";
+import styles from "./ViewTeamGrades.module.scss";
 import { Link, useSearchParams } from "react-router-dom";
-import Filters from "./Filters";
-import ShowReviews from "./ShowReviews";
+import FeedbackTable from "./FeedbackTable";
 import { useSelector } from "react-redux";
-import { getAuthToken } from "../../utils/auth";
-import jwtDecode from "jwt-decode";
 
 // Truncatable text component
 const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text, wordLimit = 10 }) => {
@@ -45,9 +72,8 @@ const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text,
 const ReviewTable: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [currentRound, setCurrentRound] = useState<number>(-1);
-  const [showToggleQuestion, setShowToggleQuestion] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [roundsData, setRoundsData] = useState<any[] | null>(null);
+  const [roundsData, setRoundsData] = useState<RoundRow[][] | null>(null);
   
   // Get assignment ID from URL query parameter, default to 1
   const assignmentIdFromUrl = searchParams.get("assignmentId");
@@ -55,356 +81,232 @@ const ReviewTable: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [assignmentName, setAssignmentName] = useState<string>("");
   const [teamName, setTeamName] = useState<string>("");
   const [teamGrade, setTeamGrade] = useState<number | string>("");
   const [teamComment, setTeamComment] = useState<string>("");
   const [submissionLinks, setSubmissionLinks] = useState<string[] | null>(null);
   const [teamFetchError, setTeamFetchError] = useState<string | null>(null);
-  const [lastParticipantsResp, setLastParticipantsResp] = useState<any>(null);
-  const [lastTeamResp, setLastTeamResp] = useState<any>(null);
-  const [showReviews, setShowReviews] = useState(false);
-  const [ShowAuthorFeedback, setShowAuthorFeedback] = useState(false);
-  const [roundSelected, setRoundSelected] = useState(-1);
-  const [targetReview, setTargetReview] = useState<{roundIndex: number, reviewIndex: number} | null>(null);
-  const [averageFinalScore, setAverageFinalScore] = useState<string | number | null>(null);
+  // 'scores' renders the color-coded heatgrid; 'feedback' toggles to FeedbackTable which shows full item text and reviewer comments.
+  const [viewMode, setViewMode] = useState<'scores' | 'feedback'>('scores');
+  const [averageScore, setAverageScore] = useState<string | number | null>(null);
   const authUser = useSelector((state: any) => state.authentication?.user);
 
-  // Ref for the reviews section
-  const reviewsSectionRef = useRef<HTMLDivElement>(null);
-
-  // Auto-fetch assignment from URL parameter or default to 1 on mount
+  // Re-fetch whenever the assignmentId query parameter changes
   useEffect(() => {
     fetchBackend(assignmentId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // When roundsData is loaded, automatically select the first round
-  useEffect(() => {
-    if (roundsData && roundsData.length > 0 && roundSelected === -1) {
-      setRoundSelected(0);
-    }
-  }, [roundsData, roundSelected]);
+  }, [assignmentId]);
 
 
 
+
+  /**
+   * Fetches all data for the page in a single request.
+   * The backend embeds `team_members` (name, grade, comment, submission links, member list)
+   * directly in the response, eliminating the previous multi-step waterfall that called
+   * /participants/user/:id → /teams_participants/:id/list_participants → /users/:id per member.
+   */
   const fetchBackend = async (id: number) => {
     setIsLoading(true);
     setFetchError(null);
     try {
-      let res;
-      try {
-        res = await axiosClient.get(`/grades/${id}/view_our_scores`);
-      } catch (e: any) {
-        if (e?.response?.status === 404 || e?.response?.status === 403) {
-          try {
-            res = await axiosClient.get(`/grades/${id}/view_all_scores`);
-            if (res && res.data && res.data.team_scores && Object.keys(res.data.team_scores).length > 0) {
-              const maybe = res.data.team_scores;
-              if (maybe.reviews_of_our_work) {
-                res = { data: maybe };
-              } else {
-                const firstKey = Object.keys(maybe)[0];
-                if (firstKey) {
-                  res = { data: maybe[firstKey] };
-                }
-              }
-            }
-          } catch (e2: any) {
-            res = null;
-          }
-        } else {
-          throw e;
-        }
-      }
-      if (res && res.data && res.data.reviews_of_our_work) {
+      const res = await axiosClient.get(`/grades/${id}/view_our_scores`);
+
+      if (res?.data?.reviews_of_our_work) {
+        // Populate heatgrid / feedback table
+        // backendRoundsObj: the raw API value — a keyed object where each key is a round
+        // identifier (e.g. "round_1", "round_2") and each value is an array of review rows.
         const backendRoundsObj = res.data.reviews_of_our_work;
-        const orderedRounds = Object.keys(backendRoundsObj)
-          .sort()
-          .map((k) => backendRoundsObj[k]);
-        const converted = convertBackendRoundArray(orderedRounds);
-        setRoundsData(converted);
-        
-        // Set average final score from API response
-        console.log("=== API Response Data ===");
-        console.log("Full res.data:", res.data);
-        console.log("avg_score_of_our_work value:", res.data.avg_score_of_our_work);
-        console.log("Type:", typeof res.data.avg_score_of_our_work);
-        
-        if (res.data.avg_score_of_our_work !== undefined && res.data.avg_score_of_our_work !== null) {
-          console.log("Setting averageFinalScore to:", res.data.avg_score_of_our_work);
-          setAverageFinalScore(res.data.avg_score_of_our_work);
-        } else {
-          console.log("avg_score_of_our_work is not available in response");
+        // Sort by key so rounds appear in chronological order regardless of response order.
+        const orderedRounds = Object.keys(backendRoundsObj).sort().map((k) => backendRoundsObj[k]);
+        setRoundsData(convertBackendRoundArray(orderedRounds));
+
+        if (res.data.assignment_name) setAssignmentName(res.data.assignment_name);
+
+        // Average score
+        if (res.data.avg_score_of_our_work != null) {
+          setAverageScore(res.data.avg_score_of_our_work);
         }
-        
-        try {
-          const token = getAuthToken();
-          if (!token || token === "EXPIRED") {
-            setTeamFetchError("No valid auth token found — team name and members require login.\nPlease log in and try again.");
-          } else {
-            const userId = getCurrentUserId();
-            if (!userId) {
-              setTeamFetchError("Unable to determine current user from token. Team metadata cannot be loaded.");
-            } else {
-              setTeamFetchError(null);
-              await fetchTeamMetadata(id, userId);
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to load team metadata:", err);
+
+        // Team metadata — embedded by the backend, no follow-up requests needed
+        const tm = res.data.team_members;
+        if (tm) {
+          setTeamName(tm.team_name || "");
+          setTeamGrade(tm.grade ?? "");
+          setTeamComment(tm.comment ?? "");
+          setSubmissionLinks(tm.submission_links?.length > 0 ? tm.submission_links : null);
+          setTeamMembers(tm.members || []);
         }
-        setIsLoading(false);
-        return;
+      } else {
+        setFetchError("No review data returned by backend.");
       }
-      setIsLoading(false);
-      setFetchError("No review data returned by backend.");
     } catch (err: any) {
-      setIsLoading(false);
       const status = err?.response?.status;
       if (status === 404) {
-        setFetchError("No review data found for this assignment (404). You may not be a participant for this assignment or the assignment does not exist.");
+        setFetchError("No review data found for this assignment (404). You may not be a participant, or the assignment does not exist.");
       } else if (status === 403) {
-        setFetchError("You are not authorized to view reviews for this assignment (403). Try using a user with instructor privileges or check the assignment ID.");
+        setFetchError("You are not authorized to view reviews for this assignment (403).");
       } else {
         setFetchError(err?.message || "Failed to fetch backend data");
       }
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const getCurrentUserId = (): number | null => {
-    if (authUser && authUser.id) return authUser.id;
-    const token = getAuthToken();
-    if (!token) return null;
-    try {
-      const decoded: any = jwtDecode(token as string);
-      return decoded?.id || decoded?.user_id || null;
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const fetchTeamMetadata = async (assignmentIdParam: number, userId: number) => {
-    try {
-      const participantsResp = await axiosClient.get(`/participants/user/${userId}`);
-      setLastParticipantsResp(participantsResp?.data || participantsResp);
-      const participants = participantsResp?.data || [];
-
-      const myParticipant = participants.find((p: any) => {
-        return Number(p.parent_id) === Number(assignmentIdParam) || Number(p.assignment_id) === Number(assignmentIdParam);
-      });
-
-      if (!myParticipant) {
-        setTeamFetchError("You are not a participant in this assignment (no participant record found for the current user and assignment).\nIf you expect to be a participant, confirm the assignment ID and that you're logged in as the correct user.");
-        return;
-      }
-
-      const teamId = myParticipant.team_id || myParticipant.team?.id;
-      if (!teamId) {
-        setTeamFetchError("Participant found but no team_id set on participant. Team metadata cannot be loaded.");
-        return;
-      }
-
-      let teamResp;
-      let teamObj;
-      let teamParticipants: any[] = [];
-      try {
-        teamResp = await axiosClient.get(`/teams_participants/${teamId}/list_participants`);
-        setLastTeamResp(teamResp?.data || teamResp);
-        teamObj = teamResp?.data?.team;
-        teamParticipants = teamResp?.data?.team_participants || [];
-      } catch (e: any) {
-        const status = e?.response?.status;
-        setLastTeamResp(e?.response?.data || e?.response || e);
-        if (status === 403) {
-          setTeamFetchError("teams_participants endpoint returned 403 — attempting fallback using /participants/assignment/:assignment_id");
-          try {
-            const assignPartsResp = await axiosClient.get(`/participants/assignment/${assignmentIdParam}`);
-            const assignParts = assignPartsResp?.data || [];
-            const matching = assignParts.filter((p: any) => (p.team_id || (p.team && p.team.id)) === Number(teamId));
-            const userIdsFromAssign = matching.map((p: any) => p.user_id || (p.participant && p.participant.user_id)).filter(Boolean);
-            const uniqueUserIds2 = Array.from(new Set(userIdsFromAssign));
-            const userFetches2 = uniqueUserIds2.map((uid) => axiosClient.get(`/users/${uid}`));
-            const usersResp2 = await Promise.allSettled(userFetches2);
-            const members2 = usersResp2
-              .map((r) => (r.status === "fulfilled" ? r.value.data : null))
-              .filter(Boolean)
-              .map((u: any) => ({ name: u.full_name || u.fullName || u.name, username: u.name }));
-            if (members2.length > 0) {
-              setTeamMembers(members2);
-              setTeamFetchError(null);
-            } else {
-              setTeamFetchError("Fallback succeeded but no user records found for team members.");
-            }
-          } catch (e2: any) {
-            setTeamFetchError(`Fallback via participants/assignment failed: ${e2?.message || String(e2)}`);
-          }
-        } else {
-          setTeamFetchError(`Failed to fetch team participants: ${e?.message || String(e)}`);
-        }
-      }
-
-      if (teamObj) {
-        setTeamName(teamObj.name || teamObj.team_name || teamObj.display_name || teamName);
-        setTeamGrade(teamObj.grade_for_submission ?? teamGrade);
-        setTeamComment(teamObj.comment_for_submission ?? teamComment);
-        const links: string[] = [];
-        if (teamObj.hyperlinks && Array.isArray(teamObj.hyperlinks)) {
-          teamObj.hyperlinks.forEach((l: any) => links.push(String(l)));
-        }
-        if (teamObj.submitted_hyperlinks) {
-          try {
-            const parsed = JSON.parse(teamObj.submitted_hyperlinks);
-            if (Array.isArray(parsed)) parsed.forEach((l: any) => links.push(String(l)));
-          } catch (e) {
-            const str = String(teamObj.submitted_hyperlinks);
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            const found = str.match(urlRegex) || [];
-            found.forEach((u: string) => links.push(u));
-          }
-        }
-        setSubmissionLinks(links.length > 0 ? Array.from(new Set(links)) : null);
-      }
-
-      const sourceParticipants = teamParticipants && teamParticipants.length > 0 ? teamParticipants : [];
-      const userIds: number[] = sourceParticipants
-        .map((tp: any) => tp.user_id || tp.userId || (tp.participant && tp.participant.user_id))
-        .filter(Boolean);
-
-      const uniqueUserIds = Array.from(new Set(userIds));
-
-      let members: any[] = [];
-      if (uniqueUserIds.length > 0) {
-        const userFetches = uniqueUserIds.map((uid) => axiosClient.get(`/users/${uid}`));
-        const usersResp = await Promise.allSettled(userFetches);
-
-        members = usersResp
-          .map((r) => (r.status === "fulfilled" ? r.value.data : null))
-          .filter(Boolean)
-          .map((u: any) => ({ name: u.full_name || u.fullName || u.name, username: u.name }));
-      }
-
-      if (members.length === 0 && sourceParticipants.length > 0) {
-        members = sourceParticipants.map((p: any) => ({ name: p.handle || `user_${p.user_id || p.id}`, username: String(p.user_id || p.id || "") }));
-        setTeamMembers(members);
-        setTeamFetchError("Team participants resolved but user details couldn't be fetched; showing participant handles instead.");
-      } else if (members.length > 0) {
-        setTeamMembers(members);
-        setTeamFetchError(null);
-      }
-    } catch (err: any) {
-      console.warn("Failed to fetch team metadata", err?.message || err);
-      setTeamFetchError(`Failed to fetch team metadata: ${err?.message || String(err)}`);
-    }
-  };
-
-  const toggleShowReviews = () => {
-    setShowReviews((prev) => !prev);
-  };
-
-  const selectRound = (r: number) => {
-    setRoundSelected(r);
-  };
-
-  const toggleAuthorFeedback = () => {
-    setShowAuthorFeedback((prev) => !prev);
   };
 
   const handleRoundChange = (roundIndex: number) => {
     setCurrentRound(roundIndex);
   };
 
-  const toggleShowQuestion = () => {
-    setShowToggleQuestion(!showToggleQuestion);
-  };
+  // Column widths shared between the header (defined here) and body rows (defined in ReviewTableRow).
+  // These must stay in sync — the table uses tableLayout:"fixed" so widths are set once in the header.
+  const STICKY_NO_WIDTH = 68;  // px — wide enough for two-digit item numbers + weight badge on one line
+  const STICKY_Q_WIDTH  = 340; // px — question text column
 
-  // Handle clicking on a review cell in the table
-  const handleReviewClick = (roundIndex: number, reviewIndex: number) => {
-    // Show reviews section if not already shown
-    if (!showReviews) {
-      setShowReviews(true);
-    }
-    
-    // Set the target review to expand
-    setTargetReview({ roundIndex, reviewIndex });
-    
-    // Scroll to reviews section after a short delay to allow state to update
-    setTimeout(() => {
-      if (reviewsSectionRef.current) {
-        reviewsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
-  };
-
-  const renderTable = (roundData: any, roundIndex: number) => {
+  /**
+   * Renders the score heatgrid for a single round.
+   * Layout mirrors FeedbackTable exactly: overflowX scroll wrapper, borderCollapse separate,
+   * sticky # and Question columns, scrollable color-coded reviewer columns.
+   * borderCollapse:"separate" + borderSpacing:0 is required so sticky cells keep an
+   * opaque background and don't bleed through when the table scrolls horizontally.
+   */
+  const renderTable = (roundData: RoundRow[], roundIndex: number) => {
     const normalizedData = normalizeReviewDataArray(roundData);
-    
-    const { averagePeerReviewScore, sortedData } = calculateAverages(
-      normalizedData,
-      "none"
-    );
+    const { averagePeerReviewScore, sortedData } = calculateAverages(normalizedData, "none");
 
     const roundsSource = roundsData || [];
 
-    return (
-      <div key={roundIndex} className="table-container mb-6">
-        <h2>
-          Review (Round: {roundIndex + 1} of {roundsSource.length})
-        </h2>
-        <table className="tbl_heat">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="py-1 px-2 text-center" style={{ width: "50px" }}>
-                Item no.
-              </th>
-              {showToggleQuestion && (
-                <th className="item-prompt-header" style={{ width: "150px" }}>
-                  Item
-                </th>
-              )}
-              {Array.from({ length: roundData[0].reviews.length }, (_, i) => {
-                const reviewerName = roundData[0].reviews[i]?.name || `Review ${i + 1}`;
-                const isStudent = authUser?.role === "Student";
-                const displayName = isStudent ? `Review ${i + 1}` : reviewerName;
+    // Find the first non-header row to determine reviewer count
+    const firstScored = normalizedData.find(r => !isHeader(r)) as any;
+    const numReviewers = firstScored?.reviews?.length || 0;
 
-                return (
-                  <th
-                    key={i}
-                    className="py-1 px-2 text-center"
-                    style={{ width: "70px", cursor: "pointer", textDecoration: "underline" }}
-                    onClick={() => handleReviewClick(roundIndex, i)}
-                    title={isStudent ? "Click to view full review" : `Review by ${reviewerName} - Click to view full`}
-                  >
-                    {displayName}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedData.map((row, index) => (
-              <ReviewTableRow 
-                key={index} 
-                row={row} 
-                showToggleQuestion={showToggleQuestion}
-                onReviewClick={(reviewIndex) => handleReviewClick(roundIndex, reviewIndex)}
-              />
-            ))}
-          </tbody>
-        </table>
-        <br />
-        <h5>
-          Average peer review score:{" "}
-          <span style={{ fontWeight: "normal" }}>{averagePeerReviewScore}</span>
-        </h5>
-        <br />
+    return (
+      <div key={roundIndex} style={{ marginBottom: 32 }}>
+        <h2>
+          Round {roundIndex + 1}
+        </h2>
+
+        {/* Horizontally scrollable wrapper — identical to FeedbackTable */}
+        <div style={{ overflowX: "auto", position: "relative" }}>
+          <table className={styles.tbl_heat} style={{
+            borderCollapse: "separate",
+            borderSpacing: 0,
+            tableLayout: "fixed",
+            // width: "max-content" prevents the table from stretching to fill the scroll
+            // container, which would cause reviewer columns to widen beyond their fixed 80px.
+            width: "max-content",
+            minWidth: STICKY_NO_WIDTH + STICKY_Q_WIDTH + numReviewers * 110,
+          }}>
+            <thead>
+              <tr style={{ background: "#f0f0f0" }}>
+                {/* Sticky: # */}
+                <th style={{
+                  padding: "8px 10px", border: "1px solid #ddd", fontSize: "13px",
+                  position: "sticky", left: 0, zIndex: 5, top: 0,
+                  background: "#f0f0f0", fontWeight: "bold",
+                  width: STICKY_NO_WIDTH, minWidth: STICKY_NO_WIDTH, maxWidth: STICKY_NO_WIDTH,
+                  textAlign: "center", borderRight: "none",
+                }}>
+                  #
+                </th>
+
+                {/* Sticky: Question */}
+                <th style={{
+                  padding: "8px 10px", border: "1px solid #ddd", fontSize: "13px",
+                  position: "sticky", left: STICKY_NO_WIDTH, zIndex: 5, top: 0,
+                  background: "#f0f0f0", fontWeight: "bold",
+                  width: STICKY_Q_WIDTH, minWidth: STICKY_Q_WIDTH, maxWidth: STICKY_Q_WIDTH,
+                  textAlign: "left",
+                  borderLeft: "1px solid #ddd", borderRight: "2px solid #aaa",
+                }}>
+                  Question
+                </th>
+
+                {/* Reviewer columns, one for each reviewer */}
+                {Array.from({ length: numReviewers }, (_, i) => {
+                  const reviewerName = (firstScored as any)?.reviews[i]?.name || `Review ${i + 1}`;
+                  const isStudent = authUser?.role === "Student";
+                  const displayName = isStudent ? `Review ${i + 1}` : reviewerName;
+                  return (
+                    <th key={i} style={{
+                      padding: "8px 10px", border: "1px solid #ddd", fontSize: "13px",
+                      background: "#f0f0f0", fontWeight: "bold",
+                      textAlign: "center", width: 110, minWidth: 110,
+                    }}>
+                      {displayName}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                let scoredRowIdx = 0;
+                return sortedData.map((row, index) => {
+                  // Render SectionHeader sentinel as a heading row.
+                  // Split into two cells so the label stays sticky on horizontal scroll:
+                  //   cell 1 — sticky, covers the # col + question col (68 + 340 px)
+                  //   cell 2 — colSpan for all reviewer columns, scrolls away
+                  if (isHeader(row)) {
+                    return (
+                      <tr key={`hdr-${index}`}>
+                        <td
+                          colSpan={2}
+                          style={{
+                            padding: "6px 14px",
+                            background: "#fff",
+                            fontWeight: "bold",
+                            fontSize: "14px",
+                            fontFamily: "verdana, arial, helvetica, sans-serif",
+                            color: "#986633",
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 4,
+                            width: STICKY_NO_WIDTH + STICKY_Q_WIDTH,
+                            minWidth: STICKY_NO_WIDTH + STICKY_Q_WIDTH,
+                          }}
+                        >
+                          {row.txt}
+                        </td>
+                        <td
+                          colSpan={numReviewers}
+                          style={{ background: "#fff", borderBottom: "1px solid #ddd" }}
+                        />
+                      </tr>
+                    );
+                  }
+                  // Scored row — use its own index for alternating background
+                  return <ReviewTableRow key={index} row={row} rowIndex={scoredRowIdx++} />;
+                });
+              })()}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{
+          marginTop: 8,
+          padding: "8px 14px",
+          background: "#f0f0f0",
+          border: "1px solid #ddd",
+          borderRadius: 4,
+          fontSize: 13,
+          display: "inline-block",
+        }}>
+          <strong>Average peer review score:</strong>{" "}{averagePeerReviewScore}
+        </div>
       </div>
     );
   };
 
+  // Convert 0-indexed currentRound to the 1-indexed roundSelected expected by FeedbackTable
+  // (-1 = all rounds, 0 → 1, 1 → 2, etc.)
+  const feedbackRoundSelected = currentRound === -1 ? -1 : currentRound + 1;
+
   return (
-    <div className="p-4">
-      <h2>Summary Report: Program 2</h2>
-      <h5>Team: {teamName || "Loading..."}</h5>
+    <div className={styles['page-wrapper']} style={{ padding: "24px 96px" }}>
+      <h2><strong>Summary report{assignmentName ? `: ${assignmentName}` : ""}</strong></h2>
+      <p style={{ marginTop: 0, color: "#666", fontSize: "13px" }}>Peer review scores for your team's work</p>
+      <h5><strong>Team:</strong> {teamName || "Loading..."}</h5>
       {fetchError && (
         <div className="mb-3">
           <span style={{ color: "red" }}>{fetchError}</span>
@@ -420,92 +322,87 @@ const ReviewTable: React.FC = () => {
         ))}
       </span>
       <div className="ml-4 mt-2">
-        Average final score: <span style={{ fontWeight: "normal" }}>{averageFinalScore || "N/A"}</span>
+        <h5><strong>Average score:</strong> <span style={{ fontWeight: "normal", fontSize: "inherit" }}>{averageScore || "N/A"}</span></h5>
       </div>
       <div className="mt-2">
-        <h5>Submission links</h5>
+        <h5><strong>Submission links</strong></h5>
         {submissionLinks && submissionLinks.length > 0 ? (
           <ul>
             {submissionLinks.map((l, i) => (
               <li key={i}>
-                <a href={l} target="_blank" rel="noopener noreferrer">
-                  {l}
-                </a>
+                <a href={l} target="_blank" rel="noopener noreferrer">{l}</a>
               </li>
             ))}
           </ul>
         ) : (
-          <div>
-            <em>No submission links found for this team.</em>
-          </div>
+          <em>No submission links found for this team.</em>
         )}
         {teamFetchError && (
-          <div style={{ color: "red", marginTop: 8, whiteSpace: "pre-wrap" }}>
-            {teamFetchError}
-          </div>
+          <div style={{ color: "red", marginTop: 8, whiteSpace: "pre-wrap" }}>{teamFetchError}</div>
         )}
       </div>
 
       <br />
 
-      <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} roundsData={roundsData} />
+      {/* Round selector + Scores/Feedback toggle in one toolbar row */}
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", marginBottom: "12px" }}>
+        <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} roundsData={roundsData} />
 
-      <div className="toggle-container">
-        <input
-          type="checkbox"
-          id="toggleQuestion"
-          name="toggleQuestion"
-          checked={showToggleQuestion}
-          onChange={toggleShowQuestion}
-        />
-        <label htmlFor="toggleQuestion"> &nbsp;{showToggleQuestion ? "Hide item prompts" : "Show item prompts"}</label>
+        {/* Scores / Feedback toggle — height matches the round dropdown (36px) */}
+        <div style={{
+          display: "flex",
+          border: "2px solid #b00404",
+          borderRadius: "0.375rem",
+          overflow: "hidden",
+          height: "36px",
+        }}>
+          {(["scores", "feedback"] as const).map((mode, i) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                padding: "0 18px",
+                height: "100%",
+                fontWeight: "bold",
+                fontSize: "14px",
+                fontFamily: "verdana, arial, helvetica, sans-serif",
+                cursor: "pointer",
+                border: "none",
+                borderLeft: i === 1 ? "2px solid #b00404" : "none",
+                background: viewMode === mode ? "#b00404" : "transparent",
+                color: viewMode === mode ? "white" : "#b00404",
+                transition: "background 0.2s, color 0.2s",
+                minWidth: "90px",
+              }}
+            >
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Main content area — toggled by Scores/Feedback */}
       {roundsData && roundsData.length > 0 ? (
-        currentRound === -1
-          ? roundsData.map((roundData: any, index: number) => renderTable(roundData, index))
-          : renderTable(roundsData[currentRound], currentRound)
+        viewMode === 'scores' ? (
+          currentRound === -1
+            ? roundsData.map((roundData: any, index: number) => renderTable(roundData, index))
+            : renderTable(roundsData[currentRound], currentRound)
+        ) : (
+          <FeedbackTable data={roundsData} roundSelected={feedbackRoundSelected} />
+        )
       ) : (
         <div style={{ padding: "20px", textAlign: "center" }}>
           {isLoading ? "Loading review data..." : "No review data available. Please load an assignment."}
         </div>
       )}
 
-      <div>
-        <Filters
-          toggleShowReviews={toggleShowReviews}
-          toggleAuthorFeedback={toggleAuthorFeedback}
-          selectRound={selectRound}
-        />
-      </div>
-
-      <div ref={reviewsSectionRef}>
-        {showReviews && roundsData && roundsData.length > 0 && (
-          <div>
-            <h2>Reviews</h2>
-            <ShowReviews 
-              data={roundsData} 
-              roundSelected={roundSelected}
-              targetReview={targetReview}
-              onReviewExpanded={() => setTargetReview(null)}
-            />
-          </div>
-        )}
-        {ShowAuthorFeedback && (
-          <div>
-            <h2>Author Feedback</h2>
-            <p style={{ fontStyle: "italic", color: "#666" }}>Author feedback feature coming soon.</p>
-          </div>
-        )}
-      </div>
-
-      {teamGrade || teamComment ? (
+      {(teamGrade || teamComment) && (
         <div className="mt-4">
           <h2>Grade and Comment for Submission</h2>
           {teamGrade && <p>Grade: {teamGrade}</p>}
-          {teamComment && <p>Comment: <TruncatableText text={teamComment} wordLimit={10} /></p>}
+          {teamComment && <p>Comment: <TruncatableText text={teamComment} wordLimit={50} /></p>}
         </div>
-      ) : null}
+      )}
 
       <Link to="/">Back</Link>
     </div>

@@ -1,53 +1,58 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  ExpandedState,
   flexRender,
   getCoreRowModel,
-  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
+  ExpandedState,
+  getExpandedRowModel,
 } from "@tanstack/react-table";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Table as BTable, Col, Container, Row } from "react-bootstrap";
-import { BsChevronDown, BsChevronRight } from "react-icons/bs";
-import { FaSearch } from "react-icons/fa";
+import { Col, Container, Row, Table as BTable } from "react-bootstrap";
+import { BsChevronRight, BsChevronDown } from "react-icons/bs";
 import ColumnFilter from "./ColumnFilter";
 import GlobalFilter from "./GlobalFilter";
 import Pagination from "./Pagination";
 import RowSelectCheckBox from "./RowSelectCheckBox";
+import { FaSearch } from "react-icons/fa";
+import ToolTip from "components/ToolTip";
 
 interface TableProps {
   data: Record<string, any>[];
   columns: ColumnDef<any, any>[];
-  disableGlobalFilter?: boolean;
   showGlobalFilter?: boolean;
   showColumnFilter?: boolean;
   showPagination?: boolean;
   tableSize?: { span: number; offset: number };
   columnVisibility?: Record<string, boolean>;
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
-  onRowClick?: (row: any) => void;
   renderSubComponent?: (props: { row: any }) => React.ReactNode;
   getRowCanExpand?: (row: any) => boolean;
+  disableGlobalFilter?: boolean;
+  // Maps column header text to a tooltip string shown as an info icon in the header.
+  headingComments?: Record<string, string>;
+  // When true, passes fluid to Container so the table spans the full viewport width.
+  fluid?: boolean;
 }
 
 const Table: React.FC<TableProps> = ({
   data: initialData,
   columns,
-  disableGlobalFilter = false,
   showGlobalFilter = false,
   showColumnFilter = true,
   showPagination = true,
   onSelectionChange,
-   onRowClick,
   columnVisibility = {},
   tableSize = { span: 12, offset: 0 },
   renderSubComponent,
   getRowCanExpand,
+  disableGlobalFilter = false, // Disable the Global Search
+  headingComments = {},
+  fluid = false,
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -82,7 +87,6 @@ const Table: React.FC<TableProps> = ({
           </button>
         );
       },
-	  size: 40,
       enableSorting: false,
       enableColumnFilter: false,
     };
@@ -110,7 +114,6 @@ const Table: React.FC<TableProps> = ({
                 }}
               />
             ),
-			size: 40,
             enableSorting: false,
             enableFilter: false,
           },
@@ -145,12 +148,6 @@ const Table: React.FC<TableProps> = ({
     getExpandedRowModel: getExpandedRowModel(),
   });
 
-
-  //Enable search filters for columns based on page size
-  const totalItems = initialData.length;
-  const pageSize = table.getState().pagination.pageSize;
-  const shouldShowColumnFilters = showColumnFilter && totalItems > pageSize;
-
   const flatRows = table.getSelectedRowModel().flatRows;
 
   useEffect(() => {
@@ -175,76 +172,78 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <>
-      {!disableGlobalFilter && (
-        <Container>
-          <Row className="mb-md-2" style={{ flex: 1 }}>
-            <Col md={{ span: 12 }}>
-              {isGlobalFilterVisible && (
-                <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
-              )}
-            </Col>
-            {/*<span style={{ marginLeft: "5px" }} onClick={toggleGlobalFilter}>
-              <FaSearch style={{ cursor: "pointer" }} />
+      <Container fluid={fluid}>
+        <Row className="mb-md-2">
+          <Col md={{ span: 12 }}>
+            {isGlobalFilterVisible && (
+              <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
+            )}
+          </Col>
+          {!disableGlobalFilter && (
+            <button
+              type="button"
+              className="btn btn-link p-0 ms-1"
+              onClick={toggleGlobalFilter}
+              aria-expanded={isGlobalFilterVisible}
+              aria-label={`${isGlobalFilterVisible ? "Hide" : "Show"} global search`}
+            >
+              <FaSearch aria-hidden="true" />
               {isGlobalFilterVisible ? " Hide" : " Show"}
-            </span>*/}
-          </Row>
-        </Container>
-      )}
-      <Container>
-        <Row style={{ flex: 1 }}>
+            </button>
+          )}
+        </Row>
+      </Container>
+      <Container fluid={fluid}>
+        <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm" className="custom-table-layout">
+            <BTable striped hover responsive size="sm">
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th key={header.id} colSpan={header.colSpan} style={{ width: `${header.getSize()}px` }}>
-                        {header.isPlaceholder ? null : (
-                          <>
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? "cursor-pointer select-none"
-                                  : "",
-                                onClick: header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              {{
-                                asc: " 🔼",
-                                desc: " 🔽",
-                              }[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                            {shouldShowColumnFilters && header.column.getCanFilter() ? (
-                              <ColumnFilter column={header.column} />
-                            ) : null}
-                          </>
-                        )}
-                      </th>
-                    ))}
+                    {headerGroup.headers.map((header) => {
+                      // Add info icon to Heading if comment exists.
+                      const comment = headingComments[header.column.columnDef.header as string];
+                      return (
+                        <th key={header.id} colSpan={header.colSpan}>
+                          {header.isPlaceholder ? null : (
+                            <>
+                              <div
+                                {...{
+                                  className: header.column.getCanSort()
+                                    ? "cursor-pointer select-none"
+                                    : "",
+                                  onClick: header.column.getToggleSortingHandler(),
+                                }}
+                              >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                {comment && <ToolTip id={header.id} info={comment} />}
+                                {{
+                                  asc: " 🔼",
+                                  desc: " 🔽",
+                                }[header.column.getIsSorted() as string] ?? null}
+                              </div>
+                              {/* Previously hidden when data fit a single page; now always driven by the showColumnFilter prop. */}
+                              {showColumnFilter && header.column.getCanFilter() ? (
+                                <ColumnFilter column={header.column} />
+                              ) : null}
+                            </>
+                          )}
+                        </th>
+                      );
+                    })}
                   </tr>
                 ))}
               </thead>
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                   <tr
-						className={row.original.isSelected ? 'selected-topic-row' : ''}
-						onClick={() => onRowClick?.(row.original)}
-						style={{ 
-						  cursor: onRowClick ? 'pointer' : 'default',
-						  backgroundColor: row.original.isSelected ? '#fff3cd' : undefined 
-						}}
-					  >
-						{row.getVisibleCells().map((cell) => {
-						  const selected = !!row.original.isSelected;
-						  return (
-							<td key={cell.id} style={selected ? { backgroundColor: '#fff3cd' } : undefined}>
-							  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-							</td>
-						  );
-						})}
-					  </tr>
+                    <tr>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
                     {row.getIsExpanded() && renderSubComponent && (
                       <tr>
                         <td colSpan={row.getVisibleCells().length}>
@@ -266,7 +265,8 @@ const Table: React.FC<TableProps> = ({
                 setPageSize={table.setPageSize}
                 getPageCount={table.getPageCount}
                 getState={table.getState}
-				totalItems={initialData.length}
+                // Use pre-pagination row count so the total reflects active filters, not raw data length.
+                totalItems={table.getPrePaginationRowModel().rows.length}
               />
             )}
           </Col>

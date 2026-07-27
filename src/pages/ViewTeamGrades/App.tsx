@@ -7,12 +7,21 @@ export interface TeamMember {
   username: string;
 }
 
+// Sentinel type returned by the backend when a questionnaire item is a SectionHeader.
+// The backend injects { type: "header", txt: "..." } at the correct positions in the
+// per-round scores array so the frontend can render labelled section dividers between rows.
+export interface SectionHeaderData {
+  type: "header";
+  txt: string;
+}
+
 // Interface defining the structure of ReviewData
 export interface ReviewData {
   itemNumber: string;
-  itemText: string;
+  itemText: string;  // full rubric criterion/question text shown in the "Item" column
   itemType?: string; // Type of item (Scale, Criterion, TextArea, etc.)
   reviews: {
+    name?: string; // reviewer name (populated by convertBackendRoundArray)
     score?: number;
     comment?: string;
     textResponse?: string; // For TextArea/TextField

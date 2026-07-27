@@ -1,0 +1,190 @@
+/* White background for pending (not yet reached) timeline nodes */
+:root {
+  --dot-pending-bg: #ffffff;
+}
+
+.container {
+  font-family: Arial, sans-serif;
+  padding: 1.5rem 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.header {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.programLink {
+  color: #333;
+  text-decoration: none;
+}
+
+.programLink:hover {
+  text-decoration: underline;
+}
+
+/* Email link */
+.link_to_right {
+  float: right;
+  font-size: 13px;
+}
+
+/* Task Links Section */
+.taskLinks {
+  background-color: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.taskList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.taskItem {
+  font-size: 16px;
+  line-height: 1.5;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 4px 0;
+}
+
+.taskItem:last-child {
+  border-bottom: none;
+}
+
+.taskDescription {
+  color: #666;
+  font-size: 15px;
+}
+
+/* Timeline Section */
+.timelineContainer {
+  margin: 20px 0;
+  background-color: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 2rem;
+}
+
+.timelineDates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.timelineVisual {
+  position: relative;
+  height: 30px;
+  margin: 15px 0;
+}
+
+.timelineLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  background-color: #dc3545;
+  transform: translateY(-50%);
+  height: 4px;
+  width: 100%;
+}
+
+.timelineDots {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.dot {
+  width: 25px;
+  height: 25px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  margin-top: 7px;
+}
+
+.timelineDeadlines {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.deadlineLink {
+  color: #986633;
+  text-decoration: none;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+  font-size: 15px;
+}
+
+/* Send Email button */
+.emailButton {
+  position: absolute;
+  top: calc(1rem + 10px);
+  transform: translateY(-50%);
+  right: 3rem;
+  background-color: #A90201;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.emailButton:hover {
+  background-color: #870100;
+  color: white;
+  text-decoration: none;
+}
+
+.deadlineLink:hover {
+  text-decoration: underline;
+  color: #7a4f1f;
+}
+
+/* Footer Section */
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 2rem;
+  gap: 20px;
+}
+
+/* Clickable link styling */
+.clickableLink {
+  color: #986633;
+  text-decoration: none;
+}
+
+.clickableLink:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
