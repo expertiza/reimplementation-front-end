@@ -3,6 +3,7 @@ import React, { useEffect, useState, memo, useCallback } from "react";
 import { Modal, Button, Form, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
+import { publicUrl } from "../../utils/publicUrl";
 
 /* =============================================================================
    Shared visual style — same as CreateTeams.tsx
@@ -26,19 +27,7 @@ const TABLE_TEXT: React.CSSProperties = {
    Icon utilities — same pattern as Import modal
 ============================================================================= */
 
-const getBaseUrl = (): string => {
-  if (typeof document !== 'undefined') {
-    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, '');
-  }
-  const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
-  const fromProcess =
-    (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
-  return String(fromProcess).replace(/\/$/, '');
-};
-
-const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
+const assetUrl = (rel: string) => publicUrl(rel.replace(/^\//, ''));
 
 
 

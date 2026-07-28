@@ -2,6 +2,7 @@ import {createColumnHelper, Row} from "@tanstack/react-table";
 import {Button, Tooltip, OverlayTrigger } from "react-bootstrap";
 import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
 import {IUserResponse as IUser} from "../../utils/interfaces";
+import { publicUrl } from "../../utils/publicUrl";
 /**
  * @author Ankur Mundra on April, 2023
  */
@@ -59,7 +60,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src={publicUrl("assets/icons/Check-icon.png")}
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />
@@ -81,7 +82,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src={publicUrl("assets/icons/Check-icon.png")}
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />

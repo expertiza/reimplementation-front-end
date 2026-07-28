@@ -58,6 +58,16 @@ export interface IParticipantResponse {
   institution: { id: number | null; name: string | null };
 }
 
+export interface IAssignmentParticipantResponse {
+  id: number;
+  user_id: number;
+  can_mentor: boolean | null;
+  can_review: boolean | null;
+  can_submit: boolean | null;
+  can_take_quiz: boolean | null;
+  authorization: string | null;
+}
+
 export interface IUserRequest {
   name: string;
   email: string;
@@ -249,6 +259,10 @@ export interface IAssignmentResponse {
   private:boolean;
   show_template_review: boolean;
   require_quiz:boolean;
+  /** When true, assignment uses mentors; shows Mentor permission column on assignment participants. */
+  has_mentors?: boolean;
+  /** When true with require_quiz, supports quiz workflows; used with require_quiz for Take quiz column. */
+  has_quizzes?: boolean;
   has_badge:boolean;
   staggered_deadline:boolean;
   is_calibrated:boolean;

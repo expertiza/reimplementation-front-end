@@ -57,6 +57,7 @@ import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements'
 import Duties from "./pages/Duties/Duties";
 import DutyEditor from "./pages/Duties/DutyEditor";
 import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
+import AssignmentParticipants from "./pages/AssignmentParticipants/AssignmentParticipants";
 function App() {
   const router = createBrowserRouter([
     {
@@ -233,19 +234,7 @@ function App() {
 
         {
           path: "assignments/edit/:assignmentId/participants",
-          element: <Participants type="student_tasks" id={1} />,
-          children: [
-            {
-              path: "new",
-              element: <ParticipantEditor mode="create" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
-            },
-            {
-              path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
-            },
-          ],
+          element: <AssignmentParticipants />,
         },
 
         {

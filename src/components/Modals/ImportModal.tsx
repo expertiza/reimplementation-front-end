@@ -17,6 +17,7 @@ import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
 import PreviewTable from "../Table/Table";
 import { ColumnDef } from "@tanstack/react-table";
+import { publicUrl } from "../../utils/publicUrl";
 
 /* ----------------------------------------
  *  Shared text styles for consistency
@@ -39,24 +40,7 @@ const TABLE_TEXT: React.CSSProperties = {
  *  Icon utilities — used for tooltip icons
  * ---------------------------------------- */
 
-/** Helper to resolve asset URLs correctly even under nested routes */
-const getBaseUrl = (): string => {
-  if (typeof document !== "undefined") {
-    const base = document.querySelector("base[href]") as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, "");
-  }
-
-  const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === "string") return fromGlobal.replace(/\/$/, "");
-
-  const fromProcess =
-    (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
-
-  return String(fromProcess).replace(/\/$/, "");
-};
-
-/** Helper for converting relative asset paths to usable URLs */
-const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, "")}`;
+const assetUrl = (rel: string) => publicUrl(rel.replace(/^\//, ""));
 
 /** Asset map */
 const ICONS = {
