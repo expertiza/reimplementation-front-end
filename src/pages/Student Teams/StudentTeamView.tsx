@@ -34,6 +34,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     fetchJoinTeamRequestsAPI,
     acceptJoinRequestAPI,
     declineJoinRequestAPI,
+    updateDutyAPI,
     fetchTeam,
     createTeam,
     updateName,
@@ -44,7 +45,8 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     fetchReceivedInvitations,
     fetchJoinTeamRequests,
     acceptJoinRequest,
-    declineJoinRequest
+    declineJoinRequest,
+    updateDuty
   } = useStudentTeam(studentId);
 
   const [editMode, setEditMode] = useState(false);
@@ -52,6 +54,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const [teamName, setTeamName] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [roleSavingParticipantId, setRoleSavingParticipantId] = useState<number | null>(null);
 
   const { error: fetchTeamError, isLoading, data: team, errorStatus } = teamAPI;
   const { error: createTeamError, data: createTeamResponse, reset: resetCreateTeam } = updateTeamNameAPI;
@@ -64,6 +67,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   const { error: leaveTeamError, data: leaveTeamResponse, reset: resetLeaveTeam } = leaveAPI;
   const { error: acceptJoinRequestError, data: acceptJoinRequestResponse, reset: resetAcceptJoinRequest } = acceptJoinRequestAPI;
   const { error: declineJoinRequestError, data: declineJoinRequestResponse, reset: resetDeclineJoinRequest } = declineJoinRequestAPI;
+  const { error: updateDutyError, data: updateDutyResponse, reset: resetUpdateDuty } = updateDutyAPI;
 
   useEffect(() => {
     if (errorStatus != '403')
@@ -161,6 +165,19 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     setToastMessage("Join request declined.");
   };
 
+  const handleRoleChange = async (participantId: number, value: string) => {
+    const selectedDutyId = value ? Number(value) : null;
+    setRoleSavingParticipantId(participantId);
+    try {
+      await updateDuty(participantId, selectedDutyId);
+      fetchTeam();
+      setShowAlert(false);
+      setToastMessage("Role updated successfully.");
+    } finally {
+      setRoleSavingParticipantId(null);
+    }
+  };
+
   useEffect(() => {
     const showFeedback = (response: any) => {
       setToastMessage(response.data.message);
@@ -215,6 +232,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     resetUpdateInvite?.(error, data);
     resetAcceptJoinRequest?.(error, data);
     resetDeclineJoinRequest?.(error, data);
+    resetUpdateDuty?.(error, data);
   };
 
   // Combine all hook errors into one derived variable
@@ -224,6 +242,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
     sendInviteError ||
     leaveTeamError ||
     updateInviteError ||
+    updateDutyError ||
     acceptJoinRequestError ||
     declineJoinRequestError ||
     null;
@@ -248,10 +267,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
   }, [studentId]);
 
   useEffect(() => {
-    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success || acceptJoinRequestResponse || declineJoinRequestResponse) {
+    if (createTeamResponse?.data.success || leaveTeamResponse?.data.success || updateInviteResponse?.data.success || updateDutyResponse || acceptJoinRequestResponse || declineJoinRequestResponse) {
       fetchTeam();
     }
-  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse, acceptJoinRequestResponse, declineJoinRequestResponse])
+  }, [createTeamResponse, leaveTeamResponse, updateInviteResponse, updateDutyResponse, acceptJoinRequestResponse, declineJoinRequestResponse])
 
 
   if (isLoading)
@@ -347,6 +366,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                 <th className={styles.studentTeamTableCellHeader}>Username</th>
                 <th className={styles.studentTeamTableCellHeader}>Name</th>
                 <th className={styles.studentTeamTableCellHeader}>Email address</th>
+                <th className={styles.studentTeamTableCellHeader}>Role</th>
                 <th className={styles.studentTeamTableCellHeader}>Review action</th>
               </tr>
             </thead>
@@ -357,6 +377,25 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                     <td className={styles.studentTeamTableCell}>{participant.user.username}</td>
                     <td className={styles.studentTeamTableCell}>{participant.user.fullName}</td>
                     <td className={styles.studentTeamTableCell}>{participant.user.email}</td>
+                    <td className={styles.studentTeamTableCell}>
+                      {participant.id === Number(studentId) ? (
+                        <Form.Select
+                          value={participant.duty_id ?? ""}
+                          onChange={(e) => handleRoleChange(participant.id, e.target.value)}
+                          disabled={roleSavingParticipantId === participant.id}
+                          aria-label="Select your role"
+                        >
+                          <option value="">Select role</option>
+                          {(team.data.assignment.assignment_duties || []).map((assignmentDuty: any) => (
+                            <option key={assignmentDuty.duty_id} value={assignmentDuty.duty_id}>
+                              {assignmentDuty.duty_name}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      ) : (
+                        participant.duty_name || "Not selected"
+                      )}
+                    </td>
                     <td className={styles.studentTeamTableCell}>
                       {participant.id !== Number(studentId) && <Link to="/" className={styles.studentTeamButtonLink}>
                         Review

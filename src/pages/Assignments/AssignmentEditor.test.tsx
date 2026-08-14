@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import AssignmentEditor from "./AssignmentEditor";
@@ -41,7 +41,9 @@ const baseAssignment = {
   id: 1,
   name: "Test Assignment",
   review_rubric_varies_by_round: true,
+  review_rubric_varies_by_role: false,
   number_of_review_rounds: 2,
+  assignment_duties: [],
   assignment_questionnaires: [
     { id: 10, used_in_round: 1, questionnaire: { id: 101, name: "Round 1 Rubric" } },
     { id: 11, used_in_round: 2, questionnaire: { id: 102, name: "Round 2 Rubric" } },
@@ -91,6 +93,90 @@ describe("AssignmentEditor rubrics tab", () => {
 
     const allOptions = screen.getAllByRole("option").map((opt) => opt.textContent);
     expect(allOptions).toContain("Unlinked Rubric");
+  });
+
+  it("adds teammate review rows per role when role-based review is enabled", () => {
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_role: true,
+      assignment_duties: [
+        { duty_id: 1, duty_name: "Frontend", max_members_for_duty: 1 },
+        { duty_id: 2, duty_name: "Backend", max_members_for_duty: 1 },
+      ],
+    };
+
+    render(<AssignmentEditor mode="update" />);
+
+    expect(screen.getByText("Teammate Review for Frontend")).toBeInTheDocument();
+    expect(screen.getByText("Teammate Review for Backend")).toBeInTheDocument();
+  });
+
+  it("shows role assignment controls with existing roles", () => {
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_role: true,
+      assignment_duties: [
+        { duty_id: 1, duty_name: "Frontend", max_members_for_duty: 2 },
+      ],
+    };
+
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Review strategy" }));
+
+    expect(screen.getByText("Assign existing role")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create a new role" })).toBeInTheDocument();
+    expect(screen.getByText("Frontend")).toBeInTheDocument();
+    expect(screen.getByLabelText("Is role based?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add Role to Assignment" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create Role" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
+  });
+
+  it("hides role assignment controls when role-based review is disabled", () => {
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_role: false,
+      assignment_duties: [
+        { duty_id: 1, duty_name: "Frontend", max_members_for_duty: 2 },
+      ],
+    };
+
+    render(<AssignmentEditor mode="update" />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Review strategy" }));
+
+    expect(screen.queryByText("Assign existing role")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add Role to Assignment" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create a new role" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create Role" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remove" })).not.toBeInTheDocument();
+  });
+
+  it("does not add role-based teammate review rows when role-based review is disabled", () => {
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_role: false,
+      assignment_duties: [
+        { duty_id: 1, duty_name: "Frontend", max_members_for_duty: 1 },
+      ],
+    };
+
+    render(<AssignmentEditor mode="update" />);
+
+    expect(screen.queryByText("Teammate Review for Frontend")).not.toBeInTheDocument();
+  });
+
+  it("does not add role-based teammate review rows when no roles are assigned", () => {
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_role: true,
+      assignment_duties: [],
+    };
+
+    render(<AssignmentEditor mode="update" />);
+
+    expect(screen.queryByText(/Teammate Review for/i)).not.toBeInTheDocument();
   });
 
 });
