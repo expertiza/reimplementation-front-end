@@ -2,6 +2,7 @@
   import { Formik, Field, Form, ErrorMessage } from "formik";
   import { Button } from 'react-bootstrap';
   import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
+  import { QuestionItemTypes } from "./QuestionnaireUtils";
   import * as Yup from "yup";
   import useAPI from "hooks/useAPI";
 
@@ -9,13 +10,14 @@
   const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
 
     const { data: itemTypes, sendRequest: fetchItemTypes } = useAPI();
+    const availableItemTypes = (itemTypes?.data?.map((t: any) => t.name) as string[])?.length
+      ? (itemTypes.data.map((t: any) => t.name) as string[])
+      : QuestionItemTypes;
   
 
     useEffect(() => {
-          
-            fetchItemTypes({ url: "/item_types" });
-          console.log(itemTypes?.data);
-        }, [fetchItemTypes]);
+      fetchItemTypes({ url: "/questions/types" });
+    }, [fetchItemTypes]);
       
 
     const itemFields = Yup.object().shape({
@@ -177,7 +179,12 @@
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray
+              values={values}
+              errors={errors}
+              touched={touched}
+              itemTypes={availableItemTypes}
+            />
 
             <br />
             <Button type="submit" variant="primary">

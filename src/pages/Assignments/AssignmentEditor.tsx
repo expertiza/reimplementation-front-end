@@ -2,9 +2,15 @@ import * as Yup from "yup";
 
 import { Button, Modal } from "react-bootstrap";
 import { Form, Formik, FormikHelpers } from "formik";
-import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
+import {
+  AUTHOR_FEEDBACK_RUBRIC_ROW_KEY,
+  IAssignmentFormValues,
+  TEAMMATE_REVIEW_RUBRIC_ROW_KEY,
+  getSpecialRubricQuestionnaireField,
+  transformAssignmentRequest,
+} from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
@@ -52,6 +58,17 @@ interface TopicData {
   createdAt?: string;
   updatedAt?: string;
 }
+
+interface TopicRubricMapping {
+  id: number;
+  questionnaire_id: number;
+  questionnaire_name?: string;
+  project_topic_id: number | null;
+  used_in_round: number | null;
+}
+
+const getTopicRubricMappingKey = (topicDatabaseId: number, usedInRound: number | null) =>
+  `${topicDatabaseId}-${usedInRound ?? "default"}`;
 
 const initialValues: IAssignmentFormValues = {
   name: "",
@@ -115,6 +132,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [calibrationSubmissions, setCalibrationSubmissions] = useState<any[]>([]);
 
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
+  const { data: topicRubricMappingsResponse, error: topicRubricMappingsError, sendRequest: fetchTopicRubricMappings } = useAPI();
+  const { error: saveTopicRubricError, sendRequest: saveTopicRubricMapping } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
   const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
   const { data: createResponse, error: createError, sendRequest: createTopic } = useAPI();
@@ -165,6 +184,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
+  const [topicRubricMappings, setTopicRubricMappings] = useState<TopicRubricMapping[]>([]);
+  const [pendingTopicRubricMappingKeys, setPendingTopicRubricMappingKeys] = useState<Set<string>>(new Set());
+  const pendingTopicRubricMappingKeysRef = useRef<Set<string>>(new Set());
 
 
    useEffect(() => {
@@ -291,6 +313,15 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }
     }, [id, fetchTopics]);
 
+  const refreshTopicRubricMappings = useCallback(() => {
+    if (!id) return Promise.resolve();
+    return fetchTopicRubricMappings({ url: `/assignment_questionnaires?assignment_id=${id}` });
+  }, [fetchTopicRubricMappings, id]);
+
+  useEffect(() => {
+    refreshTopicRubricMappings();
+  }, [refreshTopicRubricMappings]);
+
   const refreshAccessibleDuties = useCallback(() => {
     fetchAccessibleDuties({ url: `/duties/accessible_duties` });
   }, [fetchAccessibleDuties]);
@@ -343,6 +374,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           setTopicsLoading(false);
         }
       }, [topicsResponse]);
+
+  useEffect(() => {
+    if (topicRubricMappingsResponse?.data) {
+      const mappings = (topicRubricMappingsResponse.data || [])
+        .filter((mapping: any) => mapping.project_topic_id !== null && mapping.project_topic_id !== undefined);
+      setTopicRubricMappings(mappings);
+    }
+  }, [topicRubricMappingsResponse]);
     
       // Handle topics API errors
   useEffect(() => {
@@ -351,6 +390,18 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       setTopicsLoading(false);
     }
   }, [topicsApiError]);
+
+  useEffect(() => {
+    if (topicRubricMappingsError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: topicRubricMappingsError }));
+    }
+  }, [topicRubricMappingsError, dispatch]);
+
+  useEffect(() => {
+    if (saveTopicRubricError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: saveTopicRubricError }));
+    }
+  }, [saveTopicRubricError, dispatch]);
 
   const toggleDutySelection = useCallback((dutyId: number) => {
     setSelectedDutyIds((prev) =>
@@ -433,7 +484,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [dropTeamRequest]);
       
         const handleDeleteTopic = useCallback((topicIdentifier: string) => {
-          console.log(`Delete topic ${topicIdentifier}`);
           if (id) {
             deleteTopic({
               url: `/project_topics`,
@@ -447,7 +497,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, deleteTopic]);
       
         const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
-          console.log(`Edit topic DB id ${dbId}`, updatedData);
           updateTopic({
             url: `/project_topics/${dbId}`,
             method: 'PATCH',
@@ -466,7 +515,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, updateTopic]);
       
         const handleCreateTopic = useCallback((topicData: any) => {
-          console.log(`Create topic`, topicData);
           if (id) {
             createTopic({
               url: `/project_topics`,
@@ -488,9 +536,85 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, createTopic]);
       
         const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
-          console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
           // TODO: Implement partner ad application logic
         }, []);
+
+        const findTopicRubricMapping = useCallback((topicDatabaseId: number, usedInRound: number | null) => {
+          return topicRubricMappings.find((mapping) =>
+            Number(mapping.project_topic_id) === Number(topicDatabaseId) &&
+            (mapping.used_in_round ?? null) === (usedInRound ?? null)
+          );
+        }, [topicRubricMappings]);
+
+        const updateTopicRubricMappingPending = useCallback((key: string, isPending: boolean) => {
+          const nextKeys = new Set(pendingTopicRubricMappingKeysRef.current);
+          if (isPending) {
+            nextKeys.add(key);
+          } else {
+            nextKeys.delete(key);
+          }
+          pendingTopicRubricMappingKeysRef.current = nextKeys;
+          setPendingTopicRubricMappingKeys(nextKeys);
+        }, []);
+
+        const isTopicRubricMappingPending = useCallback((topicDatabaseId: number, usedInRound: number | null) => {
+          return pendingTopicRubricMappingKeys.has(getTopicRubricMappingKey(topicDatabaseId, usedInRound));
+        }, [pendingTopicRubricMappingKeys]);
+
+        const handleTopicRubricChange = useCallback(async (
+          topicDatabaseId: number,
+          questionnaireId: number | null,
+          usedInRound: number | null
+        ) => {
+          if (!id) return;
+
+          const mappingKey = getTopicRubricMappingKey(topicDatabaseId, usedInRound);
+          if (pendingTopicRubricMappingKeysRef.current.has(mappingKey)) return;
+
+          updateTopicRubricMappingPending(mappingKey, true);
+          const existingMapping = findTopicRubricMapping(topicDatabaseId, usedInRound);
+
+          try {
+            if (!questionnaireId) {
+              if (existingMapping) {
+                await saveTopicRubricMapping({
+                  url: `/assignment_questionnaires/${existingMapping.id}`,
+                  method: HttpMethod.DELETE,
+                });
+              }
+            } else if (existingMapping) {
+              await saveTopicRubricMapping({
+                url: `/assignment_questionnaires/${existingMapping.id}`,
+                method: HttpMethod.PATCH,
+                data: {
+                  assignment_questionnaire: {
+                    questionnaire_id: questionnaireId,
+                  },
+                },
+              });
+            } else {
+              await saveTopicRubricMapping({
+                url: `/assignment_questionnaires`,
+                method: HttpMethod.POST,
+                data: {
+                  assignment_questionnaire: {
+                    assignment_id: Number(id),
+                    questionnaire_id: questionnaireId,
+                    project_topic_id: topicDatabaseId,
+                    used_in_round: usedInRound,
+                  },
+                },
+              });
+            }
+
+            await refreshTopicRubricMappings();
+            dispatch(alertActions.showAlert({ variant: "success", message: "Topic rubric mapping saved successfully" }));
+          } catch {
+            // useAPI surfaces the request error through saveTopicRubricError.
+          } finally {
+            updateTopicRubricMappingPending(mappingKey, false);
+          }
+        }, [dispatch, findTopicRubricMapping, id, refreshTopicRubricMappings, saveTopicRubricMapping, updateTopicRubricMappingPending]);
       
 
 
@@ -580,10 +704,16 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       return;
     }
 
-    // validate sum of weights = 100%
-    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
+    // validate sum of weights = 100% only when the user has actually entered weights
+    const filledWeights = (values.weights || []).filter(
+      (weight: any) => weight !== "" && weight !== null && weight !== undefined
+    );
+    const totalWeight = filledWeights.reduce(
+      (acc: number, curr: any) => acc + Number(curr),
+      0
+    );
 
-    const hasWeights = (values.weights?.length ?? 0) > 0;
+    const hasWeights = filledWeights.length > 0;
 
     if (hasWeights && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
@@ -598,7 +728,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     }
     // to be used to display message when assignment is created
     assignmentData.name = values.name;
-    console.log(values);
     sendRequest({
       url: url,
       method: method,
@@ -624,6 +753,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     value: q.id,
   }));
 
+  const reviewRubricOptions = (assignmentData.questionnaires || [])
+    .filter((q: any) => q.questionnaire_type === "ReviewQuestionnaire")
+    .map((q: any) => ({
+      label: q.name,
+      value: q.id,
+    }));
+
   const reviewRounds = assignmentData.number_of_review_rounds;
 
   // Build initial form values from existing assignment data (update) or defaults (create)
@@ -634,8 +770,19 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   if (mode === "update") {
     // Prefill per-round questionnaire selections and ids
     (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
-      if (aq.used_in_round && aq.questionnaire) {
-        formInitialValues[`questionnaire_round_${aq.used_in_round}`] = aq.questionnaire.id;
+      const questionnaireId = aq.questionnaire_id ?? aq.questionnaire?.id;
+      if (!questionnaireId) return;
+
+      const specialRubricField = getSpecialRubricQuestionnaireField(
+        aq.used_in_round,
+        aq.questionnaire?.questionnaire_type ?? aq.questionnaire_type
+      );
+
+      if (specialRubricField) {
+        formInitialValues[specialRubricField.questionnaireField] = questionnaireId;
+        formInitialValues[specialRubricField.assignmentQuestionnaireIdField] = aq.id;
+      } else if (aq.used_in_round) {
+        formInitialValues[`questionnaire_round_${aq.used_in_round}`] = questionnaireId;
         formInitialValues[`assignment_questionnaire_id_${aq.used_in_round}`] = aq.id;
       }
     });
@@ -746,12 +893,19 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             topicsData={topicsData}
             topicsLoading={topicsLoading}
             topicsError={topicsError}
+            varyByTopic={!!formik.values.review_rubric_varies_by_topic}
+            varyByRound={!!formik.values.review_rubric_varies_by_round}
+            reviewRounds={formik.values.number_of_review_rounds || reviewRounds || 1}
+            reviewRubricOptions={reviewRubricOptions}
+            topicRubricMappings={topicRubricMappings}
             onTopicSettingChange={handleTopicSettingChange}
             onDropTeam={handleDropTeam}
             onDeleteTopic={handleDeleteTopic}
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
+            isTopicRubricMappingPending={isTopicRubricMappingPending}
+            onTopicRubricChange={handleTopicRubricChange}
             onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
                 />
               </Tab>
@@ -784,6 +938,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           return Array.from({ length: rounds }, (_, i) => ([
                             {
                               id: i + 1,
+                              rowKey: i + 1,
                               title: `Review round ${i + 1}:`,
                               questionnaire_options: questionnaireOptions,
                               selected_questionnaire: roundSelections[i + 1]?.id,
@@ -799,6 +954,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         return [
                           {
                             id: 0,
+                            rowKey: 0,
                             title: "Review rubric:",
                             questionnaire_options: questionnaireOptions,
                             selected_questionnaire: roundSelections[1]?.id,
@@ -813,6 +969,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       })(),
                       {
                         id: formik.values.number_of_review_rounds ?? 0,
+                        rowKey: AUTHOR_FEEDBACK_RUBRIC_ROW_KEY,
                         title: "Author feedback:",
                         questionnaire_options: [{ label: 'Standard author feedback', value: 'Standard author feedback' }],
                         questionnaire_type: 'dropdown',
@@ -824,6 +981,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       },
                       {
                         id: (formik.values.number_of_review_rounds ?? 0) + 1,
+                        rowKey: TEAMMATE_REVIEW_RUBRIC_ROW_KEY,
                         title: "Teammate review:",
                         questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
                         questionnaire_type: 'dropdown',
@@ -841,12 +999,26 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       },
                       {
                         cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
+                          (() => {
+                            const rubricRowKey = row.original.rowKey ?? row.original.id;
+                            let questionnaireFieldName = `questionnaire_round_${row.original.id}`;
+                            let questionnaireControlId = `assignment-questionnaire_${rubricRowKey}`;
+
+                            if (row.original.title === "Author feedback:") {
+                              questionnaireFieldName = "author_feedback_questionnaire";
+                            } else if (row.original.title === "Teammate review:") {
+                              questionnaireFieldName = "teammate_review_questionnaire";
+                            }
+
+                            return (
                           <FormSelect
-                            controlId={`assignment-questionnaire_${row.original.id}`}
-                            name={`questionnaire_round_${row.original.id}`}
+                            controlId={questionnaireControlId}
+                            name={questionnaireFieldName}
                             options={row.original.questionnaire_options || []}
-                          // Formik initialValues handles prefill via questionnaire_round_X fields
-                          />}
+                          // Formik initialValues handles prefill for review and special rubric fields.
+                          />
+                            );
+                          })()}
                           {row.original.questionnaire_type === 'tag_prompts' &&
                             <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
                               <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
@@ -858,24 +1030,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                             return <div style={{ marginRight: '10px' }} />;
                           }
 
-                          // Use distinct indices in the weights array so that
-                          // different rows (review rubric, author feedback,
-                          // teammate review, etc.) do not overwrite each other.
-                          let weightIndex: number;
-                          if (row.original.title === "Author feedback:") {
-                            weightIndex = 100; // separate slot for author feedback
-                          } else if (row.original.title === "Teammate review:") {
-                            weightIndex = 101; // separate slot for teammate review
-                          } else {
-                            weightIndex = row.original.id;
-                          }
+                          const rubricRowKey = row.original.rowKey ?? row.original.id;
 
                           return (
                             <div style={{ marginRight: '10px' }}>
                               <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
                                 <FormInput
-                                  controlId={`assignment-weight_${row.original.id}`}
-                                  name={`weights[${weightIndex}]`}
+                                  controlId={`assignment-weight_${rubricRowKey}`}
+                                  name={`weights[${rubricRowKey}]`}
                                   type="number"
                                 />
                                 %
@@ -886,8 +1048,24 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         accessorKey: `weights`, header: "Weight", enableSorting: false, enableColumnFilter: false
                       },
                       {
-                        cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
+                        cell: ({ row }) => {
+                          if (row.original.questionnaire_type !== 'dropdown') {
+                            return null;
+                          }
+
+                          const rubricRowKey = row.original.rowKey ?? row.original.id;
+
+                          return (
+                            <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
+                              <FormInput
+                                controlId={`assignment-notification_limit_${rubricRowKey}`}
+                                name={`notification_limits[${rubricRowKey}]`}
+                                type="number"
+                              />
+                              %
+                            </div>
+                          );
+                        },
                         accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
                       },
                     ]}
@@ -1265,7 +1443,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
             {/* Submit button */}
               <div className="mt-3 d-flex justify-content-start gap-2" style={{ alignItems: 'center' }}>
-                <Button type="submit" variant="outline-secondary">
+                <Button type="button" variant="outline-secondary" onClick={() => formik.submitForm()}>
                   Save
                 </Button> |
                 <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>

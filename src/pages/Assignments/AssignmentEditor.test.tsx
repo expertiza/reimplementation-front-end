@@ -3,7 +3,17 @@ import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { vi, beforeEach, describe, expect, it } from "vitest";
 import AssignmentEditor from "./AssignmentEditor";
-import { transformAssignmentRequest, IAssignmentFormValues } from "./AssignmentUtil";
+import {
+  AUTHOR_FEEDBACK_ASSIGNMENT_QUESTIONNAIRE_ID_FIELD,
+  AUTHOR_FEEDBACK_QUESTIONNAIRE_FIELD,
+  AUTHOR_FEEDBACK_RUBRIC_ROW_KEY,
+  IAssignmentFormValues,
+  TEAMMATE_REVIEW_ASSIGNMENT_QUESTIONNAIRE_ID_FIELD,
+  TEAMMATE_REVIEW_QUESTIONNAIRE_FIELD,
+  TEAMMATE_REVIEW_RUBRIC_ROW_KEY,
+  transformAssignmentRequest,
+  transformAssignmentResponse,
+} from "./AssignmentUtil";
 
 // Mock useAPI to avoid real network calls
 const sendRequestMock = vi.fn();
@@ -93,6 +103,40 @@ describe("AssignmentEditor rubrics tab", () => {
     expect(allOptions).toContain("Unlinked Rubric");
   });
 
+  it("uses distinct row keys for special rubric field names and control ids", () => {
+    render(<AssignmentEditor mode="update" />);
+
+    const getRow = (label: string) => {
+      const row = screen.getByText(label).closest("tr");
+      expect(row).not.toBeNull();
+      return row as HTMLElement;
+    };
+
+    const expectRubricFields = (
+      row: HTMLElement,
+      questionnaireName: string,
+      rowKey: number
+    ) => {
+      const questionnaire = within(row).getByRole("combobox") as HTMLSelectElement;
+      const numericInputs = within(row).getAllByRole("spinbutton") as HTMLInputElement[];
+
+      expect(questionnaire.name).toBe(questionnaireName);
+      expect(questionnaire.id).toBe(`assignment-questionnaire_${rowKey}`);
+      expect(numericInputs.map((input) => input.name)).toEqual([
+        `weights[${rowKey}]`,
+        `notification_limits[${rowKey}]`,
+      ]);
+      expect(numericInputs.map((input) => input.id)).toEqual([
+        `assignment-weight_${rowKey}`,
+        `assignment-notification_limit_${rowKey}`,
+      ]);
+    };
+
+    expectRubricFields(getRow("Review round 2:"), "questionnaire_round_2", 2);
+    expectRubricFields(getRow("Author feedback:"), AUTHOR_FEEDBACK_QUESTIONNAIRE_FIELD, AUTHOR_FEEDBACK_RUBRIC_ROW_KEY);
+    expectRubricFields(getRow("Teammate review:"), TEAMMATE_REVIEW_QUESTIONNAIRE_FIELD, TEAMMATE_REVIEW_RUBRIC_ROW_KEY);
+  });
+
 });
 
 describe("transformAssignmentRequest", () => {
@@ -166,6 +210,50 @@ describe("transformAssignmentRequest", () => {
     ]);
   });
 
+  it("serializes special rubric questionnaire fields", () => {
+    const values: IAssignmentFormValues = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      review_rubric_varies_by_round: true,
+      number_of_review_rounds: 2,
+      questionnaire_round_1: 101,
+      [AUTHOR_FEEDBACK_QUESTIONNAIRE_FIELD]: 301,
+      [AUTHOR_FEEDBACK_ASSIGNMENT_QUESTIONNAIRE_ID_FIELD]: 30,
+      [TEAMMATE_REVIEW_QUESTIONNAIRE_FIELD]: 401,
+      weights: [],
+      notification_limits: [],
+      use_date_updater: [],
+      submission_allowed: [],
+      review_allowed: [],
+      teammate_allowed: [],
+      metareview_allowed: [],
+      reminder: [],
+    };
+
+    const payload = JSON.parse(transformAssignmentRequest(values));
+
+    expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
+      { questionnaire_id: 101, used_in_round: 1 },
+      {
+        id: 30,
+        questionnaire_id: 301,
+        used_in_round: AUTHOR_FEEDBACK_RUBRIC_ROW_KEY,
+      },
+      {
+        questionnaire_id: 401,
+        used_in_round: TEAMMATE_REVIEW_RUBRIC_ROW_KEY,
+      },
+    ]);
+  });
+
   it("sets vary_by_round to false when checkbox is unchecked", () => {
     const values: IAssignmentFormValues = {
       id: 1,
@@ -193,5 +281,95 @@ describe("transformAssignmentRequest", () => {
     const payload = JSON.parse(transformAssignmentRequest(values));
 
     expect(payload.assignment.vary_by_round).toBe(false);
+  });
+
+  it("maps topic rubric variation to vary_by_topic", () => {
+    const values: IAssignmentFormValues = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      review_rubric_varies_by_topic: true,
+      weights: [],
+      notification_limits: [],
+      use_date_updater: [],
+      submission_allowed: [],
+      review_allowed: [],
+      teammate_allowed: [],
+      metareview_allowed: [],
+      reminder: [],
+    };
+
+    const payload = JSON.parse(transformAssignmentRequest(values));
+
+    expect(payload.assignment.vary_by_topic).toBe(true);
+  });
+});
+
+describe("transformAssignmentResponse", () => {
+  it("prefills topic rubric variation from vary_by_topic", () => {
+    const assignment = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      vary_by_topic: true,
+      num_review_rounds: 1,
+      due_dates: [],
+      assignment_questionnaires: [],
+    };
+
+    const values = transformAssignmentResponse(JSON.stringify(assignment));
+
+    expect(values.review_rubric_varies_by_topic).toBe(true);
+  });
+
+  it("prefills special rubric questionnaire fields from assignment questionnaires", () => {
+    const assignment = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      vary_by_topic: false,
+      num_review_rounds: 1,
+      due_dates: [],
+      assignment_questionnaires: [
+        {
+          id: 30,
+          questionnaire_id: 301,
+          used_in_round: AUTHOR_FEEDBACK_RUBRIC_ROW_KEY,
+        },
+        {
+          id: 40,
+          questionnaire_id: 401,
+          used_in_round: TEAMMATE_REVIEW_RUBRIC_ROW_KEY,
+        },
+      ],
+    };
+
+    const values = transformAssignmentResponse(JSON.stringify(assignment));
+
+    expect(values[AUTHOR_FEEDBACK_QUESTIONNAIRE_FIELD]).toBe(301);
+    expect(values[AUTHOR_FEEDBACK_ASSIGNMENT_QUESTIONNAIRE_ID_FIELD]).toBe(30);
+    expect(values[TEAMMATE_REVIEW_QUESTIONNAIRE_FIELD]).toBe(401);
+    expect(values[TEAMMATE_REVIEW_ASSIGNMENT_QUESTIONNAIRE_ID_FIELD]).toBe(40);
   });
 });
