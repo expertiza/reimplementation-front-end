@@ -24,6 +24,8 @@ export interface IAssignmentFormValues {
   review_topic_threshold?: number;
   maximum_number_of_reviews_per_submission?: number;
   review_strategy?: string;
+  instructor_grade_min_score?: number | null;
+  instructor_grade_max_score?: number | null;
   review_rubric_varies_by_round?: boolean;
   review_rubric_varies_by_topic?: boolean;
   review_rubric_varies_by_role?: boolean;
@@ -127,6 +129,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     review_topic_threshold: values.review_topic_threshold,
     maximum_number_of_reviews_per_submission: values.maximum_number_of_reviews_per_submission,
     review_strategy: values.review_strategy,
+    instructor_grade_min_score: values.instructor_grade_min_score ?? null,
+    instructor_grade_max_score: values.instructor_grade_max_score ?? null,
     review_rubric_varies_by_round: values.review_rubric_varies_by_round ?? false,
     review_rubric_varies_by_topic: values.review_rubric_varies_by_topic ?? false,
     review_rubric_varies_by_role: values.review_rubric_varies_by_role ?? false,

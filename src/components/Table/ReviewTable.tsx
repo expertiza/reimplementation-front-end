@@ -7,13 +7,12 @@
  * visible when there are many reviewer columns.
  */
 import React from "react";
-import { ReviewData, SectionHeaderData } from "./App";
-import { getColorClass, isHeader, RoundRow } from "./heatgridUtils";
+import { ReviewData, SectionHeaderData } from "../../pages/ViewTeamGrades/App";
+import { scoreToColor, isHeader, RoundRow } from "../../utils/heatgridUtils";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
-import styles from "./ViewTeamGrades.module.scss";
 
-interface FeedbackTableProps {
+interface ReviewTableProps {
   /** All rounds of review data — each round is a mixed array of ReviewData and SectionHeaderData */
   data: RoundRow[][];
   /**
@@ -47,7 +46,6 @@ const stickyNo: React.CSSProperties = {
   maxWidth: STICKY_NO_WIDTH,
   textAlign: "center",
   fontWeight: "bold",
-  // no right border here — the Question column's left border provides the single divider
   borderRight: "none",
 };
 
@@ -60,8 +58,8 @@ const stickyQ: React.CSSProperties = {
   width: STICKY_Q_WIDTH,
   minWidth: STICKY_Q_WIDTH,
   maxWidth: STICKY_Q_WIDTH,
-  borderLeft: "1px solid #ddd",   // single line between # and Question
-  borderRight: "2px solid #aaa",  // strong separator before reviewer columns
+  borderLeft: "1px solid #ddd",
+  borderRight: "2px solid #aaa",
 };
 
 const reviewerCell: React.CSSProperties = {
@@ -71,17 +69,20 @@ const reviewerCell: React.CSSProperties = {
   verticalAlign: "top",
 };
 
-/** Score displayed with a color that reflects its relative weight (see getColorClass). */
-const ColoredScore: React.FC<{ score: number; maxScore: number }> = ({ score, maxScore }) => (
+/** Color-coded score badge — circular, background relative to observed data range */
+const ScoreBadge: React.FC<{ score: number; maxScore: number; dataMin?: number; dataMax?: number }> = ({ score, maxScore, dataMin, dataMax }) => (
   <span
-    className={`score ${getColorClass(score, maxScore)}`}
-    style={{ fontWeight: "bold", fontSize: "13px" }}
+    style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      width: 24, height: 24, borderRadius: "50%",
+      backgroundColor: scoreToColor(score, maxScore, 0, dataMin, dataMax),
+      fontWeight: "bold", fontSize: "13px", color: "black",
+    }}
   >
     {score}
   </span>
 );
 
-/** One per-round feedback table */
 const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; totalRounds: number; isStudent: boolean }> = ({
   roundData,
   roundIndex,
@@ -89,15 +90,21 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
   isStudent,
 }) => {
   if (!roundData || roundData.length === 0) return null;
-  // Find the first scored row (skip any leading SectionHeader) to get reviewer count
   const firstScored = roundData.find(r => !isHeader(r)) as ReviewData | undefined;
   const numReviewers = firstScored?.reviews.length ?? 0;
+
+  // Relative coloring: map colors to the actual observed score range in this round.
+  const allScores = (roundData as any[]).flatMap((r: any) =>
+    Array.isArray(r.reviews) ? r.reviews.map((rv: any) => rv.score).filter((s: any) => typeof s === "number") : []
+  );
+  const dataMin = allScores.length ? Math.min(...allScores) : undefined;
+  const dataMax = allScores.length ? Math.max(...allScores) : undefined;
 
   return (
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ marginBottom: 8 }}>Round {roundIndex + 1}</h2>
 
-      {/* Outer wrapper: scrolls horizontally if there are too many reviewer columns to fit in the window */}
+      {/* Outer wrapper with horizontal scroll */}
       <div style={{ overflowX: "auto", position: "relative" }}>
         <table
           style={{
@@ -110,20 +117,11 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
         >
           <thead>
             <tr style={{ background: "#f0f0f0" }}>
-              {/* Sticky header: # — z-index 5 so it stays above body sticky cells (z-index 3) */}
-              <th
-                style={{
-                  ...stickyNo,
-                  background: "#f0f0f0",
-                  zIndex: 5,
-                  top: 0,
-                  fontWeight: "bold",
-                }}
-              >
+              <th style={{ ...stickyNo, background: "#f0f0f0", zIndex: 5, top: 0, fontWeight: "bold" }}>
                 #
               </th>
 
-              {/* Sticky header: Item */}
+              {/* Sticky header: Question */}
               <th
                 style={{
                   ...stickyQ,
@@ -135,21 +133,11 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
               >
                 Item
               </th>
-
-              {/* One column per reviewer */}
               {Array.from({ length: numReviewers }, (_, i) => {
                 const reviewerName = (firstScored?.reviews[i] as any)?.name || `Review ${i + 1}`;
                 const displayName = isStudent ? `Review ${i + 1}` : reviewerName;
                 return (
-                  <th
-                    key={i}
-                    style={{
-                      ...reviewerCell,
-                      background: "#f0f0f0",
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
+                  <th key={i} style={{ ...reviewerCell, background: "#f0f0f0", fontWeight: "bold", textAlign: "center" }}>
                     {displayName}
                   </th>
                 );
@@ -161,10 +149,6 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
             {(() => {
               let scoredRowIdx = 0;
               return roundData.map((row, idx) => {
-                // SectionHeader sentinel → heading row with sticky label.
-                // Split into two cells so the label stays fixed on horizontal scroll:
-                //   cell 1 — sticky, covers the # col + question col (68 + 340 px)
-                //   cell 2 — colSpan for all reviewer columns, scrolls away
                 if (isHeader(row)) {
                   return (
                     <tr key={`hdr-${idx}`}>
@@ -186,10 +170,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                       >
                         {row.txt}
                       </td>
-                      <td
-                        colSpan={numReviewers}
-                        style={{ background: "#fff", borderBottom: "1px solid #ddd" }}
-                      />
+                      <td colSpan={numReviewers} style={{ background: "#fff", borderBottom: "1px solid #ddd" }} />
                     </tr>
                   );
                 }
@@ -200,14 +181,9 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                 const bg = rowIdx % 2 === 0 ? "#fff" : "#f5f5f5";
                 return (
                   <tr key={idx} style={{ background: bg }}>
-                    {/* Sticky: # with circled max-score badge (omitted for binary maxScore===1 items) */}
+                    {/* Sticky: # — explicit opaque background prevents scrolling rows bleeding through */}
                     <td style={{ ...stickyNo, background: bg }}>
-                      <div className={styles.itemCell}>
-                        <span style={{ fontWeight: "bold" }}>{row.itemNumber}</span>
-                        {row.maxScore !== 1 && (
-                          <span className={styles.weightCircle}>{row.maxScore}</span>
-                        )}
-                      </div>
+                      {row.itemNumber}
                     </td>
 
                     {/* Sticky: Question text */}
@@ -221,7 +197,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                         {review.score !== undefined ? (
                           <>
                             <div>
-                              <ColoredScore score={review.score} maxScore={row.maxScore} />
+                              <ScoreBadge score={review.score} maxScore={row.maxScore} dataMin={dataMin} dataMax={dataMax} />
                             </div>
                             {review.comment && (
                               <div style={{ marginTop: 5, color: "#444", fontSize: "12px" }}>
@@ -235,9 +211,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                           </div>
                         ) : review.selections ? (
                           <ul style={{ margin: "4px 0", paddingLeft: 16, fontSize: "12px" }}>
-                            {review.selections.map((s, si) => (
-                              <li key={si}>{s}</li>
-                            ))}
+                            {review.selections.map((s, si) => <li key={si}>{s}</li>)}
                           </ul>
                         ) : review.selectedOption ? (
                           <div style={{ fontSize: "12px", fontWeight: "bold" }}>{review.selectedOption}</div>
@@ -267,7 +241,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
   );
 };
 
-const FeedbackTable: React.FC<FeedbackTableProps> = ({ data, roundSelected }) => {
+const ReviewTable: React.FC<ReviewTableProps> = ({ data, roundSelected }) => {
   const role = useSelector((state: RootState) => state.authentication.user?.role);
   const isStudent = role === "Student";
 
@@ -278,7 +252,6 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ data, roundSelected }) =>
   return (
     <div>
       {data.map((roundData: RoundRow[], roundIndex: number) => {
-        // roundSelected: -1 = all, otherwise 1-indexed round number
         if (roundSelected !== -1 && roundIndex !== roundSelected - 1) return null;
         return (
           <RoundFeedbackTable
@@ -294,4 +267,4 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({ data, roundSelected }) =>
   );
 };
 
-export default FeedbackTable;
+export default ReviewTable;

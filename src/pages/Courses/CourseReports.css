@@ -1,0 +1,56 @@
+/*
+ * Shared table styles for course report pages (GradeSummary, AllReviews).
+ * Uses border-collapse: separate so the sticky Student column can have its
+ * own background without bleeding through the scrollable body behind it.
+ */
+
+.course-report-table-wrapper {
+  overflow-x: auto;
+  position: relative;
+}
+
+.course-report-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.course-report-table th {
+  padding: 5px 8px;
+  border: 0.5px solid #c8cdd2;
+  background: #f0f0f0;
+  font-weight: bold;
+  font-size: 12px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.course-report-table td {
+  padding: 4px 8px;
+  border: 0.5px solid #c8cdd2;
+  vertical-align: top;
+  font-size: 12px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.course-report-table tbody tr:nth-child(odd)  { background: #fff; }
+.course-report-table tbody tr:nth-child(even) { background: #f5f5f5; }
+
+/* Sticky first column — inherits row background so alternating colors show through */
+.course-report-sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 140px;
+  border-right: 2px solid #aaa !important;
+  background: inherit;
+}
+
+/* Header sticky cell needs a higher z-index and explicit background */
+.course-report-table thead .course-report-sticky-col {
+  background: #f0f0f0;
+  z-index: 5;
+}

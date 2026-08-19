@@ -25,18 +25,19 @@
  *    other components (c1–c5, score, review-block, etc.) are wrapped in `:global {}` so
  *    they keep their original names after hashing.
  *
- * 5. Reviewer anonymisation: `authUser` from Redux is still used to check whether the
+ * 5. Reviewer anonymization: `authUser` from Redux is still used to check whether the
  *    logged-in user is a Student — if so, reviewer names are replaced with "Review N".
  */
 import React, { useEffect, useState } from "react";
 import ReviewTableRow from "./ReviewTableRow";
 import RoundSelector from "./RoundSelector";
 import axiosClient from "../../utils/axios_client";
-import { calculateAverages, normalizeReviewDataArray, convertBackendRoundArray, isHeader, RoundRow } from "./heatgridUtils";
+import { calculateAverages, normalizeReviewDataArray, convertBackendRoundArray, isHeader, RoundRow } from "../../utils/heatgridUtils";
 import { TeamMember } from "./App";
 import styles from "./ViewTeamGrades.module.scss";
 import { Link, useSearchParams } from "react-router-dom";
-import FeedbackTable from "./FeedbackTable";
+import ReviewTable from "../../components/Table/ReviewTable";
+import ToolTip from "../../components/ToolTip";
 import { useSelector } from "react-redux";
 
 // Truncatable text component
@@ -69,7 +70,7 @@ const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text,
   );
 };
 
-const ReviewTable: React.FC = () => {
+const TeamGrades: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [currentRound, setCurrentRound] = useState<number>(-1);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -174,6 +175,14 @@ const ReviewTable: React.FC = () => {
     const normalizedData = normalizeReviewDataArray(roundData);
     const { averagePeerReviewScore, sortedData } = calculateAverages(normalizedData, "none");
 
+    // Compute the observed score range for this round so colors are relative:
+    // the highest score maps to green regardless of the rubric's absolute maximum.
+    const allScores = (normalizedData as any[]).flatMap((r: any) =>
+      Array.isArray(r.reviews) ? r.reviews.map((rv: any) => rv.score).filter((s: any) => typeof s === "number") : []
+    );
+    const dataMin = allScores.length ? Math.min(...allScores) : undefined;
+    const dataMax = allScores.length ? Math.max(...allScores) : undefined;
+
     const roundsSource = roundsData || [];
 
     // Find the first non-header row to determine reviewer count
@@ -219,7 +228,7 @@ const ReviewTable: React.FC = () => {
                   textAlign: "left",
                   borderLeft: "1px solid #ddd", borderRight: "2px solid #aaa",
                 }}>
-                  Question
+                  Item
                 </th>
 
                 {/* Reviewer columns, one for each reviewer */}
@@ -276,7 +285,7 @@ const ReviewTable: React.FC = () => {
                     );
                   }
                   // Scored row — use its own index for alternating background
-                  return <ReviewTableRow key={index} row={row} rowIndex={scoredRowIdx++} />;
+                  return <ReviewTableRow key={index} row={row} rowIndex={scoredRowIdx++} dataMin={dataMin} dataMax={dataMax} />;
                 });
               })()}
             </tbody>
@@ -304,8 +313,7 @@ const ReviewTable: React.FC = () => {
 
   return (
     <div className={styles['page-wrapper']} style={{ padding: "24px 96px" }}>
-      <h2><strong>Summary report{assignmentName ? `: ${assignmentName}` : ""}</strong></h2>
-      <p style={{ marginTop: 0, color: "#666", fontSize: "13px" }}>Peer review scores for your team's work</p>
+      <h2><strong>Team Grades</strong></h2>
       <h5><strong>Team:</strong> {teamName || "Loading..."}</h5>
       {fetchError && (
         <div className="mb-3">
@@ -348,6 +356,15 @@ const ReviewTable: React.FC = () => {
       <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", marginBottom: "12px" }}>
         <RoundSelector currentRound={currentRound} handleRoundChange={handleRoundChange} roundsData={roundsData} />
 
+        {/* Info tooltip — only shown in Scores view, explains relative coloring */}
+        {viewMode === 'scores' && (
+          <ToolTip
+            id="heatgrid-coloring-info"
+            placement="right"
+            info="Cell colors are relative to the scores received in each round — the highest observed score maps to green and the lowest to red, independent of the rubric's maximum points."
+          />
+        )}
+
         {/* Scores / Feedback toggle — height matches the round dropdown (36px) */}
         <div style={{
           display: "flex",
@@ -388,7 +405,7 @@ const ReviewTable: React.FC = () => {
             ? roundsData.map((roundData: any, index: number) => renderTable(roundData, index))
             : renderTable(roundsData[currentRound], currentRound)
         ) : (
-          <FeedbackTable data={roundsData} roundSelected={feedbackRoundSelected} />
+          <ReviewTable data={roundsData} roundSelected={feedbackRoundSelected} />
         )
       ) : (
         <div style={{ padding: "20px", textAlign: "center" }}>
@@ -409,4 +426,4 @@ const ReviewTable: React.FC = () => {
   );
 };
 
-export default ReviewTable;
+export default TeamGrades;

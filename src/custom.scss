@@ -159,3 +159,14 @@ $theme-colors: (
 
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';
+
+// Heat grid color classes — defined after Bootstrap so they win the cascade.
+// Shared by ReviewTable, ReviewTableRow, ScoreWidgets, and course report tables.
+// getColorClass() and getHeatColorClass() in src/utils/heatgridUtils.ts return these class names.
+.c0 { background-color: #d3d3d3 !important; }
+.c1 { background-color: #ff8080 !important; }
+.c2 { background-color: #FD992D !important; }
+.c3 { background-color: #FFEC8B !important; }
+.c4 { background-color: #BCED91 !important; }
+.c5 { background-color: #2DE636 !important; }
+.cf { background-color: #FFFFFF !important; }

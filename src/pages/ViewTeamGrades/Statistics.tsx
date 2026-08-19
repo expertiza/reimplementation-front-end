@@ -1,6 +1,6 @@
 // Statistics.tsx
 import React, { useEffect } from "react";
-import { calculateAverages, normalizeReviewDataArray } from "./heatgridUtils";
+import { calculateAverages, normalizeReviewDataArray } from "../../utils/heatgridUtils";
 import styles from "./ViewTeamGrades.module.scss"
 
 //props for statistics component

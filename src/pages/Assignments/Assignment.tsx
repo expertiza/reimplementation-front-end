@@ -75,11 +75,10 @@ const Assignments = () => {
       <Outlet />
       <main>
         <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
-            <Col className="text-center">
-              <h1>Manage Assignments</h1>
+          <Row className="mt-4 mb-4">
+            <Col>
+              <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>Manage Assignments</h1>
             </Col>
-            <hr />
           </Row>
           <Row className="mb-3">
             <Col md={{ span: 1, offset: 11 }}>

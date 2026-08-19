@@ -17,6 +17,8 @@ import Logout from "./pages/Authentication/Logout";
 import Courses from "./pages/Courses/Course";
 import CourseEditor from "./pages/Courses/CourseEditor";
 import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseUtil";
+import CourseGradeSummaryPage from "./pages/Courses/CourseGradeSummaryPage";
+import CourseAllReviewsPage from "./pages/Courses/CourseAllReviewsPage";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
 import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
@@ -40,7 +42,7 @@ import { loadTAs } from "./pages/TA/TAUtil";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import ReviewTable from "./pages/ViewTeamGrades/ReviewTable";
+import TeamGrades from "./pages/ViewTeamGrades/TeamGrades";
 import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
@@ -57,6 +59,8 @@ import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements'
 import Duties from "./pages/Duties/Duties";
 import DutyEditor from "./pages/Duties/DutyEditor";
 import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
+import TeammateReviewReportPage from "./pages/Reviews/TeammateReviewReportPage";
+import ReviewDetailPage from "./pages/Reviews/ReviewDetailPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -70,7 +74,7 @@ function App() {
 
         {
           path: "view-team-grades",
-          element: <ProtectedRoute element={<ReviewTable />} />,
+          element: <ProtectedRoute element={<TeamGrades />} />,
         },
         {
           path: "edit-questionnaire",
@@ -321,6 +325,14 @@ function App() {
           path: "assignments/:id/review",
           element: <ReviewReportPage />,
         },
+        {
+          path: "assignments/:id/teammate-review",
+          element: <TeammateReviewReportPage />,
+        },
+        {
+          path: "review-detail",
+          element: <ReviewDetailPage />,
+        },
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
@@ -348,6 +360,15 @@ function App() {
               ],
             },
           ],
+        },
+
+        {
+          path: "courses/:courseId/course-report/grade-summary",
+          element: <ProtectedRoute element={<CourseGradeSummaryPage />} leastPrivilegeRole={ROLE.TA} />,
+        },
+        {
+          path: "courses/:courseId/course-report/all-reviews",
+          element: <ProtectedRoute element={<CourseAllReviewsPage />} leastPrivilegeRole={ROLE.TA} />,
         },
 
         {

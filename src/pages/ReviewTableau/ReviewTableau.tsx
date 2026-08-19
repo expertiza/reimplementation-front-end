@@ -292,7 +292,7 @@ const ReviewTableau: React.FC = () => {
                   <Table
                     data={tableData}
                     columns={columns}
-                    disableGlobalFilter={true}
+                   
                     showGlobalFilter={false}
                     showColumnFilter={false}
                     showPagination={true}

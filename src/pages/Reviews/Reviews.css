@@ -172,7 +172,6 @@ body {
 .review-report-selector {
   display: flex;
   align-items: center;
-  gap: 0;
   margin-bottom: 15px;
 }
 
@@ -186,25 +185,23 @@ body {
   height: 38px;
 }
 
-.review-report-selector .btn {
+.review-report-selector .btn-back-assignment {
   height: 38px;
-  padding: 6px 12px;
-  border-radius: 0 4px 4px 0;
-  border-left: 1px solid #ced4da;
-  border-right: 1px solid #ced4da;
-  border-top: 1px solid #ced4da;
-  border-bottom: 1px solid #ced4da;
-  color: #212529;
-  background-color: #fff;
-  border-color: #ced4da;
+  padding: 6px 16px;
+  border-radius: 4px;
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
 }
 
-.review-report-selector .btn:hover,
-.review-report-selector .btn:focus,
-.review-report-selector .btn:active {
-  color: #212529 !important;
-  background-color: #fff !important;
-  border-color: #ced4da !important;
+.review-report-selector .btn-back-assignment:hover,
+.review-report-selector .btn-back-assignment:focus,
+.review-report-selector .btn-back-assignment:active {
+  background-color: #0b5ed7 !important;
+  color: #fff !important;
+  border: none !important;
 }
 
 .review-report-table-wrapper .container {
@@ -212,9 +209,11 @@ body {
   width: 100%;
 }
 
+
 .review-report-table-wrapper .custom-table-layout {
   table-layout: auto;
 }
+
 
 .review-report-table-wrapper .custom-table-layout tbody td {
   font-size: 15px;
@@ -259,4 +258,35 @@ body {
 .review-report-page h2 {
   font-size: 1.5rem;
   color: #333;
+}
+
+.reviewer-group-start td {
+  border-top: 2px solid #adb5bd !important;
+}
+
+/* Per-reviewer-group row coloring — replaces Bootstrap's per-row striping so all cells
+   within a reviewer group share the same background, alternating between groups.
+   Specificity (0,2,1) beats Bootstrap's .table > :not(caption) > * > * (0,1,1). */
+.review-report-table-wrapper table .reviewer-group-row-even td {
+  --bs-table-bg-type: transparent;
+}
+.review-report-table-wrapper table .reviewer-group-row-odd td {
+  --bs-table-bg-type: rgba(0, 0, 0, 0.05);
+}
+/* Hover highlight on the spanned cell when any row in that reviewer's group is hovered.
+   Uses td.class (specificity 0,2,2) to beat .reviewer-group-row-odd td (also 0,2,2) by source order. */
+.review-report-table-wrapper table td.reviewer-spanned-hovered {
+  --bs-table-bg-type: rgba(0, 0, 0, 0.075);
+}
+
+
+.teammate-review-report-page {
+  line-height: 1.4;
+}
+
+.teammate-review-report-page .review-report-table-wrapper table th,
+.teammate-review-report-page .review-report-table-wrapper table td {
+  font-size: 13px;
+  padding: 6px 24px 6px 8px;
+  line-height: 1.4;
 }

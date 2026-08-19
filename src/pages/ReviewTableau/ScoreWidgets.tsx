@@ -1,5 +1,5 @@
 import React from 'react';
-import { getColorClass } from '../ViewTeamGrades/heatgridUtils';
+import { scoreToColor } from '../../utils/heatgridUtils';
 import { ScoreWidgetProps } from '../../types/reviewTableau';
 import '../ViewTeamGrades/ViewTeamGrades.module.scss';
 
@@ -13,21 +13,22 @@ export const ScoreWidget: React.FC<ScoreWidgetProps> = ({
   comment, 
   hasComment = false 
 }) => {
-  const colorClass = getColorClass(score, maxScore);
+  const bgColor = scoreToColor(score, maxScore);
   const title = comment ? `Score: ${score}/${maxScore}\nComment: ${comment}` : `Score: ${score}/${maxScore}`;
-  
+
   return (
     <div className="score-widget-container" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
       <div className="circle-container" title={title}>
-        <span 
-          className={`grade-circle ${colorClass} ${hasComment ? 'underlined' : ''}`}
-          style={{ 
+        <span
+          className={`grade-circle ${hasComment ? 'underlined' : ''}`}
+          style={{
+            backgroundColor: bgColor,
             cursor: hasComment ? 'pointer' : 'default',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '14px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           {score}

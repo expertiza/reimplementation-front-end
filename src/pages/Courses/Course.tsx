@@ -14,7 +14,6 @@ import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 import { formatDate, mergeDataAndNamesAndInstructors } from "./CourseUtil";
 import CourseAssignments from "./CourseAssignments";
-import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
 /**
  * Courses Component: Displays and manages courses, including CRUD operations.
