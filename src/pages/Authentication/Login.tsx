@@ -8,7 +8,8 @@ import { authenticationActions } from "../../store/slices/authenticationSlice";
 import { alertActions } from "../../store/slices/alertSlice";
 import { setAuthToken } from "../../utils/auth";
 import * as Yup from "yup";
-import axios from "axios";
+import axiosClient from "utils/axios_client";
+import OidcModal from "../../components/Modals/OidcModal";
 
 /**
  * @author Ankur Mundra on June, 2023
@@ -29,8 +30,8 @@ const Login: React.FC = () => {
   const location = useLocation();
 
   const onSubmit = (values: ILoginFormValues, submitProps: FormikHelpers<ILoginFormValues>) => {
-    axios
-      .post("http://localhost:3002/login", values)
+    axiosClient
+      .post("/login", values, { skipAuth: true })
       .then((response) => {
         const payload = setAuthToken(response.data.token);
 
@@ -98,6 +99,7 @@ const Login: React.FC = () => {
             );
           }}
         </Formik>
+        <OidcModal />
       </Col>
     </Container>
   );
