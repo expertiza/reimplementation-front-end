@@ -9,6 +9,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { ICourseResponse, ROLE } from "../../utils/interfaces";
+import { hasAllPrivilegesOf } from "../../utils/util";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
@@ -181,8 +182,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
               </h1>
             </Col>
           </Row>
-          {/* Admin doenot have the option to create a course but he can create an assignment */}
-          {auth.user?.role === ROLE.INSTRUCTOR && (
+          {hasAllPrivilegesOf(auth.user?.role, ROLE.INSTRUCTOR) && (
             <Row>
               <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
                 <Button variant="outline-success" onClick={() => navigate("new")}>
