@@ -156,11 +156,12 @@ useEffect(() => {
           
           
          initialValues={{
+          ...initialValues,
           ...courseData,
-          private: courseData.private || [], // Ensure array default
-          institution_id: courseData.institution_id 
+          private: courseData.private || [],
+          institution_id: courseData.institution_id
             ?? (auth.user?.institution_id ?? initialValues.institution_id),
-          instructor_id: courseData.instructor_id 
+          instructor_id: courseData.instructor_id
             ?? (auth.user?.id ?? initialValues.instructor_id),
         }}
             
