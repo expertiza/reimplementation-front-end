@@ -196,7 +196,7 @@ useEffect(() => {
                   options={
                     users?.data
                       ?.map((user: any) => ({
-                        label: user.fullName,
+                        label: user.name,
                         value: String(user.id),
                       })) || []
                   }

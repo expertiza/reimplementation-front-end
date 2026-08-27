@@ -226,7 +226,7 @@ export interface IInstitutionResponse {
 
 export interface IInstructorResponse {
   id: number;
-  fullName: string;
+  name: string;
 }
 
 export enum ROLE {

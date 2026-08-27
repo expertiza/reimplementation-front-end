@@ -148,7 +148,7 @@ export const mergeDataAndNamesAndInstructors = (data: ICourseResponse[], institu
 
     // Find instructor data from instructor id of course
     const matchingInstructor = instructorNames.find((instructorObj) => instructorObj.id === dataObj.instructor_id);
-    const instructorData = matchingInstructor ? { id: matchingInstructor.id, name: matchingInstructor.fullName } : {};
+    const instructorData = matchingInstructor ? { id: matchingInstructor.id, name: matchingInstructor.name } : {};
 
     // Merge course data with institution and instructor data
     return {
