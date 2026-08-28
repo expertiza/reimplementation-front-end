@@ -1,48 +1,90 @@
-import {createColumnHelper, Row} from "@tanstack/react-table";
-import {MdOutlineDeleteForever as Remove} from "react-icons/md";
-import {BsPencilFill as Edit} from "react-icons/bs";
-import {Button} from "react-bootstrap";
-import {IRole} from "../../utils/interfaces";
+// IMPORTING NECESSARY MODULES AND COMPONENTS FROM DEPENDENCIES
+import { createColumnHelper, Row } from "@tanstack/react-table";
+import { MdOutlineDeleteForever as Remove } from "react-icons/md";
+import { BsPencilFill as Edit } from "react-icons/bs";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { IRole } from "../../utils/interfaces";
 
-/**
- * @author Ankur Mundra on June, 2023
- */
-
+// DEFINING THE FUNCTION TYPE FOR EVENT HANDLERS
 type Fn = (row: Row<IRole>) => void;
+
+// INITIALIZING THE COLUMN HELPER WITH THE IROLE INTERFACE FOR STRONG TYPING
 const columnHelper = createColumnHelper<IRole>();
-export const roleColumns = (handleEdit: Fn, handleDelete: Fn) => [
+
+// REUSABLE COMPONENT FOR BUTTON WITH TOOLTIP IN A TABLE CELL
+const OverlayTriggerButton = ({
+  id,
+  variant,
+  size,
+  onClick,
+  children,
+  tooltip,
+}: {
+  id: string;
+  variant: string;
+  size: "sm" | "lg" | undefined;
+  onClick: () => void;
+  children: React.ReactNode;
+  tooltip: string;
+}) => (
+  // RENDERING A BUTTON WITH TOOLTIP FOR BETTER USER INTERACTION
+  <OverlayTrigger placement="top" overlay={<Tooltip id={`tooltip-${id}`}>{tooltip}</Tooltip>}>
+    <Button variant={variant} size={size} onClick={onClick}>
+      {children}
+    </Button>
+  </OverlayTrigger>
+);
+
+export const roleColumns = (handleEdit: Fn, handleDelete: Fn, parentNames: Record<number, string>) => [
   columnHelper.accessor("id", {
     header: "Id",
-    enableColumnFilter: false,
-    enableSorting: false,
+    enableColumnFilter: false, // DISABLING FILTER FOR ID COLUMN
+    enableSorting: false, // DISABLING SORTING FOR ID COLUMN
   }),
 
+  // COLUMN FOR DISPLAYING ROLE NAME WITH SORTING ENABLED
   columnHelper.accessor("name", {
     header: "Role Name",
     enableSorting: true,
   }),
 
+  // COLUMN FOR DISPLAYING ROLE PARENT ID WITH SORTING ENABLED
   columnHelper.accessor("parent_id", {
-    header: "Parent Id",
+    header: "Parent Id",  
     enableSorting: true,
     enableColumnFilter: false,
+  }),
+
+  columnHelper.display({
+    id: "parent_name",
+    header: "Parent Name",
+    cell: ({ row }) => parentNames[row.original.parent_id] || " ", // Render parent name or " " if not found
   }),
   columnHelper.display({
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
+      // ACTION BUTTONS WITH TOOLTIPS FOR EDIT AND DELETE
       <>
-        <Button variant="outline-warning" size="sm" onClick={() => handleEdit(row)}>
-          <Edit />
-        </Button>
-        <Button
+        <OverlayTriggerButton
+          id={`edit-${row.original.id}`}
+          variant="outline-warning"
           size="sm"
+          onClick={() => handleEdit(row)}
+          tooltip="Edit"
+        >
+          <Edit />
+        </OverlayTriggerButton>
+
+        <OverlayTriggerButton
+          id={`delete-${row.original.id}`}
           variant="outline-danger"
-          className="ms-sm-2"
+          size="sm"
           onClick={() => handleDelete(row)}
+          tooltip="Delete"
         >
           <Remove />
-        </Button>
+        </OverlayTriggerButton>
       </>
     ),
   }),

@@ -23,16 +23,16 @@ const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
     .min(3, "Institution name must be at least 3 characters")
-    .max(50, "Institution name must be at most 36 characters"),
+    .max(50, "Institution name must be at most 36 characters")
+    .matches(/^[^\d]+$/, "Institution name cannot be numeric"),
 });
 
 const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
   const { data: institutionResponse, error, sendRequest } = useAPI();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const institution: any = useLoaderData();
+  const institutionData: any = useLoaderData();
 
-  // Close the modal if the institution is updated successfully and navigate to the institutions page
   useEffect(() => {
     if (
       institutionResponse &&
@@ -49,12 +49,11 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
     }
   }, [dispatch, mode, navigate, institutionResponse]);
 
-  // Show the error message if the institution is not updated successfully
   useEffect(() => {
     error && dispatch(alertActions.showAlert({ variant: "danger", message: error }));
   }, [error, dispatch]);
 
-  const onSubmit = (values: IInstitution, submitProps: FormikHelpers<IInstitution>) => {
+  const onSubmit = (values: IInstitution, { setSubmitting }: FormikHelpers<IInstitution>) => {
     let method: HttpMethod = HttpMethod.POST;
     let url: string = "/institutions";
 
@@ -64,11 +63,11 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
     }
 
     sendRequest({
-      url: url,
-      method: method,
+      url,
+      method,
       data: values,
     });
-    submitProps.setSubmitting(false);
+    setSubmitting(false);
   };
 
   const handleClose = () => navigate("/administrator/institutions");
@@ -76,37 +75,34 @@ const InstitutionEditor: React.FC<IEditor> = ({ mode }) => {
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? "Update " : "Create "}Institution</Modal.Title>
+        <Modal.Title>{mode === "update" ? "Update Institution" : "Create Institution"}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {error && <p className="text-danger">{error}</p>}
         <Formik
-          initialValues={mode === "update" ? institution : initialValues}
+          initialValues={mode === "update" ? institutionData : initialValues}
           onSubmit={onSubmit}
           validationSchema={validationSchema}
           validateOnChange={false}
           enableReinitialize={true}
         >
-          {(formik) => {
-            return (
-              <Form>
-                <FormInput controlId="institution-name" label="Institution Name" name="name" />
-                <Modal.Footer>
-                  <Button variant="outline-secondary" onClick={handleClose}>
-                    Close
-                  </Button>
-
-                  <Button
-                    variant="outline-success"
-                    type="submit"
-                    disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-                  >
-                    {mode === "update" ? "Update " : "Create "}Institution
-                  </Button>
-                </Modal.Footer>
-              </Form>
-            );
-          }}
+          {(formik) => (
+            <Form>
+              <FormInput controlId="institution-name" label="Institution Name" name="name" />
+              <Modal.Footer>
+                <Button variant="outline-secondary" onClick={handleClose}>
+                  Close
+                </Button>
+                <Button
+                  variant="outline-success"
+                  type="submit"
+                  disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
+                >
+                  {mode === "update" ? "Update Institution" : "Create Institution"}
+                </Button>
+              </Modal.Footer>
+            </Form>
+          )}
         </Formik>
       </Modal.Body>
     </Modal>
