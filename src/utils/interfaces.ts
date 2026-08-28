@@ -208,6 +208,7 @@ export interface ICourseResponse{
   institution: { id: number | null; name: string | null };
   instructor: { id: number | null; name: string | null };
   date_format_pref: string;
+  assignments?: IAssignmentResponse[];
 }
 
 export interface ICourseRequest{

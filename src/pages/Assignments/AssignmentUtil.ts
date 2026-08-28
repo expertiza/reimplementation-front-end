@@ -275,3 +275,132 @@ export async function loadAssignment({ params }: any) {
 
   return { ...assignmentData, questionnaires, weights: [] };
 }
+
+interface TeamUserApi {
+  id: number;
+  name?: string;
+  full_name?: string;
+  fullName?: string;
+}
+
+interface TeamMemberApi {
+  id?: number;
+  user?: TeamUserApi;
+  name?: string;
+  full_name?: string;
+  fullName?: string;
+}
+
+interface TeamApi {
+  id: number;
+  name: string;
+  users?: TeamUserApi[];
+  members?: TeamMemberApi[];
+}
+
+interface ParticipantApi {
+  id: number;
+  user?: TeamUserApi;
+}
+
+interface CreateTeamsParticipant {
+  id: string | number;
+  username: string;
+  fullName?: string;
+  teamName?: string | null;
+}
+
+interface CreateTeamsTeam {
+  id: string | number;
+  name: string;
+  members: CreateTeamsParticipant[];
+}
+
+interface CreateTeamsLoaderData {
+  contextType: 'assignment' | 'course';
+  contextName: string;
+  initialTeams: CreateTeamsTeam[];
+  initialUnassigned: CreateTeamsParticipant[];
+}
+
+const toCreateTeamsParticipant = (user: TeamUserApi, teamName?: string | null): CreateTeamsParticipant => ({
+  id: user.id,
+  username: user.name || `User ${user.id}`,
+  fullName: user.full_name || user.fullName || user.name || `User ${user.id}`,
+  teamName,
+});
+
+const usersFromTeam = (team: TeamApi): TeamUserApi[] => {
+  if (Array.isArray(team.users) && team.users.length > 0) {
+    return team.users;
+  }
+
+  if (!Array.isArray(team.members)) {
+    return [];
+  }
+
+  return team.members
+    .map((member) => {
+      if (member.user && member.user.id) {
+        return member.user;
+      }
+      if (member.id) {
+        return {
+          id: member.id,
+          name: member.name,
+          full_name: member.full_name || member.fullName,
+        } as TeamUserApi;
+      }
+      return undefined;
+    })
+    .filter((user): user is TeamUserApi => Boolean(user && user.id));
+};
+
+export async function loadCreateTeams({ params }: { params: { id?: string } }): Promise<CreateTeamsLoaderData & Record<string, unknown>> {
+  const assignmentId = Number(params.id);
+  if (!assignmentId) {
+    throw new Error('Missing assignment id for create teams loader');
+  }
+
+  const baseData = await loadAssignment({ params });
+
+  const [teamsResponse, participantsResponse] = await Promise.all([
+    axiosClient.get(`/teams?parent_id=${assignmentId}&types=AssignmentTeam,MentoredTeam`),
+    axiosClient.get(`/participants/assignment/${assignmentId}`),
+  ]);
+
+  const teamsData = (teamsResponse.data || []) as TeamApi[];
+  const participantsData = (participantsResponse.data || []) as ParticipantApi[];
+
+  const initialTeams: CreateTeamsTeam[] = teamsData.map((team) => {
+    const users = usersFromTeam(team);
+    return {
+      id: team.id,
+      name: team.name,
+      members: users.map((user) => toCreateTeamsParticipant(user, team.name)),
+    };
+  });
+
+  const assignedIds = new Set(
+    initialTeams.flatMap((team) => team.members.map((member) => String(member.id))),
+  );
+
+  const initialUnassigned: CreateTeamsParticipant[] = participantsData
+    .map((participant) => participant.user)
+    .filter((user): user is TeamUserApi => Boolean(user && user.id))
+    .filter((user) => !assignedIds.has(String(user.id)))
+    .map((user) => toCreateTeamsParticipant(user, null));
+
+  const assignmentName =
+    typeof (baseData as { name?: unknown }).name === 'string'
+      ? ((baseData as { name: string }).name || `Assignment ${assignmentId}`)
+      : `Assignment ${assignmentId}`;
+
+  return {
+    ...baseData,
+    contextType: 'assignment',
+    contextName: assignmentName,
+    initialTeams,
+    initialUnassigned,
+  };
+}

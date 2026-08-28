@@ -21,10 +21,9 @@ import { ICourseResponse as ICourse } from "../../utils/interfaces";
  */
 
 const Courses = () => {
-  const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
+  const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses, setData: setCourseResponse } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const { data: InstructorResponse, sendRequest: fetchInstructors } = useAPI();
-  const { data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
     (prev, next) => prev.isAuthenticated === next.isAuthenticated
@@ -51,13 +50,11 @@ const Courses = () => {
       fetchCourses({ url: `/courses` });
       fetchInstitutions({ url: `/institutions` });
       fetchInstructors({ url: `/users` });
-      fetchAssignments({ url: `/assignments` });
     }
   }, [
     fetchCourses,
     fetchInstitutions,
     fetchInstructors,
-    fetchAssignments,
     location,
     showDeleteConfirmation.visible,
     auth.user.id,
@@ -102,14 +99,31 @@ const Courses = () => {
     []
   );
 
-const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
-	return (
-	  <CourseAssignments
-		courseId={row.original.id}
-		courseName={row.original.name}
-	  />
-	);
-  }, []);
+  const onAssignmentDelete = useCallback((courseId: number, assignmentId: number) => {
+    if (CourseResponse?.data) {
+      const updatedData = CourseResponse.data.map((course: ICourseResponse) => {
+        if (course.id === courseId) {
+          return {
+            ...course,
+            assignments: course.assignments?.filter(a => a.id !== assignmentId)
+          };
+        }
+        return course;
+      });
+      setCourseResponse({ ...CourseResponse, data: updatedData });
+    }
+  }, [CourseResponse, setCourseResponse]);
+
+  const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+    return (
+      <CourseAssignments
+        courseId={row.original.id}
+        courseName={row.original.name}
+        assignments={row.original.assignments || []}
+        onAssignmentDelete={(assignmentId :number) => onAssignmentDelete(row.original.id, assignmentId)}
+      />
+    );
+  }, [onAssignmentDelete]);
 
   const tableColumns = useMemo(
     () => COURSE_COLUMNS(onEditHandle, onDeleteHandle, onTAHandle, onCopyHandle),
@@ -153,15 +167,10 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
       return mergedTableData;
     }
     return mergedTableData.filter(
-      (CourseResponse: { instructor_id: number }) =>
-        CourseResponse.instructor_id === auth.user.id
+      (course: { instructor_id: number }) =>
+        course.instructor_id === auth.user.id
     );
-  }, [mergedTableData, loggedInUserRole]);
-
-  const coursesWithAssignments = useMemo(() => {
-    if (!assignmentResponse?.data) return new Set();
-    return new Set(assignmentResponse.data.map((a: any) => a.course_id));
-  }, [assignmentResponse?.data]);
+  }, [mergedTableData, loggedInUserRole, auth.user.id]);
 
   return (
     <>

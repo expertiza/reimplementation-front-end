@@ -30,7 +30,17 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 }) => {
   const [questionType, setQuestionType] = useState("");
   const [numQuestions, setNumQuestions] = useState<number | "">("");
-   const [showNumbers, setShowNumbers] = useState(false);
+  const [showNumbers, setShowNumbers] = useState(false);
+
+  const normalizedQuestionType = (type: string) => {
+    const mapping: Record<string, string> = {
+      "Text area": "TextArea",
+      "Text field": "TextField",
+      "Multiple choice": "MultipleChoiceRadio",
+    };
+
+    return mapping[type] ?? type;
+  };
 
   
 
@@ -94,8 +104,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   style={{ width: "220px" }}
 />
 
-                              {item.question_type === "Multiple choice" ||
-                              item.question_type === "Dropdown" ? (
+                              {normalizedQuestionType(item.question_type) === "MultipleChoiceRadio" ||
+                              normalizedQuestionType(item.question_type) === "Dropdown" ? (
                                 <>
                                  
                                   <Field
@@ -116,6 +126,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -134,7 +145,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                              ) : item.question_type === "Scale" ? (
+                              ) : normalizedQuestionType(item.question_type) === "Scale" ? (
                                 <>
                                   <Field
                                     name={`items[${index}].min_label`}
@@ -160,6 +171,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -179,7 +191,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                              ) : item.question_type === "Criterion" ? (
+                              ) : normalizedQuestionType(item.question_type) === "Criterion" ? (
                                 <>
                                   <Field
                                     name={`items[${index}].textarea_width`}
@@ -218,6 +230,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -237,7 +250,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                            ) : item.question_type === "Text field" ? (<>
+                            ) : normalizedQuestionType(item.question_type) === "TextField" ? (<>
                                   <Field
                                     name={`items[${index}].textbox_width`}
                                     type="number"
@@ -249,6 +262,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -267,7 +281,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             />
           </Button>
         </OverlayTrigger></div>
-                                </>): item.question_type === "Text area" ? (
+                                </>): normalizedQuestionType(item.question_type) === "TextArea" ? (
                                   <>
                                   <Field
                                     name={`items[${index}].textarea_width`}
@@ -287,6 +301,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -306,7 +321,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
           </Button>
         </OverlayTrigger></div>
                                 </>
-                                ) : item.question_type === "Grid" ?(
+                                ) : normalizedQuestionType(item.question_type) === "Grid" ?(
                                   <>
                                   <Field
                                     name={`items[${index}].col_names`}
@@ -324,6 +339,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
           <Button
             variant="link"
+            type="button"
             onClick={() => {
     const item = values.items[index];
     if (item.id) {
@@ -409,7 +425,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                     id: undefined,
                     txt: "",
                     weight: "",
-                    question_type: questionType,
+                    question_type: normalizedQuestionType(questionType),
                     break_before: 1,
                     alternatives: "",
                     min_label: "",

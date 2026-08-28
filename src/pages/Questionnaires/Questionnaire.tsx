@@ -1,89 +1,120 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Row as TRow, createColumnHelper } from "@tanstack/react-table";
 import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import React, { useCallback, useMemo, useState, useEffect } from "react";
-import { questionnaireColumns } from "./QuestionnaireColumns";
 import { RiHealthBookLine } from "react-icons/ri";
-import { QuestionnaireResponse } from "./QuestionnaireUtils";
-import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import QuestionnaireTypeTable from "./QuestionnaireTypes";
+import { questionnaireColumns } from "./QuestionnaireColumns";
+import {
+  QuestionnaireResponse,
+  QuestionnaireTypeGroup,
+} from "./QuestionnaireUtils";
 import { useDispatch } from "react-redux";
 import { alertActions } from "store/slices/alertSlice";
 import useAPI from "hooks/useAPI";
 import DeleteQuestionnaire from "./QuestionnaireDelete";
 
-
-
+const columnHelper = createColumnHelper<QuestionnaireTypeGroup>();
 
 const Questionnaires = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const questionnaireHierarchy = useLoaderData() as QuestionnaireTypeGroup[];
+
   const [showTypeModal, setShowTypeModal] = useState(false);
-  
-  // loader option
-  const questionnaireData :any = useLoaderData();
-
-  useEffect(() => {
-    setShowTypeModal(false);
-  }, [location]);
-
-  const [tableData, setTableData] = useState<QuestionnaireResponse[]>(questionnaireData);
-
-
+  const [tableData, setTableData] = useState<QuestionnaireTypeGroup[]>(questionnaireHierarchy || []);
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireResponse | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<{
     visible: boolean;
     data?: QuestionnaireResponse;
   }>({ visible: false });
 
-  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireResponse | null>(null);
-
   const { error, isLoading, data: itemsResponse, sendRequest: fetchItems } = useAPI();
+
+  useEffect(() => {
+    setShowTypeModal(false);
+  }, [location]);
+
+  useEffect(() => {
+    setTableData(questionnaireHierarchy || []);
+  }, [questionnaireHierarchy]);
+
   useEffect(() => {
     if (error) {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
-  }, [error, dispatch]);
-
-  const onDeleteQuestionnaireHandler = useCallback(() => setShowDeleteConfirmation({ visible: false }), []);
+  }, [dispatch, error]);
 
   const onEditHandle = useCallback(
-    (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
+    (row: TRow<QuestionnaireResponse>) => navigate(`/questionnaires/edit/${row.original.id}`),
     [navigate]
   );
 
-  const onDeleteHandle = useCallback(
-     (row: TRow<QuestionnaireResponse>) => {
-    console.log("Delete clicked:", row.original);
+  const onDeleteHandle = useCallback((row: TRow<QuestionnaireResponse>) => {
     setSelectedQuestionnaire(null);
-    setTimeout(() => {
-      setShowDeleteConfirmation({ visible: true, data: row.original });
-    }, 100);
-  },
-  []
+    setShowDeleteConfirmation({ visible: true, data: row.original });
+  }, []);
+
+  const onDeleteQuestionnaireHandler = useCallback(
+    () => setShowDeleteConfirmation({ visible: false }),
+    []
   );
-  
-  
-  useEffect(() => {
-    if (error) {
-      dispatch(alertActions.showAlert({ variant: "danger", message: error }));
-    }
-  }, [error, dispatch]);
 
   const tableColumns = useMemo(
     () => questionnaireColumns(onEditHandle, onDeleteHandle),
     [onDeleteHandle, onEditHandle]
   );
 
+  const typeColumns = useMemo(
+    () => [
+      columnHelper.accessor("type", {
+        header: "Questionnaire Type",
+        size: 300,
+      }),
+      columnHelper.display({
+        id: "count",
+        header: "Questionnaires",
+        cell: ({ row }) => row.original.questionnaires.length,
+        size: 140,
+      }),
+    ],
+    []
+  );
+
   const handleClose = () => setShowTypeModal(false);
 
-  const handleRowClick = async (questionnaire: QuestionnaireResponse) => {
-    setSelectedQuestionnaire(questionnaire);
-    if (typeof questionnaire.id === "number") {
-      await fetchItems({ url: `/questionnaires/${questionnaire.id}/items` });
-    }
-  };
+  const handleQuestionnaireRowClick = useCallback(
+    async (questionnaire: QuestionnaireResponse) => {
+      setSelectedQuestionnaire(questionnaire);
+      if (typeof questionnaire.id === "number") {
+        await fetchItems({ url: `/questionnaires/${questionnaire.id}/items` });
+      }
+    },
+    [fetchItems]
+  );
 
+  const renderSubComponent = useCallback(
+    ({ row }: { row: TRow<QuestionnaireTypeGroup> }) => (
+      <div className="px-4 bg-light">
+        <Table
+          data={row.original.questionnaires}
+          columns={tableColumns}
+          showGlobalFilter={false}
+          showColumnFilter={false}
+          showPagination={false}
+          columnVisibility={{
+            id: false,
+            instructor_id: false,
+            questionnaire_type: false,
+          }}
+          onRowClick={handleQuestionnaireRowClick}
+        />
+      </div>
+    ),
+    [handleQuestionnaireRowClick, tableColumns]
+  );
 
   return (
     <>
@@ -96,22 +127,22 @@ const Questionnaires = () => {
             </Col>
             <hr />
           </Row>
-         <Row className="mb-2">
-  <Col className="d-flex justify-content-end" style={{ maxWidth: "1400px", margin: "0 auto" }}>
-    <Button
-      variant="success"
-      onClick={() => setShowTypeModal(true)}
-      className="d-flex align-items-center shadow-sm"
-      style={{
-        borderRadius: "8px",
-        width: "48px",
-        height: "48px",
-      }}
-    >
-      <RiHealthBookLine size={24} />
-    </Button>
-  </Col>
-</Row>
+          <Row className="mb-2">
+            <Col className="d-flex justify-content-end" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+              <Button
+                variant="success"
+                onClick={() => setShowTypeModal(true)}
+                className="d-flex align-items-center shadow-sm"
+                style={{
+                  borderRadius: "8px",
+                  width: "48px",
+                  height: "48px",
+                }}
+              >
+                <RiHealthBookLine size={24} />
+              </Button>
+            </Col>
+          </Row>
 
           <Row>
             {showTypeModal && (
@@ -120,149 +151,141 @@ const Questionnaires = () => {
                   <Modal.Title>Select Questionnaire Type</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                  <QuestionnaireTypeTable onCloseModal={() => setShowTypeModal(false)}/>
+                  <QuestionnaireTypeTable onCloseModal={() => setShowTypeModal(false)} />
                 </Modal.Body>
               </Modal>
             )}
           </Row>
+
           <Row>
             <Table
               data={tableData}
-              columns={tableColumns}
+              columns={typeColumns}
               showColumnFilter={false}
-              columnVisibility={{
-                id: false,
-                instructor_id: false,
-              }}
-              onRowClick={handleRowClick}
+              showGlobalFilter={false}
+              renderSubComponent={renderSubComponent}
+              getRowCanExpand={(row) => row.original.questionnaires.length > 0}
             />
-            {selectedQuestionnaire && !showDeleteConfirmation.visible && (
-   <Modal
-                show={true}
-                onHide={() => setSelectedQuestionnaire(null)}
-                size="lg"
-                centered
-              >
-                <Modal.Header closeButton>
-                  <Modal.Title>
-                    Questionnaire for {selectedQuestionnaire.name}
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <p>
-                    <strong>Type:</strong>{" "}
-                    {selectedQuestionnaire.questionnaire_type} &nbsp;  &nbsp;
-                    
-                    <strong>Private:</strong>{"     "}
-                    {selectedQuestionnaire.private ? (
-  <img
-    src={"/assets/icons/Check-icon.png"}
-    alt="Private"
-    style={{ width: "14px", height: "14px", verticalAlign: "middle"}}
-  />
-) : (
-    <span style={{ color: "red", fontWeight: "bold", verticalAlign: "middle" }}>❌</span>
-  )}
-                  
-                  </p>
-                  <p>
-                    <strong>Instructor:</strong>{" "}
-                    {selectedQuestionnaire.instructor?.name} (
-                    {selectedQuestionnaire.instructor?.email})
-                  </p>
-                  
+          </Row>
 
-                  <h5>Items</h5>
-                  {isLoading ? (
+          {selectedQuestionnaire && !showDeleteConfirmation.visible && (
+            <Modal
+              show={true}
+              onHide={() => setSelectedQuestionnaire(null)}
+              size="lg"
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Questionnaire for {selectedQuestionnaire.name}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <p>
+                  <strong>Type:</strong> {selectedQuestionnaire.questionnaire_type} &nbsp;&nbsp;
+                  <strong>Private:</strong>{" "}
+                  {selectedQuestionnaire.private ? (
+                    <img
+                      src={"/assets/icons/Check-icon.png"}
+                      alt="Private"
+                      style={{ width: "14px", height: "14px", verticalAlign: "middle" }}
+                    />
+                  ) : (
+                    <span style={{ color: "red", fontWeight: "bold", verticalAlign: "middle" }}>
+                      ❌
+                    </span>
+                  )}
+                </p>
+                <p>
+                  <strong>Instructor:</strong> {selectedQuestionnaire.instructor?.name} (
+                  {selectedQuestionnaire.instructor?.email})
+                </p>
+
+                <h5>Items</h5>
+                {isLoading ? (
                   <p>Loading items...</p>
-                ) : itemsResponse?.data?.length ?  (
+                ) : itemsResponse?.data?.length ? (
                   <ol>
-  {itemsResponse.data.map((item: any, i: number) => (
-    <li key={i} style={{ marginBottom: "8px" }}>
-      <strong>{item.txt}</strong> ({item.question_type})
-      {item.alternatives && (
-        <>
-          &nbsp;&nbsp;<span>Choices: {item.alternatives}</span>
-          <span>&nbsp;|</span>
-        </>
-      )}
-      {item.min_label && (
-        <>
-          &nbsp;&nbsp;<span>Scale Min: {item.min_label}</span>
-        </>
-      )}
-      {item.max_label && (
-        <>
-          &nbsp;&nbsp;<span>Max: {item.max_label}</span>
-        </>
-      )}
-      {
-        item.row_names && (
-          <>
-            &nbsp;&nbsp;<span>Rows: {item.row_names}</span>
-          </>
-        )
-      }
-      {
-        item.col_names && (
-          <>
-            &nbsp;&nbsp;<span>Columns: {item.col_names}</span>
-          </>
-        )
-      }
-      {item.weight && (
-        <>
-          &nbsp;&nbsp;<span>Weight: {item.weight}</span>
-        </>
-      )}
-
-      {
-        item.question_type === "Criterion" && <span> | </span>
-      }
-      
-      {item.textarea_width && (
-        <>
-          &nbsp;<span>Text Area Width: {item.textarea_width}</span>
-        </>
-      )}
-      {item.textarea_height && (
-        <>
-          &nbsp;&nbsp;<span>Height: {item.textarea_height}</span>
-        </>
-      )}
-      {item.textbox_width && (
-        <>
-          &nbsp;&nbsp;<span>Text Box Width: {item.textbox_width}</span>
-        </>
-      )}
-      
-    </li>
-  ))}
-</ol>
-
+                    {itemsResponse.data.map((item: any, index: number) => (
+                      <li key={index} style={{ marginBottom: "8px" }}>
+                        <strong>{item.txt}</strong> ({item.question_type})
+                        {item.alternatives && (
+                          <>
+                            &nbsp;&nbsp;<span>Choices: {item.alternatives}</span>
+                            <span>&nbsp;|</span>
+                          </>
+                        )}
+                        {item.min_label && (
+                          <>
+                            &nbsp;&nbsp;<span>Scale Min: {item.min_label}</span>
+                          </>
+                        )}
+                        {item.max_label && (
+                          <>
+                            &nbsp;&nbsp;<span>Max: {item.max_label}</span>
+                          </>
+                        )}
+                        {item.row_names && (
+                          <>
+                            &nbsp;&nbsp;<span>Rows: {item.row_names}</span>
+                          </>
+                        )}
+                        {item.col_names && (
+                          <>
+                            &nbsp;&nbsp;<span>Columns: {item.col_names}</span>
+                          </>
+                        )}
+                        {item.weight && (
+                          <>
+                            &nbsp;&nbsp;<span>Weight: {item.weight}</span>
+                          </>
+                        )}
+                        {item.question_type === "Criterion" && <span> | </span>}
+                        {item.textarea_width && (
+                          <>
+                            &nbsp;<span>Text Area Width: {item.textarea_width}</span>
+                          </>
+                        )}
+                        {item.textarea_height && (
+                          <>
+                            &nbsp;&nbsp;<span>Height: {item.textarea_height}</span>
+                          </>
+                        )}
+                        {item.textbox_width && (
+                          <>
+                            &nbsp;&nbsp;<span>Text Box Width: {item.textbox_width}</span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
                 ) : (
                   <p>No items defined.</p>
                 )}
-                </Modal.Body>
-              </Modal>
-)}
-          </Row>
+              </Modal.Body>
+            </Modal>
+          )}
+
           {showDeleteConfirmation.visible && showDeleteConfirmation.data && (
-  <DeleteQuestionnaire
-    questionnaireData={showDeleteConfirmation.data}
-    onClose={() => {
-      setShowDeleteConfirmation({ visible: false });
-      setSelectedQuestionnaire(null); 
-    }}
-     onDeleteSuccess={(deletedId: number) => {
-    setTableData(prev => prev.filter(q => q.id !== deletedId));
-  }}
-  />
-)}
+            <DeleteQuestionnaire
+              questionnaireData={showDeleteConfirmation.data}
+              onClose={() => {
+                onDeleteQuestionnaireHandler();
+                setSelectedQuestionnaire(null);
+              }}
+              onDeleteSuccess={(deletedId: number) => {
+                setTableData((previous) =>
+                  previous.map((group) => ({
+                    ...group,
+                    questionnaires: group.questionnaires.filter(
+                      (questionnaire) => questionnaire.id !== deletedId
+                    ),
+                  }))
+                );
+              }}
+            />
+          )}
         </Container>
       </main>
     </>
-    
   );
 };
 
