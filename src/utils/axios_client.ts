@@ -16,6 +16,13 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
   const token = getAuthToken();
+  const isMultipartRequest =
+    typeof FormData !== "undefined" && config.data instanceof FormData;
+
+  if (isMultipartRequest && config.headers) {
+    delete config.headers["Content-Type"];
+  }
+
   if (token && token !== "EXPIRED") {
     config.headers["Authorization"] = `Bearer ${token}`;
     return config;
