@@ -32,6 +32,7 @@ interface TableProps {
   onSelectionChange?: (selectedData: Record<any, any>[]) => void;
   renderSubComponent?: (props: { row: any }) => React.ReactNode;
   getRowCanExpand?: (row: any) => boolean;
+  disableGlobalFilter?: boolean;
   // Maps column header text to a tooltip string shown as an info icon in the header.
   headingComments?: Record<string, string>;
   // When true, passes fluid to Container so the table spans the full viewport width.
@@ -57,6 +58,7 @@ const Table: React.FC<TableProps> = ({
   tableSize = { span: 12, offset: 0 },
   renderSubComponent,
   getRowCanExpand,
+  disableGlobalFilter = false,
   headingComments = {},
   fluid = false,
   getRowClassName,
@@ -190,7 +192,7 @@ const Table: React.FC<TableProps> = ({
               <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
             )}
           </Col>
-          {showGlobalFilter && (
+          {showGlobalFilter && !disableGlobalFilter && (
             <Col xs="auto">
               <button
                 type="button"

@@ -748,7 +748,7 @@ const ReviewReportPage: React.FC = () => {
 
   const handleSaveGrade = useCallback(async (reviewId: number, reviewerId: number, grade: number | null, comment: string) => {
     try {
-      await axiosClient.patch(`/review_reports/${reviewId}/update_grade`, {
+      await axiosClient.patch(`/review_reports/${reviewId}`, {
         assignedGrade: grade,
         instructorComment: comment,
       });

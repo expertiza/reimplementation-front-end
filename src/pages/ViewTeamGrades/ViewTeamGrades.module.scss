@@ -83,6 +83,47 @@
   flex-shrink: 0;
 }
 
+/* Colors used for coloring score cells within the heatgrid for the grades view */
+/* These classes are returned as plain strings by getColorClass() and used globally
+   in FeedbackTable.tsx and ReviewTableRow.tsx, so they must not be locally scoped. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global {
+  /* Null space in the table */
+  .c0 {
+    background-color: #d3d3d3;
+  }
+
+  /* Red, indicative of a poor score */
+  .c1 {
+    background-color: #ff8080;
+  }
+
+  /* Orange */
+  .c2 {
+    background-color: #FD992D;
+  }
+
+  /* Yellow, indicative of a median score */
+  .c3 {
+    background-color: #FFEC8B;
+  }
+
+  /* Light green */
+  .c4 {
+    background-color: #BCED91;
+  }
+
+  /* Green, indicative of a good score */
+  .c5 {
+    background-color: #2DE636;
+  }
+
+  /* Default background color */
+  .cf {
+    background-color: #FFFFFF;
+  }
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* Style for the grades in the summary report */
 .grade-circle {
