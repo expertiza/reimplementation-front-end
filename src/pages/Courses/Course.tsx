@@ -182,6 +182,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
               </h1>
             </Col>
           </Row>
+          {/* Any instructor can create a course */}
           {hasAllPrivilegesOf(auth.user?.role, ROLE.INSTRUCTOR) && (
             <Row>
               <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>

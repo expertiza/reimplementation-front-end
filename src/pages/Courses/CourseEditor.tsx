@@ -21,30 +21,31 @@ import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transf
  */
  
 
-const AutoFillDirectory: React.FC<{ mode: string }> = ({ mode }) => {
+const AutoFillDirectoryName: React.FC<{ mode: string }> = ({ mode }) => {
   const { values, setFieldValue } = useFormikContext<ICourseFormValues>();
-  const lastGenerated = useRef('');
+  const lastGenerated = useRef("");
   const directoryRef = useRef(values.directory);
   directoryRef.current = values.directory;
 
   useEffect(() => {
-    if (mode !== 'create' || !values.name) return;
+    if (mode !== "create" || !values.name) return;
     if (directoryRef.current !== lastGenerated.current) return;
 
     // Convert name to a path-safe slug: lowercase, non-alphanumeric runs → '_', strip leading/trailing '_'
     const slug = values.name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '');
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
 
     const now = new Date();
     const month = now.getMonth() + 1;
     const year = String(now.getFullYear()).slice(-2);
-    const semester = month >= 8 ? `fall${year}` : `spring${year}`;
+    // months 1–4: spring, 5–7: summer, 8–12: fall
+    const semester = month >= 8 ? `fall${year}` : month >= 5 ? `summer${year}` : `spring${year}`;
 
     const generated = `${slug}/${semester}`;
     lastGenerated.current = generated;
-    setFieldValue('directory', generated);
+    setFieldValue("directory", generated);
   }, [values.name, mode, setFieldValue]);
 
   return null;
@@ -174,7 +175,7 @@ useEffect(() => {
 
             return (
               <Form>
-                <AutoFillDirectory mode={mode} />
+                <AutoFillDirectoryName mode={mode} />
                 <FormSelect
                   controlId="course-institution"
                   name="institution_id"
