@@ -1,5 +1,5 @@
 /**
- * ReviewTable — the main page component for "View Team Grades" (student-facing).
+ * TeamPeerGrades — the main page component for "View Team Grades" (student-facing).
  *
  * Key design decisions made during this implementation:
  *
@@ -70,7 +70,7 @@ const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text,
   );
 };
 
-const TeamGrades: React.FC = () => {
+const TeamPeerGrades: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [currentRound, setCurrentRound] = useState<number>(-1);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -426,4 +426,4 @@ const TeamGrades: React.FC = () => {
   );
 };
 
-export default TeamGrades;
+export default TeamPeerGrades;

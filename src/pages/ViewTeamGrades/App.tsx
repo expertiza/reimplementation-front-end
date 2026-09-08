@@ -1,5 +1,5 @@
 import React from 'react';
-import TeamGrades from './TeamGrades';
+import TeamPeerGrades from './TeamPeerGrades';
 
 export type { ReviewData, SectionHeaderData } from '../../utils/reviewTypes';
 
@@ -9,11 +9,10 @@ export interface TeamMember {
   username: string;
 }
 
-// Functional component App, which renders the TeamGrades
 const App: React.FC = () => {
   return (
     <div>
-      <TeamGrades /> {/* Rendering the TeamGrades component */}
+      <TeamPeerGrades />
     </div>
   );
 };

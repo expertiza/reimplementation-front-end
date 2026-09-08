@@ -66,7 +66,10 @@ export function summaryResponsesToRoundRows(responses: SummaryResponse[]): Round
     });
 }
 
-// TeammateReviewReport "view": rows = rubric items, columns = reviewee names, single table.
+// revieweesToRoundRows — converts a list of reviewees (teammates who were reviewed)
+// into the RoundRow[][] format the ReviewTable component expects.
+// Each row is one rubric item; each column is one reviewee (the person being reviewed).
+// Used by the TeammateReviewReport where reviewees are in columns, not reviewers.
 export function revieweesToRoundRows(reviewees: RevieweeEntry[]): RoundRow[][] {
   const submitted = reviewees.filter((r) => r.submitted);
   if (!submitted.length) return [];

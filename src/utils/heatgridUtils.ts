@@ -31,7 +31,20 @@ export const normalizeReviewDataArray = (dataArray: any[]): RoundRow[] => {
   });
 };
 
-// Convert backend rounds array (array of arrays of answer objects) to frontend round format.
+/**
+ * Converts the backend rounds array into the RoundRow[][] shape consumed by ReviewTable.
+ *
+ * Each element of `backendRounds` is one review round — an array of rows, where each row
+ * is either a SectionHeaderData sentinel (passed through unchanged) or an array of answer
+ * objects (one per reviewer). Answer objects carry the reviewer name, a numeric/string/array
+ * answer depending on the rubric item type, an optional comment, and optional file/selection
+ * fields. The function maps item types to the appropriate review field:
+ *   - numeric answers        → score
+ *   - TextArea / TextField   → textResponse
+ *   - Dropdown / RadioButton → selectedOption
+ *   - array answers          → selections
+ * maxScore is inferred as 1 when every reviewer answered 0 or 1, otherwise 5.
+ */
 export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] => {
   if (!Array.isArray(backendRounds)) return [];
   return backendRounds.map((backendRound) => {
@@ -119,15 +132,21 @@ export const scoreToColor = (
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 };
 
+// Grade percentage cutoffs for the c1–c5 heat-color bands (A/B/C/D/F scale).
+const GRADE_CUTOFF_A = 90;
+const GRADE_CUTOFF_B = 80;
+const GRADE_CUTOFF_C = 70;
+const GRADE_CUTOFF_D = 60;
+
 // Returns a heat color class (c1–c5) based on score vs maxScore.
-// Cutoffs follow the standard A/B/C/D grading scale: ≥90 → c5, ≥80 → c4, ≥70 → c3, ≥60 → c2, <60 → c1.
+// Cutoffs are GRADE_CUTOFF_A/B/C/D above (A/B/C/D/F scale: A→c5, B→c4, C→c3, D→c2, F→c1).
 export const getColorClass = (score: number, maxScore: number): string => {
   if (maxScore <= 0) return 'cf';
   const pct = (score / maxScore) * 100;
-  if (pct >= 90) return 'c5';
-  if (pct >= 80) return 'c4';
-  if (pct >= 70) return 'c3';
-  if (pct >= 60) return 'c2';
+  if (pct >= GRADE_CUTOFF_A) return 'c5';
+  if (pct >= GRADE_CUTOFF_B) return 'c4';
+  if (pct >= GRADE_CUTOFF_C) return 'c3';
+  if (pct >= GRADE_CUTOFF_D) return 'c2';
   return 'c1';
 };
 

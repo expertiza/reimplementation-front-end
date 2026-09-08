@@ -794,7 +794,7 @@ const ReviewReportPage: React.FC = () => {
     return reviewData.filter((r) => r.reviewerName.toLowerCase().includes(lower));
   }, [reviewData, searchTerm]);
 
-  const handleRowMouseEnter = useCallback((reviewerId: number) => {
+  const handleRowMouseEntry = useCallback((reviewerId: number) => {
     hoveredCellsRef.current.forEach((el) => el.classList.remove("reviewer-spanned-hovered"));
     const cells = Array.from(tableWrapperRef.current?.querySelectorAll(`[data-rid="${reviewerId}"]`) ?? []);
     cells.forEach((el) => el.classList.add("reviewer-spanned-hovered"));
@@ -919,7 +919,7 @@ const ReviewReportPage: React.FC = () => {
             return isFirst ? `${groupClass} reviewer-group-start` : groupClass;
           }}
           getRowProps={(row) => ({
-            onMouseEnter: () => handleRowMouseEnter(row.original.reviewerId),
+            onMouseEnter: () => handleRowMouseEntry(row.original.reviewerId),
           })}
           getCellProps={(cell, row, allRows) => {
             if (!SPANNED_COLS.has(cell.column.id)) return {};

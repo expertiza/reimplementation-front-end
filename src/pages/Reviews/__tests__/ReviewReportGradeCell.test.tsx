@@ -7,7 +7,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 // We extract and test the clamping logic directly rather than mounting
 // the full ReviewReportPage (which requires heavy mocking of Redux, router, etc.)
 
-function clampGrade(value: number, min: number, max: number): number {
+function limitGradeToRange(value: number, min: number, max: number): number {
   if (value < min) return min;
   if (value > max) return max;
   return value;
@@ -26,7 +26,7 @@ const GradeInput: React.FC<{
     const raw = e.target.value;
     if (raw === "") { setGrade(""); return; }
     const num = Number(raw);
-    setGrade(clampGrade(num, min, max));
+    setGrade(limitGradeToRange(num, min, max));
   };
 
   return (
@@ -105,10 +105,10 @@ describe("GradeCommentCell — grade clamping", () => {
   });
 });
 
-describe("clampGrade utility", () => {
-  it("returns min when value is below min", () => expect(clampGrade(-5, 0, 10)).toBe(0));
-  it("returns max when value is above max", () => expect(clampGrade(15, 0, 10)).toBe(10));
-  it("returns value when within range", () => expect(clampGrade(7, 0, 10)).toBe(7));
-  it("returns min when value equals min", () => expect(clampGrade(0, 0, 10)).toBe(0));
-  it("returns max when value equals max", () => expect(clampGrade(10, 0, 10)).toBe(10));
+describe("limitGradeToRange utility", () => {
+  it("returns min when value is below min", () => expect(limitGradeToRange(-5, 0, 10)).toBe(0));
+  it("returns max when value is above max", () => expect(limitGradeToRange(15, 0, 10)).toBe(10));
+  it("returns value when within range", () => expect(limitGradeToRange(7, 0, 10)).toBe(7));
+  it("returns min when value equals min", () => expect(limitGradeToRange(0, 0, 10)).toBe(0));
+  it("returns max when value equals max", () => expect(limitGradeToRange(10, 0, 10)).toBe(10));
 });

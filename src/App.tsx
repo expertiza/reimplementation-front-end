@@ -42,7 +42,7 @@ import { loadTAs } from "./pages/TA/TAUtil";
 import Users from "./pages/Users/User";
 import UserEditor from "./pages/Users/UserEditor";
 import { loadUserDataRolesAndInstitutions } from "./pages/Users/userUtil";
-import TeamGrades from "./pages/ViewTeamGrades/TeamGrades";
+import TeamPeerGrades from "./pages/ViewTeamGrades/TeamPeerGrades";
 import ErrorPage from "./router/ErrorPage";
 import NotFound from "./router/NotFound";
 import ProtectedRoute from "./router/ProtectedRoute";
@@ -74,7 +74,7 @@ function App() {
 
         {
           path: "view-team-grades",
-          element: <ProtectedRoute element={<TeamGrades />} />,
+          element: <ProtectedRoute element={<TeamPeerGrades />} />,
         },
         {
           path: "edit-questionnaire",

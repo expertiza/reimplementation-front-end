@@ -35,6 +35,7 @@ const cellBase: React.CSSProperties = {
   wordBreak: "break-word",
 };
 
+/** Styles for the sticky "#" (item number) column — pinned to the left edge so it stays visible during horizontal scroll. */
 const stickyNo: React.CSSProperties = {
   ...cellBase,
   position: "sticky",
@@ -49,6 +50,7 @@ const stickyNo: React.CSSProperties = {
   borderRight: "none",
 };
 
+/** Styles for the sticky "Item" (question text) column — pinned just right of stickyNo so both columns stay visible during horizontal scroll. */
 const stickyQ: React.CSSProperties = {
   ...cellBase,
   position: "sticky",
@@ -62,6 +64,7 @@ const stickyQ: React.CSSProperties = {
   borderRight: "2px solid #aaa",
 };
 
+/** Styles for each reviewer's answer column — wide enough to show a score badge plus a multi-line comment. */
 const reviewerCell: React.CSSProperties = {
   ...cellBase,
   minWidth: 260,
@@ -70,7 +73,7 @@ const reviewerCell: React.CSSProperties = {
 };
 
 /** Color-coded score badge — circular, background relative to observed data range */
-const ScoreBadge: React.FC<{ score: number; maxScore: number; dataMin?: number; dataMax?: number }> = ({ score, maxScore, dataMin, dataMax }) => (
+const ScoreBubble: React.FC<{ score: number; maxScore: number; dataMin?: number; dataMax?: number }> = ({ score, maxScore, dataMin, dataMax }) => (
   <span
     style={{
       display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -197,7 +200,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                         {review.score !== undefined ? (
                           <>
                             <div>
-                              <ScoreBadge score={review.score} maxScore={row.maxScore} dataMin={dataMin} dataMax={dataMax} />
+                              <ScoreBubble score={review.score} maxScore={row.maxScore} dataMin={dataMin} dataMax={dataMax} />
                             </div>
                             {review.comment && (
                               <div style={{ marginTop: 5, color: "#444", fontSize: "12px" }}>
@@ -241,6 +244,11 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
   );
 };
 
+/**
+ * ReviewTable — renders one sub-table per review round showing each rubric item's
+ * full text alongside every reviewer's score and comment. Students see anonymized
+ * reviewer labels ("Review 1", "Review 2", …"); instructors see actual reviewer names.
+ */
 const ReviewTable: React.FC<ReviewTableProps> = ({ data, roundSelected }) => {
   const role = useSelector((state: RootState) => state.authentication.user?.role);
   const isStudent = role === "Student";

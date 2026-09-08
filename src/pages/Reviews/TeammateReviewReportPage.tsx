@@ -14,7 +14,7 @@ import "./Reviews.css";
 // --- SORTABLE HEADER ---
 // --------------------------------------------------------------------------
 
-function SortableHeader({
+function SortableHeadefr({
   label,
   column,
   isSortable = true,

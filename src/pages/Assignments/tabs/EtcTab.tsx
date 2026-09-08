@@ -26,7 +26,7 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
         <div className="assignment-actions d-flex flex-wrap justify-content-start">
           <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
             <FontAwesomeIcon icon={faUser} className="icon" />
-            <span>Add Participants</span>
+            <span>Add participants</span>
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/createteams`)}>
             <FontAwesomeIcon icon={faUsers} className="icon" />
@@ -34,7 +34,7 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/assignreviewer`)}>
             <FontAwesomeIcon icon={faUserCheck} className="icon" />
-            <span>Assign Reviewers</span>
+            <span>Assign reviewers</span>
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/viewsubmissions`)}>
             <FontAwesomeIcon icon={faClipboardList} className="icon" />

@@ -54,6 +54,9 @@ interface TopicData {
   updatedAt?: string;
 }
 
+/** Syncs instructor_grade_min_score and instructor_grade_max_score from the selected
+ *  questionnaire's own min/max when they haven't been set yet, so the grade scale
+ *  defaults to the rubric's range without the instructor needing to type it manually. */
 const GradeScaleSync: React.FC<{ questionnaires: any[] }> = ({ questionnaires }) => {
   const { values, setFieldValue } = useFormikContext<IAssignmentFormValues>();
   useEffect(() => {
@@ -71,7 +74,7 @@ const GradeScaleSync: React.FC<{ questionnaires: any[] }> = ({ questionnaires })
   return null;
 };
 
-const GradeScaleConflictChecker: React.FC<{ assignmentId: string | null }> = ({ assignmentId }) => {
+const GradeOutOfBoundsChecker: React.FC<{ assignmentId: string | null }> = ({ assignmentId }) => {
   const { values, initialValues: formInitialValues } = useFormikContext<IAssignmentFormValues>();
   const [conflictCount, setConflictCount] = useState<number | null>(null);
 
@@ -988,7 +991,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
 
                 {/* Instructor grade scale — auto-populated from questionnaire 1, editable by instructor */}
-                <GradeScaleConflictChecker assignmentId={id ?? null} />
+                <GradeOutOfBoundsChecker assignmentId={id ?? null} />
                 <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <label className="form-label mb-0">Instructor grade scale:</label>
                   <label className="form-label mb-0">Min score:</label>
