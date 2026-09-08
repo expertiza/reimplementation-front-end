@@ -14,7 +14,7 @@ interface FilterProps {
 const GlobalFilter: React.FC<FilterProps> = ({
   filterValue,
   setFilterValue,
-  isDisabled = true, // Default to true for disabling
+  isDisabled = false,
 }) => {
   const searchHandler = useCallback(
     (value: string | number) => setFilterValue(value),

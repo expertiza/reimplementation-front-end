@@ -1,7 +1,7 @@
 import * as Yup from "yup";
 
-import { Button, Modal } from "react-bootstrap";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Button, Modal, Dropdown } from "react-bootstrap";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
 import { IEditor } from "../../utils/interfaces";
 import React, { useCallback, useEffect, useState } from "react";
@@ -22,6 +22,7 @@ import Table from "../../components/Table/Table";
 import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
 import EtcTab from './tabs/EtcTab';
+import axiosClient from "../../utils/axios_client";
 import TopicsTab from "./tabs/TopicsTab";
 import DutyEditor from "pages/Duties/DutyEditor";
 
@@ -53,6 +54,62 @@ interface TopicData {
   updatedAt?: string;
 }
 
+/** Syncs instructor_grade_min_score and instructor_grade_max_score from the selected
+ *  questionnaire's own min/max when they haven't been set yet, so the grade scale
+ *  defaults to the rubric's range without the instructor needing to type it manually. */
+const GradeScaleSync: React.FC<{ questionnaires: any[] }> = ({ questionnaires }) => {
+  const { values, setFieldValue } = useFormikContext<IAssignmentFormValues>();
+  useEffect(() => {
+    const qid = (values as any).questionnaire_round_1;
+    if (!qid) return;
+    const q = questionnaires.find((x: any) => x.id === qid);
+    if (!q) return;
+    if (values.instructor_grade_min_score == null) {
+      setFieldValue('instructor_grade_min_score', q.min_question_score);
+    }
+    if (values.instructor_grade_max_score == null) {
+      setFieldValue('instructor_grade_max_score', q.max_question_score);
+    }
+  }, [(values as any).questionnaire_round_1]);
+  return null;
+};
+
+const GradeOutOfBoundsChecker: React.FC<{ assignmentId: string | null }> = ({ assignmentId }) => {
+  const { values, initialValues: formInitialValues } = useFormikContext<IAssignmentFormValues>();
+  const [conflictCount, setConflictCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!assignmentId) return;
+    const newMin = values.instructor_grade_min_score;
+    const newMax = values.instructor_grade_max_score;
+    const origMin = (formInitialValues as any).instructor_grade_min_score;
+    const origMax = (formInitialValues as any).instructor_grade_max_score;
+    if (newMin === origMin && newMax === origMax) { setConflictCount(null); return; }
+
+    const timer = setTimeout(async () => {
+      const params = new URLSearchParams();
+      if (newMin != null) params.append("min", String(newMin));
+      if (newMax != null) params.append("max", String(newMax));
+      try {
+        const { data } = await axiosClient.get(`/assignments/${assignmentId}/review_grades_out_of_bounds?${params}`);
+        setConflictCount(data.conflict_count ?? 0);
+      } catch {
+        setConflictCount(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [values.instructor_grade_min_score, values.instructor_grade_max_score, assignmentId]);
+
+  if (!conflictCount) return null;
+
+  return (
+    <div className="alert alert-warning mt-3" role="alert">
+      <strong>Warning:</strong> {conflictCount} reviewer{conflictCount > 1 ? "s have" : " has"} already been assigned a grade outside the new scale. Those grades will remain as-is if you save.
+    </div>
+  );
+};
+
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
@@ -75,6 +132,8 @@ const initialValues: IAssignmentFormValues = {
   review_topic_threshold: 0,
   maximum_number_of_reviews_per_submission: 0,
   review_strategy: "",
+  instructor_grade_min_score: null,
+  instructor_grade_max_score: null,
   review_rubric_varies_by_round: false,
   review_rubric_varies_by_topic: false,
   review_rubric_varies_by_role: false,
@@ -165,7 +224,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
-
 
    useEffect(() => {
     if (assignmentResponse?.data) {
@@ -582,9 +640,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
     // validate sum of weights = 100%
     const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
-
     const hasWeights = (values.weights?.length ?? 0) > 0;
-
     if (hasWeights && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
       return;
@@ -596,15 +652,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       url = `/assignments/${values.id}`;
       method = HttpMethod.PATCH;
     }
-    // to be used to display message when assignment is created
     assignmentData.name = values.name;
-    console.log(values);
-    sendRequest({
-      url: url,
-      method: method,
-      data: values,
-      transformRequest: transformAssignmentRequest,
-    });
+    sendRequest({ url, method, data: values, transformRequest: transformAssignmentRequest });
     submitProps.setSubmitting(false);
   };
 
@@ -661,12 +710,12 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
 
   return (
-    <div style={{ padding: '30px' }}>
+    <div style={{ padding: '30px', paddingTop: '1.5rem' }}>
       {
-        mode === "update" && <h1>Editing Assignment: {assignmentData.name}</h1>
+        mode === "update" && <h1 className="text-dark mb-4" style={{ fontSize: "2rem", fontWeight: "600" }}>Editing Assignment: {assignmentData.name}</h1>
       }
       {
-        mode === "create" && <h1>Creating Assignment</h1>
+        mode === "create" && <h1 className="text-dark mb-4" style={{ fontSize: "2rem", fontWeight: "600" }}>Creating Assignment</h1>
       }
       <Formik
         initialValues={formInitialValues}
@@ -678,6 +727,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         {(formik) => {
         return (
           <Form>
+            <GradeScaleSync questionnaires={assignmentData.questionnaires || []} />
             <Tabs defaultActiveKey="general" id="assignment-tabs">
               {/* General Tab */}
               <Tab eventKey="general" title="General" >
@@ -938,8 +988,29 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
                 <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
                 <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
-
                 <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
+
+                {/* Instructor grade scale — auto-populated from questionnaire 1, editable by instructor */}
+                <GradeOutOfBoundsChecker assignmentId={id ?? null} />
+                <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <label className="form-label mb-0">Instructor grade scale:</label>
+                  <label className="form-label mb-0">Min score:</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    style={{ width: '80px' }}
+                    value={formik.values.instructor_grade_min_score ?? ''}
+                    onChange={(e) => formik.setFieldValue('instructor_grade_min_score', e.target.value === '' ? null : Number(e.target.value))}
+                  />
+                  <label className="form-label mb-0">Max score:</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    style={{ width: '80px' }}
+                    value={formik.values.instructor_grade_max_score ?? ''}
+                    onChange={(e) => formik.setFieldValue('instructor_grade_max_score', e.target.value === '' ? null : Number(e.target.value))}
+                  />
+                </div>
                 {formik.values.is_role_based && (
                   <div style={{ marginTop: '10px', paddingLeft: 30, maxWidth: '520px' }}>
                     {!id && (
@@ -1233,7 +1304,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <div className="assignment-actions d-flex flex-wrap justify-content-start">
                     <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
                       <img src={'/assets/icons/add-participant-24.png'} alt="User Icon" className="icon" />
-                      <span>Add Participant</span>
+                      <span>Add Participants</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/createteams`)}>
                       <img src={'/assets/icons/create-teams-24.png'} alt="User Icon" className="icon" />
@@ -1241,7 +1312,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/assignreviewer`)}>
                       <img src={'/assets/icons/assign-reviewers-24.png'} alt="User Icon" className="icon" />
-                      <span>Assign Reviewer</span>
+                      <span>Assign Reviewers</span>
                     </div>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewsubmissions`)}>
                       <img src={'/assets/icons/view-submissions-24.png'} alt="User Icon" className="icon" />
@@ -1251,10 +1322,20 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       <img src={'/assets/icons/view-scores-24.png'} alt="User Icon" className="icon" />
                       <span>View Scores</span>
                     </div>
-                    <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewreports`)}>
-                      <img src={'/assets/icons/view-review-report-24.png'} alt="User Icon" className="icon" />
-                      <span>View Reports</span>
-                    </div>
+                    <Dropdown className="custom-tab-button" style={{ padding: 0 }}>
+                      <Dropdown.Toggle as="div" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", cursor: "pointer" }} id="view-reports-dropdown">
+                        <img src={'/assets/icons/view-review-report-24.png'} alt="User Icon" className="icon" />
+                        <span>View Reports</span>
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item onClick={() => navigate(`/assignments/${assignmentData.id}/review`)}>
+                          Review Report
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={() => navigate(`/assignments/${assignmentData.id}/teammate-review`)}>
+                          Teammate Review Report
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                     <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentData.id}/viewdelayedjobs`)}>
                       <img src={'/assets/icons/view-delayed-mailer.png'} alt="User Icon" className="icon" />
                       <span>View Delayed Jobs</span>

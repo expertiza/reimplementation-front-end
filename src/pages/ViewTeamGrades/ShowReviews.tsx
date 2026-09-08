@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getColorClass } from "./heatgridUtils";
+import { scoreToColor } from "../../utils/heatgridUtils";
 import { RootState } from "../../store/store";
 import { useSelector } from "react-redux";
 
@@ -210,10 +210,12 @@ const CollapsibleReview: React.FC<{
                   // Scored items (Scale, Criterion)
                   <>
                     <span
-                      className={`score ${getColorClass(
-                        question.reviews[reviewIndex].score!,
-                        question.maxScore
-                      )}`}
+                      style={{
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        width: 24, height: 24, borderRadius: "50%",
+                        backgroundColor: scoreToColor(question.reviews[reviewIndex].score!, question.maxScore),
+                        fontWeight: "bold", fontSize: "13px", color: "black",
+                      }}
                     >
                       {question.reviews[reviewIndex].score}
                     </span>

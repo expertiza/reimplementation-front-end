@@ -221,7 +221,6 @@ const StudentTasks: React.FC = () => {
                 showGlobalFilter={false}
                 showColumnFilter={false}
                 showPagination={false}
-                disableGlobalFilter={true}
                 fluid={true}
                 tableSize={{ span: 12, offset: 0 }}
                 headingComments={{

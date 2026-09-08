@@ -70,7 +70,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
     navigate(`/assignments/edit/${row.original.id}/viewscores`);
 
   const onViewReportsHandle = (row: TRow<IAssignmentResponse>) =>
-    navigate(`/assignments/edit/${row.original.id}/viewreports`);
+    navigate(`/assignments/${row.original.id}/review`);
 
   const actionHandlers: ActionHandler[] = useMemo(
     () => [

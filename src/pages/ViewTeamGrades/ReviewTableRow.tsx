@@ -5,16 +5,15 @@
  *   - Column 1 (sticky, 52 px): item number + weight badge (circled max-score).
  *     The weight badge is omitted for binary items (maxScore === 1) — a ✓ tick is shown instead.
  *   - Column 2 (sticky, 340 px): full question text. No truncation.
- *   - Columns 3..N: one cell per reviewer, color-coded by score via getColorClass().
- *     Color classes (c1–c5, cf) are declared :global in ViewTeamGrades.module.scss so they
- *     work as plain strings returned by getColorClass().
+ *   - Columns 3..N: one cell per reviewer, color-coded by scoreToColor() which produces
+ *     k distinct HSL colors (k = min(maxScore, 10)) scaled to the rubric's level count.
  *
  * The `rowIndex` prop drives alternating row background (#fff / #f5f5f5).
  * Sticky cells explicitly set `background` to match the row — otherwise scrolling rows
  * bleed through behind the sticky column (a side-effect of borderCollapse:"separate").
  */
 import React from "react";
-import { getColorClass } from "./heatgridUtils";
+import { scoreToColor } from "../../utils/heatgridUtils";
 import { ReviewData } from "./App";
 import styles from "./ViewTeamGrades.module.scss";
 
@@ -22,6 +21,8 @@ interface ReviewTableRowProps {
   row: ReviewData;
   rowIndex: number;
   onReviewClick?: (reviewIndex: number) => void;
+  dataMin?: number;
+  dataMax?: number;
 }
 
 const STICKY_NO_WIDTH = 68; // wide enough for two-digit item numbers + weight badge on one line
@@ -71,23 +72,22 @@ const reviewerCell: React.CSSProperties = {
   width: 110,
 };
 
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReviewClick }) => {
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReviewClick, dataMin, dataMax }) => {
   const bg = rowIndex % 2 === 0 ? "#fff" : "#f5f5f5";
 
   let cellContent;
   // The score cells — build one per reviewer
   const reviewCells = row.reviews.map((review, idx) => {
-    let bgClass = 'cf';
+    let bgColor: string | undefined;
 
     if (review.score !== undefined) {
-      bgClass = getColorClass(review.score, row.maxScore);
+      bgColor = scoreToColor(review.score, row.maxScore, 0, dataMin, dataMax);
       cellContent = (
         <span style={{ textDecoration: review.comment ? "underline" : "none", fontWeight: "bold" }}>
           {review.score}
         </span>
       );
     } else if (review.textResponse) {
-      bgClass = 'cf';
       cellContent = <span style={{ fontStyle: "italic" }}>{review.textResponse}</span>;
     } else if (review.selections && review.selections.length > 0) {
       cellContent = <span>✓ ({review.selections.length})</span>;
@@ -102,10 +102,10 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReview
     return (
       <td
         key={idx}
-        className={bgClass}            // c1–c5/cf — :global in CSS module
         data-question={review.comment || undefined}
         style={{
           ...reviewerCell,
+          backgroundColor: bgColor,
           cursor: onReviewClick ? "pointer" : "default",
         }}
         onClick={() => onReviewClick && onReviewClick(idx)}

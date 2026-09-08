@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
+import {
   faUser,
   faUserCheck,
   faClock,
@@ -25,7 +26,7 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
         <div className="assignment-actions d-flex flex-wrap justify-content-start">
           <div className="custom-tab-button" onClick={() => navigate(`participants`)}>
             <FontAwesomeIcon icon={faUser} className="icon" />
-            <span>Add Participant</span>
+            <span>Add participants</span>
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/createteams`)}>
             <FontAwesomeIcon icon={faUsers} className="icon" />
@@ -33,7 +34,7 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/assignreviewer`)}>
             <FontAwesomeIcon icon={faUserCheck} className="icon" />
-            <span>Assign Reviewer</span>
+            <span>Assign reviewers</span>
           </div>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/viewsubmissions`)}>
             <FontAwesomeIcon icon={faClipboardList} className="icon" />
@@ -43,10 +44,20 @@ const EtcTab: React.FC<EtcTabProps> = ({ assignmentId }) => {
             <FontAwesomeIcon icon={faChartBar} className="icon" />
             <span>View Scores</span>
           </div>
-          <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/viewreports`)}>
-            <FontAwesomeIcon icon={faFileAlt} className="icon" />
-            <span>View Reports</span>
-          </div>
+          <Dropdown>
+            <Dropdown.Toggle as="div" className="custom-tab-button" id="view-reports-dropdown">
+              <FontAwesomeIcon icon={faFileAlt} className="icon" />
+              <span>View Reports</span>
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => navigate(`/assignments/${assignmentId}/review`)}>
+                Review Report
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => navigate(`/assignments/${assignmentId}/teammate-review`)}>
+                Teammate Review Report
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
           <div className="custom-tab-button" onClick={() => navigate(`/assignments/edit/${assignmentId}/viewdelayedjobs`)}>
             <FontAwesomeIcon icon={faClock} className="icon" />
             <span>View Delayed Jobs</span>

@@ -194,4 +194,66 @@ describe("transformAssignmentRequest", () => {
 
     expect(payload.assignment.vary_by_round).toBe(false);
   });
+
+  it("includes instructor_grade_min_score in the request payload", () => {
+    const values: IAssignmentFormValues = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      review_rubric_varies_by_round: false,
+      number_of_review_rounds: 1,
+      instructor_grade_min_score: 0,
+      instructor_grade_max_score: 5,
+      weights: [],
+      notification_limits: [],
+      use_date_updater: [],
+      submission_allowed: [],
+      review_allowed: [],
+      teammate_allowed: [],
+      metareview_allowed: [],
+      reminder: [],
+    };
+
+    const payload = JSON.parse(transformAssignmentRequest(values));
+
+    expect(payload.assignment.instructor_grade_min_score).toBe(0);
+    expect(payload.assignment.instructor_grade_max_score).toBe(5);
+  });
+
+  it("sends null for instructor_grade_min/max when not set", () => {
+    const values: IAssignmentFormValues = {
+      id: 1,
+      name: "Test Assignment",
+      directory_path: "assignment_1",
+      spec_location: "http://example.com",
+      private: false,
+      show_template_review: false,
+      require_quiz: false,
+      has_badge: false,
+      staggered_deadline: false,
+      is_calibrated: false,
+      review_rubric_varies_by_round: false,
+      number_of_review_rounds: 1,
+      weights: [],
+      notification_limits: [],
+      use_date_updater: [],
+      submission_allowed: [],
+      review_allowed: [],
+      teammate_allowed: [],
+      metareview_allowed: [],
+      reminder: [],
+    };
+
+    const payload = JSON.parse(transformAssignmentRequest(values));
+
+    expect(payload.assignment.instructor_grade_min_score).toBeNull();
+    expect(payload.assignment.instructor_grade_max_score).toBeNull();
+  });
 });

@@ -1,4 +1,6 @@
-import { ReviewData, SectionHeaderData } from './App';
+import { ReviewData, SectionHeaderData } from './reviewTypes';
+
+export type { ReviewData, SectionHeaderData };
 
 // Type alias for a mixed array that may contain scored rows or section heading sentinels
 export type RoundRow = ReviewData | SectionHeaderData;
@@ -29,17 +31,26 @@ export const normalizeReviewDataArray = (dataArray: any[]): RoundRow[] => {
   });
 };
 
-// Convert backend rounds array (array of arrays of answer objects) to frontend round format.
-// Each element in a round may be either an array of reviewer answers (a scored item) or a
-// { type: "header", txt: "..." } sentinel injected by the backend for SectionHeader items.
-// Sentinel objects are passed through as-is; scored items are converted to ReviewData.
+/**
+ * Converts the backend rounds array into the RoundRow[][] shape consumed by ReviewTable.
+ *
+ * Each element of `backendRounds` is one review round — an array of rows, where each row
+ * is either a SectionHeaderData sentinel (passed through unchanged) or an array of answer
+ * objects (one per reviewer). Answer objects carry the reviewer name, a numeric/string/array
+ * answer depending on the rubric item type, an optional comment, and optional file/selection
+ * fields. The function maps item types to the appropriate review field:
+ *   - numeric answers        → score
+ *   - TextArea / TextField   → textResponse
+ *   - Dropdown / RadioButton → selectedOption
+ *   - array answers          → selections
+ * maxScore is inferred as 1 when every reviewer answered 0 or 1, otherwise 5.
+ */
 export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] => {
   if (!Array.isArray(backendRounds)) return [];
   return backendRounds.map((backendRound) => {
     if (!Array.isArray(backendRound)) return [];
     let scoredItemCount = 0;
     return backendRound.map((answersArray: any) => {
-      // Pass SectionHeader sentinels through unchanged — do NOT increment the counter
       if (answersArray && !Array.isArray(answersArray) && answersArray.type === "header") {
         return answersArray as SectionHeaderData;
       }
@@ -52,12 +63,10 @@ export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] =
           name: ans.reviewer_name || ans.name || '',
         };
 
-        // Handle different item types
         if (ans.answer !== undefined) {
           if (typeof ans.answer === 'number') {
             review.score = ans.answer;
           } else if (typeof ans.answer === 'string') {
-            // Could be text response or selection
             if (itemType === 'TextArea' || itemType === 'TextField') {
               review.textResponse = ans.answer;
             } else if (itemType === 'Dropdown' || itemType === 'MultipleChoiceRadio') {
@@ -83,8 +92,6 @@ export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] =
 
       const sum = reviews.reduce((acc: number, r: any) => acc + (r.score || 0), 0);
       const rowAvg = reviews.length ? sum / reviews.length : 0;
-
-      // Heuristic for maxScore: if all scores are 0/1 then treat as binary (maxScore=1), else default to 5
       const maxScore = reviews.every((r: any) => r.score === 0 || r.score === 1) ? 1 : 5;
 
       return {
@@ -99,32 +106,75 @@ export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] =
   });
 };
 
-// Function to get color class based on score and maxScore
-export const getColorClass = (score: number, maxScore: number) => {
-  let scoreColor = score;
- 
-  // Calculate the percentage of how far from max score (inverted so lower scores = higher percentage)
-  scoreColor = ((maxScore - scoreColor) / maxScore) * 100;
-  
-  // Use dynamic intervals that work for any scale (1-3, 1-5, 1-10, etc.)
-  const interval = 100 / 5; // 20% intervals for 5 color gradients
-  
-  if (scoreColor >= interval * 4) return 'c1';        // Bottom quintile (worst 20%)
-  else if (scoreColor >= interval * 3) return 'c2';   // 4th quintile (60-80% from max)
-  else if (scoreColor >= interval * 2) return 'c3';   // Middle quintile (40-60% from max)
-  else if (scoreColor >= interval * 1) return 'c4';   // 2nd quintile (20-40% from max)
-  else if (scoreColor >= 0) return 'c5';              // Top quintile (best 20%)
-  else return 'cf';
+// Returns an HSL background-color string for a rubric score.
+// k = min(maxScore − minScore, 10) distinct bands; hue goes 0° (red) → 120° (green).
+// Pass dataMin/dataMax to normalize relative to the actual observed data range so the
+// highest score in the dataset maps to green, not just the rubric's absolute maximum.
+export const scoreToColor = (
+  score: number,
+  maxScore: number,
+  minScore = 0,
+  dataMin?: number,
+  dataMax?: number,
+): string => {
+  const lo = dataMin ?? minScore;
+  const hi = dataMax ?? maxScore;
+  if (hi <= lo) return '#ffffff';
+  const range = maxScore - minScore;
+  const k = Math.min(Math.max(range, 1), 10);
+  const clamped = Math.max(lo, Math.min(hi, score));
+  const t = (clamped - lo) / (hi - lo);          // 0 = worst, 1 = best
+  const level = Math.min(Math.round(t * k), k);
+  const bt = k === 0 ? 1 : level / k;            // 0 = red, 1 = green
+  const hue   = Math.round(bt * 120);
+  const sat   = Math.round(85 - bt * 20);         // 85% → 65%
+  const light = Math.round(70 - bt * 20);         // 70% → 50%
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
 };
 
-// Calculate row/column averages. Accepts a mixed RoundRow[] (which may include
-// SectionHeaderData sentinels) — headers are skipped so they don't skew the averages.
-// sortedData in the return value preserves header positions when sortOrderRow === 'none'.
+// Grade percentage cutoffs for the c1–c5 heat-color bands (A/B/C/D/F scale).
+const GRADE_CUTOFF_A = 90;
+const GRADE_CUTOFF_B = 80;
+const GRADE_CUTOFF_C = 70;
+const GRADE_CUTOFF_D = 60;
+
+// Returns a heat color class (c1–c5) based on score vs maxScore.
+// Cutoffs are GRADE_CUTOFF_A/B/C/D above (A/B/C/D/F scale: A→c5, B→c4, C→c3, D→c2, F→c1).
+export const getColorClass = (score: number, maxScore: number): string => {
+  if (maxScore <= 0) return 'cf';
+  const pct = (score / maxScore) * 100;
+  if (pct >= GRADE_CUTOFF_A) return 'c5';
+  if (pct >= GRADE_CUTOFF_B) return 'c4';
+  if (pct >= GRADE_CUTOFF_C) return 'c3';
+  if (pct >= GRADE_CUTOFF_D) return 'c2';
+  return 'c1';
+};
+
+// Returns a heat color class from a 0–100 percentage (e.g. a normalized score).
+// Used by course report tables where scores are already percentages.
+// Accepts optional dataMin/dataMax to spread colors across the actual data range
+// rather than the full 0–100 scale. Cutoffs match the A/B/C/D grading scale.
+export const getHeatColorClass = (
+  value: number,
+  dataMin = 0,
+  dataMax = 100
+): string => {
+  const normalized = dataMax === dataMin
+    ? 1
+    : (value - dataMin) / (dataMax - dataMin);
+  const pct = normalized * 100;
+  if (pct >= 90) return 'c5';
+  if (pct >= 80) return 'c4';
+  if (pct >= 70) return 'c3';
+  if (pct >= 60) return 'c2';
+  return 'c1';
+};
+
+// Calculate row/column averages.
 export const calculateAverages = (
   currentRoundData: RoundRow[],
   sortOrderRow: 'asc' | 'desc' | 'none'
 ) => {
-  // Work only on scored rows for numeric calculations
   const scoredRows = currentRoundData.filter(r => !isHeader(r)) as ReviewData[];
 
   let totalAvg = 0;
@@ -158,8 +208,6 @@ export const calculateAverages = (
     columnAverages[index] = (sum / totalMaxScore) * 5;
   });
 
-  // When sorting, headers stay in place (only scored rows are reordered).
-  // For 'none' the full mixed array (with headers) is returned as-is.
   let sortedData: RoundRow[];
   if (sortOrderRow === 'none') {
     sortedData = [...currentRoundData];
@@ -167,7 +215,6 @@ export const calculateAverages = (
     const sorted = scoredRows.slice().sort((a, b) =>
       sortOrderRow === 'asc' ? a.RowAvg - b.RowAvg : b.RowAvg - a.RowAvg
     );
-    // Re-insert headers at their original positions
     sortedData = [];
     let scoredIdx = 0;
     currentRoundData.forEach(row => {

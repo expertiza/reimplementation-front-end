@@ -37,6 +37,14 @@ interface TableProps {
   headingComments?: Record<string, string>;
   // When true, passes fluid to Container so the table spans the full viewport width.
   fluid?: boolean;
+  // Optional callback to add a CSS class to each row.
+  getRowClassName?: (row: any, allRows: any[]) => string;
+  // Optional callback to add arbitrary HTML attributes to each <tr> (e.g. onMouseEnter for hover tracking).
+  getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
+  // Optional callback to add extra <td> props (e.g. rowSpan). Return { skip: true } to omit the <td> entirely (used for rowspan).
+  getCellProps?: (cell: any, row: any, allRows: any[]) => (React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean });
+  // Optional style applied to the <table> element itself (e.g. width: "fit-content").
+  tableStyle?: React.CSSProperties;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -50,15 +58,20 @@ const Table: React.FC<TableProps> = ({
   tableSize = { span: 12, offset: 0 },
   renderSubComponent,
   getRowCanExpand,
-  disableGlobalFilter = false, // Disable the Global Search
+  disableGlobalFilter = false,
   headingComments = {},
   fluid = false,
+  getRowClassName,
+  getRowProps,
+  getCellProps,
+  tableStyle,
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
+  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [columnVisibility]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
@@ -179,24 +192,26 @@ const Table: React.FC<TableProps> = ({
               <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
             )}
           </Col>
-          {!disableGlobalFilter && (
-            <button
-              type="button"
-              className="btn btn-link p-0 ms-1"
-              onClick={toggleGlobalFilter}
-              aria-expanded={isGlobalFilterVisible}
-              aria-label={`${isGlobalFilterVisible ? "Hide" : "Show"} global search`}
-            >
-              <FaSearch aria-hidden="true" />
-              {isGlobalFilterVisible ? " Hide" : " Show"}
-            </button>
+          {showGlobalFilter && !disableGlobalFilter && (
+            <Col xs="auto">
+              <button
+                type="button"
+                className="btn btn-link p-0 ms-1"
+                onClick={toggleGlobalFilter}
+                aria-expanded={isGlobalFilterVisible}
+                aria-label={`${isGlobalFilterVisible ? "Hide" : "Show"} global search`}
+              >
+                <FaSearch aria-hidden="true" />
+                {isGlobalFilterVisible ? " Hide" : " Show"}
+              </button>
+            </Col>
           )}
         </Row>
       </Container>
       <Container fluid={fluid}>
         <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm">
+            <BTable striped hover responsive size="sm" style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}>
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -204,7 +219,7 @@ const Table: React.FC<TableProps> = ({
                       // Add info icon to Heading if comment exists.
                       const comment = headingComments[header.column.columnDef.header as string];
                       return (
-                        <th key={header.id} colSpan={header.colSpan}>
+                        <th key={header.id} colSpan={header.colSpan} style={(header.column.columnDef.meta as any)?.minWidth ? { minWidth: (header.column.columnDef.meta as any).minWidth } : undefined}>
                           {header.isPlaceholder ? null : (
                             <>
                               <div
@@ -237,12 +252,16 @@ const Table: React.FC<TableProps> = ({
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                    <tr>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
+                    <tr className={getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined} {...(getRowProps ? getRowProps(row) : {})}>
+                      {row.getVisibleCells().map((cell) => {
+                        const { skip, ...tdProps } = getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
+                        if (skip) return null;
+                        return (
+                          <td key={cell.id} {...tdProps}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        );
+                      })}
                     </tr>
                     {row.getIsExpanded() && renderSubComponent && (
                       <tr>
