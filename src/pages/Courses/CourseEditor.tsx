@@ -1,9 +1,9 @@
 import FormCheckBoxGroup from "components/Form/FormCheckBoxGroup";
 import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import useAPI from "../../hooks/useAPI";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
@@ -20,6 +20,36 @@ import { ICourseFormValues, courseVisibility, noSpacesSpecialCharsQuotes, transf
  * @author Harvardhan Patil on Oct, 2024
  */
  
+
+const AutoFillDirectoryName: React.FC<{ mode: string }> = ({ mode }) => {
+  const { values, setFieldValue } = useFormikContext<ICourseFormValues>();
+  const lastGenerated = useRef("");
+  const directoryRef = useRef(values.directory);
+  directoryRef.current = values.directory;
+
+  useEffect(() => {
+    if (mode !== "create" || !values.name) return;
+    if (directoryRef.current !== lastGenerated.current) return;
+
+    // Convert name to a path-safe slug: lowercase, non-alphanumeric runs → '_', strip leading/trailing '_'
+    const slug = values.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = String(now.getFullYear()).slice(-2);
+    // months 1–4: spring, 5–7: summer, 8–12: fall
+    const semester = month >= 8 ? `fall${year}` : month >= 5 ? `summer${year}` : `spring${year}`;
+
+    const generated = `${slug}/${semester}`;
+    lastGenerated.current = generated;
+    setFieldValue("directory", generated);
+  }, [values.name, mode, setFieldValue]);
+
+  return null;
+};
 
 // Initial form values
 const initialValues: ICourseFormValues = {
@@ -127,11 +157,12 @@ useEffect(() => {
           
           
          initialValues={{
+          ...initialValues,
           ...courseData,
-          private: courseData.private || [], // Ensure array default
-          institution_id: courseData.institution_id 
+          private: courseData.private || [],
+          institution_id: courseData.institution_id
             ?? (auth.user?.institution_id ?? initialValues.institution_id),
-          instructor_id: courseData.instructor_id 
+          instructor_id: courseData.instructor_id
             ?? (auth.user?.id ?? initialValues.instructor_id),
         }}
             
@@ -144,6 +175,7 @@ useEffect(() => {
 
             return (
               <Form>
+                <AutoFillDirectoryName mode={mode} />
                 <FormSelect
                   controlId="course-institution"
                   name="institution_id"
@@ -164,8 +196,7 @@ useEffect(() => {
                   disabled={true}
                   options={
                     users?.data
-                      ?.filter((user: any) => user.role.name === "Instructor")
-                      .map((user: any) => ({
+                      ?.map((user: any) => ({
                         label: user.name,
                         value: String(user.id),
                       })) || []
@@ -182,7 +213,7 @@ useEffect(() => {
                 />
                 <FormInput
                   controlId="directory"
-                  label="Course Directory (Mandatory field. No Spaces, Special Characters, or quotes)"
+                  label="Course Directory (Mandatory field. Allowed: letters, digits, underscores, hyphens, slashes)"
                   name="directory"
                 />
                 <FormInput controlId="info" label="Course Information" name="info" />

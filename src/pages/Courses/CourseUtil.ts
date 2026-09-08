@@ -122,22 +122,7 @@ export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
 
 // Input Validation for the Directory path of the course
 export const noSpacesSpecialCharsQuotes = (value: string) => {
-  // Check for spaces
-  if (/\s/.test(value)) {
-    return false;
-  }
-
-  // Check for special characters
-  if (/[^a-zA-Z0-9]/.test(value)) {
-    return false;
-  }
-
-  // Check for quotes
-  if (/["']/.test(value)) {
-    return false;
-  }
-
-  return true;
+  return /^[a-zA-Z0-9_/-]+$/.test(value!);
 };
 
 // Function to format the date from ISO to "Dec 4, 2023, 7:35 PM" format.
