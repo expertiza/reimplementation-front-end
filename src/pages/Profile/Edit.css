@@ -33,25 +33,6 @@
   font-size: 14px;
 }
 
-/* Styles for buttons */
-.form-field button {
-  color: #6c757d;
-  cursor: pointer;
-  background-color: transparent;
-  border: #6c757d 1px solid;
-  padding: 4px 10px;
-  border-radius: 6px;
-}
-
-/* Styles for button hover state */
-.form-field button:hover {
-  background-color: white !important;
-}
-
-/* Styles for button hover state */
-.form-field button:hover {
-  background-color: #0056b3;
-}
 
 /* Styles for h2 user profile */
 .h2-user-profile {
