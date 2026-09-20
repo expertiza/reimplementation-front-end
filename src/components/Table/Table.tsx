@@ -71,7 +71,17 @@ const Table: React.FC<TableProps> = ({
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
-  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [columnVisibility]);
+  useEffect(() => {
+    setColumnVisibilityState((currentVisibility) => {
+      const currentKeys = Object.keys(currentVisibility);
+      const nextKeys = Object.keys(columnVisibility);
+      const isUnchanged =
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => currentVisibility[key] === columnVisibility[key]);
+
+      return isUnchanged ? currentVisibility : columnVisibility;
+    });
+  }, [columnVisibility]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
