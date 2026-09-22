@@ -1,8 +1,9 @@
 import * as Yup from "yup";
 
-import { Button, Modal, Dropdown } from "react-bootstrap";
+import { Button, Dropdown, Tab, Tabs } from "react-bootstrap";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
-import { IAssignmentFormValues, transformAssignmentRequest } from "./AssignmentUtil";
+import { IAssignmentFormValues, transformCreateRequest } from "./AssignmentUtil";
+import RubricsContent, { QuestionnaireOption } from "./RubricsContent";
 import { IEditor } from "../../utils/interfaces";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,10 +15,7 @@ import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
 import FormCheckbox from "../../components/Form/FormCheckBox";
-import { Tabs, Tab } from 'react-bootstrap';
 import '../../custom.scss';
-import { faUsers } from '@fortawesome/free-solid-svg-icons';
-import { faClipboardList } from '@fortawesome/free-solid-svg-icons';
 import Table from "../../components/Table/Table";
 import FormDatePicker from "../../components/Form/FormDatePicker";
 import ToolTip from "../../components/ToolTip";
@@ -113,9 +111,6 @@ const GradeOutOfBoundsChecker: React.FC<{ assignmentId: string | null }> = ({ as
 const initialValues: IAssignmentFormValues = {
   name: "",
   directory_path: "",
-  instructor_id: 1,
-  course_id: 1,
-  // dir: "",
   spec_location: "",
   private: false,
   show_template_review: false,
@@ -128,7 +123,11 @@ const initialValues: IAssignmentFormValues = {
   show_teammate_review: false,
   is_pair_programming: false,
   has_mentors: false,
+  auto_assign_mentors: false,
   has_topics: false,
+  allow_tag_prompts: false,
+  available_to_students: false,
+  reviews_visible_to_other_reviewers: false,
   review_topic_threshold: 0,
   maximum_number_of_reviews_per_submission: 0,
   review_strategy: "",
@@ -144,26 +143,23 @@ const initialValues: IAssignmentFormValues = {
   is_review_anonymous: false,
   is_review_done_by_teams: false,
   allow_self_reviews: false,
-  reviews_visible_to_other_reviewers: false,
-  number_of_review_rounds: 0,
+  number_of_review_rounds: 1,
   use_signup_deadline: false,
   use_drop_topic_deadline: false,
   use_team_formation_deadline: false,
-  allow_tag_prompts: false,
+  date_time: {} as Record<string | number, Date | null>,
   weights: [],
   notification_limits: [],
-  use_date_updater: [],
-  submission_allowed: [],
-  review_allowed: [],
-  teammate_allowed: [],
-  metareview_allowed: [],
-  reminder: [],
-  // Add other assignment-specific initial values
+  submission_allowed: {} as Record<string | number, string>,
+  review_allowed: {} as Record<string | number, string>,
+  teammate_allowed: {} as Record<string | number, string>,
+  // Rubrics
+  is_peer_reviewed: true,
+  allow_participants_to_create_bookmarks: false,
 };
 
 const validationSchema = Yup.object({
-  name: Yup.string().required("Required")
-  // Add other assignment-specific validation rules
+  name: Yup.string().required("Required"),
 });
 
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
@@ -224,8 +220,20 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
+  const [topicSettings, setTopicSettings] = useState<TopicSettings>({
+    allowTopicSuggestions: false,
+    enableBidding: false,
+    enableAuthorsReview: true,
+    allowReviewerChoice: true,
+    allowBookmarks: false,
+    allowBiddingForReviewers: false,
+    allowAdvertiseForPartners: false,
+  });
+  const [topicsData, setTopicsData] = useState<TopicData[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(false);
+  const [topicsError, setTopicsError] = useState<string | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
     if (assignmentResponse?.data) {
       setAssignmentName(assignmentResponse.data.name || "");
       // Load allow_bookmarks setting from backend
@@ -234,12 +242,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       }
     }
   }, [assignmentResponse]);
-
-  useEffect(() => {
-    if (assignmentError) {
-      dispatch(alertActions.showAlert({ variant: "danger", message: assignmentError }));
-    }
-  }, [assignmentError, dispatch]);
 
   useEffect(() => {
     if (accessibleDutiesError) {
@@ -303,7 +305,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     }
   }, [createResponse, dispatch, id, fetchTopics]);
 
-   useEffect(() => {
+  useEffect(() => {
     if (createError) {
       dispatch(alertActions.showAlert({ variant: "danger", message: createError }));
     }
@@ -491,7 +493,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [dropTeamRequest]);
       
         const handleDeleteTopic = useCallback((topicIdentifier: string) => {
-          console.log(`Delete topic ${topicIdentifier}`);
           if (id) {
             deleteTopic({
               url: `/project_topics`,
@@ -505,7 +506,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, deleteTopic]);
       
         const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
-          console.log(`Edit topic DB id ${dbId}`, updatedData);
           updateTopic({
             url: `/project_topics/${dbId}`,
             method: 'PATCH',
@@ -524,7 +524,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
         }, [id, updateTopic]);
       
         const handleCreateTopic = useCallback((topicData: any) => {
-          console.log(`Create topic`, topicData);
           if (id) {
             createTopic({
               url: `/project_topics`,
@@ -545,8 +544,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
           }
         }, [id, createTopic]);
       
-        const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
-          console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
+        const handleApplyPartnerAd = useCallback((_topicId: string, _applicationText: string) => {
           // TODO: Implement partner ad application logic
         }, []);
       
@@ -594,38 +592,26 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     coursesError && dispatch(alertActions.showAlert({ variant: "danger", message: coursesError }));
   }, [coursesError, dispatch]);
 
-  // Load calibration submissions on component mount
+  // Load instructor calibration reviews for this assignment
   useEffect(() => {
-    // sendCalibrationSubmissionsRequest({
-    //   url: `/calibration_submissions/get_instructor_calibration_submissions/${assignmentData.id}`,
-    //   method: HttpMethod.GET,
-    // });
-    setCalibrationSubmissions([
-      {
-        id: 1,
-        participant_name: "Participant 1",
-        review_status: "not_started",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-      {
-        id: 2,
-        participant_name: "Participant 2",
-        review_status: "in_progress",
-        submitted_content: { hyperlinks: ["https://www.google.com"], files: ["file1.txt", "file2.pdf"] },
-      },
-    ]);
-  }, []);
+    if (id) {
+      sendCalibrationSubmissionsRequest({
+        url: `/assignments/${id}/calibration_submissions`,
+        method: HttpMethod.GET,
+      });
+    }
+  }, [id]);
 
-  // Handle calibration submissions response
   useEffect(() => {
     if (calibrationSubmissionsResponse && calibrationSubmissionsResponse.status >= 200 && calibrationSubmissionsResponse.status < 300) {
       setCalibrationSubmissions(calibrationSubmissionsResponse.data || []);
     }
   }, [calibrationSubmissionsResponse]);
 
-  // Show calibration submissions error message
   useEffect(() => {
-    calibrationSubmissionsError && dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
+    if (calibrationSubmissionsError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: calibrationSubmissionsError }));
+    }
   }, [calibrationSubmissionsError, dispatch]);
 
 
@@ -638,10 +624,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       return;
     }
 
-    // validate sum of weights = 100%
-    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) || 0;
-    const hasWeights = (values.weights?.length ?? 0) > 0;
-    if (hasWeights && totalWeight !== 100) {
+    // validate sum of weights = 100% (only when at least one weight is non-zero)
+    const totalWeight = values.weights?.reduce((acc: number, curr: number) => acc + curr, 0) ?? 0;
+    const hasNonZeroWeights = values.weights?.some((w: number) => w !== 0) ?? false;
+    if (hasNonZeroWeights && totalWeight !== 100) {
       dispatch(alertActions.showAlert({ variant: "danger", message: "Sum of weights must be 100%" }));
       return;
     }
@@ -653,27 +639,18 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       method = HttpMethod.PATCH;
     }
     assignmentData.name = values.name;
-    sendRequest({ url, method, data: values, transformRequest: transformAssignmentRequest });
+    sendRequest({ url, method, data: values, transformRequest: transformCreateRequest });
     submitProps.setSubmitting(false);
   };
 
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/assignments");
 
-  // Map the currently selected questionnaire for each round (used to prefill dropdowns)
-  const roundSelections: Record<number, { id: number; name: string }> = {};
-  (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
-    if (aq.used_in_round && aq.questionnaire) {
-      roundSelections[aq.used_in_round] = { id: aq.questionnaire.id, name: aq.questionnaire.name };
-    }
-  });
-
-  // Build dropdown options from the questionnaires
-  const questionnaireOptions = (assignmentData.questionnaires || []).map((q: any) => ({
-    label: q.name,
-    value: q.id,
+  // Build QuestionnaireOption list for RubricsContent
+  const questionnaireOptions: QuestionnaireOption[] = (assignmentData.questionnaires || []).map((q: any) => ({
+    id: q.id,
+    name: q.name,
+    questionnaire_type: q.questionnaire_type,
   }));
-
-  const reviewRounds = assignmentData.number_of_review_rounds;
 
   // Build initial form values from existing assignment data (update) or defaults (create)
   const formInitialValues: IAssignmentFormValues & Record<string, any> = {
@@ -681,31 +658,53 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   };
 
   if (mode === "update") {
-    // Prefill per-round questionnaire selections and ids
+    // Prefill per-round and global questionnaire selections from stored assignment_questionnaires
     (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
-      if (aq.used_in_round && aq.questionnaire) {
-        formInitialValues[`questionnaire_round_${aq.used_in_round}`] = aq.questionnaire.id;
-        formInitialValues[`assignment_questionnaire_id_${aq.used_in_round}`] = aq.id;
+      if (!aq.questionnaire) return;
+      const round = aq.used_in_round;
+      const qid = aq.questionnaire.id;
+
+      if (round >= 1) {
+        formInitialValues[`questionnaire_round_${round}`] = qid;
+        formInitialValues[`assignment_questionnaire_id_${round}`] = aq.id;
+        formInitialValues[`review_round_${round}_weight`] = aq.questionnaire_weight ?? 0;
+        formInitialValues[`review_round_${round}_notification_limit`] = aq.notification_limit ?? 0;
+        formInitialValues[`review_round_${round}_dropdown`] = aq.dropdown ?? false;
+        // Also seed the non-varying fields (round 1 = the single review rubric)
+        if (round === 1 && !formInitialValues.review_questionnaire_id) {
+          formInitialValues.review_questionnaire_id = qid;
+          formInitialValues.review_assignment_questionnaire_id = aq.id;
+          formInitialValues.review_questionnaire_weight = aq.questionnaire_weight ?? 0;
+          formInitialValues.review_questionnaire_notification_limit = aq.notification_limit ?? 0;
+          formInitialValues.review_questionnaire_dropdown = aq.dropdown ?? false;
+        }
+      } else if (round === 0) {
+        // Global (non-round) rubrics: map by questionnaire_type
+        const qType = aq.questionnaire.questionnaire_type;
+        if (qType === 'AuthorFeedbackQuestionnaire') {
+          formInitialValues.author_feedback_questionnaire_id = qid;
+          formInitialValues.author_feedback_assignment_questionnaire_id = aq.id;
+          formInitialValues.author_feedback_questionnaire_weight = aq.questionnaire_weight ?? 0;
+          formInitialValues.author_feedback_questionnaire_notification_limit = aq.notification_limit ?? 0;
+          formInitialValues.author_feedback_questionnaire_dropdown = aq.dropdown ?? false;
+        } else if (qType === 'TeammateReviewQuestionnaire') {
+          formInitialValues.teammate_questionnaire_id = qid;
+          formInitialValues.teammate_assignment_questionnaire_id = aq.id;
+          formInitialValues.teammate_questionnaire_weight = aq.questionnaire_weight ?? 0;
+          formInitialValues.teammate_questionnaire_notification_limit = aq.notification_limit ?? 0;
+          formInitialValues.teammate_questionnaire_dropdown = aq.dropdown ?? false;
+        } else if (qType === 'BookmarkRatingQuestionnaire') {
+          formInitialValues.bookmark_questionnaire_id = qid;
+          formInitialValues.bookmark_assignment_questionnaire_id = aq.id;
+          formInitialValues.bookmark_questionnaire_weight = aq.questionnaire_weight ?? 0;
+          formInitialValues.bookmark_questionnaire_notification_limit = aq.notification_limit ?? 0;
+          formInitialValues.bookmark_questionnaire_dropdown = aq.dropdown ?? false;
+        }
       }
     });
   }
 
 
-  // Topic settings state
-    const [topicSettings, setTopicSettings] = useState<TopicSettings>({
-      allowTopicSuggestions: false,
-      enableBidding: false,
-      enableAuthorsReview: true,
-      allowReviewerChoice: true,
-      allowBookmarks: false,
-      allowBiddingForReviewers: false,
-      allowAdvertiseForPartners: false,
-    });
-  
-    // Topics data state
-    const [topicsData, setTopicsData] = useState<TopicData[]>([]);
-    const [topicsLoading, setTopicsLoading] = useState(false);
-    const [topicsError, setTopicsError] = useState<string | null>(null);
 
 
 
@@ -781,8 +780,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <div style={{ paddingLeft: 30 }}><FormCheckbox controlId="assignment-staggered_deadline_assignment" label="Staggered deadline assignment?" name="staggered_deadline_assignment" /></div>
                 )}
 
-                <FormCheckbox controlId="assignment-has_quizzes" label="Has quizzes?" name="has_quizzes" />
-                <FormCheckbox controlId="assignment-calibration_for_training" label="Calibration for training?" name="calibration_for_training" />
                 <FormCheckbox controlId="assignment-allow_tag_prompts" label="Allow tag prompts so author can tag feedback comments?" name="allow_tag_prompts" />
                 <FormCheckbox controlId="assignment-available_to_students" label="Available to students?" name="available_to_students" />
               </Tab>
@@ -808,211 +805,83 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
               {/* Rubrics Tab */}
               <Tab eventKey="rubrics" title="Rubrics">
-                <div style={{ marginTop: '20px' }}></div>
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_round" label="Review rubric varies by round?" name="review_rubric_varies_by_round" />
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_topic" label="Review rubric varies by topic?" name="review_rubric_varies_by_topic" />
-                <FormCheckbox controlId="assignment-review_rubric_varies_by_role" label="Review rubric varies by role?" name="review_rubric_varies_by_role" />
-
-                <div style={{ marginTop: '20px' }}>
-                  <Table
-                    showColumnFilter={false}
-                    showGlobalFilter={false}
-                    showPagination={false}
-                    data={[
-                      ...(() => {
-                        // Determine how many review rounds to show in the Rubrics table.
-                        // For "vary by round", if the count is 0/undefined, still show one round
-                        // so the user can configure at least the first round's rubric.
-                        const baseRounds =
-                          (mode === "update"
-                            ? reviewRounds
-                            : formik.values.number_of_review_rounds) ?? 0;
-                        const rounds = formik.values.review_rubric_varies_by_round
-                          ? (baseRounds || 1)
-                          : baseRounds;
-                        if (formik.values.review_rubric_varies_by_round) {
-                          return Array.from({ length: rounds }, (_, i) => ([
-                            {
-                              id: i + 1,
-                              title: `Review round ${i + 1}:`,
-                              questionnaire_options: questionnaireOptions,
-                              selected_questionnaire: roundSelections[i + 1]?.id,
-                              questionnaire_type: 'dropdown',
-                            },
-                            {
-                              id: i + 1,
-                              title: `Add tag prompts`,
-                              questionnaire_type: 'tag_prompts',
-                            }
-                          ])).flat();
-                        }
-                        return [
-                          {
-                            id: 0,
-                            title: "Review rubric:",
-                            questionnaire_options: questionnaireOptions,
-                            selected_questionnaire: roundSelections[1]?.id,
-                            questionnaire_type: 'dropdown',
-                          },
-                          {
-                            id: 0,
-                            title: "Add tag prompts",
-                            questionnaire_type: 'tag_prompts',
-                          }
-                        ];
-                      })(),
-                      {
-                        id: formik.values.number_of_review_rounds ?? 0,
-                        title: "Author feedback:",
-                        questionnaire_options: [{ label: 'Standard author feedback', value: 'Standard author feedback' }],
-                        questionnaire_type: 'dropdown',
-                      },
-                      {
-                        id: formik.values.number_of_review_rounds ?? 0,
-                        title: "Add tag prompts",
-                        questionnaire_type: 'tag_prompts',
-                      },
-                      {
-                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
-                        title: "Teammate review:",
-                        questionnaire_options: [{ label: 'Review with Github metrics', value: 'Review with Github metrics' }],
-                        questionnaire_type: 'dropdown',
-                      },
-                      {
-                        id: (formik.values.number_of_review_rounds ?? 0) + 1,
-                        title: "Add tag prompts",
-                        questionnaire_type: 'tag_prompts',
-                      },
-                    ]}
-                    columns={[
-                      {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.title}</div>,
-                        accessorKey: "title", header: "", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => <div style={{ marginRight: '10px' }}>{row.original.questionnaire_type === 'dropdown' &&
-                          <FormSelect
-                            controlId={`assignment-questionnaire_${row.original.id}`}
-                            name={`questionnaire_round_${row.original.id}`}
-                            options={row.original.questionnaire_options || []}
-                          // Formik initialValues handles prefill via questionnaire_round_X fields
-                          />}
-                          {row.original.questionnaire_type === 'tag_prompts' &&
-                            <div style={{ marginBottom: '10px' }}><Button variant="outline-secondary">+Tag prompt+</Button>
-                              <Button variant="outline-secondary">-Tag prompt-</Button></div>}</div>,
-                        accessorKey: "questionnaire", header: "Questionnaire", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => {
-                          if (row.original.questionnaire_type !== 'dropdown') {
-                            return <div style={{ marginRight: '10px' }} />;
-                          }
-
-                          // Use distinct indices in the weights array so that
-                          // different rows (review rubric, author feedback,
-                          // teammate review, etc.) do not overwrite each other.
-                          let weightIndex: number;
-                          if (row.original.title === "Author feedback:") {
-                            weightIndex = 100; // separate slot for author feedback
-                          } else if (row.original.title === "Teammate review:") {
-                            weightIndex = 101; // separate slot for teammate review
-                          } else {
-                            weightIndex = row.original.id;
-                          }
-
-                          return (
-                            <div style={{ marginRight: '10px' }}>
-                              <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                                <FormInput
-                                  controlId={`assignment-weight_${row.original.id}`}
-                                  name={`weights[${weightIndex}]`}
-                                  type="number"
-                                />
-                                %
-                              </div>
-                            </div>
-                          );
-                        },
-                        accessorKey: `weights`, header: "Weight", enableSorting: false, enableColumnFilter: false
-                      },
-                      {
-                        cell: ({ row }) => <>{row.original.questionnaire_type === 'dropdown' &&
-                          <><div style={{ width: '70px', display: 'flex', alignItems: 'center' }}><FormInput controlId={`assignment-notification_limit_${row.original.id}`} name={`notification_limits[${row.original.id}]`} type="number" />%</div></>}</>,
-                        accessorKey: "notification_limits", header: "Notification Limit", enableSorting: false, enableColumnFilter: false
-                      },
-                    ]}
-                  />
-                </div>
+                <RubricsContent questionnaires={questionnaireOptions} />
               </Tab>
 
               {/* Review Strategy Tab */}
               <Tab eventKey="review_strategy" title="Review strategy">
-                <div style={{ marginTop: '20px' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
-                  <label className="form-label">Review strategy:</label>
-                  <FormSelect
-                    controlId="assignment-review_strategy"
-                    name="review_strategy"
-                    options={[
-                      { label: "Review Strategy 1", value: 1 },
-                      { label: "Review Strategy 2", value: 2 },
-                      { label: "Review Strategy 3", value: 3 },
-                    ]}
-                  />
-                </div>
-                {formik.values.has_topics && (
-                  <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
-                    <label className="form-label">Review topic threshold (k):</label>
-                    <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                      <FormInput controlId="assignment-review_topic_threshold" name="review_topic_threshold" type="number" />
+                <div className="mt-4" style={{ maxWidth: 640 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "max-content 1fr", alignItems: "center", columnGap: 16, rowGap: 8 }}>
+                    <label className="form-label mb-0">Review strategy:</label>
+                    <FormSelect
+                      controlId="assignment-review_strategy"
+                      name="review_strategy"
+                      options={[
+                        { label: "-- Select --", value: "" },
+                        { label: "Review Strategy 1", value: "1" },
+                        { label: "Review Strategy 2", value: "2" },
+                        { label: "Review Strategy 3", value: "3" },
+                      ]}
+                    />
+
+                    {formik.values.has_topics && (
+                      <>
+                        <label className="form-label mb-0">Review topic threshold (k):</label>
+                        <div style={{ width: 70 }}>
+                          <FormInput controlId="assignment-review_topic_threshold" label="" name="review_topic_threshold" type="number" />
+                        </div>
+                      </>
+                    )}
+
+                    <label className="form-label mb-0">Maximum reviews per submission:</label>
+                    <div style={{ width: 70 }}>
+                      <FormInput controlId="assignment-maximum_number_of_reviews_per_submission" label="" name="maximum_number_of_reviews_per_submission" type="number" />
                     </div>
                   </div>
-                )}
-                <div style={{ display: 'grid', alignItems: 'center', columnGap: '10px', gridTemplateColumns: 'max-content 1fr' }}>
-                  <label className="form-label">Maximum number of reviews per submission:</label>
-                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                    <FormInput controlId="assignment-maximum_number_of_reviews_per_submission" name="maximum_number_of_reviews_per_submission" type="number" />
-                  </div>
-                  <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
-                  <div></div>
-                  <label className="form-label">Set allowed number of reviews per reviewer:</label>
-                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                    <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
-                  </div>
-                  <label className="form-label">Set required number of reviews per reviewer:</label>
-                  <div style={{ width: '70px', display: 'flex', alignItems: 'center' }}>
-                    <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" name="set_required_number_of_reviews_per_reviewer" type="number" />
-                  </div>
-                </div>
-                <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
-                <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
-                <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
-                <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
-                <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
 
-                {/* Instructor grade scale — auto-populated from questionnaire 1, editable by instructor */}
-                <GradeOutOfBoundsChecker assignmentId={id ?? null} />
-                <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <label className="form-label mb-0">Instructor grade scale:</label>
-                  <label className="form-label mb-0">Min score:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    style={{ width: '80px' }}
-                    value={formik.values.instructor_grade_min_score ?? ''}
-                    onChange={(e) => formik.setFieldValue('instructor_grade_min_score', e.target.value === '' ? null : Number(e.target.value))}
-                  />
-                  <label className="form-label mb-0">Max score:</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    style={{ width: '80px' }}
-                    value={formik.values.instructor_grade_max_score ?? ''}
-                    onChange={(e) => formik.setFieldValue('instructor_grade_max_score', e.target.value === '' ? null : Number(e.target.value))}
-                  />
-                </div>
+                  <div className="mt-3">
+                    <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
+                    {formik.values.has_max_review_limit && (
+                      <div className="ms-4 mt-1" style={{ display: "grid", gridTemplateColumns: "max-content 80px", alignItems: "center", columnGap: 12, rowGap: 4 }}>
+                        <label className="form-label mb-0">Allowed reviews per reviewer:</label>
+                        <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" label="" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
+                        <label className="form-label mb-0">Required reviews per reviewer:</label>
+                        <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" label="" name="set_required_number_of_reviews_per_reviewer" type="number" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-2">
+                    <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
+                    <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
+                    <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
+                    <FormCheckbox controlId="assignment-reviews_visible_to_other_reviewers" label="Reviews visible to other reviewers?" name="reviews_visible_to_other_reviewers" />
+                    <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
+                  </div>
+
+                  {/* Instructor grade scale — auto-populated from questionnaire 1, editable by instructor */}
+                  <GradeOutOfBoundsChecker assignmentId={id ?? null} />
+                  <div className="mt-3" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <label className="form-label mb-0">Instructor grade scale:</label>
+                    <label className="form-label mb-0">Min:</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      style={{ width: 80 }}
+                      value={formik.values.instructor_grade_min_score ?? ''}
+                      onChange={(e) => formik.setFieldValue('instructor_grade_min_score', e.target.value === '' ? null : Number(e.target.value))}
+                    />
+                    <label className="form-label mb-0">Max:</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      style={{ width: 80 }}
+                      value={formik.values.instructor_grade_max_score ?? ''}
+                      onChange={(e) => formik.setFieldValue('instructor_grade_max_score', e.target.value === '' ? null : Number(e.target.value))}
+                    />
+                  </div>
                 {formik.values.is_role_based && (
-                  <div style={{ marginTop: '10px', paddingLeft: 30, maxWidth: '520px' }}>
+                  <div className="mt-3" style={{ paddingLeft: 30, maxWidth: '520px' }}>
                     {!id && (
                       <div className="alert alert-warning" role="alert">
                         Save the assignment before adding duties.
@@ -1095,6 +964,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     </div>
                   </div>
                 )}
+                </div>{/* end mt-4 wrapper */}
               </Tab>
 
               {/* Due dates Tab */}
@@ -1120,6 +990,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       showColumnFilter={false}
                       showGlobalFilter={false}
                       showPagination={false}
+                      getRowId={(row) => String(row.id)}
                       data={[
                         ...Array.from({ length: formik.values.number_of_review_rounds ?? 0 }, (_, i) => ([
                           {
@@ -1164,14 +1035,11 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                           accessorKey: "date_time", header: "Date & Time", enableSorting: false, enableColumnFilter: false
                         },
                         {
-                          cell: ({ row }) => <><FormCheckbox controlId={`assignment-use_date_updater_${row.original.id}`} name={`use_date_updater[${row.original.id}]`} /></>,
-                          accessorKey: `use_date_updater`, header: "Use date updater?", enableSorting: false, enableColumnFilter: false
-                        },
-                        {
                           cell: ({ row }) => <>
                             <FormSelect controlId={`assignment-submission_allowed_${row.original.id}`} name={`submission_allowed[${row.original.id}]`} options={[
-                              { label: "Yes", value: "yes" },
-                              { label: "No", value: "no" },
+                              { label: "Yes", value: "3" },
+                              { label: "Late", value: "2" },
+                              { label: "No", value: "1" },
                             ]} />
                           </>,
                           accessorKey: "submission_allowed", header: "Submission allowed?", enableSorting: false, enableColumnFilter: false
@@ -1179,8 +1047,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         {
                           cell: ({ row }) => <>
                             <FormSelect controlId={`assignment-review_allowed_${row.original.id}`} name={`review_allowed[${row.original.id}]`} options={[
-                              { label: "Yes", value: "yes" },
-                              { label: "No", value: "no" },
+                              { label: "Yes", value: "3" },
+                              { label: "Late", value: "2" },
+                              { label: "No", value: "1" },
                             ]} />
                           </>,
                           accessorKey: "review_allowed", header: "Review allowed?", enableSorting: false, enableColumnFilter: false
@@ -1188,50 +1057,21 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                         {
                           cell: ({ row }) => <>
                             <FormSelect controlId={`assignment-teammate_allowed_${row.original.id}`} name={`teammate_allowed[${row.original.id}]`} options={[
-                              { label: "Yes", value: "yes" },
-                              { label: "No", value: "no" },
+                              { label: "Yes", value: "3" },
+                              { label: "Late", value: "2" },
+                              { label: "No", value: "1" },
                             ]} />
                           </>,
                           accessorKey: "teammate_allowed", header: "Teammate allowed?", enableSorting: false, enableColumnFilter: false
-                        },
-                        {
-                          cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-metareview_allowed_${row.original.id}`} name={`metareview_allowed[${row.original.id}]`} options={[
-                              { label: "Yes", value: "yes" },
-                              { label: "No", value: "no" },
-                            ]} />
-                          </>,
-                          accessorKey: "metareview_allowed", header: "Meta-review allowed?", enableSorting: false, enableColumnFilter: false
-                        },
-                        {
-                          cell: ({ row }) => <>
-                            <FormSelect controlId={`assignment-reminder_${row.original.id}`} name={`reminder[${row.original.id}]`} options={[
-                              { label: "1", value: "1" },
-                              { label: "2", value: "2" },
-                              { label: "3", value: "3" },
-                              { label: "4", value: "4" },
-                              { label: "5", value: "5" },
-                              { label: "6", value: "6" },
-                              { label: "7", value: "7" },
-                              { label: "8", value: "8" },
-                              { label: "9", value: "9" },
-                              { label: "10", value: "10" },
-                            ]} /></>,
-                          accessorKey: "reminder", header: "Reminder (hrs)", enableSorting: false, enableColumnFilter: false
                         },
                       ]}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', columnGap: '10px' }}>
-                  <FormCheckbox controlId={`assignment-apply_late_policy`} label="Apply late policy:" name={`apply_late_policy?`} />
-                  <div style={{ marginBottom: '-0.3rem' }}>
-                    <FormSelect controlId={`assignment-late_policy_date_time`} name={`late_policy_date_time`} options={[
-                      { label: "--None--", value: "none" },
-                    ]} />
-                  </div>
-                  <Button variant="outline-secondary">New late policy</Button>
+                <div className="mt-3 d-flex align-items-center" style={{ columnGap: 10 }}>
+                  <FormCheckbox controlId="assignment-apply_late_policy" label="Apply late policy:" name="apply_late_policy" />
+                  <FormSelect controlId="assignment-late_policy_id" name="late_policy_id" options={[{ label: "-- None --", value: 0 }]} />
                 </div>
 
 
@@ -1239,7 +1079,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
               {/* Calibration Tab */}
                 <Tab eventKey="calibration" title="Calibration">
-                  <h3>Submit reviews for calibration</h3>
+
                   <div>
                     <div style={{ display: 'ruby', marginTop: '30px' }}>
                       <Table
@@ -1364,86 +1204,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       </Formik>
     </div >
 
-  );
-
-  return (
-    <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
-      <Modal.Header closeButton>
-        <Modal.Title>{mode === "update" ? `Update Assignment - ${assignmentData.name}` : "Create Assignment"}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {assignmentError && <p className="text-danger">{assignmentError}</p>}
-        <Tabs defaultActiveKey="general" id="assignment-tabs">
-          <Tab eventKey="general" title="General">
-            <Formik
-              initialValues={mode === "update" ? assignmentData : initialValues}
-              onSubmit={onSubmit}
-              validationSchema={validationSchema}
-              validateOnChange={false}
-              enableReinitialize={true}
-            >
-              {(formik) => {
-                return (
-                  <Form>
-                    <FormInput controlId="assignment-name" label="Assignment Name" name="name" />
-                    <FormInput controlId="assignment-directory_path" label="Submission Directory" name="directory_path" />
-                    <FormInput controlId="assignment-spec_location" label="Description URL" name="spec_location" />
-                    <FormInput controlId="assignment-submitter_count" label="Submitter Count" name="submitter_count" type="number" />
-                    <FormInput controlId="assignment-num_reviews" label="Number of Reviews" name="num_reviews" type="number" />
-                    <FormInput controlId="assignment-num_review_of_reviews" label="Number of Review of Reviews" name="num_review_of_reviews" type="number" />
-                    <FormInput controlId="assignment-num_review_of_reviewers" label="Number of Review of Reviewers" name="num_review_of_reviewers" type="number" />
-                    <FormInput controlId="assignment-num_reviewers" label="Number of Reviewers" name="num_reviewers" type="number" />
-                    <FormInput controlId="assignment-max_team_size" label="Max Team Size" name="max_team_size" type="number" />
-                    <FormInput controlId="assignment-days_between_submissions" label="Days Between Submissions" name="days_between_submissions" type="number" />
-                    <FormInput controlId="assignment-review_assignment_strategy" label="Review Assignment Strategy" name="review_assignment_strategy" />
-                    <FormInput controlId="assignment-max_reviews_per_submission" label="Max Reviews Per Submission" name="max_reviews_per_submission" type="number" />
-                    <FormInput controlId="assignment-review_topic_threshold" label="Review Topic Threshold" name="review_topic_threshold" type="number" />
-                    <FormInput controlId="assignment-rounds_of_reviews" label="Rounds of Reviews" name="rounds_of_reviews" type="number" />
-                    <FormInput controlId="assignment-num_quiz_questions" label="Number of Quiz Questions" name="num_quiz_questions" type="number" />
-                    <FormInput controlId="assignment-late_policy_id" label="Late Policy ID" name="late_policy_id" type="number" />
-                    <FormInput controlId="assignment-max_bids" label="Max Bids" name="max_bids" type="number" />
-                    <FormCheckbox controlId="assignment-private" label="Private Assignment" name="private" />
-                    <FormCheckbox controlId="assignment-show_teammate_review" label="Show Teammate Reviews?" name="show_teammate_review" />
-                    <FormCheckbox controlId="assignment-require_quiz" label="Has quiz?" name="require_quiz" />
-                    <FormCheckbox controlId="assignment-has_badge" label="Has badge?" name="has_badge" />
-                    <FormCheckbox controlId="assignment-staggered_deadline" label="Staggered deadline assignment?" name="staggered_deadline" />
-                    <FormCheckbox controlId="assignment-is_calibrated" label="Calibration for training?" name="is_calibrated" />
-                    <FormCheckbox controlId="assignment-reviews_visible_to_all" label="Reviews Visible to All" name="reviews_visible_to_all" />
-                    <FormCheckbox controlId="assignment-allow_suggestions" label="Allow Suggestions" name="allow_suggestions" />
-                    <FormCheckbox controlId="assignment-copy_flag" label="Copy Flag" name="copy_flag" />
-                    <FormCheckbox controlId="assignment-microtask" label="Microtask" name="microtask" />
-                    <FormCheckbox controlId="assignment-is_coding_assignment" label="Is Coding Assignment" name="is_coding_assignment" />
-                    <FormCheckbox controlId="assignment-is_intelligent" label="Is Intelligent" name="is_intelligent" />
-                    <FormCheckbox controlId="assignment-calculate_penalty" label="Calculate Penalty" name="calculate_penalty" />
-                    <FormCheckbox controlId="assignment-is_penalty_calculated" label="Is Penalty Calculated" name="is_penalty_calculated" />
-                    <FormCheckbox controlId="assignment-availability_flag" label="Availability Flag" name="availability_flag" />
-                    <FormCheckbox controlId="assignment-use_bookmark" label="Use Bookmark" name="use_bookmark" />
-                    <FormCheckbox controlId="assignment-can_review_same_topic" label="Can Review Same Topic" name="can_review_same_topic" />
-                    <FormCheckbox controlId="assignment-can_choose_topic_to_review" label="Can Choose Topic to Review" name="can_choose_topic_to_review" />
-                    <Modal.Footer>
-                      <Button variant="outline-secondary" onClick={handleClose}>
-                        Close
-                      </Button>
-
-                      <Button
-                        variant="outline-success"
-                        type="submit"
-                        disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
-                      >
-                        {mode === "update" ? "Update Assignment" : "Create Assignment"}
-                      </Button>
-                    </Modal.Footer>
-                  </Form>
-                );
-              }}
-            </Formik>
-          </Tab>
-          <Tab eventKey="etc" title="Etc">
-            <EtcTab assignmentId={assignmentData?.id} />
-          </Tab>
-        </Tabs>
-      </Modal.Body>
-    </Modal>
   );
 };
 

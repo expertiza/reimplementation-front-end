@@ -45,6 +45,10 @@ interface TableProps {
   getCellProps?: (cell: any, row: any, allRows: any[]) => (React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean });
   // Optional style applied to the <table> element itself (e.g. width: "fit-content").
   tableStyle?: React.CSSProperties;
+  // Optional stable row identity function. Receives the raw row object and its index;
+  // return a unique string for each row. Without this, TanStack defaults to array index,
+  // which causes React to unmount/remount rows when items are inserted in the middle.
+  getRowId?: (row: Record<string, any>, index: number) => string;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -65,13 +69,15 @@ const Table: React.FC<TableProps> = ({
   getRowProps,
   getCellProps,
   tableStyle,
+  getRowId,
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
-  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [columnVisibility]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [JSON.stringify(columnVisibility)]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
@@ -139,6 +145,7 @@ const Table: React.FC<TableProps> = ({
   const table = useReactTable({
     data: initialData,
     columns: colsPlusExpander,
+    ...(getRowId ? { getRowId } : {}),
     state: {
       sorting,
       globalFilter,

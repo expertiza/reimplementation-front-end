@@ -4,6 +4,7 @@ import RootLayout from "./layout/Root";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
+import CreateAssignment from "./pages/Assignments/CreateAssignment";
 import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
 import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
 import CreateTeams from "./pages/Assignments/CreateTeams";
@@ -137,8 +138,7 @@ function App() {
 
         {
           path: "assignments/new",
-          element: <AssignmentEditor mode="create" />,
-          loader: loadAssignment,
+          element: <ProtectedRoute element={<CreateAssignment />} leastPrivilegeRole={ROLE.TA} />,
         },
 
         {

@@ -25,7 +25,6 @@ const FormDatePicker: React.FC<IFormDatePickerProps> = (props) => {
         return (
           <Form.Group controlId={controlId}>
             <DatePicker
-              required
               showTimeSelect
               timeIntervals={60}
               minDate={new Date()}

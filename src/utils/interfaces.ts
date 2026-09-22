@@ -116,11 +116,14 @@ export interface IAssignmentRequest {
   has_max_review_limit?: boolean;
   set_allowed_number_of_reviews_per_reviewer?: number;
   set_required_number_of_reviews_per_reviewer?: number;
+  is_role_based?: boolean;
   is_review_anonymous?: boolean;
   is_review_done_by_teams?: boolean;
   allow_self_reviews?: boolean;
   reviews_visible_to_other_reviewers?: boolean;
   number_of_review_rounds?: number;
+  instructor_grade_min_score?: number | null;
+  instructor_grade_max_score?: number | null;
 
   // Dates / penalties
   days_between_submissions?: number;
@@ -134,20 +137,8 @@ export interface IAssignmentRequest {
   use_drop_topic_deadline?: boolean;
   use_team_formation_deadline?: boolean;
 
-  // JSON-configured deadline settings
-  weights?: number[];
-  notification_limits?: number[];
-  use_date_updater?: boolean[];
-  submission_allowed?: any[];
-  review_allowed?: any[];
-  teammate_allowed?: any[];
-  metareview_allowed?: any[];
-  reminder?: any[];
-
   // Misc flags matching tabs
   allow_tag_prompts?: boolean;
-  has_quizzes?: boolean;
-  calibration_for_training?: boolean;
   available_to_students?: boolean;
   allow_topic_suggestion_from_students?: boolean;
   enable_bidding_for_topics?: boolean;
@@ -157,16 +148,25 @@ export interface IAssignmentRequest {
   allow_participants_to_create_bookmarks?: boolean;
   staggered_deadline_assignment?: boolean;
 
-  // Per-round rubric configuration
-  vary_by_round?: boolean;
-  rounds_of_reviews?: number;
-  assignment_questionnaires_attributes?: {
+  assignment_questionnaires_attributes?: (
+    | {
+        id?: number;
+        questionnaire_id: number;
+        used_in_round: number;
+        questionnaire_weight?: number;
+        notification_limit?: number;
+        dropdown?: boolean;
+      }
+    | { id: number; _destroy: true }
+  )[];
+  due_dates_attributes?: {
     id?: number;
-    questionnaire_id: number;
-    used_in_round: number;
-    questionnaire_weight?: number;
-    notification_limit?: number;
-    _destroy?: boolean;
+    deadline_type_id: number;
+    due_at?: string;
+    round?: number;
+    submission_allowed_id: number;
+    review_allowed_id: number;
+    teammate_review_allowed_id: number;
   }[];
 }
 
