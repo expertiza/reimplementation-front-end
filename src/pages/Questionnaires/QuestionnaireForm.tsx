@@ -12,10 +12,22 @@
   
 
     useEffect(() => {
-          
-            fetchItemTypes({ url: "/item_types" });
-          console.log(itemTypes?.data);
-        }, [fetchItemTypes]);
+      fetchItemTypes({ url: "/questions/types" });
+    }, [fetchItemTypes]);
+    
+    const fallbackItemTypes = [
+      "Criterion",
+      "Scale",
+      "Dropdown",
+      "Multiple choice",
+      "Text area",
+      "Text field",
+      "Grid"
+    ];
+
+    const finalItemTypes = itemTypes?.data && itemTypes.data.length > 0
+      ? itemTypes.data.map((t: any) => t.name || t)
+      : fallbackItemTypes;
       
 
     const itemFields = Yup.object().shape({
@@ -28,7 +40,7 @@
       .notRequired(), 
 
       alternatives: Yup.string().when("question_type", ([questionType], schema) => {
-        if (questionType === "dropdown" || questionType === "multiple_choice") {
+        if (questionType === "Dropdown" || questionType === "Multiple choice") {
           return schema
             .required("Options are required")
             .test(
@@ -47,14 +59,14 @@
         return schema.notRequired();
       }),
 
-      min_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+      min_label: Yup.string().when("question_type", ([questionType], schema) => {
+        return questionType === "Scale"
           ? schema.required("Minimum label is required")
           : schema.notRequired();
       }),
 
-      max_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+      max_label: Yup.string().when("question_type", ([questionType], schema) => {
+        return questionType === "Scale"
           ? schema.required("Maximum label is required")
           : schema.notRequired();
       }),
@@ -151,33 +163,39 @@
 
             <div className="d-flex align-items-center mt-1 mb-1">
               <div className="form-check me-2" title="Make questionnaire private, so other instructors cannot see it">
-      <input type="checkbox" className="form-check-input" id="private" />
+                <Field
+                  type="checkbox"
+                  name="private"
+                  className="form-check-input"
+                  id="private"
+                />
                 <span style={{ fontSize: "14px"}} className="fw-semibold">Private</span>
+              </div>
 
-    </div>
+              <Field
+                type="number"
+                name="min_question_score"
+                placeholder="0"
+                className="form-control"
+                style={{ width: "60px" }}
+              />
 
-    
-    <input
-      type="number"
-      placeholder="0"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
+              <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
 
-    <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
-
-    
-    <input
-      type="number"
-      placeholder="10"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
-  </div>
+              <Field
+                type="number"
+                name="max_question_score"
+                placeholder="10"
+                className="form-control"
+                style={{ width: "60px" }}
+              />
+              <ErrorMessage name="min_question_score" component="div" className="text-danger ms-2" />
+              <ErrorMessage name="max_question_score" component="div" className="text-danger ms-2" />
+            </div>
 
 
             {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
+            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={finalItemTypes} />
 
             <br />
             <Button type="submit" variant="primary">

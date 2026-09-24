@@ -2,6 +2,7 @@ import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
 export type QuestionnaireType =
+  | "Review"
   | "Author feedback"
   | "Teammate Review"
   | "Survey"
@@ -13,6 +14,7 @@ export type QuestionnaireType =
 
 
 export const QuestionnaireTypes: QuestionnaireType[] = [
+  "Review",
   "Author feedback",
   "Teammate Review",
   "Survey",
@@ -93,12 +95,42 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 }
 
 
+const mapToBackendType = (type: string): string => {
+  const map: Record<string, string> = {
+    "Review": "ReviewQuestionnaire",
+    "Author feedback": "AuthorFeedbackQuestionnaire",
+    "Teammate Review": "TeammateReviewQuestionnaire",
+    "Survey": "SurveyQuestionnaire",
+    "Assignment survey": "AssignmentSurveyQuestionnaire",
+    "Global survey": "GlobalSurveyQuestionnaire",
+    "Course survey": "CourseEvaluationQuestionnaire",
+    "Bookmark rating": "BookmarkRatingQuestionnaire",
+    "Quiz": "QuizQuestionnaire"
+  };
+  return map[type] || type.replace(/\s+/g, "");
+};
+
+const mapToFrontendType = (type: string): string => {
+  const map: Record<string, string> = {
+    "ReviewQuestionnaire": "Review",
+    "AuthorFeedbackQuestionnaire": "Author feedback",
+    "TeammateReviewQuestionnaire": "Teammate Review",
+    "SurveyQuestionnaire": "Survey",
+    "AssignmentSurveyQuestionnaire": "Assignment survey",
+    "GlobalSurveyQuestionnaire": "Global survey",
+    "CourseEvaluationQuestionnaire": "Course survey",
+    "BookmarkRatingQuestionnaire": "Bookmark rating",
+    "QuizQuestionnaire": "Quiz"
+  };
+  return map[type] || type;
+};
+
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
-    questionnaire_type: values.questionnaire_type.replace(/\s+/g, ""),
+    questionnaire_type: mapToBackendType(values.questionnaire_type),
     private: values.private,
     min_question_score: values.min_question_score,
     max_question_score: values.max_question_score,
@@ -120,7 +152,7 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     id: data.id,
     name: data.name,
     private: data.private,
-    questionnaire_type: data.questionnaire_type,
+    questionnaire_type: mapToFrontendType(data.questionnaire_type),
     min_question_score: data.min_question_score,
     max_question_score: data.max_question_score,
     instructor_id: data.instructor_id,
