@@ -78,17 +78,6 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
     });
   }
 
-  if (values.allow_participants_to_create_bookmarks) {
-    rows.push({
-      label: "Bookmark Rating",
-      idField: "bookmark_questionnaire_id",
-      weightField: "bookmark_questionnaire_weight",
-      notifField: "bookmark_questionnaire_notification_limit",
-      dropdownField: "bookmark_questionnaire_dropdown",
-      options: byType("BookmarkRatingQuestionnaire"),
-    });
-  }
-
   return (
     <div className="mt-3">
       <FormCheckbox

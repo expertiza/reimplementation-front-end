@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
 import { HttpMethod } from "../../utils/httpMethods";
-import { IAssignmentFormValues, transformCreateRequest } from "./AssignmentUtil";
+import { IAssignmentFormValues, transformCreateRequest, REVIEW_STRATEGIES, REVIEW_STRATEGY_OPTIONS } from "./AssignmentUtil";
 import RubricsContent, { QuestionnaireOption } from "./RubricsContent";
 import FormInput from "../../components/Form/FormInput";
 import FormSelect from "../../components/Form/FormSelect";
@@ -91,8 +91,6 @@ const initialValues: IAssignmentFormValues = {
   is_calibrated: false,
   has_teams: false,
   max_team_size: 1,
-  show_teammate_review: false,
-  is_pair_programming: false,
   has_mentors: false,
   auto_assign_mentors: false,
   has_topics: false,
@@ -126,7 +124,6 @@ const initialValues: IAssignmentFormValues = {
   teammate_allowed: {} as Record<string | number, string>,
   // Rubrics
   is_peer_reviewed: true,
-  allow_participants_to_create_bookmarks: false,
 };
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -378,32 +375,22 @@ const CreateAssignment = () => {
                                 type="number"
                               />
                             </div>
+                            <ToolTip id="max-team-size" info="Maximum number of members on a team" />
                           </div>
                           <FormCheckbox
-                            controlId="assignment-show_teammate_review"
-                            label="Show teammate reviews?"
-                            name="show_teammate_review"
+                            controlId="assignment-has_mentors"
+                            label="Has mentors?"
+                            name="has_mentors"
                           />
-                          <FormCheckbox
-                            controlId="assignment-is_pair_programming"
-                            label="Pair programming?"
-                            name="is_pair_programming"
-                          />
-                        </div>
-                      )}
-
-                      <FormCheckbox
-                        controlId="assignment-has_mentors"
-                        label="Has mentors?"
-                        name="has_mentors"
-                      />
-                      {formik.values.has_mentors && (
-                        <div className="ms-4 mt-1">
-                          <FormCheckbox
-                            controlId="assignment-auto_assign_mentors"
-                            label="Auto-assign mentors when team hits > 50% capacity?"
-                            name="auto_assign_mentors"
-                          />
+                          {formik.values.has_mentors && (
+                            <div className="ms-4 mt-1">
+                              <FormCheckbox
+                                controlId="assignment-auto_assign_mentors"
+                                label="Auto-assign mentors when team hits > 50% capacity?"
+                                name="auto_assign_mentors"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -423,12 +410,6 @@ const CreateAssignment = () => {
                         controlId="assignment-require_quiz"
                         label="Has quiz?"
                         name="require_quiz"
-                      />
-
-                      <FormCheckbox
-                        controlId="assignment-allow_participants_to_create_bookmarks"
-                        label="Allow participants to create bookmarks?"
-                        name="allow_participants_to_create_bookmarks"
                       />
 
                       <FormCheckbox
@@ -465,19 +446,17 @@ const CreateAssignment = () => {
                 <Tab eventKey="review-strategy" title="Review Strategy">
                   <div className="mt-4" style={{ maxWidth: 640 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "max-content 1fr", alignItems: "center", columnGap: 16, rowGap: 8 }}>
-                      <label className="form-label mb-0">Review strategy:</label>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <label className="form-label mb-0">Review strategy:</label>
+                        <ToolTip id="review-strategy" info="Static: each reviewer is pre-assigned a set of submissions to review. Dynamic: a reviewer selects a submission before beginning a review." />
+                      </div>
                       <FormSelect
                         controlId="assignment-review_strategy"
                         name="review_strategy"
-                        options={[
-                          { label: "-- Select --", value: "" },
-                          { label: "Review Strategy 1", value: "1" },
-                          { label: "Review Strategy 2", value: "2" },
-                          { label: "Review Strategy 3", value: "3" },
-                        ]}
+                        options={REVIEW_STRATEGY_OPTIONS}
                       />
 
-                      {formik.values.has_topics && (
+                      {formik.values.review_strategy === REVIEW_STRATEGIES.AUTO_SELECTED && formik.values.has_topics && (
                         <>
                           <label className="form-label mb-0">Review topic threshold (k):</label>
                           <div style={{ width: 70 }}>
@@ -492,23 +471,37 @@ const CreateAssignment = () => {
                       </div>
                     </div>
 
-                    <div className="mt-3">
-                      <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
-                      {formik.values.has_max_review_limit && (
-                        <div className="ms-4 mt-1" style={{ display: "grid", gridTemplateColumns: "max-content 80px", alignItems: "center", columnGap: 12, rowGap: 4 }}>
-                          <label className="form-label mb-0">Allowed reviews per reviewer:</label>
-                          <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" label="" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
-                          <label className="form-label mb-0">Required reviews per reviewer:</label>
-                          <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" label="" name="set_required_number_of_reviews_per_reviewer" type="number" />
-                        </div>
-                      )}
-                    </div>
+                    {formik.values.review_strategy === REVIEW_STRATEGIES.AUTO_SELECTED && (
+                      <div className="mt-3">
+                        <FormCheckbox controlId="assignment-has_max_review_limit" label="Has max review limit?" name="has_max_review_limit" />
+                        {formik.values.has_max_review_limit && (
+                          <div className="ms-4 mt-1" style={{ display: "grid", gridTemplateColumns: "max-content 80px max-content", alignItems: "center", columnGap: 8, rowGap: 4 }}>
+                            <label className="form-label mb-0">Required reviews per reviewer:</label>
+                            <FormInput controlId="assignment-set_required_number_of_reviews_per_reviewer" label="" name="set_required_number_of_reviews_per_reviewer" type="number" />
+                            <ToolTip id="required-reviews" info="How many reviews a reviewer must complete for full credit." />
+                            <label className="form-label mb-0">Allowed reviews per reviewer:</label>
+                            <FormInput controlId="assignment-set_allowed_number_of_reviews_per_reviewer" label="" name="set_allowed_number_of_reviews_per_reviewer" type="number" />
+                            <ToolTip id="allowed-reviews" info="Maximum number of reviews (including required) a reviewer may do, i.e. for extra credit." />
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="mt-2">
-                      <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
-                      <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
-                      <FormCheckbox controlId="assignment-allow_self_reviews" label="Allow self-reviews?" name="allow_self_reviews" />
-                      <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <FormCheckbox controlId="assignment-is_review_anonymous" label="Is review anonymous?" name="is_review_anonymous" />
+                        <ToolTip id="is-review-anonymous" info="The submitter cannot see who reviewed their submission." />
+                      </div>
+                      {formik.values.has_teams && (
+                        <>
+                          <FormCheckbox controlId="assignment-is_review_done_by_teams" label="Is review done by teams?" name="is_review_done_by_teams" />
+                          <FormCheckbox controlId="assignment-is_role_based" label="Is role based?" name="is_role_based" />
+                        </>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <FormCheckbox controlId="assignment-allow_self_reviews" label="Self-reviews required?" name="allow_self_reviews" />
+                        <ToolTip id="allow-self-reviews" info="When enabled, reviewers are required to review their own submission." />
+                      </div>
                     </div>
 
                     <div className="mt-3" style={{ display: "flex", alignItems: "center", gap: 12 }}>

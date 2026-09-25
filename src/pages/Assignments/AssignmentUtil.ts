@@ -1,6 +1,19 @@
 import { IAssignmentRequest, IAssignmentResponse } from "../../utils/interfaces";
 import axiosClient from "../../utils/axios_client";
 
+// Review strategy constants — mirror old Expertiza's Assignment::RS_* constants.
+// These are the values stored in the DB column review_assignment_strategy.
+export const REVIEW_STRATEGIES = {
+  AUTO_SELECTED: "Auto-Selected",
+  INSTRUCTOR_SELECTED: "Instructor-Selected",
+} as const;
+
+export const REVIEW_STRATEGY_OPTIONS = [
+  { label: "-- Select --", value: "" },
+  { label: "Static", value: REVIEW_STRATEGIES.INSTRUCTOR_SELECTED },
+  { label: "Dynamic", value: REVIEW_STRATEGIES.AUTO_SELECTED },
+];
+
 export interface IAssignmentFormValues {
   id?: number;
   instructor_id?: number;
@@ -16,8 +29,6 @@ export interface IAssignmentFormValues {
   // Teams / mentors / topics
   has_teams?: boolean;
   max_team_size?: number;
-  show_teammate_review?: boolean;
-  is_pair_programming?: boolean;
   has_mentors?: boolean;
   has_topics?: boolean;
   // Review strategy / limits
@@ -57,14 +68,7 @@ export interface IAssignmentFormValues {
   allow_tag_prompts?: boolean;
   course_id?: number;
   available_to_students?: boolean;
-  allow_topic_suggestion_from_students?: boolean;
-  enable_bidding_for_topics?: boolean;
-  enable_bidding_for_reviews?: boolean;
-  enable_authors_to_review_other_topics?: boolean;
-  allow_reviewer_to_choose_topic_to_review?: boolean;
-  allow_participants_to_create_bookmarks?: boolean;
   auto_assign_mentors?: boolean;
-  staggered_deadline_assignment?: boolean;
   // Rubrics tab
   is_peer_reviewed?: boolean;
   review_questionnaire_id?: number;
@@ -73,8 +77,6 @@ export interface IAssignmentFormValues {
   author_feedback_questionnaire_dropdown?: boolean;
   teammate_questionnaire_id?: number;
   teammate_questionnaire_dropdown?: boolean;
-  bookmark_questionnaire_id?: number;
-  bookmark_questionnaire_dropdown?: boolean;
   // These are used only in tables; keep them loose
   questionnaire?: any;
   date_time?: Record<string | number, Date | null>;
@@ -168,17 +170,6 @@ function buildRubricAttributes(values: IAssignmentFormValues): (RubricEntry | { 
       dropdown: values.teammate_questionnaire_dropdown ?? false,
     });
   }
-  if (values.allow_participants_to_create_bookmarks && values.bookmark_questionnaire_id) {
-    rubrics.push({
-      id: values.bookmark_assignment_questionnaire_id,
-      questionnaire_id: Number(values.bookmark_questionnaire_id),
-      used_in_round: 0,
-      questionnaire_weight: values.bookmark_questionnaire_weight ?? 0,
-      notification_limit: values.bookmark_questionnaire_notification_limit ?? 0,
-      dropdown: values.bookmark_questionnaire_dropdown ?? false,
-    });
-  }
-
   // Destroy any existing records not in the kept set (prevents duplicates on repeated saves)
   const keptIds = new Set(rubrics.map((r) => r.id).filter((id): id is number => id != null));
   const destroyEntries = (values.assignment_questionnaires || [])
@@ -285,8 +276,6 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
     // Team / mentor / topic configuration
     has_teams: values.has_teams ?? false,
     max_team_size: values.max_team_size,
-    show_teammate_review: values.show_teammate_review ?? false,
-    is_pair_programming: values.is_pair_programming ?? false,
     has_mentors: values.has_mentors ?? false,
     has_topics: values.has_topics ?? false,
     auto_assign_mentors: values.auto_assign_mentors ?? false,
@@ -324,13 +313,6 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
     // Misc flags
     allow_tag_prompts: values.allow_tag_prompts ?? false,
     available_to_students: values.available_to_students ?? false,
-    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
-    allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
-    staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
 
     ...(rubricAttrs.length > 0 && { assignment_questionnaires_attributes: rubricAttrs }),
     ...(dueDateAttrs.length > 0 && { due_dates_attributes: dueDateAttrs }),
@@ -359,11 +341,17 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
         ? 2 * (due.round - 1) + 1
         : 2 * (due.round - 1);
     } else {
-      const name: string = due.deadline_name || '';
-      if (/signup/i.test(name)) rowKey = 'signup_deadline';
-      else if (/drop[\s_]?topic/i.test(name)) rowKey = 'drop_topic_deadline';
-      else if (/team[\s_]?formation/i.test(name)) rowKey = 'team_formation_deadline';
-      else continue;
+      // Match by deadline_type_id (deadline_name may be null when saved without a name)
+      if (due.deadline_type_id === DEADLINE_TYPE.SIGNUP) rowKey = 'signup_deadline';
+      else if (due.deadline_type_id === DEADLINE_TYPE.DROP_TOPIC) rowKey = 'drop_topic_deadline';
+      else if (due.deadline_type_id === DEADLINE_TYPE.TEAM_FORMATION) rowKey = 'team_formation_deadline';
+      else {
+        const name: string = due.deadline_name || '';
+        if (/signup/i.test(name)) rowKey = 'signup_deadline';
+        else if (/drop[\s_]?topic/i.test(name)) rowKey = 'drop_topic_deadline';
+        else if (/team[\s_]?formation/i.test(name)) rowKey = 'team_formation_deadline';
+        else continue;
+      }
     }
     if (due.due_at) dateTimeMap[rowKey] = new Date(due.due_at);
     submissionAllowedMap[rowKey] = String(due.submission_allowed_id ?? ALLOWED);
@@ -376,9 +364,16 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   return {
     // Spread all persisted columns from API response
     ...assignment,
-    // Handle legacy field names that older API responses may use
+    // Map DB column names to form field names (backend returns raw column names)
     review_rubric_varies_by_round: assignment.review_rubric_varies_by_round ?? assignment.vary_by_round,
-    number_of_review_rounds: assignment.number_of_review_rounds ?? assignment.num_review_rounds,
+    review_rubric_varies_by_topic: assignment.review_rubric_varies_by_topic ?? assignment.vary_by_topic ?? false,
+    review_rubric_varies_by_role: assignment.review_rubric_varies_by_role ?? assignment.vary_by_role ?? false,
+    number_of_review_rounds: assignment.number_of_review_rounds ?? assignment.rounds_of_reviews ?? assignment.num_review_rounds,
+    review_strategy: assignment.review_strategy ?? assignment.review_assignment_strategy ?? "",
+    available_to_students: assignment.available_to_students ?? assignment.availability_flag ?? false,
+    allow_tag_prompts: assignment.allow_tag_prompts ?? assignment.is_answer_tagging_allowed ?? false,
+    auto_assign_mentors: assignment.auto_assign_mentors ?? assignment.auto_assign_mentor ?? false,
+    staggered_deadline: assignment.staggered_deadline ?? false,
     // Virtual fields not returned by the API
     show_template_review: assignment.show_template_review ?? false,
     is_role_based: assignment.is_role_based ?? false,
