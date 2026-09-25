@@ -115,7 +115,7 @@ npm run preview
 
 ## Docker
 
-The Dockerfile uses a multi-stage build. Node.js 24 and `npm ci` create the Vite production assets,
+The Dockerfile uses a multi-stage build. Node.js and `npm ci` create the Vite production assets,
 and Nginx serves those assets with single-page-application routing support.
 
 Build the image:
