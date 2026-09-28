@@ -160,6 +160,11 @@ $theme-colors: (
 // import bootstrap styles at the bottom!
 @import 'bootstrap/scss/bootstrap.scss';
 
+// Override Bootstrap defaults — must come AFTER the import
+:root { --bs-body-bg: #f7f7f7; }
+body { background: #f7f7f7; }
+main { background: transparent; }
+
 // Heat grid color classes — defined after Bootstrap so they win the cascade.
 // Shared by ReviewTable, ReviewTableRow, ScoreWidgets, and course report tables.
 // getColorClass() and getHeatColorClass() in src/utils/heatgridUtils.ts return these class names.

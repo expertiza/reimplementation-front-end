@@ -66,13 +66,13 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
             style={{
               cursor: "pointer",
               transition: "all 0.2s",
-              color: "#3b82f6",
+              color: "#198754",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#2563eb";
+              e.currentTarget.style.color = "#157347";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#3b82f6";
+              e.currentTarget.style.color = "#198754";
             }}
             size={24}
           />

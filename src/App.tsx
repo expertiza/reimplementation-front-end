@@ -427,15 +427,32 @@ function App() {
                 },
               ],
             },
-            { 
-              path: "questionnaire", 
-              element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+              loader: loadQuestionnaire,
+              children: [
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/questionnaires/edit/:id" replace />,
+                },
+              ],
+            },
                       ],
         },
 
        { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        { 
+          path: "questionnaire", 
+          element: <Questionnaire />, 
+          loader: loadQuestionnaire,
+          children: [
+            {
+              path: "edit/:id",
+              element: <Navigate to="/questionnaires/edit/:id" replace />,
+            },
+          ],
+        },
 
         {
           path: "questionnaires",
