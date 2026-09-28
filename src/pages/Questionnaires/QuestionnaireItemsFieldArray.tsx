@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Field, FieldArray, FieldArrayRenderProps, ErrorMessage } from "formik";
-import { IoIosRemoveCircleOutline } from "react-icons/io";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
+import { RiHealthBookLine } from "react-icons/ri";
 import { IItem } from "./QuestionnaireUtils";
 
 interface Props {
@@ -21,6 +21,20 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
     <FieldArray name="items">
       {({ push, remove, move, form }: FieldArrayRenderProps) => {
         const { setFieldValue } = form;
+
+        const handleRemove = (index: number) => {
+          const item = values.items[index];
+          if (item.id) {
+            setFieldValue(`items[${index}]._destroy`, true);
+          } else {
+            remove(index);
+          }
+        };
+
+        const visibleItems: Array<{ item: IItem; index: number }> = values.items
+          .map((item: IItem, index: number) => ({ item, index }))
+          .filter(({ item }: { item: IItem }) => !item._destroy);
+
         return (
           <>
             <DragDropContext
@@ -32,364 +46,274 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
               <Droppable droppableId="questions">
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {values.items.length > 0 &&
-                      values.items
-                        .map((item: IItem, index: number) => ({ item, index }))
-                        .filter(({ item }: { item: IItem }) => !item._destroy)
-                        .map(({ item, index }: { item: IItem; index: number }) => (
-                          <Draggable
-                            key={item.id ?? `new-${index}`}
-                            draggableId={(item.id ?? `new-${index}`).toString()}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`px-1 py-1 mb-1 rounded ${
-                                  snapshot.isDragging
-                                    ? "bg-light border border-primary"
-                                    : "bg-white border"
-                                }`}
+                    {visibleItems.length > 0 && (
+                      <div className="table-responsive">
+                        <table
+                          className="table table-bordered table-hover align-middle mb-2"
+                          style={{ fontSize: "13px" }}
+                        >
+                          <thead className="table-light">
+                            <tr>
+                              {showNumbers && <th style={{ width: "36px" }}>#</th>}
+                              <th style={{ width: "130px" }}>Type</th>
+                              <th style={{ minWidth: "250px" }}>Question Text</th>
+                              <th style={{ width: "200px" }}>Choices / Grid Cols</th>
+                              <th style={{ width: "160px" }}>Grid Rows</th>
+                              <th style={{ width: "110px" }}>Min Label</th>
+                              <th style={{ width: "110px" }}>Max Label</th>
+                              <th style={{ width: "70px" }}>Width</th>
+                              <th style={{ width: "70px" }}>Height</th>
+                              <th style={{ width: "70px" }}>Weight</th>
+                              <th style={{ width: "50px" }} className="text-center">
+                                Del
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visibleItems.map(({ item, index }: { item: IItem; index: number }) => (
+                              <Draggable
+                                key={item.id ?? `new-${index}`}
+                                draggableId={(item.id ?? `new-${index}`).toString()}
+                                index={index}
                               >
-                                <div className="d-flex gap-1 align-items-center ">
-                                  {showNumbers && (
-                                    <span
-                                      style={{ width: "15px", fontSize: "14px" }}
-                                      className="fw-semibold"
-                                    >
-                                      {index + 1}.
-                                    </span>
-                                  )}
-
-                                  <span
-                                    style={{ fontSize: "14px", width: "100px" }}
-                                    className="fw-semibold flex-shrink-0"
+                                {(provided, snapshot) => (
+                                  <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className={snapshot.isDragging ? "table-primary" : ""}
+                                    style={{
+                                      ...provided.draggableProps.style,
+                                      cursor: "grab",
+                                    }}
                                   >
-                                    {item.question_type}
-                                  </span>
-                                  <Field
-                                    name={`items[${index}].txt`}
-                                    placeholder="Item text"
-                                    className="form-control"
-                                    maxLength={100}
-                                    style={{ width: "220px" }}
-                                  />
+                                    {/* # column */}
+                                    {showNumbers && (
+                                      <td className="fw-semibold text-center">{index + 1}</td>
+                                    )}
 
-                                  {item.question_type === "Multiple choice" ||
-                                  item.question_type === "Dropdown" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].alternatives`}
-                                        placeholder="Choices (comma-separated)"
-                                        className="form-control"
-                                        style={{ width: "245px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].weight`}
-                                        type="number"
-                                        placeholder="Wt."
-                                        maxLength={3}
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : item.question_type === "Scale" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].min_label`}
-                                        placeholder="Min Label"
-                                        className="form-control"
-                                        style={{ width: "120px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].max_label`}
-                                        placeholder="Max Label"
-                                        className="form-control"
-                                        style={{ width: "120px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].weight`}
-                                        type="number"
-                                        placeholder="Wt."
-                                        maxLength={3}
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : item.question_type === "Criterion" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].textarea_width`}
-                                        type="number"
-                                        placeholder="Wd."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].textarea_height`}
-                                        type="number"
-                                        placeholder="Ht."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].min_label`}
-                                        placeholder="Min Label"
-                                        className="form-control"
-                                        style={{ width: "100px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].max_label`}
-                                        placeholder="Max Label"
-                                        className="form-control"
-                                        style={{ width: "100px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].weight`}
-                                        type="number"
-                                        placeholder="Wt."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : item.question_type === "Text field" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].textbox_width`}
-                                        type="number"
-                                        placeholder="Wd."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : item.question_type === "Text area" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].textarea_width`}
-                                        type="number"
-                                        placeholder="Wd."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].textarea_height`}
-                                        type="number"
-                                        placeholder="Ht."
-                                        className="form-control"
-                                        style={{ width: "60px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : item.question_type === "Grid" ? (
-                                    <>
-                                      <Field
-                                        name={`items[${index}].col_names`}
-                                        placeholder="Columns (comma-separated)"
-                                        className="form-control"
-                                        style={{ width: "200px" }}
-                                      />
-                                      <Field
-                                        name={`items[${index}].row_names`}
-                                        placeholder="Rows (comma-separated)"
-                                        className="form-control"
-                                        style={{ width: "200px" }}
-                                      />
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div className="ms-auto">
-                                        <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                          <Button
-                                            variant="link"
-                                            onClick={() => {
-                                              const item = values.items[index];
-                                              if (item.id) {
-                                                setFieldValue(`items[${index}]._destroy`, true);
-                                              } else {
-                                                remove(index);
-                                              }
-                                            }}
-                                            aria-label="Remove Item"
-                                            className="p-0"
-                                          >
-                                            <img
-                                              src={"/assets/images/delete-icon-24.png"}
-                                              alt="remove item"
-                                              style={{ width: "20px", height: "20px" }}
-                                            />
-                                          </Button>
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
+                                    {/* Type */}
+                                    <td className="fw-semibold" style={{ whiteSpace: "nowrap" }}>
+                                      {item.question_type}
+                                    </td>
 
-                                <ErrorMessage
-                                  name={`items[${index}].txt`}
-                                  component="div"
-                                  className="text-danger"
-                                />
-                                <ErrorMessage
-                                  name={`items[${index}].alternatives`}
-                                  component="div"
-                                  className="text-danger"
-                                />
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
+                                    {/* Question Text */}
+                                    <td>
+                                      <Field
+                                        as="textarea"
+                                        rows={2}
+                                        name={`items[${index}].txt`}
+                                        placeholder="Item text"
+                                        className="form-control form-control-sm"
+                                        maxLength={100}
+                                        style={{ resize: "vertical" }}
+                                      />
+                                      <ErrorMessage
+                                        name={`items[${index}].txt`}
+                                        component="div"
+                                        className="text-danger small"
+                                      />
+                                    </td>
+
+                                    {/* Choices / Grid Cols */}
+                                    <td>
+                                      {item.question_type === "Multiple choice" ||
+                                      item.question_type === "Dropdown" ? (
+                                        <>
+                                          <Field
+                                            name={`items[${index}].alternatives`}
+                                            placeholder="Choices (comma-sep)"
+                                            className="form-control form-control-sm"
+                                          />
+                                          <ErrorMessage
+                                            name={`items[${index}].alternatives`}
+                                            component="div"
+                                            className="text-danger small"
+                                          />
+                                        </>
+                                      ) : item.question_type === "Grid" ? (
+                                        <Field
+                                          name={`items[${index}].col_names`}
+                                          placeholder="Columns (comma-sep)"
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Grid Rows */}
+                                    <td>
+                                      {item.question_type === "Grid" ? (
+                                        <Field
+                                          name={`items[${index}].row_names`}
+                                          placeholder="Rows (comma-sep)"
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Min Label */}
+                                    <td>
+                                      {item.question_type === "Scale" ||
+                                      item.question_type === "Criterion" ? (
+                                        <Field
+                                          name={`items[${index}].min_label`}
+                                          placeholder="Min Label"
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Max Label */}
+                                    <td>
+                                      {item.question_type === "Scale" ||
+                                      item.question_type === "Criterion" ? (
+                                        <Field
+                                          name={`items[${index}].max_label`}
+                                          placeholder="Max Label"
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Width */}
+                                    <td>
+                                      {item.question_type === "Criterion" ||
+                                      item.question_type === "Text area" ? (
+                                        <Field
+                                          name={`items[${index}].textarea_width`}
+                                          type="number"
+                                          placeholder="Wd."
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : item.question_type === "Text field" ? (
+                                        <Field
+                                          name={`items[${index}].textbox_width`}
+                                          type="number"
+                                          placeholder="Wd."
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Height */}
+                                    <td>
+                                      {item.question_type === "Criterion" ||
+                                      item.question_type === "Text area" ? (
+                                        <Field
+                                          name={`items[${index}].textarea_height`}
+                                          type="number"
+                                          placeholder="Ht."
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Weight */}
+                                    <td>
+                                      {item.question_type === "Multiple choice" ||
+                                      item.question_type === "Dropdown" ||
+                                      item.question_type === "Scale" ||
+                                      item.question_type === "Criterion" ? (
+                                        <Field
+                                          name={`items[${index}].weight`}
+                                          type="number"
+                                          placeholder="Wt."
+                                          maxLength={3}
+                                          className="form-control form-control-sm"
+                                        />
+                                      ) : (
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light text-muted"
+                                          disabled
+                                          placeholder="N/A"
+                                        />
+                                      )}
+                                    </td>
+
+                                    {/* Delete */}
+                                    <td className="text-center">
+                                      <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
+                                        <Button
+                                          variant="link"
+                                          onClick={() => handleRemove(index)}
+                                          aria-label="Remove Item"
+                                          className="p-0"
+                                        >
+                                          <img
+                                            src="/assets/images/delete-icon-24.png"
+                                            alt="remove item"
+                                            style={{
+                                              width: "20px",
+                                              height: "20px",
+                                            }}
+                                          />
+                                        </Button>
+                                      </OverlayTrigger>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Draggable>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                     {provided.placeholder}
                   </div>
                 )}
               </Droppable>
             </DragDropContext>
 
-            <div className="d-flex gap-2 mb-3">
+            {/* Add items controls */}
+            <div className="d-flex gap-2 mb-3 align-items-center flex-wrap">
               <button
                 type="button"
-                className="btn btn-success"
+                className="btn btn-outline-success btn-sm fw-semibold px-3"
                 onClick={() => {
                   const questionCount = typeof numQuestions === "number" ? numQuestions : 0;
-
                   for (let i = 0; i < questionCount; i++) {
                     push({
                       id: undefined,
@@ -407,8 +331,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   setQuestionType("");
                 }}
               >
-                Add
+                <RiHealthBookLine className="me-1 mb-1" /> Add
               </button>
+
               <span title="How many items?">
                 <Field
                   type="number"
@@ -418,15 +343,16 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setNumQuestions(Number(e.target.value))
                   }
-                  className="form-control"
+                  className="form-control form-control-sm"
                   maxLength={3}
                   style={{ width: "60px" }}
                 />
               </span>
+
               <select
-                className="form-control"
+                className="form-control form-control-sm"
                 value={questionType}
-                style={{ width: "140px" }}
+                style={{ width: "160px" }}
                 onChange={(e) => setQuestionType(e.target.value)}
               >
                 <option value="">- Select item type -</option>
@@ -436,9 +362,10 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   </option>
                 ))}
               </select>
-              <div className="fw-semibold pt-2"> items </div>
 
-              <div className="form-check ms-3 pt-2">
+              <span className="fw-semibold small">items</span>
+
+              <div className="form-check ms-2">
                 <input
                   type="checkbox"
                   className="form-check-input"
@@ -446,9 +373,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                   checked={showNumbers}
                   onChange={(e) => setShowNumbers(e.target.checked)}
                 />
-                <span style={{ fontSize: "14px" }} className="fw-semibold">
+                <label htmlFor="showNumbersToggle" className="form-check-label fw-semibold small">
                   Show item numbers
-                </span>
+                </label>
               </div>
             </div>
           </>
