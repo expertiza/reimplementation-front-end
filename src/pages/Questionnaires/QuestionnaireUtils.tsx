@@ -29,18 +29,22 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
 export interface IItem {
   id?: number;
   txt: string;
-  weight?: number;
+  weight?: number | string;
   seq: number;
   question_type: string;
   size?: number | string;
   alternatives?: string;
-  min_label?: number;
-  max_label?: number;
-  break_before?: boolean;
+  min_label?: string;
+  max_label?: string;
+  textarea_width?: number | string;
+  textarea_height?: number | string;
+  textbox_width?: number | string;
+  col_names?: string;
+  row_names?: string;
+  break_before?: boolean | number;
   questionnaire_id?: number;
   _destroy?: boolean;
   type?: string;
-  
 }
 
 
@@ -136,11 +140,20 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
     max_question_score: values.max_question_score,
     instructor_id: values.instructor_id,
     items_attributes: values.items
-      ? values.items.map((item, index) => ({
-          ...item,
-          seq: index + 1,
-          break_before: item.break_before ?? false,
-        }))
+      ? values.items.map((item, index) => {
+          let sizeStr = item.size;
+          if (item.question_type === 'Text area' || item.question_type === 'Criterion') {
+            sizeStr = `${item.textarea_width || ''},${item.textarea_height || ''}`;
+          } else if (item.question_type === 'Text field') {
+            sizeStr = `${item.textbox_width || ''}`;
+          }
+          return {
+            ...item,
+            size: sizeStr,
+            seq: index + 1,
+            break_before: item.break_before ?? false,
+          };
+        })
       : [],
   };
   console.log("Transformed Questionnaire Request:", questionnaire);
@@ -159,7 +172,28 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     instructor: data.instructor,
     created_at: data.created_at,
     updated_at: data.updated_at,
-    items: data.items,
+    items: data.items ? data.items.map((item: any) => {
+      let textarea_width = item.textarea_width ?? "";
+      let textarea_height = item.textarea_height ?? "";
+      let textbox_width = item.textbox_width ?? "";
+
+      if (item.size) {
+        const parts = String(item.size).split(",");
+        if (item.question_type === "Text area" || item.question_type === "Criterion" || item.question_type === "TextArea") {
+          textarea_width = parts[0] || "";
+          textarea_height = parts[1] || "";
+        } else if (item.question_type === "Text field" || item.question_type === "TextField") {
+          textbox_width = parts[0] || "";
+        }
+      }
+      return {
+        ...item,
+        question_type: mapToFrontendType(item.question_type ?? ""),
+        textarea_width,
+        textarea_height,
+        textbox_width,
+      };
+    }) : [],
   };
 };
 

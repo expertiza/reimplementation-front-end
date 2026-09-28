@@ -10,23 +10,39 @@ import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 
 
-const mapItemToFormField = (item: any) => ({
-  id: item.id,
-  txt: item.txt,
-  question_type: item.question_type,
-  weight: item.weight,
-  alternatives: item.alternatives,
-  min_label: item.min_label,
-  max_label: item.max_label,
-  textarea_width: item.textarea_width,
-  textarea_height: item.textarea_height,
-  textbox_width: item.textbox_width,
-  col_names: item.col_names,
-  row_names: item.row_names,
-  seq: item.seq,
-  break_before: item.break_before,
-  _destroy: item._destroy || false,
-});
+const mapItemToFormField = (item: any) => {
+  let textarea_width = item.textarea_width ?? "";
+  let textarea_height = item.textarea_height ?? "";
+  let textbox_width = item.textbox_width ?? "";
+
+  if (item.size) {
+    const parts = String(item.size).split(",");
+    if (item.question_type === "Text area" || item.question_type === "Criterion") {
+      textarea_width = parts[0] || "";
+      textarea_height = parts[1] || "";
+    } else if (item.question_type === "Text field") {
+      textbox_width = parts[0] || "";
+    }
+  }
+
+  return {
+    id: item.id,
+    txt: item.txt ?? "",
+    question_type: item.question_type ?? "",
+    weight: item.weight ?? "",
+    alternatives: item.alternatives ?? "",
+    min_label: item.min_label ?? "",
+    max_label: item.max_label ?? "",
+    textarea_width: textarea_width,
+    textarea_height: textarea_height,
+    textbox_width: textbox_width,
+    col_names: item.col_names ?? "",
+    row_names: item.row_names ?? "",
+    seq: item.seq,
+    break_before: item.break_before,
+    _destroy: item._destroy || false,
+  };
+};
 
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const token = localStorage.getItem("token");
@@ -131,12 +147,12 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   };
 
   return (
-    <Container fluid className="px-md-4">
-      <Row className="mt-4 mb-4">
-        <Col className="text-center">
+    <Container fluid className="px-md-4" style={{ background: "transparent" }}>
+      <Row className="mb-4">
+        <Col>
           <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>{mode === "update"
-            ? `Update Questionnaire: ${questionnaire.name}`
-            : `Create ${type} Questionnaire`}</h1>
+            ? `Editing Questionnaire: ${questionnaire.name}`
+            : `Creating ${type} Questionnaire`}</h1>
         </Col>
       </Row>
       <Row style={{ marginLeft: "5px" }}>
