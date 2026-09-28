@@ -6,7 +6,7 @@ import { getAuthToken } from "./auth";
  */
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:3002",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3002",
   timeout: 10000, // Increased from 1000ms to 10 seconds
   headers: {
     "Content-Type": "application/json",
@@ -15,6 +15,11 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use((config) => {
+  // Check if this request should skip authentication (for login  / OIDC)
+  if (config.skipAuth) {
+    return config;
+  }
+
   const token = getAuthToken();
   if (token && token !== "EXPIRED") {
     config.headers["Authorization"] = `Bearer ${token}`;
