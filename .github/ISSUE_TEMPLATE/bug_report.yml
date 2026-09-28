@@ -24,7 +24,7 @@ body:
       description: Example `Windows 11, Node 22.13.0, npm 10.9.2, Edge 153, Docker Desktop 4.92.0`
     validations:
       required: false
-    
+
   - type: textarea
     id: description
     attributes:
@@ -60,7 +60,7 @@ body:
       description: If applicable, add screenshots to help explain your problem.
     validations:
       required: false
-  
+
   - type: textarea
     id: logs
     attributes:

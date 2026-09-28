@@ -44,7 +44,6 @@ const Courses = () => {
     data?: ICourseResponse;
   }>({ visible: false });
 
-  
   useEffect(() => {
     // Ensure the API fetch happens unless modals are active
     if (!showDeleteConfirmation.visible || !showCopyConfirmation.visible) {
@@ -75,10 +74,7 @@ const Courses = () => {
     []
   );
 
-  const onCopyCourseHandler = useCallback(
-    () => setShowCopyConfirmation({ visible: false }),
-    []
-  );
+  const onCopyCourseHandler = useCallback(() => setShowCopyConfirmation({ visible: false }), []);
 
   const onEditHandle = useCallback(
     (row: TRow<ICourseResponse>) => navigate(`edit/${row.original.id}`),
@@ -97,18 +93,12 @@ const Courses = () => {
   );
 
   const onCopyHandle = useCallback(
-    (row: TRow<ICourseResponse>) =>
-      setShowCopyConfirmation({ visible: true, data: row.original }),
+    (row: TRow<ICourseResponse>) => setShowCopyConfirmation({ visible: true, data: row.original }),
     []
   );
 
-const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
-	return (
-	  <CourseAssignments
-		courseId={row.original.id}
-		courseName={row.original.name}
-	  />
-	);
+  const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> }) => {
+    return <CourseAssignments courseId={row.original.id} courseName={row.original.name} />;
   }, []);
 
   const tableColumns = useMemo(
@@ -153,8 +143,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
       return mergedTableData;
     }
     return mergedTableData.filter(
-      (CourseResponse: { instructor_id: number }) =>
-        CourseResponse.instructor_id === auth.user.id
+      (CourseResponse: { instructor_id: number }) => CourseResponse.instructor_id === auth.user.id
     );
   }, [mergedTableData, loggedInUserRole]);
 
@@ -199,13 +188,10 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
             />
           )}
           {showCopyConfirmation.visible && (
-            <CopyCourse
-              courseData={showCopyConfirmation.data!}
-              onClose={onCopyCourseHandler}
-            />
+            <CopyCourse courseData={showCopyConfirmation.data!} onClose={onCopyCourseHandler} />
           )}
 
-          <Row >
+          <Row>
             <Table
               showGlobalFilter={false}
               data={visibleCourses}

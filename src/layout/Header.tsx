@@ -6,7 +6,6 @@ import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
 
-
 /**
  * @author Ankur Mundra on May, 2023
  */

@@ -8,7 +8,9 @@ import { IFormikFieldProps, IFormPropsWithOption } from "./interfaces";
  * @author Ankur Mundra on May, 2023
  */
 
-const FormSelect: React.FC<IFormPropsWithOption & { onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void }> = (props) => {
+const FormSelect: React.FC<
+  IFormPropsWithOption & { onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void }
+> = (props) => {
   const {
     as,
     md,

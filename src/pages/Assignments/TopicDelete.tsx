@@ -12,7 +12,13 @@ interface DeleteTopicsProps {
   onDeleted?: () => void;
 }
 
-const DeleteTopics: React.FC<DeleteTopicsProps> = ({ assignmentId, topicIds, topicNames = [], onClose, onDeleted }) => {
+const DeleteTopics: React.FC<DeleteTopicsProps> = ({
+  assignmentId,
+  topicIds,
+  topicNames = [],
+  onClose,
+  onDeleted,
+}) => {
   const { data: deleteResp, error: deleteError, sendRequest: deleteTopics } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -20,11 +26,11 @@ const DeleteTopics: React.FC<DeleteTopicsProps> = ({ assignmentId, topicIds, top
   const deleteHandler = () => {
     deleteTopics({
       url: `/project_topics`,
-      method: 'DELETE',
+      method: "DELETE",
       params: {
         assignment_id: Number(assignmentId),
-        'topic_ids[]': topicIds,
-      }
+        "topic_ids[]": topicIds,
+      },
     });
   };
 
@@ -37,8 +43,11 @@ const DeleteTopics: React.FC<DeleteTopicsProps> = ({ assignmentId, topicIds, top
   useEffect(() => {
     if (deleteResp?.status && deleteResp.status >= 200 && deleteResp.status < 300) {
       setShow(false);
-      const label = topicIds.length === 1 ? (topicNames[0] || topicIds[0]) : `${topicIds.length} topics`;
-      dispatch(alertActions.showAlert({ variant: "success", message: `Deleted ${label} successfully.` }));
+      const label =
+        topicIds.length === 1 ? topicNames[0] || topicIds[0] : `${topicIds.length} topics`;
+      dispatch(
+        alertActions.showAlert({ variant: "success", message: `Deleted ${label} successfully.` })
+      );
       onClose();
       onDeleted && onDeleted();
     }
@@ -49,10 +58,17 @@ const DeleteTopics: React.FC<DeleteTopicsProps> = ({ assignmentId, topicIds, top
     onClose();
   };
 
-  const title = topicIds.length === 1 ? 'Delete Topic' : 'Delete Topics';
-  const body = topicIds.length === 1
-    ? <>Are you sure you want to delete topic <b>{topicNames[0] || topicIds[0]}</b>?</>
-    : <>Are you sure you want to delete <b>{topicIds.length}</b> selected topics?</>;
+  const title = topicIds.length === 1 ? "Delete Topic" : "Delete Topics";
+  const body =
+    topicIds.length === 1 ? (
+      <>
+        Are you sure you want to delete topic <b>{topicNames[0] || topicIds[0]}</b>?
+      </>
+    ) : (
+      <>
+        Are you sure you want to delete <b>{topicIds.length}</b> selected topics?
+      </>
+    );
 
   return (
     <Modal show={show} onHide={closeHandler} centered>

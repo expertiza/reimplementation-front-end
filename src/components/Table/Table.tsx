@@ -42,7 +42,11 @@ interface TableProps {
   // Optional callback to add arbitrary HTML attributes to each <tr> (e.g. onMouseEnter for hover tracking).
   getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
   // Optional callback to add extra <td> props (e.g. rowSpan). Return { skip: true } to omit the <td> entirely (used for rowspan).
-  getCellProps?: (cell: any, row: any, allRows: any[]) => (React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean });
+  getCellProps?: (
+    cell: any,
+    row: any,
+    allRows: any[]
+  ) => React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean };
   // Optional style applied to the <table> element itself (e.g. width: "fit-content").
   tableStyle?: React.CSSProperties;
 }
@@ -71,7 +75,9 @@ const Table: React.FC<TableProps> = ({
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
-  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [columnVisibility]);
+  useEffect(() => {
+    setColumnVisibilityState(columnVisibility);
+  }, [columnVisibility]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
@@ -211,7 +217,13 @@ const Table: React.FC<TableProps> = ({
       <Container fluid={fluid}>
         <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm" style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}>
+            <BTable
+              striped
+              hover
+              responsive
+              size="sm"
+              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+            >
               <thead className="table-secondary">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -219,7 +231,15 @@ const Table: React.FC<TableProps> = ({
                       // Add info icon to Heading if comment exists.
                       const comment = headingComments[header.column.columnDef.header as string];
                       return (
-                        <th key={header.id} colSpan={header.colSpan} style={(header.column.columnDef.meta as any)?.minWidth ? { minWidth: (header.column.columnDef.meta as any).minWidth } : undefined}>
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          style={
+                            (header.column.columnDef.meta as any)?.minWidth
+                              ? { minWidth: (header.column.columnDef.meta as any).minWidth }
+                              : undefined
+                          }
+                        >
                           {header.isPlaceholder ? null : (
                             <>
                               <div
@@ -252,9 +272,15 @@ const Table: React.FC<TableProps> = ({
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                    <tr className={getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined} {...(getRowProps ? getRowProps(row) : {})}>
+                    <tr
+                      className={
+                        getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined
+                      }
+                      {...(getRowProps ? getRowProps(row) : {})}
+                    >
                       {row.getVisibleCells().map((cell) => {
-                        const { skip, ...tdProps } = getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
+                        const { skip, ...tdProps } =
+                          getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
                         if (skip) return null;
                         return (
                           <td key={cell.id} {...tdProps}>

@@ -36,8 +36,12 @@
   word-break: break-word;
 }
 
-.course-report-table tbody tr:nth-child(odd)  { background: #fff; }
-.course-report-table tbody tr:nth-child(even) { background: #f5f5f5; }
+.course-report-table tbody tr:nth-child(odd) {
+  background: #fff;
+}
+.course-report-table tbody tr:nth-child(even) {
+  background: #f5f5f5;
+}
 
 /* Sticky first column — inherits row background so alternating colors show through */
 .course-report-sticky-col {

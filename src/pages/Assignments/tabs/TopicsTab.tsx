@@ -105,16 +105,16 @@ const TopicsTab = ({
   const [showPartnerAdModal, setShowPartnerAdModal] = useState(false);
   const [selectedPartnerAdTopic, setSelectedPartnerAdTopic] = useState<TopicData | null>(null);
   const [partnerAdApplication, setPartnerAdApplication] = useState("");
-  
+
   // New topic modal state
   const [showNewTopicModal, setShowNewTopicModal] = useState(false);
   const [newTopicData, setNewTopicData] = useState({
-    topic_name: '',
-    topic_identifier: '',
-    category: '',
+    topic_name: "",
+    topic_identifier: "",
+    category: "",
     max_choosers: 1,
-    description: '',
-    link: ''
+    description: "",
+    link: "",
   });
 
   // Selected topics state
@@ -123,21 +123,25 @@ const TopicsTab = ({
 
   // Import topics modal state
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importData, setImportData] = useState('');
+  const [importData, setImportData] = useState("");
 
   // Delete modal state (repo-standard)
-  const [deleteState, setDeleteState] = useState<{ visible: boolean; ids: string[]; names: string[] }>({ visible: false, ids: [], names: [] });
+  const [deleteState, setDeleteState] = useState<{
+    visible: boolean;
+    ids: string[];
+    names: string[];
+  }>({ visible: false, ids: [], names: [] });
 
   // Edit topic modal state
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTopic, setEditingTopic] = useState<TopicData | null>(null);
   const [editTopicData, setEditTopicData] = useState({
-    topic_name: '',
-    topic_identifier: '',
-    category: '',
+    topic_name: "",
+    topic_identifier: "",
+    category: "",
     max_choosers: 1,
-    description: '',
-    link: ''
+    description: "",
+    link: "",
   });
 
   // --- Partner Ad Modal Handlers ---
@@ -163,12 +167,12 @@ const TopicsTab = ({
   // --- New Topic Modal Handlers ---
   const handleShowNewTopic = () => {
     setNewTopicData({
-      topic_name: '',
-      topic_identifier: '',
-      category: '',
+      topic_name: "",
+      topic_identifier: "",
+      category: "",
       max_choosers: 1,
-      description: '',
-      link: ''
+      description: "",
+      link: "",
     });
     setShowNewTopicModal(true);
   };
@@ -185,26 +189,26 @@ const TopicsTab = ({
   };
 
   const handleInputChange = (field: string, value: string | number) => {
-    setNewTopicData(prev => ({
+    setNewTopicData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // --- Edit Topic Modal Handlers ---
   const handleShowEditTopic = (topic: TopicData) => {
-    console.log('Edit button clicked for topic:', topic);
+    console.log("Edit button clicked for topic:", topic);
     setEditingTopic(topic);
     setEditTopicData({
-      topic_name: topic.name || '',
-      topic_identifier: topic.id || '',
-      category: topic.category || '',
+      topic_name: topic.name || "",
+      topic_identifier: topic.id || "",
+      category: topic.category || "",
       max_choosers: topic.numSlots || 1,
-      description: topic.description || '',
-      link: topic.url || ''
+      description: topic.description || "",
+      link: topic.url || "",
     });
     setShowEditModal(true);
-    console.log('Edit modal should be opening now');
+    console.log("Edit modal should be opening now");
   };
 
   const handleCloseEditTopic = () => {
@@ -213,21 +217,21 @@ const TopicsTab = ({
   };
 
   const handleSubmitEditTopic = () => {
-    console.log('Submitting edit for topic:', editingTopic);
-    console.log('Edit data:', editTopicData);
+    console.log("Submitting edit for topic:", editingTopic);
+    console.log("Edit data:", editTopicData);
     if (editingTopic && onEditTopic) {
-      console.log('Calling onEditTopic with DB id:', editingTopic.databaseId, editTopicData);
+      console.log("Calling onEditTopic with DB id:", editingTopic.databaseId, editTopicData);
       onEditTopic(String(editingTopic.databaseId), editTopicData);
       handleCloseEditTopic();
     } else {
-      console.log('Missing editingTopic or onEditTopic:', { editingTopic, onEditTopic });
+      console.log("Missing editingTopic or onEditTopic:", { editingTopic, onEditTopic });
     }
   };
 
   const handleEditInputChange = (field: string, value: string | number) => {
-    setEditTopicData(prev => ({
+    setEditTopicData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -237,7 +241,7 @@ const TopicsTab = ({
       setSelectedTopics(new Set());
       setSelectAll(false);
     } else {
-      const allTopicIds = new Set(topicsData.map(topic => topic.id));
+      const allTopicIds = new Set(topicsData.map((topic) => topic.id));
       setSelectedTopics(allTopicIds);
       setSelectAll(true);
     }
@@ -256,7 +260,7 @@ const TopicsTab = ({
 
   // --- Import Topics Handlers ---
   const handleShowImport = () => {
-    setImportData('');
+    setImportData("");
     setShowImportModal(true);
   };
 
@@ -267,21 +271,22 @@ const TopicsTab = ({
   const handleImportTopics = () => {
     try {
       // Parse CSV or JSON data
-      const lines = importData.trim().split('\n');
+      const lines = importData.trim().split("\n");
       const topics = lines.map((line, index) => {
-        const [topic_name, topic_identifier, category, max_choosers, description, link] = line.split(',');
+        const [topic_name, topic_identifier, category, max_choosers, description, link] =
+          line.split(",");
         return {
           topic_name: topic_name?.trim() || `Imported Topic ${index + 1}`,
           topic_identifier: topic_identifier?.trim() || `IMP${index + 1}`,
-          category: category?.trim() || '',
+          category: category?.trim() || "",
           max_choosers: parseInt(max_choosers?.trim()) || 1,
-          description: description?.trim() || '',
-          link: link?.trim() || ''
+          description: description?.trim() || "",
+          link: link?.trim() || "",
         };
       });
 
       // Create each topic
-      topics.forEach(topic => {
+      topics.forEach((topic) => {
         if (onCreateTopic) {
           onCreateTopic(topic);
         }
@@ -289,7 +294,7 @@ const TopicsTab = ({
 
       handleCloseImport();
     } catch (error) {
-      console.error('Error importing topics:', error);
+      console.error("Error importing topics:", error);
     }
   };
 
@@ -297,7 +302,7 @@ const TopicsTab = ({
   const handleDeleteSelected = () => {
     if (selectedTopics.size === 0) return;
     const ids = Array.from(selectedTopics);
-    const names = ids.map(id => topicsData.find(t => t.id === id)?.name || id);
+    const names = ids.map((id) => topicsData.find((t) => t.id === id)?.name || id);
     setDeleteState({ visible: true, ids, names });
   };
 
@@ -308,8 +313,9 @@ const TopicsTab = ({
   };
 
   // Check if questionnaire varies across topics
-  const questionnaireVaries = topicsData.length > 0 &&
-    topicsData.some(t => t.questionnaire !== topicsData[0].questionnaire);
+  const questionnaireVaries =
+    topicsData.length > 0 &&
+    topicsData.some((t) => t.questionnaire !== topicsData[0].questionnaire);
 
   // --- Render Helper Functions ---
   // removed: renderTeamMembers (moved to TopicsTable renderDetails inline rendering)
@@ -321,71 +327,68 @@ const TopicsTab = ({
 
         {/* Topic Settings */}
         <Form className="topics-settings-form">
-              <Form.Check
-                type="checkbox"
-                id="allowTopicSuggestions"
-                label="Allow topic suggestions from students?"
-                checked={topicSettings.allowTopicSuggestions}
-                onChange={(e) => onTopicSettingChange('allowTopicSuggestions', e.target.checked)}
-              />
-            
-              <Form.Check
-                type="checkbox"
-                id="enableBidding"
-                label="Allow bidding for topics?"
-                checked={topicSettings.enableBidding}
-                onChange={(e) => onTopicSettingChange('enableBidding', e.target.checked)}
-              />
-            
-              <Form.Check
-                type="checkbox"
-                id="enableAuthorsReview"
-                label="Allow authors to review others working on same topic?"
-                checked={topicSettings.enableAuthorsReview}
-                onChange={(e) => onTopicSettingChange('enableAuthorsReview', e.target.checked)}
-              />
-            
-               <Form.Check
-                type="checkbox"
-                id="allowReviewerChoice"
-                label="Allow reviewer to choose which topic to review?"
-                checked={topicSettings.allowReviewerChoice}
-                onChange={(e) => onTopicSettingChange('allowReviewerChoice', e.target.checked)}
-              />
-            
-              <Form.Check
-                type="checkbox"
-                id="allowBookmarks"
-                label="Allow participants to create bookmarks?"
-                checked={topicSettings.allowBookmarks}
-                onChange={(e) => onTopicSettingChange('allowBookmarks', e.target.checked)}
-              />
+          <Form.Check
+            type="checkbox"
+            id="allowTopicSuggestions"
+            label="Allow topic suggestions from students?"
+            checked={topicSettings.allowTopicSuggestions}
+            onChange={(e) => onTopicSettingChange("allowTopicSuggestions", e.target.checked)}
+          />
 
-              <Form.Check
-                type="checkbox"
-                id="allowAdvertiseForPartners"
-                label="Allow participants to advertise for partners?"
-                checked={topicSettings.allowAdvertiseForPartners}
-                onChange={(e) => onTopicSettingChange('allowAdvertiseForPartners', e.target.checked)}
-              />
-            
-              <Form.Check
-                type="checkbox"
-                id="allowBiddingForReviewers"
-                label="Allow bidding for reviewers?"
-                checked={topicSettings.allowBiddingForReviewers}
-                onChange={(e) => onTopicSettingChange('allowBiddingForReviewers', e.target.checked)}
-              />
+          <Form.Check
+            type="checkbox"
+            id="enableBidding"
+            label="Allow bidding for topics?"
+            checked={topicSettings.enableBidding}
+            onChange={(e) => onTopicSettingChange("enableBidding", e.target.checked)}
+          />
+
+          <Form.Check
+            type="checkbox"
+            id="enableAuthorsReview"
+            label="Allow authors to review others working on same topic?"
+            checked={topicSettings.enableAuthorsReview}
+            onChange={(e) => onTopicSettingChange("enableAuthorsReview", e.target.checked)}
+          />
+
+          <Form.Check
+            type="checkbox"
+            id="allowReviewerChoice"
+            label="Allow reviewer to choose which topic to review?"
+            checked={topicSettings.allowReviewerChoice}
+            onChange={(e) => onTopicSettingChange("allowReviewerChoice", e.target.checked)}
+          />
+
+          <Form.Check
+            type="checkbox"
+            id="allowBookmarks"
+            label="Allow participants to create bookmarks?"
+            checked={topicSettings.allowBookmarks}
+            onChange={(e) => onTopicSettingChange("allowBookmarks", e.target.checked)}
+          />
+
+          <Form.Check
+            type="checkbox"
+            id="allowAdvertiseForPartners"
+            label="Allow participants to advertise for partners?"
+            checked={topicSettings.allowAdvertiseForPartners}
+            onChange={(e) => onTopicSettingChange("allowAdvertiseForPartners", e.target.checked)}
+          />
+
+          <Form.Check
+            type="checkbox"
+            id="allowBiddingForReviewers"
+            label="Allow bidding for reviewers?"
+            checked={topicSettings.allowBiddingForReviewers}
+            onChange={(e) => onTopicSettingChange("allowBiddingForReviewers", e.target.checked)}
+          />
         </Form>
 
         {/* Error Message */}
         {topicsError && (
           <div className="alert alert-danger" role="alert">
-            <strong>Error loading topics:</strong> {
-              typeof topicsError === 'string' 
-                ? topicsError 
-                : JSON.stringify(topicsError)
-            }
+            <strong>Error loading topics:</strong>{" "}
+            {typeof topicsError === "string" ? topicsError : JSON.stringify(topicsError)}
           </div>
         )}
 
@@ -413,24 +416,39 @@ const TopicsTab = ({
                   {
                     id: "questionnaire",
                     header: "Questionnaire",
-                    cell: ({ row }: any) => <span>{(topicsData.find(t => t.id === row.original.id)?.questionnaire) || "--Default rubric--"}</span>,
+                    cell: ({ row }: any) => (
+                      <span>
+                        {topicsData.find((t) => t.id === row.original.id)?.questionnaire ||
+                          "--Default rubric--"}
+                      </span>
+                    ),
                   },
                 ]
               : []),
             {
               id: "numSlots",
               header: "Num. of Slots",
-              cell: ({ row }: any) => <span className="d-block text-center">{topicsData.find(t => t.id === row.original.id)?.numSlots ?? 0}</span>,
+              cell: ({ row }: any) => (
+                <span className="d-block text-center">
+                  {topicsData.find((t) => t.id === row.original.id)?.numSlots ?? 0}
+                </span>
+              ),
             },
             {
               id: "availableSlots",
               header: "Available Slots",
-              cell: ({ row }: any) => <span className="d-block text-center">{row.original.availableSlots ?? 0}</span>,
+              cell: ({ row }: any) => (
+                <span className="d-block text-center">{row.original.availableSlots ?? 0}</span>
+              ),
             },
             {
               id: "waitlisted",
               header: "Waitlisted",
-              cell: ({ row }: any) => <span className="d-block text-center">{row.original.waitlistedTeams?.length ?? 0}</span>,
+              cell: ({ row }: any) => (
+                <span className="d-block text-center">
+                  {row.original.waitlistedTeams?.length ?? 0}
+                </span>
+              ),
             },
           ]}
           renderDetails={(row) => (
@@ -440,9 +458,12 @@ const TopicsTab = ({
                   {row.assignedTeams.map((team) => {
                     const topicDbId = row.databaseId?.toString() ?? row.id;
                     return (
-                      <div key={team.teamId} className="d-flex align-items-center justify-content-between mb-2">
+                      <div
+                        key={team.teamId}
+                        className="d-flex align-items-center justify-content-between mb-2"
+                      >
                         <span className="small fw-bold text-primary me-2">
-                          {team.members.map(m => m.name || m.id).join(", ")}
+                          {team.members.map((m) => m.name || m.id).join(", ")}
                         </span>
                         <Button
                           variant="outline-danger"
@@ -462,7 +483,7 @@ const TopicsTab = ({
                   {row.waitlistedTeams.map((team) => (
                     <div key={team.teamId} className="d-flex align-items-center mb-1">
                       <span className="small text-muted">
-                        {team.members.map(m => m.name || m.id).join(", ")} (waitlisted)
+                        {team.members.map((m) => m.name || m.id).join(", ")} (waitlisted)
                       </span>
                     </div>
                   ))}
@@ -476,25 +497,35 @@ const TopicsTab = ({
                 <Button
                   variant="link"
                   onClick={() => {
-                    const full = topicsData.find(t => t.id === topic.id);
+                    const full = topicsData.find((t) => t.id === topic.id);
                     if (!full) return;
                     handleShowEditTopic(full);
                   }}
                   aria-label="Edit Topic"
                   className="p-0"
                 >
-                  <img src={"/assets/images/edit-icon-24.png"} alt="Edit" style={{ width: "20px", height: "20px" }} />
+                  <img
+                    src={"/assets/images/edit-icon-24.png"}
+                    alt="Edit"
+                    style={{ width: "20px", height: "20px" }}
+                  />
                 </Button>
               </OverlayTrigger>
 
               <OverlayTrigger overlay={<Tooltip>Delete Topic</Tooltip>}>
                 <Button
                   variant="link"
-                  onClick={() => setDeleteState({ visible: true, ids: [topic.id], names: [topic.name] })}
+                  onClick={() =>
+                    setDeleteState({ visible: true, ids: [topic.id], names: [topic.name] })
+                  }
                   aria-label="Delete Topic"
                   className="p-0"
                 >
-                  <img src={"/assets/images/delete-icon-24.png"} alt="Delete" style={{ width: "20px", height: "20px" }} />
+                  <img
+                    src={"/assets/images/delete-icon-24.png"}
+                    alt="Delete"
+                    style={{ width: "20px", height: "20px" }}
+                  />
                 </Button>
               </OverlayTrigger>
 
@@ -503,7 +534,7 @@ const TopicsTab = ({
                   <Button
                     variant="link"
                     onClick={() => {
-                      const full = topicsData.find(t => t.id === topic.id);
+                      const full = topicsData.find((t) => t.id === topic.id);
                       if (!full) return;
                       handleShowPartnerAd(full);
                     }}
@@ -524,47 +555,41 @@ const TopicsTab = ({
 
         {/* Action Buttons */}
         <div className="d-flex flex-wrap gap-2 justify-content-start mb-3 mt-3">
-          <Button 
-            variant="success" 
-            onClick={handleShowNewTopic}
-          >
+          <Button variant="success" onClick={handleShowNewTopic}>
             New topic
           </Button>
-          <Button 
-            variant="secondary" 
-            onClick={handleShowImport}
-          >
+          <Button variant="secondary" onClick={handleShowImport}>
             Import topics
           </Button>
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             onClick={handleDeleteSelected}
             disabled={selectedTopics.size === 0}
           >
             Delete selected topics ({selectedTopics.size})
           </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleBack}
-          >
+          <Button variant="primary" onClick={handleBack}>
             Back
           </Button>
         </div>
       </Col>
 
-       {/* Partner Advertisement Modal */}
-       <Modal show={showPartnerAdModal} onHide={handleClosePartnerAd} centered>
+      {/* Partner Advertisement Modal */}
+      <Modal show={showPartnerAdModal} onHide={handleClosePartnerAd} centered>
         <Modal.Header closeButton>
           <Modal.Title>Partner Advertisement: {selectedPartnerAdTopic?.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>{selectedPartnerAdTopic?.partnerAd?.text}</p>
           <hr />
-          <FloatingLabel controlId="partnerAdApplicationText" label="Why would you be a good partner?">
+          <FloatingLabel
+            controlId="partnerAdApplicationText"
+            label="Why would you be a good partner?"
+          >
             <Form.Control
               as="textarea"
               placeholder="Enter your application text here"
-              style={{ height: '100px' }}
+              style={{ height: "100px" }}
               value={partnerAdApplication}
               onChange={(e) => setPartnerAdApplication(e.target.value)}
             />
@@ -574,7 +599,11 @@ const TopicsTab = ({
           <Button variant="secondary" onClick={handleClosePartnerAd}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmitPartnerAd} disabled={!partnerAdApplication.trim()}>
+          <Button
+            variant="primary"
+            onClick={handleSubmitPartnerAd}
+            disabled={!partnerAdApplication.trim()}
+          >
             Apply
           </Button>
         </Modal.Footer>
@@ -594,18 +623,22 @@ const TopicsTab = ({
                     type="text"
                     placeholder="Enter topic name"
                     value={newTopicData.topic_name}
-                    onChange={(e) => handleInputChange('topic_name', e.target.value)}
+                    onChange={(e) => handleInputChange("topic_name", e.target.value)}
                     required
                   />
                 </FloatingLabel>
               </Col>
               <Col md={6}>
-                <FloatingLabel controlId="topicIdentifier" label="Topic Identifier" className="mb-3">
+                <FloatingLabel
+                  controlId="topicIdentifier"
+                  label="Topic Identifier"
+                  className="mb-3"
+                >
                   <Form.Control
                     type="text"
                     placeholder="e.g., E2550"
                     value={newTopicData.topic_identifier}
-                    onChange={(e) => handleInputChange('topic_identifier', e.target.value)}
+                    onChange={(e) => handleInputChange("topic_identifier", e.target.value)}
                     required
                   />
                 </FloatingLabel>
@@ -618,7 +651,7 @@ const TopicsTab = ({
                     type="text"
                     placeholder="Enter category"
                     value={newTopicData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -629,7 +662,9 @@ const TopicsTab = ({
                     min="1"
                     placeholder="1"
                     value={newTopicData.max_choosers}
-                    onChange={(e) => handleInputChange('max_choosers', parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      handleInputChange("max_choosers", parseInt(e.target.value) || 1)
+                    }
                     required
                   />
                 </FloatingLabel>
@@ -641,9 +676,9 @@ const TopicsTab = ({
                   <Form.Control
                     as="textarea"
                     placeholder="Enter topic description"
-                    style={{ height: '80px' }}
+                    style={{ height: "80px" }}
                     value={newTopicData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -655,7 +690,7 @@ const TopicsTab = ({
                     type="url"
                     placeholder="https://example.com"
                     value={newTopicData.link}
-                    onChange={(e) => handleInputChange('link', e.target.value)}
+                    onChange={(e) => handleInputChange("link", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -666,8 +701,8 @@ const TopicsTab = ({
           <Button variant="secondary" onClick={handleCloseNewTopic}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSubmitNewTopic}
             disabled={!newTopicData.topic_name.trim() || !newTopicData.topic_identifier.trim()}
           >
@@ -684,14 +719,19 @@ const TopicsTab = ({
         <Modal.Body>
           <div className="mb-3">
             <p>Import topics from CSV format. Each line should contain:</p>
-            <p><code>Topic Name, Topic Identifier, Category, Max Choosers, Description, Link</code></p>
-            <p className="text-muted small">Example: "Database Design, DB001, Technical, 2, Design database schema, https://example.com"</p>
+            <p>
+              <code>Topic Name, Topic Identifier, Category, Max Choosers, Description, Link</code>
+            </p>
+            <p className="text-muted small">
+              Example: "Database Design, DB001, Technical, 2, Design database schema,
+              https://example.com"
+            </p>
           </div>
           <FloatingLabel controlId="importData" label="CSV Data">
             <Form.Control
               as="textarea"
               placeholder="Enter CSV data here..."
-              style={{ height: '200px' }}
+              style={{ height: "200px" }}
               value={importData}
               onChange={(e) => setImportData(e.target.value)}
             />
@@ -701,11 +741,7 @@ const TopicsTab = ({
           <Button variant="secondary" onClick={handleCloseImport}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleImportTopics}
-            disabled={!importData.trim()}
-          >
+          <Button variant="primary" onClick={handleImportTopics} disabled={!importData.trim()}>
             Import Topics
           </Button>
         </Modal.Footer>
@@ -735,18 +771,22 @@ const TopicsTab = ({
                     type="text"
                     placeholder="Enter topic name"
                     value={editTopicData.topic_name}
-                    onChange={(e) => handleEditInputChange('topic_name', e.target.value)}
+                    onChange={(e) => handleEditInputChange("topic_name", e.target.value)}
                     required
                   />
                 </FloatingLabel>
               </Col>
               <Col md={6}>
-                <FloatingLabel controlId="editTopicIdentifier" label="Topic Identifier" className="mb-3">
+                <FloatingLabel
+                  controlId="editTopicIdentifier"
+                  label="Topic Identifier"
+                  className="mb-3"
+                >
                   <Form.Control
                     type="text"
                     placeholder="e.g., E2550"
                     value={editTopicData.topic_identifier}
-                    onChange={(e) => handleEditInputChange('topic_identifier', e.target.value)}
+                    onChange={(e) => handleEditInputChange("topic_identifier", e.target.value)}
                     required
                   />
                 </FloatingLabel>
@@ -759,7 +799,7 @@ const TopicsTab = ({
                     type="text"
                     placeholder="Enter category"
                     value={editTopicData.category}
-                    onChange={(e) => handleEditInputChange('category', e.target.value)}
+                    onChange={(e) => handleEditInputChange("category", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -770,7 +810,9 @@ const TopicsTab = ({
                     min="1"
                     placeholder="1"
                     value={editTopicData.max_choosers}
-                    onChange={(e) => handleEditInputChange('max_choosers', parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      handleEditInputChange("max_choosers", parseInt(e.target.value) || 1)
+                    }
                     required
                   />
                 </FloatingLabel>
@@ -782,9 +824,9 @@ const TopicsTab = ({
                   <Form.Control
                     as="textarea"
                     placeholder="Enter topic description"
-                    style={{ height: '80px' }}
+                    style={{ height: "80px" }}
                     value={editTopicData.description}
-                    onChange={(e) => handleEditInputChange('description', e.target.value)}
+                    onChange={(e) => handleEditInputChange("description", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -796,7 +838,7 @@ const TopicsTab = ({
                     type="url"
                     placeholder="https://example.com"
                     value={editTopicData.link}
-                    onChange={(e) => handleEditInputChange('link', e.target.value)}
+                    onChange={(e) => handleEditInputChange("link", e.target.value)}
                   />
                 </FloatingLabel>
               </Col>
@@ -807,8 +849,8 @@ const TopicsTab = ({
           <Button variant="secondary" onClick={handleCloseEditTopic}>
             Cancel
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSubmitEditTopic}
             disabled={!editTopicData.topic_name.trim() || !editTopicData.topic_identifier.trim()}
           >

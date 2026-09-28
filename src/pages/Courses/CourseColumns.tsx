@@ -4,24 +4,15 @@ import { BsBarChartFill, BsListCheck } from "react-icons/bs";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 import { formatDate } from "../../utils/util";
 
-
 type Fn = (row: Row<ICourse>) => void;
 
 const columnHelper = createColumnHelper<ICourse>();
 
-export const courseColumns = (
-  handleEdit: Fn,
-  handleDelete: Fn,
-  handleTA: Fn,
-  handleCopy: Fn
-) => [
+export const courseColumns = (handleEdit: Fn, handleDelete: Fn, handleTA: Fn, handleCopy: Fn) => [
   columnHelper.accessor("name", {
     id: "name",
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Course Name
       </span>
     ),
@@ -39,10 +30,7 @@ export const courseColumns = (
     id: "institution",
     size: 250,
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Institution
       </span>
     ),
@@ -68,10 +56,7 @@ export const courseColumns = (
   columnHelper.accessor("instructor.name", {
     id: "instructor",
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Instructor
       </span>
     ),
@@ -97,17 +82,13 @@ export const courseColumns = (
   columnHelper.accessor("created_at", {
     size: 200,
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Creation Date
       </span>
     ),
     cell: (info) => (
       <div className="text-start py-2">
-        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}
-        </span>
+        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}</span>
       </div>
     ),
     enableSorting: true,
@@ -118,17 +99,13 @@ export const courseColumns = (
   columnHelper.accessor("updated_at", {
     size: 200,
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Updated Date
       </span>
     ),
     cell: (info) => (
       <div className="text-start py-2">
-        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}
-        </span>
+        <span style={{ color: "#000000" }}>{formatDate(info.getValue() as unknown as string)}</span>
       </div>
     ),
     enableSorting: true,
@@ -139,10 +116,7 @@ export const courseColumns = (
   columnHelper.display({
     id: "actions",
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Actions
       </span>
     ),
