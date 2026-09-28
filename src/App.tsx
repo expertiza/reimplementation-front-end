@@ -4,7 +4,7 @@ import RootLayout from "./layout/Root";
 import ManageUserTypes, { loader as loadUsers } from "./pages/Administrator/ManageUserTypes";
 import Assignment from "./pages/Assignments/Assignment";
 import AssignmentEditor from "./pages/Assignments/AssignmentEditor";
-import { loadAssignment } from "./pages/Assignments/AssignmentUtil";
+import { loadAssignment, loadCreateTeams } from "./pages/Assignments/AssignmentUtil";
 import ResponseMappings from "./pages/ResponseMappings/ResponseMappings";
 import CreateTeams from "./pages/Assignments/CreateTeams";
 import ViewDelayedJobs from "./pages/Assignments/ViewDelayedJobs";
@@ -21,7 +21,7 @@ import CourseGradeSummaryPage from "./pages/Courses/CourseGradeSummaryPage";
 import CourseAllReviewsPage from "./pages/Courses/CourseAllReviewsPage";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
-import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
+import { loadQuestionnaire, loadQuestionnaireHierarchy } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
 import Home from "./pages/Home";
 import InstitutionEditor, { loadInstitution } from "./pages/Institutions/InstitutionEditor";
@@ -94,7 +94,7 @@ function App() {
         {
           path: "assignments/edit/:id/createteams",
           element: <CreateTeams />,
-          loader: loadAssignment,
+          loader: loadCreateTeams,
         },
 
         // Assign Reviewer: no route loader (component handles localStorage/URL id) 
@@ -430,17 +430,17 @@ function App() {
             { 
               path: "questionnaire", 
               element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
+              loader: loadQuestionnaireHierarchy, },
                       ],
         },
 
        { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaireHierarchy },
 
         {
           path: "questionnaires",
           element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
-          loader: loadQuestionnaire,
+          loader: loadQuestionnaireHierarchy,
         },
         {
           path: "questionnaires/new",

@@ -2,6 +2,8 @@ import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
 export type QuestionnaireType =
+  | "Review"
+  | "Metareview"
   | "Author feedback"
   | "Teammate Review"
   | "Survey"
@@ -13,6 +15,8 @@ export type QuestionnaireType =
 
 
 export const QuestionnaireTypes: QuestionnaireType[] = [
+  "Review",
+  "Metareview",
   "Author feedback",
   "Teammate Review",
   "Survey",
@@ -70,6 +74,11 @@ export interface QuestionnaireResponse {
   items?: IItem[];
 }
 
+export interface QuestionnaireTypeGroup {
+  type: string;
+  questionnaires: QuestionnaireResponse[];
+}
+
 export interface QuestionnaireRequest {
   id?: number;
   name: string;
@@ -94,11 +103,24 @@ export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] 
 
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
+  const questionnaireTypeMap: Record<string, string> = {
+    Review: "ReviewQuestionnaire",
+    Metareview: "MetareviewQuestionnaire",
+    "Author feedback": "AuthorFeedbackQuestionnaire",
+    "Teammate Review": "TeammateReviewQuestionnaire",
+    Survey: "SurveyQuestionnaire",
+    "Assignment survey": "AssignmentSurveyQuestionnaire",
+    "Global survey": "GlobalSurveyQuestionnaire",
+    "Course survey": "CourseSurveyQuestionnaire",
+    "Bookmark rating": "BookmarkRatingQuestionnaire",
+    Quiz: "QuizQuestionnaire",
+  };
+
   console.log("Original Form Values:", values);
   const questionnaire: QuestionnaireRequest = {
-    id: values.id,
     name: values.name,
-    questionnaire_type: values.questionnaire_type.replace(/\s+/g, ""),
+    questionnaire_type:
+      questionnaireTypeMap[values.questionnaire_type] ?? values.questionnaire_type.replace(/\s+/g, ""),
     private: values.private,
     min_question_score: values.min_question_score,
     max_question_score: values.max_question_score,
@@ -136,10 +158,16 @@ export async function loadQuestionnaire({ params }: any) {
   if (params.id) {
     const response = await axiosClient.get(`/questionnaires/${params.id}`);
     return transformQuestionnaireResponse(response.data);
-  } else {
-    const response = await axiosClient.get(`/questionnaires`);
-    return response.data.map((q: any) => transformQuestionnaireResponse(q));
   }
+
+  return null;
 }
 
+export async function loadQuestionnaireHierarchy() {
+  const response = await axiosClient.get(`/questionnaires/hierarchical`);
+  return response.data.map((group: QuestionnaireTypeGroup) => ({
+    ...group,
+    questionnaires: group.questionnaires.map((q: any) => transformQuestionnaireResponse(q)),
+  }));
+}
 
