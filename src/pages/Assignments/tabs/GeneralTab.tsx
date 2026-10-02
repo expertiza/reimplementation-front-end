@@ -1,6 +1,15 @@
 import { Col, Row } from "react-bootstrap";
 
-const GeneralTab = () => {
+interface GeneralTabProps {
+  hasTopics: boolean;
+  hasTeams: boolean;
+  isCalibrated: boolean;
+  onHasTopicsChange: (v: boolean) => void;
+  onHasTeamsChange: (v: boolean) => void;
+  onIsCalibratedChange: (v: boolean) => void;
+}
+
+const GeneralTab = ({ hasTopics, hasTeams, isCalibrated, onHasTopicsChange, onHasTeamsChange, onIsCalibratedChange }: GeneralTabProps) => {
   return (
     <Row className="mt-4">
       <Col>
@@ -84,18 +93,42 @@ const GeneralTab = () => {
             </div>
           </div>
 
-          {/* Column 2: Checkboxes
-          This maps to your <FormCheckbox> components
-          */}
+          {/* Column 2: Checkboxes */}
           <div className="col-md-6">
             <div className="form-check mb-3">
               <input type="checkbox" id="assignment-private" name="private" className="form-check-input" />
               <label htmlFor="assignment-private" className="form-check-label">Private Assignment</label>
             </div>
-            <div className="form-check mb-3">
-              <input type="checkbox" id="assignment-show_teammate_review" name="show_teammate_review" className="form-check-input" />
-              <label htmlFor="assignment-show_teammate_review" className="form-check-label">Show Teammate Reviews?</label>
+
+            {/* Has teams — controls dependent fields below */}
+            <div className="form-check mb-1">
+              <input
+                type="checkbox"
+                id="assignment-team_assignment"
+                name="team_assignment"
+                className="form-check-input"
+                checked={hasTeams}
+                onChange={(e) => onHasTeamsChange(e.target.checked)}
+              />
+              <label htmlFor="assignment-team_assignment" className="form-check-label">Has teams?</label>
             </div>
+            {hasTeams && (
+              <div className="ms-4 mb-3">
+                <div className="mb-2">
+                  <label htmlFor="assignment-max_team_size" className="form-label small mb-1">Maximum members per team</label>
+                  <input type="number" id="assignment-max_team_size" name="max_team_size" className="form-control form-control-sm" style={{ width: "80px" }} defaultValue={2} min={2} />
+                </div>
+                <div className="form-check mb-1">
+                  <input type="checkbox" id="assignment-show_teammate_reviews" name="show_teammate_reviews" className="form-check-input" />
+                  <label htmlFor="assignment-show_teammate_reviews" className="form-check-label">Show teammate reviews?</label>
+                </div>
+                <div className="form-check">
+                  <input type="checkbox" id="assignment-enable_pair_programming" name="enable_pair_programming" className="form-check-input" />
+                  <label htmlFor="assignment-enable_pair_programming" className="form-check-label">Pair programming?</label>
+                </div>
+              </div>
+            )}
+
             <div className="form-check mb-3">
               <input type="checkbox" id="assignment-require_quiz" name="require_quiz" className="form-check-input" />
               <label htmlFor="assignment-require_quiz" className="form-check-label">Has quiz?</label>
@@ -108,8 +141,30 @@ const GeneralTab = () => {
               <input type="checkbox" id="assignment-staggered_deadline" name="staggered_deadline" className="form-check-input" />
               <label htmlFor="assignment-staggered_deadline" className="form-check-label">Staggered deadline assignment?</label>
             </div>
+
+            {/* Has topics — shows/hides Topics tab */}
             <div className="form-check mb-3">
-              <input type="checkbox" id="assignment-is_calibrated" name="is_calibrated" className="form-check-input" />
+              <input
+                type="checkbox"
+                id="assignment-has_topics"
+                name="has_topics"
+                className="form-check-input"
+                checked={hasTopics}
+                onChange={(e) => onHasTopicsChange(e.target.checked)}
+              />
+              <label htmlFor="assignment-has_topics" className="form-check-label">Has topics?</label>
+            </div>
+
+            {/* Calibration — shows/hides Calibration tab */}
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                id="assignment-is_calibrated"
+                name="is_calibrated"
+                className="form-check-input"
+                checked={isCalibrated}
+                onChange={(e) => onIsCalibratedChange(e.target.checked)}
+              />
               <label htmlFor="assignment-is_calibrated" className="form-check-label">Calibration for training?</label>
             </div>
             <div className="form-check mb-3">
@@ -147,10 +202,6 @@ const GeneralTab = () => {
             <div className="form-check mb-3">
               <input type="checkbox" id="assignment-availability_flag" name="availability_flag" className="form-check-input" />
               <label htmlFor="assignment-availability_flag" className="form-check-label">Availability Flag</label>
-            </div>
-            <div className="form-check mb-3">
-              <input type="checkbox" id="assignment-use_bookmark" name="use_bookmark" className="form-check-input" />
-              <label htmlFor="assignment-use_bookmark" className="form-check-label">Use Bookmark</label>
             </div>
             <div className="form-check mb-3">
               <input type="checkbox" id="assignment-can_review_same_topic" name="can_review_same_topic" className="form-check-input" />

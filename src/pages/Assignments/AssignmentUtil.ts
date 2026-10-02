@@ -63,14 +63,12 @@ export interface IAssignmentFormValues {
   weights?: number[];
   notification_limits?: number[];
   dropdowns?: boolean[];
-  use_date_updater?: boolean[];
    // Misc flags from the form
   allow_tag_prompts?: boolean;
   course_id?: number;
   available_to_students?: boolean;
   auto_assign_mentors?: boolean;
   // Rubrics tab
-  is_peer_reviewed?: boolean;
   review_questionnaire_id?: number;
   review_questionnaire_dropdown?: boolean;
   author_feedback_questionnaire_id?: number;
@@ -123,31 +121,29 @@ function buildRubricAttributes(values: IAssignmentFormValues): (RubricEntry | { 
   const roundCount = values.number_of_review_rounds ?? 1;
   const variesByRound = values.review_rubric_varies_by_round && roundCount > 1;
 
-  if (values.is_peer_reviewed !== false) {
-    if (variesByRound) {
-      for (let i = 1; i <= roundCount; i++) {
-        const qId = values[`questionnaire_round_${i}`];
-        if (qId) {
-          rubrics.push({
-            id: values[`assignment_questionnaire_id_${i}`],
-            questionnaire_id: Number(qId),
-            used_in_round: i,
-            questionnaire_weight: values[`review_round_${i}_weight`] ?? 0,
-            notification_limit: values[`review_round_${i}_notification_limit`] ?? 0,
-            dropdown: values[`review_round_${i}_dropdown`] ?? false,
-          });
-        }
+  if (variesByRound) {
+    for (let i = 1; i <= roundCount; i++) {
+      const qId = values[`questionnaire_round_${i}`];
+      if (qId) {
+        rubrics.push({
+          id: values[`assignment_questionnaire_id_${i}`],
+          questionnaire_id: Number(qId),
+          used_in_round: i,
+          questionnaire_weight: values[`review_round_${i}_weight`] ?? 0,
+          notification_limit: values[`review_round_${i}_notification_limit`] ?? 0,
+          dropdown: values[`review_round_${i}_dropdown`] ?? false,
+        });
       }
-    } else if (values.review_questionnaire_id) {
-      rubrics.push({
-        id: values.review_assignment_questionnaire_id,
-        questionnaire_id: Number(values.review_questionnaire_id),
-        used_in_round: 1,
-        questionnaire_weight: values.review_questionnaire_weight ?? 0,
-        notification_limit: values.review_questionnaire_notification_limit ?? 0,
-        dropdown: values.review_questionnaire_dropdown ?? false,
-      });
     }
+  } else if (values.review_questionnaire_id) {
+    rubrics.push({
+      id: values.review_assignment_questionnaire_id,
+      questionnaire_id: Number(values.review_questionnaire_id),
+      used_in_round: 1,
+      questionnaire_weight: values.review_questionnaire_weight ?? 0,
+      notification_limit: values.review_questionnaire_notification_limit ?? 0,
+      dropdown: values.review_questionnaire_dropdown ?? false,
+    });
   }
 
   if (values.author_feedback_questionnaire_id) {
@@ -321,9 +317,6 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
   return JSON.stringify({ assignment });
 };
 
-// Alias kept so existing imports in CreateAssignment.tsx continue to work
-export const transformCreateRequest = transformAssignmentRequest;
-
 export const transformAssignmentResponse = (assignmentResponse: string): IAssignmentFormValues => {
   const assignment: any = JSON.parse(assignmentResponse);
 
@@ -361,14 +354,65 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
 
   const dueDateTypeIds = new Set((assignment.due_dates || []).map((d: any) => d.deadline_type_id));
 
+  // Unpack assignment_questionnaires array → individual form fields
+  const aqs: any[] = assignment.assignment_questionnaires ?? [];
+  const reviewAqs = aqs.filter((aq) => aq.questionnaire?.questionnaire_type === "ReviewQuestionnaire");
+  const authorAq  = aqs.find((aq) => aq.questionnaire?.questionnaire_type === "AuthorFeedbackQuestionnaire");
+  const teammateAq = aqs.find((aq) => aq.questionnaire?.questionnaire_type === "TeammateReviewQuestionnaire");
+
+  // Determine if peer-review rubric varies by round (multiple review AQs with distinct used_in_round)
+  const reviewRounds = [...new Set(reviewAqs.map((aq) => aq.used_in_round).filter((r) => r != null))] as number[];
+  const variesByRound = reviewRounds.length > 1;
+  const numRounds = variesByRound ? reviewRounds.length : (assignment.number_of_review_rounds ?? assignment.rounds_of_reviews ?? 1);
+
+  // Build per-round review fields
+  const roundFields: Record<string, any> = {};
+  if (variesByRound) {
+    reviewRounds.sort().forEach((round, idx) => {
+      const aq = reviewAqs.find((a) => a.used_in_round === round);
+      if (!aq) return;
+      const r = idx + 1;
+      roundFields[`questionnaire_round_${r}`] = aq.questionnaire_id;
+      roundFields[`assignment_questionnaire_id_${r}`] = aq.id;
+      roundFields[`review_round_${r}_weight`] = aq.questionnaire_weight ?? 0;
+      roundFields[`review_round_${r}_notification_limit`] = aq.notification_limit ?? 15;
+      roundFields[`review_round_${r}_dropdown`] = aq.dropdown ?? false;
+    });
+  } else {
+    const aq = reviewAqs[0];
+    if (aq) {
+      roundFields.review_questionnaire_id = aq.questionnaire_id;
+      roundFields.review_assignment_questionnaire_id = aq.id;
+      roundFields.review_questionnaire_weight = aq.questionnaire_weight ?? 0;
+      roundFields.review_questionnaire_notification_limit = aq.notification_limit ?? 15;
+      roundFields.review_questionnaire_dropdown = aq.dropdown ?? false;
+    }
+  }
+
   return {
     // Spread all persisted columns from API response
     ...assignment,
+    // Rubric fields unpacked from assignment_questionnaires
+    review_rubric_varies_by_round: variesByRound,
+    number_of_review_rounds: numRounds,
+    ...roundFields,
+    ...(authorAq ? {
+      author_feedback_questionnaire_id: authorAq.questionnaire_id,
+      author_feedback_assignment_questionnaire_id: authorAq.id,
+      author_feedback_questionnaire_weight: authorAq.questionnaire_weight ?? 0,
+      author_feedback_questionnaire_notification_limit: authorAq.notification_limit ?? 15,
+      author_feedback_questionnaire_dropdown: authorAq.dropdown ?? false,
+    } : {}),
+    ...(teammateAq ? {
+      teammate_questionnaire_id: teammateAq.questionnaire_id,
+      teammate_assignment_questionnaire_id: teammateAq.id,
+      teammate_questionnaire_weight: teammateAq.questionnaire_weight ?? 0,
+      teammate_questionnaire_notification_limit: teammateAq.notification_limit ?? 15,
+      teammate_questionnaire_dropdown: teammateAq.dropdown ?? false,
+    } : {}),
     // Map DB column names to form field names (backend returns raw column names)
-    review_rubric_varies_by_round: assignment.review_rubric_varies_by_round ?? assignment.vary_by_round,
     review_rubric_varies_by_topic: assignment.review_rubric_varies_by_topic ?? assignment.vary_by_topic ?? false,
     review_rubric_varies_by_role: assignment.review_rubric_varies_by_role ?? assignment.vary_by_role ?? false,
-    number_of_review_rounds: assignment.number_of_review_rounds ?? assignment.rounds_of_reviews ?? assignment.num_review_rounds,
     review_strategy: assignment.review_strategy ?? assignment.review_assignment_strategy ?? "",
     available_to_students: assignment.available_to_students ?? assignment.availability_flag ?? false,
     allow_tag_prompts: assignment.allow_tag_prompts ?? assignment.is_answer_tagging_allowed ?? false,
@@ -376,10 +420,19 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
     staggered_deadline: assignment.staggered_deadline ?? false,
     // Virtual fields not returned by the API
     show_template_review: assignment.show_template_review ?? false,
-    is_role_based: assignment.is_role_based ?? false,
+    // DB column name → form field name fallbacks (attributes() returns raw column names)
+    maximum_number_of_reviews_per_submission: assignment.maximum_number_of_reviews_per_submission ?? assignment.max_reviews_per_submission,
+    is_review_anonymous: assignment.is_review_anonymous ?? assignment.is_anonymous ?? false,
+    allow_self_reviews: assignment.allow_self_reviews ?? assignment.is_selfreview_enabled ?? false,
+    set_allowed_number_of_reviews_per_reviewer: assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed,
+    set_required_number_of_reviews_per_reviewer: assignment.set_required_number_of_reviews_per_reviewer ?? assignment.num_reviews_required,
+    is_review_done_by_teams: assignment.is_review_done_by_teams ?? assignment.team_reviewing_enabled ?? false,
+    is_role_based: assignment.is_role_based ?? assignment.duty_based_assignment ?? false,
     // Derive from the actual limit value: positive integer means a limit was configured
-    has_max_review_limit: (assignment.set_allowed_number_of_reviews_per_reviewer != null &&
-                           assignment.set_allowed_number_of_reviews_per_reviewer > 0),
+    has_max_review_limit: (() => {
+      const allowed = assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed;
+      return allowed != null && Number(allowed) > 0;
+    })(),
     // Derive from is_penalty_calculated: the DB boolean that corresponds to this UI toggle
     apply_late_policy: assignment.is_penalty_calculated ?? false,
     // Derive deadline toggle checkboxes from whether those due_date records exist

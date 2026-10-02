@@ -3,7 +3,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import { Badge, Button, Spinner } from "react-bootstrap";
 import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
-
 export interface TeamMember { id: string; name?: string }
 export interface Team { teamId: string; members: TeamMember[] }
 

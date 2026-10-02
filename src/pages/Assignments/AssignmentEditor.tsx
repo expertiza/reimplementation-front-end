@@ -2,16 +2,15 @@ import * as Yup from "yup";
 
 import { Button, Dropdown, Tab, Tabs } from "react-bootstrap";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
-import { IAssignmentFormValues, transformCreateRequest, REVIEW_STRATEGIES, REVIEW_STRATEGY_OPTIONS } from "./AssignmentUtil";
+import { IAssignmentFormValues, transformAssignmentRequest, REVIEW_STRATEGIES, REVIEW_STRATEGY_OPTIONS } from "./AssignmentUtil";
 import RubricsContent, { QuestionnaireOption } from "./RubricsContent";
 import { IEditor } from "../../utils/interfaces";
-import React, { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
 import FormSelect from "../../components/Form/FormSelect";
 import { HttpMethod } from "../../utils/httpMethods";
-import { RootState } from "../../store/store";
 import { alertActions } from "../../store/slices/alertSlice";
 import useAPI from "../../hooks/useAPI";
 import FormCheckbox from "../../components/Form/FormCheckBox";
@@ -29,9 +28,9 @@ interface TopicSettings {
   enableBidding: boolean;
   enableAuthorsReview: boolean;
   allowReviewerChoice: boolean;
-  allowBookmarks: boolean;
   allowBiddingForReviewers: boolean;
   allowAdvertiseForPartners: boolean;
+  allowBookmarks: boolean;
 }
 
 interface TopicData {
@@ -152,7 +151,6 @@ const initialValues: IAssignmentFormValues = {
   review_allowed: {} as Record<string | number, string>,
   teammate_allowed: {} as Record<string | number, string>,
   // Rubrics
-  is_peer_reviewed: true,
 };
 
 const validationSchema = Yup.object({
@@ -179,11 +177,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
  
 
-  const auth = useSelector(
-    (state: RootState) => state.authentication,
-    (prev, next) => prev.isAuthenticated === next.isAuthenticated
-  );
-  // authentication state not required in this editor
   const assignmentData: any = useLoaderData();
 
   // Merge backend-loaded assignment data with frontend defaults:
@@ -212,6 +205,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const [assignmentName, setAssignmentName] = useState("");
+  const submittedNameRef = useRef<string>("");
   const [showDutyEditor, setShowDutyEditor] = useState(false);
   const [accessibleDuties, setAccessibleDuties] = useState<any[]>([]);
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
@@ -222,9 +216,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     enableBidding: false,
     enableAuthorsReview: true,
     allowReviewerChoice: true,
-    allowBookmarks: false,
     allowBiddingForReviewers: false,
     allowAdvertiseForPartners: false,
+    allowBookmarks: false,
   });
   const [topicsData, setTopicsData] = useState<TopicData[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
@@ -233,10 +227,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     if (assignmentResponse?.data) {
       setAssignmentName(assignmentResponse.data.name || "");
-      // Load allow_bookmarks setting from backend
-      if (assignmentResponse.data.allow_bookmarks !== undefined && assignmentResponse.data.advertising_for_partners_allowed !== undefined) {
-        setTopicSettings(prev => ({ ...prev, allowBookmarks: assignmentResponse.data.allow_bookmarks,allowAdvertiseForPartners: assignmentResponse.data.advertising_for_partners_allowed }));
-      }
     }
   }, [assignmentResponse]);
 
@@ -266,7 +256,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   useEffect(() => {
     if (updateResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Bookmark setting saved successfully" }));
+      dispatch(alertActions.showAlert({ variant: "success", message: "Assignment saved successfully" }));
     }
   }, [updateResponse, dispatch]);
 
@@ -391,7 +381,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
             questionnaire: "Default rubric",
             numSlots: topic.max_choosers,
             availableSlots: topic.available_slots || 0,
-            bookmarks: [],
             partnerAd: undefined,
             createdAt: topic.created_at,
             updatedAt: topic.updated_at,
@@ -446,35 +435,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     },
     [id, refreshAssignmentDuties, removeAssignmentDuty]
   );
-     const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
-        setTopicSettings((prev) => ({ ...prev, [setting]: value }));
-        
-        // Save allow_bookmarks setting to backend immediately
-        if (setting === 'allowBookmarks' && id) {
-          updateAssignment({
-            url: `/assignments/${id}`,
-            method: 'PATCH',
-            data: {
-              assignment: {
-                allow_bookmarks: value
-              }
-            }
-          });
-        }
-        // Save advertising_for_partners_allowed setting to backend immediately
-        if (setting === 'allowAdvertiseForPartners' && id) {
-          updateAssignment({
-            url: `/assignments/${id}`,
-            method: 'PATCH',
-            data: {
-              assignment: {
-                advertising_for_partners_allowed: value
-              }
-            }
-          });
-        }
-    
-      }, [id, updateAssignment]);
     
 
         const handleDropTeam = useCallback((topicId: string, teamId: string) => {
@@ -557,10 +517,10 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Assignment ${assignmentData.name} ${mode}d successfully!`,
+          message: `Assignment ${submittedNameRef.current} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/assignments");
+      navigate(location.state?.from ? location.state.from : "/courses");
     }
   }, [dispatch, mode, navigate, assignmentData, assignmentResponse, location.state?.from]);
 
@@ -635,12 +595,12 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
       url = `/assignments/${values.id}`;
       method = HttpMethod.PATCH;
     }
-    assignmentData.name = values.name;
-    sendRequest({ url, method, data: values, transformRequest: transformCreateRequest });
+    submittedNameRef.current = values.name;
+    sendRequest({ url, method, data: values, transformRequest: transformAssignmentRequest });
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : "/assignments");
+  const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
 
   // Build QuestionnaireOption list for RubricsContent
   const questionnaireOptions: QuestionnaireOption[] = (assignmentData.questionnaires || []).map((q: any) => ({
@@ -654,52 +614,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
     ...getInitialValues(),
   };
 
-  if (mode === "update") {
-    // Prefill per-round and global questionnaire selections from stored assignment_questionnaires
-    (assignmentData.assignment_questionnaires || []).forEach((aq: any) => {
-      if (!aq.questionnaire) return;
-      const round = aq.used_in_round;
-      const qid = aq.questionnaire.id;
-
-      if (round >= 1) {
-        formInitialValues[`questionnaire_round_${round}`] = qid;
-        formInitialValues[`assignment_questionnaire_id_${round}`] = aq.id;
-        formInitialValues[`review_round_${round}_weight`] = aq.questionnaire_weight ?? 0;
-        formInitialValues[`review_round_${round}_notification_limit`] = aq.notification_limit ?? 0;
-        formInitialValues[`review_round_${round}_dropdown`] = aq.dropdown ?? false;
-        // Also seed the non-varying fields (round 1 = the single review rubric)
-        if (round === 1 && !formInitialValues.review_questionnaire_id) {
-          formInitialValues.review_questionnaire_id = qid;
-          formInitialValues.review_assignment_questionnaire_id = aq.id;
-          formInitialValues.review_questionnaire_weight = aq.questionnaire_weight ?? 0;
-          formInitialValues.review_questionnaire_notification_limit = aq.notification_limit ?? 0;
-          formInitialValues.review_questionnaire_dropdown = aq.dropdown ?? false;
-        }
-      } else if (round === 0) {
-        // Global (non-round) rubrics: map by questionnaire_type
-        const qType = aq.questionnaire.questionnaire_type;
-        if (qType === 'AuthorFeedbackQuestionnaire') {
-          formInitialValues.author_feedback_questionnaire_id = qid;
-          formInitialValues.author_feedback_assignment_questionnaire_id = aq.id;
-          formInitialValues.author_feedback_questionnaire_weight = aq.questionnaire_weight ?? 0;
-          formInitialValues.author_feedback_questionnaire_notification_limit = aq.notification_limit ?? 0;
-          formInitialValues.author_feedback_questionnaire_dropdown = aq.dropdown ?? false;
-        } else if (qType === 'TeammateReviewQuestionnaire') {
-          formInitialValues.teammate_questionnaire_id = qid;
-          formInitialValues.teammate_assignment_questionnaire_id = aq.id;
-          formInitialValues.teammate_questionnaire_weight = aq.questionnaire_weight ?? 0;
-          formInitialValues.teammate_questionnaire_notification_limit = aq.notification_limit ?? 0;
-          formInitialValues.teammate_questionnaire_dropdown = aq.dropdown ?? false;
-        } else if (qType === 'BookmarkRatingQuestionnaire') {
-          formInitialValues.bookmark_questionnaire_id = qid;
-          formInitialValues.bookmark_assignment_questionnaire_id = aq.id;
-          formInitialValues.bookmark_questionnaire_weight = aq.questionnaire_weight ?? 0;
-          formInitialValues.bookmark_questionnaire_notification_limit = aq.notification_limit ?? 0;
-          formInitialValues.bookmark_questionnaire_dropdown = aq.dropdown ?? false;
-        }
-      }
-    });
-  }
 
 
 
@@ -781,24 +695,28 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <FormCheckbox controlId="assignment-available_to_students" label="Available to students?" name="available_to_students" />
               </Tab>
 
-              {/* Topics Tab */}
-              <Tab eventKey="topics" title="Topics">
-                <TopicsTab
-                  assignmentName={assignmentName}
-            assignmentId={id!}
-            topicSettings={topicSettings}
-            topicsData={topicsData}
-            topicsLoading={topicsLoading}
-            topicsError={topicsError}
-            onTopicSettingChange={handleTopicSettingChange}
-            onDropTeam={handleDropTeam}
-            onDeleteTopic={handleDeleteTopic}
-            onEditTopic={handleEditTopic}
-            onCreateTopic={handleCreateTopic}
-            onApplyPartnerAd={handleApplyPartnerAd}
-            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
-                />
-              </Tab>
+              {/* Topics Tab — only shown when has_topics is enabled */}
+              {formik.values.has_topics && (
+                <Tab eventKey="topics" title="Topics">
+                  <TopicsTab
+                    assignmentName={assignmentName}
+                    assignmentId={id!}
+                    topicSettings={topicSettings}
+                    topicsData={topicsData}
+                    topicsLoading={topicsLoading}
+                    topicsError={topicsError}
+                    onTopicSettingChange={(setting, value) => {
+                      setTopicSettings((prev) => ({ ...prev, [setting]: value }));
+                    }}
+                    onDropTeam={handleDropTeam}
+                    onDeleteTopic={handleDeleteTopic}
+                    onEditTopic={handleEditTopic}
+                    onCreateTopic={handleCreateTopic}
+                    onApplyPartnerAd={handleApplyPartnerAd}
+                    onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
+                  />
+                </Tab>
+              )}
 
               {/* Rubrics Tab */}
               <Tab eventKey="rubrics" title="Rubrics">
@@ -813,11 +731,13 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                       <label className="form-label mb-0">Review strategy:</label>
                       <ToolTip id="review-strategy" info="Static: each reviewer is pre-assigned a set of submissions to review. Dynamic: a reviewer selects a submission before beginning a review." />
                     </div>
-                    <FormSelect
-                      controlId="assignment-review_strategy"
-                      name="review_strategy"
-                      options={REVIEW_STRATEGY_OPTIONS}
-                    />
+                    <div style={{ width: "fit-content" }}>
+                      <FormSelect
+                        controlId="assignment-review_strategy"
+                        name="review_strategy"
+                        options={REVIEW_STRATEGY_OPTIONS}
+                      />
+                    </div>
 
                     {formik.values.review_strategy === REVIEW_STRATEGIES.AUTO_SELECTED && formik.values.has_topics && (
                       <>
@@ -983,17 +903,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <div style={{ width: '70px', display: 'flex', alignItems: 'center', marginBottom: '-0.3rem' }}>
                     <FormInput controlId="assignment-number_of_review_rounds" name="number_of_review_rounds" type="number" />
                   </div>
-                  <Button variant="outline-secondary">Set</Button>
                 </div>
 
                 <FormCheckbox controlId="assignment-use_signup_deadline" label="Use signup deadline" name="use_signup_deadline" />
-                <FormCheckbox controlId="assignment-use_drop_topic_deadline" label="Use drop-topic deadline" name="use_drop_topic_deadline" />
-                <FormCheckbox controlId="assignment-use_team_formation_deadline" label="Use team-formation deadline" name="use_team_formation_deadline" />
-
-                <Button variant="outline-secondary" style={{ marginTop: '10px', marginBottom: '10px' }}>Show/Hide date updater</Button>
+                {formik.values.has_topics && <FormCheckbox controlId="assignment-use_drop_topic_deadline" label="Use drop-topic deadline" name="use_drop_topic_deadline" />}
+                {formik.values.has_teams && <FormCheckbox controlId="assignment-use_team_formation_deadline" label="Use team-formation deadline" name="use_team_formation_deadline" />}
 
                 <div>
-                  <div style={{ marginTop: '30px' }}>
+                  <div style={{ marginTop: '30px', width: '75%' }}>
                     <Table
                       showColumnFilter={false}
                       showGlobalFilter={false}
@@ -1197,7 +1114,7 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 <Button type="submit" variant="outline-secondary">
                   Save
                 </Button> |
-                <a href="/assignments" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
+                <a href="/courses" style={{ color: '#a4a366', textDecoration: 'none' }}>Back</a>
               </div>
               {showDutyEditor && (
                 <DutyEditor

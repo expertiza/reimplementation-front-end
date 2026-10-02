@@ -34,28 +34,26 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
 
   const rows: RubricRow[] = [];
 
-  if (values.is_peer_reviewed !== false) {
-    if (variesByRound) {
-      for (let i = 1; i <= roundCount; i++) {
-        rows.push({
-          label: `Review Round ${i}`,
-          idField: `questionnaire_round_${i}`,
-          weightField: `review_round_${i}_weight`,
-          notifField: `review_round_${i}_notification_limit`,
-          dropdownField: `review_round_${i}_dropdown`,
-          options: byType("ReviewQuestionnaire"),
-        });
-      }
-    } else {
+  if (variesByRound) {
+    for (let i = 1; i <= roundCount; i++) {
       rows.push({
-        label: "Review",
-        idField: "review_questionnaire_id",
-        weightField: "review_questionnaire_weight",
-        notifField: "review_questionnaire_notification_limit",
-        dropdownField: "review_questionnaire_dropdown",
+        label: `Review Round ${i}`,
+        idField: `questionnaire_round_${i}`,
+        weightField: `review_round_${i}_weight`,
+        notifField: `review_round_${i}_notification_limit`,
+        dropdownField: `review_round_${i}_dropdown`,
         options: byType("ReviewQuestionnaire"),
       });
     }
+  } else {
+    rows.push({
+      label: "Review",
+      idField: "review_questionnaire_id",
+      weightField: "review_questionnaire_weight",
+      notifField: "review_questionnaire_notification_limit",
+      dropdownField: "review_questionnaire_dropdown",
+      options: byType("ReviewQuestionnaire"),
+    });
   }
 
   rows.push({
@@ -80,55 +78,48 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
 
   return (
     <div className="mt-3">
-      <FormCheckbox
-        controlId="assignment-is_peer_reviewed"
-        label="Assignment is peer-reviewed"
-        name="is_peer_reviewed"
-      />
-      {values.is_peer_reviewed !== false && (
-        <div className="ms-4 mt-1">
-          <FormCheckbox
-            controlId="assignment-review_rubric_varies_by_round"
-            label="Review rubric varies by round?"
-            name="review_rubric_varies_by_round"
-          />
+      <div className="mt-1">
+        <FormCheckbox
+          controlId="assignment-review_rubric_varies_by_round"
+          label="Review rubric varies by round?"
+          name="review_rubric_varies_by_round"
+        />
+        {values.has_topics && (
           <FormCheckbox
             controlId="assignment-review_rubric_varies_by_topic"
             label="Review rubric varies by topic?"
             name="review_rubric_varies_by_topic"
           />
-          {values.has_teams && (
-            <FormCheckbox
-              controlId="assignment-review_rubric_varies_by_role"
-              label="Review rubric varies by role?"
-              name="review_rubric_varies_by_role"
-            />
-          )}
-        </div>
-      )}
+        )}
+        <FormCheckbox
+          controlId="assignment-review_rubric_varies_by_role"
+          label="Review rubric varies by role?"
+          name="review_rubric_varies_by_role"
+        />
+      </div>
 
       <hr />
 
-      <BSTable striped bordered size="sm" className="mt-2" style={{ fontSize: "0.875rem" }}>
+      <BSTable striped bordered size="sm" className="mt-2" style={{ fontSize: "0.875rem", width: "75%" }}>
         <thead>
           <tr>
-            <th style={{ width: "13%" }}></th>
-            <th className="text-center" style={{ width: "28%" }}>Questionnaire</th>
-            <th className="text-center" style={{ width: "20%" }}>
-              Scored-question display style
+            <th style={{ width: "12%", whiteSpace: "nowrap" }}></th>
+            <th className="text-center" style={{ width: "38%" }}>Questionnaire</th>
+            <th className="text-center" style={{ width: "22%", whiteSpace: "nowrap" }}>
+              Display style
               <ToolTip id="display-style-tip" info="For scored questions: Scale displays scores as radio buttons on the next line; Dropdown displays scores as a dropdown." />
             </th>
-            <th className="text-center" style={{ width: "13%" }}>Weight</th>
-            <th className="text-center" style={{ width: "26%" }}>
+            <th className="text-center" style={{ width: "12%", whiteSpace: "nowrap" }}>Weight</th>
+            <th className="text-center" style={{ width: "16%", whiteSpace: "nowrap" }}>
               Notification Limit
-              <ToolTip id="notif-limit-tip" info="If a new review differs from existing reviews by more than this %, the instructor is notified by e-mail." />
+              <ToolTip id="notif-limit-tip" info="If a new review differs from existing reviews by more than this %, the instructor is notified by email." />
             </th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.idField}>
-              <td className="align-middle fw-semibold">{row.label}:</td>
+              <td className="align-middle fw-semibold">{row.label}</td>
               <td>
                 <BSForm.Select
                   value={values[row.idField] ?? ""}
@@ -182,7 +173,7 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
                     min={0}
                     max={100}
                     style={{ width: 56 }}
-                    value={values[row.notifField] ?? 0}
+                    value={values[row.notifField] ?? 15}
                     onChange={(e) => setFieldValue(row.notifField, Number(e.target.value))}
                   />
                   <span>%</span>

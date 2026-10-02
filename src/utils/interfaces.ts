@@ -232,9 +232,10 @@ export interface IAssignmentResponse {
   id: number;
   name: string;
   course_id: number;
-  courseName: string;
-  created_at: Date; 
-  updated_at: Date; 
+  instructor_id: number;
+  course_name: string;
+  created_at: string;
+  updated_at: string;
   directory_path: string;
   spec_location:string;
   private:boolean;
