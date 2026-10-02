@@ -81,7 +81,7 @@ const StudentTasks: React.FC = () => {
     return rawList.map((item) => {
       const participant = item.participant || {};
       const courseName = typeof item.course === "string" ? item.course : "CSC 517";
-      
+
       return {
         id: participant.id,
         assignmentId: participant.parent_id ?? item.assignment_id ?? null,
@@ -134,12 +134,12 @@ const StudentTasks: React.FC = () => {
           const id = info.row.original.id;
           return (
             <Link
-                to={`/student_task_detail/${id}`}
-                state={{ task: info.row.original, assignmentId: info.row.original.assignmentId }}
-                style={{ color: "#986633", textDecoration: "none" }}
-              >
-                {info.getValue()}
-              </Link>
+              to={`/student_task_detail/${id}`}
+              state={{ task: info.row.original, assignmentId: info.row.original.assignmentId }}
+              style={{ color: "#986633", textDecoration: "none" }}
+            >
+              {info.getValue()}
+            </Link>
           );
         },
       },
@@ -193,26 +193,18 @@ const StudentTasks: React.FC = () => {
   }, [formattedAssignments]);
 
   return (
-    <div className={styles['assignments-page']}>
-      <h1 className={styles['assignments-title']}>Assignments</h1>
+    <div className={styles["assignments-page"]}>
+      <h1 className={styles["assignments-title"]}>Assignments</h1>
       <div className={styles.pageLayout}>
         <aside className={styles.sidebar}>
-          <StudentTasksBox
-            revisions={extractAssignments(tasks)}
-          />
+          <StudentTasksBox revisions={extractAssignments(tasks)} />
         </aside>
 
         <div className={styles.mainContent}>
           {Object.entries(tasksGroupedByCourse).map(([courseName, courseTasks]) => (
-            
-            <div
-              key={courseName}
-              style={{ width: "75%", margin: "0 0 3rem 0" }}
-            >
+            <div key={courseName} style={{ width: "75%", margin: "0 0 3rem 0" }}>
               <Container fluid>
-                <h2 className={styles.courseTitle}>
-                  {courseName}
-                </h2>
+                <h2 className={styles.courseTitle}>{courseName}</h2>
               </Container>
 
               <Table
@@ -224,19 +216,24 @@ const StudentTasks: React.FC = () => {
                 fluid={true}
                 tableSize={{ span: 12, offset: 0 }}
                 headingComments={{
-                  "Stage deadline": "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
-                  "Show as example?": "Present your assignment as an example for future students. Instructors will not be able to see your name or any identifying information when viewing the assignment as an example.",
+                  "Stage deadline":
+                    "You can change 'Preferred Time Zone' in 'Profile' in the banner.",
+                  "Show as example?":
+                    "Present your assignment as an example for future students. Instructors will not be able to see your name or any identifying information when viewing the assignment as an example.",
                 }}
               />
             </div>
           ))}
-          
+
           {tasks.length === 0 && <p style={{ textAlign: "center" }}>No assignments found.</p>}
         </div>
       </div>
 
       <div className={styles.footer}>
-        <Link to="https://wiki.expertiza.ncsu.edu/index.php/Expertiza_documentation" className={styles.footerLink}>
+        <Link
+          to="https://wiki.expertiza.ncsu.edu/index.php/Expertiza_documentation"
+          className={styles.footerLink}
+        >
           Help
         </Link>
         <Link to="https://research.csc.ncsu.edu/efg/expertiza/papers" className={styles.footerLink}>

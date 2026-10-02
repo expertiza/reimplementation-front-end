@@ -24,8 +24,8 @@ interface FeedbackTableProps {
   roundSelected: number;
 }
 
-const STICKY_NO_WIDTH = 68;   // px — wide enough for two-digit item numbers + weight badge on one line
-const STICKY_Q_WIDTH  = 340;  // px — the Question column
+const STICKY_NO_WIDTH = 68; // px — wide enough for two-digit item numbers + weight badge on one line
+const STICKY_Q_WIDTH = 340; // px — the Question column
 
 const cellBase: React.CSSProperties = {
   padding: "8px 10px",
@@ -60,8 +60,8 @@ const stickyQ: React.CSSProperties = {
   width: STICKY_Q_WIDTH,
   minWidth: STICKY_Q_WIDTH,
   maxWidth: STICKY_Q_WIDTH,
-  borderLeft: "1px solid #ddd",   // single line between # and Question
-  borderRight: "2px solid #aaa",  // strong separator before reviewer columns
+  borderLeft: "1px solid #ddd", // single line between # and Question
+  borderRight: "2px solid #aaa", // strong separator before reviewer columns
 };
 
 const reviewerCell: React.CSSProperties = {
@@ -82,15 +82,15 @@ const ColoredScore: React.FC<{ score: number; maxScore: number }> = ({ score, ma
 );
 
 /** One per-round feedback table */
-const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; totalRounds: number; isStudent: boolean }> = ({
-  roundData,
-  roundIndex,
-  totalRounds,
-  isStudent,
-}) => {
+const RoundFeedbackTable: React.FC<{
+  roundData: RoundRow[];
+  roundIndex: number;
+  totalRounds: number;
+  isStudent: boolean;
+}> = ({ roundData, roundIndex, totalRounds, isStudent }) => {
   if (!roundData || roundData.length === 0) return null;
   // Find the first scored row (skip any leading SectionHeader) to get reviewer count
-  const firstScored = roundData.find(r => !isHeader(r)) as ReviewData | undefined;
+  const firstScored = roundData.find((r) => !isHeader(r)) as ReviewData | undefined;
   const numReviewers = firstScored?.reviews.length ?? 0;
 
   return (
@@ -211,9 +211,7 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                     </td>
 
                     {/* Sticky: Question text */}
-                    <td style={{ ...stickyQ, background: bg }}>
-                      {row.itemText}
-                    </td>
+                    <td style={{ ...stickyQ, background: bg }}>{row.itemText}</td>
 
                     {/* Reviewer answer columns */}
                     {row.reviews.map((review, revIdx) => (
@@ -240,7 +238,9 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                             ))}
                           </ul>
                         ) : review.selectedOption ? (
-                          <div style={{ fontSize: "12px", fontWeight: "bold" }}>{review.selectedOption}</div>
+                          <div style={{ fontSize: "12px", fontWeight: "bold" }}>
+                            {review.selectedOption}
+                          </div>
                         ) : review.fileName ? (
                           <div style={{ fontSize: "12px", color: "#b00404" }}>
                             {review.fileUrl ? (

@@ -77,7 +77,9 @@ const Assignments = () => {
         <Container fluid className="px-md-4">
           <Row className="mt-4 mb-4">
             <Col>
-              <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>Manage Assignments</h1>
+              <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>
+                Manage Assignments
+              </h1>
             </Col>
           </Row>
           <Row className="mb-3">

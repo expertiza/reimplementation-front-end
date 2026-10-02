@@ -1,8 +1,8 @@
-import React, { useState, FC, useEffect } from 'react';
-import useAPI from 'hooks/useAPI';
-import { useSearchParams } from 'react-router-dom';
-import { Alert, Spinner } from 'react-bootstrap';
-import styles from "./NewTeammateAdvertisement.module.css"
+import React, { useState, FC, useEffect } from "react";
+import useAPI from "hooks/useAPI";
+import { useSearchParams } from "react-router-dom";
+import { Alert, Spinner } from "react-bootstrap";
+import styles from "./NewTeammateAdvertisement.module.css";
 
 const NewTeammateAdvertisement: FC = () => {
   const [toastMessage, setToastMessage] = useState("");
@@ -20,9 +20,9 @@ const NewTeammateAdvertisement: FC = () => {
 
   useEffect(() => {
     getAdvertisement({
-      url: `/signed_up_teams/${teamId}`
+      url: `/signed_up_teams/${teamId}`,
     });
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (adInfo?.data) {
@@ -32,10 +32,9 @@ const NewTeammateAdvertisement: FC = () => {
         setItems([]);
         return;
       }
-      const skills = comments_for_advertisement.split(' &AND& ');
+      const skills = comments_for_advertisement.split(" &AND& ");
       setItems(skills);
       setAdExist(true);
-
     }
   }, [adInfo]);
 
@@ -44,7 +43,7 @@ const NewTeammateAdvertisement: FC = () => {
       if (response.data.success) {
         setShowAlert(false);
       } else {
-        setShowAlert(true)
+        setShowAlert(true);
       }
 
       setToastMessage(response.data.message);
@@ -54,23 +53,23 @@ const NewTeammateAdvertisement: FC = () => {
         resetAllLogs(false, true);
       }, 3000);
       return () => clearTimeout(timeout);
-    }
+    };
     if (createAdResponse) {
       if (createAdResponse.data.success) {
         setAdExist(true);
       }
-      updateToastMessage(createAdResponse)
+      updateToastMessage(createAdResponse);
     }
 
     if (updateAdResponse) {
-      updateToastMessage(updateAdResponse)
+      updateToastMessage(updateAdResponse);
     }
     if (deleteAdResponse) {
       if (deleteAdResponse.data.success) {
         setAdExist(false);
-        setItems([])
+        setItems([]);
       }
-      updateToastMessage(deleteAdResponse)
+      updateToastMessage(deleteAdResponse);
     }
   }, [createAdResponse, updateAdResponse, deleteAdResponse]);
 
@@ -94,50 +93,62 @@ const NewTeammateAdvertisement: FC = () => {
   // Handle the form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const requirements = items.join(' &AND& ');
+    const requirements = items.join(" &AND& ");
     try {
       if (adExist) {
         updateAdvertisement({
-          method: 'PATCH', url: `/signed_up_teams/${teamId}/update_advertisement`, data: {
-            comments_for_advertisement: requirements
-          }
-        })
-      }
-      else {
+          method: "PATCH",
+          url: `/signed_up_teams/${teamId}/update_advertisement`,
+          data: {
+            comments_for_advertisement: requirements,
+          },
+        });
+      } else {
         createAdvertisement({
-          method: 'POST', url: `/signed_up_teams/${teamId}/create_advertisement`, data: {
-            comments_for_advertisement: requirements
-          }
-        })
+          method: "POST",
+          url: `/signed_up_teams/${teamId}/create_advertisement`,
+          data: {
+            comments_for_advertisement: requirements,
+          },
+        });
       }
-    }
-    catch (error: any) {
-
-    }
+    } catch (error: any) {}
   };
 
   const handleDelete = (e: React.FormEvent) => {
     e.preventDefault();
     try {
       removeAdvertisement({
-        method: 'DELETE', url: `/signed_up_teams/${teamId}/remove_advertisement`,
+        method: "DELETE",
+        url: `/signed_up_teams/${teamId}/remove_advertisement`,
       });
-    }
-    catch (error: any) {
-
-    }
+    } catch (error: any) {}
   };
 
   if (isLoading)
-    return (<div style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Spinner />
-    </div>);
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Spinner />
+      </div>
+    );
 
   return (
     <div>
       <div>
         {toastMessage && (
-          <Alert className={showAlert ? "flash_note alert alert-warning" : "flash_note alert alert-success"}>
+          <Alert
+            className={
+              showAlert ? "flash_note alert alert-warning" : "flash_note alert alert-success"
+            }
+          >
             {toastMessage}
           </Alert>
         )}
@@ -145,7 +156,9 @@ const NewTeammateAdvertisement: FC = () => {
       <div className={styles.container}>
         <div>
           <h1 className={styles.header}>Teammate Advertisement</h1>
-          <p className={styles.formLabel}>Please describe the qualifications you are looking for in a teammate.</p>
+          <p className={styles.formLabel}>
+            Please describe the qualifications you are looking for in a teammate.
+          </p>
         </div>
         <div className={styles.adContainer}>
           {/* List */}
@@ -167,7 +180,13 @@ const NewTeammateAdvertisement: FC = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type the skills/qualifications you require..."
           ></textarea>
-          <button onClick={handleAdd} disabled={input.trim().length === 0} className={styles.submitButton}>Add</button>
+          <button
+            onClick={handleAdd}
+            disabled={input.trim().length === 0}
+            className={styles.submitButton}
+          >
+            Add
+          </button>
         </div>
 
         <div>
@@ -175,13 +194,25 @@ const NewTeammateAdvertisement: FC = () => {
             Back
           </button>
 
-          <button className={styles.createAdButton} style={{ marginLeft: "15px" }} onClick={handleSubmit} disabled={items.length === 0}>
+          <button
+            className={styles.createAdButton}
+            style={{ marginLeft: "15px" }}
+            onClick={handleSubmit}
+            disabled={items.length === 0}
+          >
             {adExist ? "Update advertisement" : "Create advertisement"}
           </button>
 
-          {adExist && <button className={styles.createAdButton} style={{ marginLeft: "15px" }} onClick={handleDelete} disabled={items.length === 0}>
-            Delete advertisement
-          </button>}
+          {adExist && (
+            <button
+              className={styles.createAdButton}
+              style={{ marginLeft: "15px" }}
+              onClick={handleDelete}
+              disabled={items.length === 0}
+            >
+              Delete advertisement
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
-import { BsPencilFill, BsPersonXFill,BsBookFill} from 'react-icons/bs';
-import { Row, createColumnHelper } from '@tanstack/react-table';
+import { BsPencilFill, BsPersonXFill, BsBookFill } from "react-icons/bs";
+import { Row, createColumnHelper } from "@tanstack/react-table";
 
 import { Button } from "react-bootstrap";
 import { IAssignmentResponse as IAssignment } from "../../utils/interfaces";
 
 type Fn = (row: Row<IAssignment>) => void;
 const columnHelper = createColumnHelper<IAssignment>();
-export const assignmentColumns = ( handleEdit: Fn, handleDelete: Fn, handleReview: Fn) => [
+export const assignmentColumns = (handleEdit: Fn, handleDelete: Fn, handleReview: Fn) => [
   columnHelper.accessor("name", {
     header: "Name",
   }),

@@ -96,12 +96,12 @@ function transformResponse(data: FetchReportResponse): ReviewRow[] {
     const rid = r.reviewer.id;
     if (!reviewerMap.has(rid)) {
       reviewerMap.set(rid, {
-        reviewerId:   rid,
+        reviewerId: rid,
         reviewerName: r.reviewer.user.name,
-        teamName:     r.team_name ?? "—",
-        reviewsDone:  0,
+        teamName: r.team_name ?? "—",
+        reviewsDone: 0,
         reviewsTotal: 0,
-        reviewees:    [],
+        reviewees: [],
       });
     }
     const row = reviewerMap.get(rid)!;
@@ -110,20 +110,19 @@ function transformResponse(data: FetchReportResponse): ReviewRow[] {
     row.reviewsTotal += 1;
     if (r.submitted) row.reviewsDone += 1;
     row.reviewees.push({
-      revieweeName:      r.reviewee.user.name,
-      submitted:         r.submitted,
-      lastReviewedAt:    r.last_reviewed_at,
-      scores:            submittedResp?.scores ?? [],
+      revieweeName: r.reviewee.user.name,
+      submitted: r.submitted,
+      lastReviewedAt: r.last_reviewed_at,
+      scores: submittedResp?.scores ?? [],
       additionalComment: submittedResp?.additional_comment ?? null,
     });
   });
 
   // Sort by team name, then reviewer name
-  return Array.from(reviewerMap.values()).sort((a, b) =>
-    a.teamName.localeCompare(b.teamName) || a.reviewerName.localeCompare(b.reviewerName)
+  return Array.from(reviewerMap.values()).sort(
+    (a, b) => a.teamName.localeCompare(b.teamName) || a.reviewerName.localeCompare(b.reviewerName)
   );
 }
-
 
 // --------------------------------------------------------------------------
 // --- COLUMNS ---
@@ -139,16 +138,15 @@ function buildColumns(_onView: (row: ReviewRow) => void, rows: ReviewRow[]) {
         // Show team name only on the first row of each team group
         const allRows = table.getRowModel().rows;
         const idx = allRows.findIndex((r) => r.id === row.id);
-        const isFirstInGroup = idx === 0 || allRows[idx - 1].original.teamName !== row.original.teamName;
+        const isFirstInGroup =
+          idx === 0 || allRows[idx - 1].original.teamName !== row.original.teamName;
         return isFirstInGroup ? <strong>{row.original.teamName}</strong> : null;
       },
     }),
     columnHelper.accessor("reviewerName", {
       header: ({ column }) => <SortableHeader label="Reviewer" column={column} />,
       cell: ({ row }) => (
-        <Link to={`/users/${row.original.reviewerId}`}>
-          {row.original.reviewerName}
-        </Link>
+        <Link to={`/users/${row.original.reviewerId}`}>{row.original.reviewerName}</Link>
       ),
     }),
     columnHelper.display({
@@ -176,7 +174,9 @@ function buildColumns(_onView: (row: ReviewRow) => void, rows: ReviewRow[]) {
     }),
     columnHelper.display({
       id: "lastReviewedAt",
-      header: ({ column }) => <SortableHeader label="Last Reviewed At" column={column} isSortable={false} />,
+      header: ({ column }) => (
+        <SortableHeader label="Last Reviewed At" column={column} isSortable={false} />
+      ),
       enableSorting: false,
       cell: ({ row }) => (
         <div>
@@ -184,10 +184,15 @@ function buildColumns(_onView: (row: ReviewRow) => void, rows: ReviewRow[]) {
             <div key={i} style={{ color: r.submitted ? "green" : "#dc3545" }}>
               {r.submitted && r.lastReviewedAt
                 ? new Date(r.lastReviewedAt).toLocaleString("en-US", {
-                    month: "2-digit", day: "2-digit", year: "numeric",
-                    hour: "2-digit", minute: "2-digit",
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })
-                : r.submitted ? "—" : "—"}
+                : r.submitted
+                ? "—"
+                : "—"}
             </div>
           ))}
         </div>
@@ -249,7 +254,10 @@ const TeammateReviewReportPage: React.FC = () => {
         const cloneTr = document.createElement("tr");
         Array.from(thead.querySelectorAll("th")).forEach((th) => {
           const cloneTh = document.createElement("th");
-          const label = th.querySelector(".review-report-th")?.childNodes[0]?.textContent ?? th.textContent ?? "";
+          const label =
+            th.querySelector(".review-report-th")?.childNodes[0]?.textContent ??
+            th.textContent ??
+            "";
           cloneTh.textContent = label;
           cloneTr.appendChild(cloneTh);
         });
@@ -333,8 +341,13 @@ const TeammateReviewReportPage: React.FC = () => {
 
   return (
     <Container fluid className="p-3 review-report-page teammate-review-report-page">
-      <div className="review-report-selector" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button className="btn-back-assignment" onClick={() => navigate(`/assignments/edit/${id}`)}>Back</button>
+      <div
+        className="review-report-selector"
+        style={{ display: "flex", alignItems: "center", gap: 8 }}
+      >
+        <button className="btn-back-assignment" onClick={() => navigate(`/assignments/edit/${id}`)}>
+          Back
+        </button>
         <select
           name="reports"
           id="report-select"
@@ -348,30 +361,34 @@ const TeammateReviewReportPage: React.FC = () => {
         </select>
       </div>
 
-      <h2 style={{ textAlign: "left", fontSize: "1.3rem", color: "#333", margin: "8px 0 6px" }}>Teammate Review Report{assignmentName ? ` — ${assignmentName}` : ""}</h2>
+      <h2 style={{ textAlign: "left", fontSize: "1.3rem", color: "#333", margin: "8px 0 6px" }}>
+        Teammate Review Report{assignmentName ? ` — ${assignmentName}` : ""}
+      </h2>
 
       <div className="review-report-table-wrapper mt-1" ref={tableWrapperRef}>
-        {rows.length === 0
-          ? <p>No teammate reviews found for this assignment.</p>
-          : (
-            <Table
-              data={rows}
-              columns={columns}
-              showGlobalFilter={true}
-              showColumnFilter={false}
-              showPagination={rows.length >= 10}
-              tableStyle={{ width: "fit-content", margin: 0 }}
-              getCellProps={(cell, row) => {
-                const { reviewsDone, reviewsTotal } = row.original;
-                const allDone = reviewsTotal > 0 && reviewsDone === reviewsTotal;
-                if (allDone && (cell.column.id === "reviewees" || cell.column.id === "lastReviewedAt")) {
-                  return { style: { backgroundColor: "#d4edda" } };
-                }
-                return {};
-              }}
-            />
-          )
-        }
+        {rows.length === 0 ? (
+          <p>No teammate reviews found for this assignment.</p>
+        ) : (
+          <Table
+            data={rows}
+            columns={columns}
+            showGlobalFilter={true}
+            showColumnFilter={false}
+            showPagination={rows.length >= 10}
+            tableStyle={{ width: "fit-content", margin: 0 }}
+            getCellProps={(cell, row) => {
+              const { reviewsDone, reviewsTotal } = row.original;
+              const allDone = reviewsTotal > 0 && reviewsDone === reviewsTotal;
+              if (
+                allDone &&
+                (cell.column.id === "reviewees" || cell.column.id === "lastReviewedAt")
+              ) {
+                return { style: { backgroundColor: "#d4edda" } };
+              }
+              return {};
+            }}
+          />
+        )}
       </div>
     </Container>
   );

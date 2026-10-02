@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
-import {Button, Modal} from "react-bootstrap";
-import {useDispatch} from "react-redux";
-import {alertActions} from "../../store/slices/alertSlice";
-import {HttpMethod} from "../../utils/httpMethods";
+import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { alertActions } from "../../store/slices/alertSlice";
+import { HttpMethod } from "../../utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
-import {IUserResponse as IUser} from "../../utils/interfaces";
+import { IUserResponse as IUser } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on April, 2023

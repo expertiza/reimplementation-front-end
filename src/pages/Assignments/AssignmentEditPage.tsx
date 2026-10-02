@@ -68,7 +68,11 @@ const AssignmentEditPage = () => {
   const [topicsError, setTopicsError] = useState<string | null>(null);
 
   // Fetch assignment data
-  const { data: assignmentResponse, error: assignmentError, sendRequest: fetchAssignment } = useAPI();
+  const {
+    data: assignmentResponse,
+    error: assignmentError,
+    sendRequest: fetchAssignment,
+  } = useAPI();
   const { data: topicsResponse, error: topicsApiError, sendRequest: fetchTopics } = useAPI();
   const { data: updateResponse, error: updateError, sendRequest: updateAssignment } = useAPI();
   const { data: deleteResponse, error: deleteError, sendRequest: deleteTopic } = useAPI();
@@ -86,8 +90,15 @@ const AssignmentEditPage = () => {
     if (assignmentResponse?.data) {
       setAssignmentName(assignmentResponse.data.name || "");
       // Load allow_bookmarks setting from backend
-      if (assignmentResponse.data.allow_bookmarks !== undefined && assignmentResponse.data.advertising_for_partners_allowed !== undefined) {
-        setTopicSettings(prev => ({ ...prev, allowBookmarks: assignmentResponse.data.allow_bookmarks,allowAdvertiseForPartners: assignmentResponse.data.advertising_for_partners_allowed }));
+      if (
+        assignmentResponse.data.allow_bookmarks !== undefined &&
+        assignmentResponse.data.advertising_for_partners_allowed !== undefined
+      ) {
+        setTopicSettings((prev) => ({
+          ...prev,
+          allowBookmarks: assignmentResponse.data.allow_bookmarks,
+          allowAdvertiseForPartners: assignmentResponse.data.advertising_for_partners_allowed,
+        }));
       }
     }
   }, [assignmentResponse]);
@@ -100,7 +111,12 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (updateResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Bookmark setting saved successfully" }));
+      dispatch(
+        alertActions.showAlert({
+          variant: "success",
+          message: "Bookmark setting saved successfully",
+        })
+      );
     }
   }, [updateResponse, dispatch]);
 
@@ -112,7 +128,9 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (deleteResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" }));
+      dispatch(
+        alertActions.showAlert({ variant: "success", message: "Topic deleted successfully" })
+      );
       // Refresh topics data
       if (id) {
         fetchTopics({ url: `/project_topics?assignment_id=${id}` });
@@ -128,7 +146,9 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (createResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Topic created successfully" }));
+      dispatch(
+        alertActions.showAlert({ variant: "success", message: "Topic created successfully" })
+      );
       // Refresh topics data
       if (id) {
         fetchTopics({ url: `/project_topics?assignment_id=${id}` });
@@ -144,7 +164,9 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (updateTopicResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Topic updated successfully" }));
+      dispatch(
+        alertActions.showAlert({ variant: "success", message: "Topic updated successfully" })
+      );
       // Refresh topics data
       if (id) {
         fetchTopics({ url: `/project_topics?assignment_id=${id}` });
@@ -160,7 +182,12 @@ const AssignmentEditPage = () => {
 
   useEffect(() => {
     if (dropTeamResponse) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Team removed from topic successfully" }));
+      dispatch(
+        alertActions.showAlert({
+          variant: "success",
+          message: "Team removed from topic successfully",
+        })
+      );
       if (id) {
         fetchTopics({ url: `/project_topics?assignment_id=${id}` });
       }
@@ -186,7 +213,11 @@ const AssignmentEditPage = () => {
   useEffect(() => {
     if (topicsResponse?.data) {
       const transformedTopics: TopicData[] = (topicsResponse.data || []).map((topic: any) => ({
-        id: topic.topic_identifier?.toString?.() || topic.topic_identifier || topic.id?.toString?.() || String(topic.id),
+        id:
+          topic.topic_identifier?.toString?.() ||
+          topic.topic_identifier ||
+          topic.id?.toString?.() ||
+          String(topic.id),
         databaseId: Number(topic.id),
         name: topic.topic_name,
         url: topic.link,
@@ -215,105 +246,116 @@ const AssignmentEditPage = () => {
     }
   }, [topicsApiError]);
 
-  const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
-    setTopicSettings((prev) => ({ ...prev, [setting]: value }));
-    
-    // Save allow_bookmarks setting to backend immediately
-    if (setting === 'allowBookmarks' && id) {
-      updateAssignment({
-        url: `/assignments/${id}`,
-        method: 'PATCH',
-        data: {
-          assignment: {
-            allow_bookmarks: value
-          }
-        }
-      });
-    }
-    // Save advertising_for_partners_allowed setting to backend immediately
-    if (setting === 'allowAdvertiseForPartners' && id) {
-      updateAssignment({
-        url: `/assignments/${id}`,
-        method: 'PATCH',
-        data: {
-          assignment: {
-            advertising_for_partners_allowed: value
-          }
-        }
-      });
-    }
+  const handleTopicSettingChange = useCallback(
+    (setting: string, value: boolean) => {
+      setTopicSettings((prev) => ({ ...prev, [setting]: value }));
 
-  }, [id, updateAssignment]);
-
- 
-
-
-  const handleDropTeam = useCallback((topicId: string, teamId: string) => {
-    if (!topicId || !teamId) return;
-    dropTeamRequest({
-      url: `/signed_up_teams/drop_team_from_topic`,
-      method: 'DELETE',
-      params: {
-        topic_id: topicId,
-        team_id: teamId,
-      },
-    });
-  }, [dropTeamRequest]);
-
-  const handleDeleteTopic = useCallback((topicIdentifier: string) => {
-    console.log(`Delete topic ${topicIdentifier}`);
-    if (id) {
-      deleteTopic({
-        url: `/project_topics`,
-        method: 'DELETE',
-        params: {
-          assignment_id: Number(id),
-          'topic_ids[]': [topicIdentifier]
-        }
-      });
-    }
-  }, [id, deleteTopic]);
-
-  const handleEditTopic = useCallback((dbId: string, updatedData: any) => {
-    console.log(`Edit topic DB id ${dbId}`, updatedData);
-    updateTopic({
-      url: `/project_topics/${dbId}`,
-      method: 'PATCH',
-      data: {
-        project_topic: {
-          topic_identifier: updatedData.topic_identifier,
-          topic_name: updatedData.topic_name,
-          category: updatedData.category,
-          max_choosers: updatedData.max_choosers,
-          assignment_id: id,
-          description: updatedData.description,
-          link: updatedData.link
-        }
+      // Save allow_bookmarks setting to backend immediately
+      if (setting === "allowBookmarks" && id) {
+        updateAssignment({
+          url: `/assignments/${id}`,
+          method: "PATCH",
+          data: {
+            assignment: {
+              allow_bookmarks: value,
+            },
+          },
+        });
       }
-    });
-  }, [id, updateTopic]);
+      // Save advertising_for_partners_allowed setting to backend immediately
+      if (setting === "allowAdvertiseForPartners" && id) {
+        updateAssignment({
+          url: `/assignments/${id}`,
+          method: "PATCH",
+          data: {
+            assignment: {
+              advertising_for_partners_allowed: value,
+            },
+          },
+        });
+      }
+    },
+    [id, updateAssignment]
+  );
 
-  const handleCreateTopic = useCallback((topicData: any) => {
-    console.log(`Create topic`, topicData);
-    if (id) {
-      createTopic({
-        url: `/project_topics`,
-        method: 'POST',
+  const handleDropTeam = useCallback(
+    (topicId: string, teamId: string) => {
+      if (!topicId || !teamId) return;
+      dropTeamRequest({
+        url: `/signed_up_teams/drop_team_from_topic`,
+        method: "DELETE",
+        params: {
+          topic_id: topicId,
+          team_id: teamId,
+        },
+      });
+    },
+    [dropTeamRequest]
+  );
+
+  const handleDeleteTopic = useCallback(
+    (topicIdentifier: string) => {
+      console.log(`Delete topic ${topicIdentifier}`);
+      if (id) {
+        deleteTopic({
+          url: `/project_topics`,
+          method: "DELETE",
+          params: {
+            assignment_id: Number(id),
+            "topic_ids[]": [topicIdentifier],
+          },
+        });
+      }
+    },
+    [id, deleteTopic]
+  );
+
+  const handleEditTopic = useCallback(
+    (dbId: string, updatedData: any) => {
+      console.log(`Edit topic DB id ${dbId}`, updatedData);
+      updateTopic({
+        url: `/project_topics/${dbId}`,
+        method: "PATCH",
         data: {
           project_topic: {
-            topic_identifier: topicData.topic_identifier || topicData.id,
-            topic_name: topicData.topic_name || topicData.name,
-            category: topicData.category,
-            max_choosers: topicData.max_choosers ?? topicData.numSlots,
+            topic_identifier: updatedData.topic_identifier,
+            topic_name: updatedData.topic_name,
+            category: updatedData.category,
+            max_choosers: updatedData.max_choosers,
             assignment_id: id,
-            description: topicData.description,
-            link: topicData.link
+            description: updatedData.description,
+            link: updatedData.link,
           },
-          micropayment: topicData.micropayment ?? 0
-        }
+        },
       });
-    }
-  }, [id, createTopic]);
+    },
+    [id, updateTopic]
+  );
+
+  const handleCreateTopic = useCallback(
+    (topicData: any) => {
+      console.log(`Create topic`, topicData);
+      if (id) {
+        createTopic({
+          url: `/project_topics`,
+          method: "POST",
+          data: {
+            project_topic: {
+              topic_identifier: topicData.topic_identifier || topicData.id,
+              topic_name: topicData.topic_name || topicData.name,
+              category: topicData.category,
+              max_choosers: topicData.max_choosers ?? topicData.numSlots,
+              assignment_id: id,
+              description: topicData.description,
+              link: topicData.link,
+            },
+            micropayment: topicData.micropayment ?? 0,
+          },
+        });
+      }
+    },
+    [id, createTopic]
+  );
 
   const handleApplyPartnerAd = useCallback((topicId: string, applicationText: string) => {
     console.log(`Applying to partner ad for topic ${topicId}: ${applicationText}`);
@@ -322,10 +364,9 @@ const AssignmentEditPage = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      
       case "general":
         return <GeneralTab />;
-      
+
       case "topics":
         return (
           <TopicsTab
@@ -341,22 +382,24 @@ const AssignmentEditPage = () => {
             onEditTopic={handleEditTopic}
             onCreateTopic={handleCreateTopic}
             onApplyPartnerAd={handleApplyPartnerAd}
-            onTopicsChanged={() => id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })}
+            onTopicsChanged={() =>
+              id && fetchTopics({ url: `/project_topics?assignment_id=${id}` })
+            }
           />
         );
-      
+
       case "rubrics":
         return <RubricsTab />;
-      
+
       case "review-strategy":
         return <ReviewStrategyTab />;
-      
+
       case "due-dates":
         return <DueDatesTab />;
-      
+
       case "etc":
         return <EtcTab />;
-      
+
       default:
         return null;
     }
@@ -371,15 +414,22 @@ const AssignmentEditPage = () => {
           </Col>
           <hr />
         </Row>
-        
-        <div className="tab-container" style={{
-          // backgroundColor: '#f8f9fa',
-          // border: '1px solid #dee2e6',
-          borderRadius: '5px',
-          padding: '0',
-          marginBottom: '20px'
-        }}>
-          <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k || "topics")} id="assignment-edit-tabs">
+
+        <div
+          className="tab-container"
+          style={{
+            // backgroundColor: '#f8f9fa',
+            // border: '1px solid #dee2e6',
+            borderRadius: "5px",
+            padding: "0",
+            marginBottom: "20px",
+          }}
+        >
+          <Tabs
+            activeKey={activeTab}
+            onSelect={(k) => setActiveTab(k || "topics")}
+            id="assignment-edit-tabs"
+          >
             <Tab eventKey="general" title="General" />
             <Tab eventKey="topics" title="Topics" />
             <Tab eventKey="rubrics" title="Rubrics" />

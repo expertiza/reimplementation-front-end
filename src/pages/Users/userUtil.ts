@@ -27,7 +27,7 @@ export interface IUserFormValues {
   parent_id?: number | null;
   institution_id: number;
   emailPreferences: Array<PermittedEmailPreferences>;
-  date_format_pref?: string; 
+  date_format_pref?: string;
 }
 
 export const emailOptions: IFormOption[] = [
@@ -36,7 +36,6 @@ export const emailOptions: IFormOption[] = [
     label: "When someone else submits work I am assigned to review",
     value: EmailPreference.EMAIL_ON_SUBMISSION,
   },
-
 ];
 
 export const transformInstitutionsResponse = (institutionsList: string) => {

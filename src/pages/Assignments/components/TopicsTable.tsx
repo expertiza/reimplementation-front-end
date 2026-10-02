@@ -4,8 +4,14 @@ import Table from "components/Table/Table";
 import { Badge, Button, Spinner } from "react-bootstrap";
 import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
 
-export interface TeamMember { id: string; name?: string }
-export interface Team { teamId: string; members: TeamMember[] }
+export interface TeamMember {
+  id: string;
+  name?: string;
+}
+export interface Team {
+  teamId: string;
+  members: TeamMember[];
+}
 
 export interface TopicRow {
   id: string;
@@ -70,25 +76,30 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
   renderDetails,
   tableSize,
 }) => {
-  const baseColumns: ColumnDef<TopicRow>[] = useMemo(() => [
-    {
-      accessorKey: "id",
-      header: "Topic ID",
-      cell: ({ row }) => <span style={{ whiteSpace: "nowrap" }}>{row.original.id}</span>,
-    },
-    {
-      accessorKey: "name",
-      header: "Topic Names",
-      cell: ({ row }) => (
-        <span>
-          {row.original.name}
-          {mode === "student" && row.original.isWaitlisted && (
-            <Badge bg="warning" text="dark" className="ms-2">Waitlisted</Badge>
-          )}
-        </span>
-      ),
-    },
-  ], [mode]);
+  const baseColumns: ColumnDef<TopicRow>[] = useMemo(
+    () => [
+      {
+        accessorKey: "id",
+        header: "Topic ID",
+        cell: ({ row }) => <span style={{ whiteSpace: "nowrap" }}>{row.original.id}</span>,
+      },
+      {
+        accessorKey: "name",
+        header: "Topic Names",
+        cell: ({ row }) => (
+          <span>
+            {row.original.name}
+            {mode === "student" && row.original.isWaitlisted && (
+              <Badge bg="warning" text="dark" className="ms-2">
+                Waitlisted
+              </Badge>
+            )}
+          </span>
+        ),
+      },
+    ],
+    [mode]
+  );
 
   const studentColumns: ColumnDef<TopicRow>[] = useMemo(() => {
     return [
@@ -111,30 +122,34 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
           </span>
         ),
       },
-      ...(showBookmarks ? [{
-        id: "bookmark",
-        header: "Bookmarks",
-        cell: ({ row }) => (
-          <div className="text-center" style={{ whiteSpace: "nowrap" }}>
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => onBookmarkToggle?.(row.original.id)}
-              className="p-0"
-              style={{ border: "none", background: "none" }}
-              aria-label={row.original.isBookmarked ? "Remove bookmark" : "Add bookmark"}
-            >
-              {row.original.isBookmarked ? (
-                <BsBookmarkFill size={20} color="#007bff" />
-              ) : (
-                <BsBookmark size={20} color="#6c757d" />
-              )}
-            </Button>
-          </div>
-        ),
-        enableSorting: false,
-        enableColumnFilter: false,
-      } as ColumnDef<TopicRow>] : []),
+      ...(showBookmarks
+        ? [
+            {
+              id: "bookmark",
+              header: "Bookmarks",
+              cell: ({ row }) => (
+                <div className="text-center" style={{ whiteSpace: "nowrap" }}>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => onBookmarkToggle?.(row.original.id)}
+                    className="p-0"
+                    style={{ border: "none", background: "none" }}
+                    aria-label={row.original.isBookmarked ? "Remove bookmark" : "Add bookmark"}
+                  >
+                    {row.original.isBookmarked ? (
+                      <BsBookmarkFill size={20} color="#007bff" />
+                    ) : (
+                      <BsBookmark size={20} color="#6c757d" />
+                    )}
+                  </Button>
+                </div>
+              ),
+              enableSorting: false,
+              enableColumnFilter: false,
+            } as ColumnDef<TopicRow>,
+          ]
+        : []),
       {
         id: "select",
         header: "Select",
@@ -143,8 +158,12 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
           const disabled = !!isSigningUp;
           const isThisSigning = !!isSigningUp && selectedTopicId === t.id;
           const ariaLabel = t.isSelected
-            ? (t.isWaitlisted ? "Leave waitlist" : "Deselect topic")
-            : (t.isTaken ? "Join waitlist" : "Select topic");
+            ? t.isWaitlisted
+              ? "Leave waitlist"
+              : "Deselect topic"
+            : t.isTaken
+            ? "Join waitlist"
+            : "Select topic";
           return (
             <div className="text-center" style={{ whiteSpace: "nowrap" }}>
               <Button
@@ -160,9 +179,19 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
                 {isThisSigning ? (
                   <Spinner size="sm" animation="border" />
                 ) : t.isSelected ? (
-                  <img src="/assets/images/delete-icon-24.png" alt={t.isWaitlisted ? "Leave waitlist" : "Deselect"} width={20} height={20} />
+                  <img
+                    src="/assets/images/delete-icon-24.png"
+                    alt={t.isWaitlisted ? "Leave waitlist" : "Deselect"}
+                    width={20}
+                    height={20}
+                  />
                 ) : (
-                  <img src="/assets/icons/Check-icon.png" alt={t.isTaken ? "Join waitlist" : "Select"} width={20} height={20} />
+                  <img
+                    src="/assets/icons/Check-icon.png"
+                    alt={t.isTaken ? "Join waitlist" : "Select"}
+                    width={20}
+                    height={20}
+                  />
                 )}
               </Button>
             </div>
@@ -178,27 +207,30 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
     return [
       // Optional selection column for bulk operations
       ...(selectable
-        ? [{
-            id: "select",
-            header: () => (
-              <input
-                type="checkbox"
-                aria-label="Select all topics"
-                checked={!!selectAll}
-                onChange={() => onToggleAll?.()}
-              />
-            ),
-            cell: ({ row }) => (
-              <input
-                type="checkbox"
-                aria-label={`Select topic ${row.original.id}`}
-                checked={!!isRowSelected?.(row.original.id)}
-                onChange={() => onToggleRow?.(row.original.id)}
-              />
-            ),
-            enableSorting: false,
-            enableColumnFilter: false,
-          } as ColumnDef<TopicRow>] : []),
+        ? [
+            {
+              id: "select",
+              header: () => (
+                <input
+                  type="checkbox"
+                  aria-label="Select all topics"
+                  checked={!!selectAll}
+                  onChange={() => onToggleAll?.()}
+                />
+              ),
+              cell: ({ row }) => (
+                <input
+                  type="checkbox"
+                  aria-label={`Select topic ${row.original.id}`}
+                  checked={!!isRowSelected?.(row.original.id)}
+                  onChange={() => onToggleRow?.(row.original.id)}
+                />
+              ),
+              enableSorting: false,
+              enableColumnFilter: false,
+            } as ColumnDef<TopicRow>,
+          ]
+        : []),
       ...baseColumns,
       ...extraColumns,
       {
@@ -213,7 +245,16 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
         enableColumnFilter: false,
       },
     ];
-  }, [baseColumns, renderInstructorActions, selectable, selectAll, isRowSelected, onToggleAll, onToggleRow, extraColumns]);
+  }, [
+    baseColumns,
+    renderInstructorActions,
+    selectable,
+    selectAll,
+    isRowSelected,
+    onToggleAll,
+    onToggleRow,
+    extraColumns,
+  ]);
 
   const columns = mode === "student" ? studentColumns : instructorColumns;
 
@@ -224,11 +265,20 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       showGlobalFilter={false}
       showColumnFilter={true}
       showPagination={true}
-      renderSubComponent={renderDetails ? ({ row }) => renderDetails(row.original as TopicRow) : undefined}
-      getRowCanExpand={renderDetails ? (row) => {
-        const r = row.original as TopicRow;
-        return !!((r.assignedTeams && r.assignedTeams.length) || (r.waitlistedTeams && r.waitlistedTeams.length));
-      } : undefined}
+      renderSubComponent={
+        renderDetails ? ({ row }) => renderDetails(row.original as TopicRow) : undefined
+      }
+      getRowCanExpand={
+        renderDetails
+          ? (row) => {
+              const r = row.original as TopicRow;
+              return !!(
+                (r.assignedTeams && r.assignedTeams.length) ||
+                (r.waitlistedTeams && r.waitlistedTeams.length)
+              );
+            }
+          : undefined
+      }
       tableSize={tableSize}
     />
   );

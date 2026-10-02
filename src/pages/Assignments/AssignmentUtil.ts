@@ -58,7 +58,7 @@ export interface IAssignmentFormValues {
   teammate_allowed?: boolean[];
   metareview_allowed?: boolean[];
   reminder?: number[];
-   // Misc flags from the form
+  // Misc flags from the form
   allow_tag_prompts?: boolean;
   course_id?: number;
   has_quizzes?: boolean;
@@ -84,10 +84,13 @@ export interface IAssignmentFormValues {
   [key: string]: any;
 }
 
-
 export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
   // Build nested attributes for assignment_questionnaires from the per-round form fields to create or update corresponding rows
-  const assignmentQuestionnaires: { id?: number; questionnaire_id: number; used_in_round: number }[] = [];
+  const assignmentQuestionnaires: {
+    id?: number;
+    questionnaire_id: number;
+    used_in_round: number;
+  }[] = [];
   const roundCount = values.number_of_review_rounds ?? 0;
   for (let i = 1; i <= roundCount; i += 1) {
     const questionnaireId = values[`questionnaire_round_${i}`];
@@ -175,7 +178,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
     enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
     enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
+    allow_reviewer_to_choose_topic_to_review:
+      values.allow_reviewer_to_choose_topic_to_review ?? false,
     allow_participants_to_create_bookmarks: values.allow_participants_to_create_bookmarks ?? false,
     staggered_deadline_assignment: values.staggered_deadline_assignment ?? false,
 
@@ -183,7 +187,6 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues) => {
     vary_by_round: values.review_rubric_varies_by_round,
     rounds_of_reviews: values.number_of_review_rounds,
     assignment_questionnaires_attributes: assignmentQuestionnaires,
-
   };
   return JSON.stringify({ assignment });
 };
@@ -242,8 +245,7 @@ export const transformAssignmentResponse = (assignmentResponse: string) => {
     is_calibrated: assignment.is_calibrated,
 
     // review rounds / rubrics
-    review_rubric_varies_by_round:
-      assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
+    review_rubric_varies_by_round: assignment.varying_rubrics_by_round ?? assignment.vary_by_round,
     number_of_review_rounds: assignment.num_review_rounds,
     is_role_based: (assignment as any).is_role_based ?? false,
 
@@ -265,8 +267,8 @@ export async function loadAssignment({ params }: any) {
   if (params.id) {
     try {
       const userResponse = await axiosClient.get(`/assignments/${params.id}`, {
-      transformResponse: transformAssignmentResponse,
-    });
+        transformResponse: transformAssignmentResponse,
+      });
       assignmentData = userResponse.data;
     } catch (error) {
       console.error("Error loading assignment:", error);

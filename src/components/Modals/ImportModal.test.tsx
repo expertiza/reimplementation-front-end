@@ -1,12 +1,6 @@
 // src/components/Modals/ImportModal.test.tsx
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  act,
-  waitFor,
-} from "@testing-library/react";
+import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -27,9 +21,7 @@ type UseAPIResult = {
   sendRequest: ReturnType<typeof vi.fn>;
 };
 
-const makeUseAPIResult = (
-  overrides: Partial<UseAPIResult> = {}
-): UseAPIResult => ({
+const makeUseAPIResult = (overrides: Partial<UseAPIResult> = {}): UseAPIResult => ({
   error: null,
   isLoading: false,
   data: null,
@@ -54,9 +46,7 @@ describe("ImportModal", () => {
 
   it("shows loading state when isLoading is true", async () => {
     // Both useAPI calls return loading=true
-    mockUseAPI.mockReturnValue(
-      makeUseAPIResult({ isLoading: true })
-    );
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ isLoading: true }));
 
     await act(async () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="User" />);
@@ -67,9 +57,7 @@ describe("ImportModal", () => {
 
   it("renders field summary and duplicate options from metadata", async () => {
     // First and second useAPI calls can share the same mock result
-    mockUseAPI.mockReturnValue(
-      makeUseAPIResult({ data: { data: IMPORT_METADATA } })
-    );
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ data: { data: IMPORT_METADATA } }));
 
     await act(async () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Item" />);
@@ -115,17 +103,13 @@ describe("ImportModal", () => {
       await user.click(importButton);
     });
 
-    expect(
-      await screen.findByText(/Please select a CSV file/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Please select a CSV file/i)).toBeInTheDocument();
   });
 
   it("shows preview values when importing with header mode off", async () => {
     const user = userEvent.setup();
 
-    mockUseAPI.mockReturnValue(
-      makeUseAPIResult({ data: { data: IMPORT_METADATA } })
-    );
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ data: { data: IMPORT_METADATA } }));
 
     await act(async () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Item" />);
@@ -139,9 +123,7 @@ describe("ImportModal", () => {
     // Fake "File" object with a .text() method
     const fakeFile = {
       name: "test.csv",
-      text: vi.fn().mockResolvedValue(
-        "email,name\nuser@example.com,Test User"
-      ),
+      text: vi.fn().mockResolvedValue("email,name\nuser@example.com,Test User"),
     };
 
     await act(async () => {
@@ -151,9 +133,7 @@ describe("ImportModal", () => {
     });
 
     // Turn OFF header mode so column mapping UI appears
-    const headerSwitch = screen.getByLabelText(
-      /First row contains headers/i
-    ) as HTMLInputElement;
+    const headerSwitch = screen.getByLabelText(/First row contains headers/i) as HTMLInputElement;
 
     await act(async () => {
       await user.click(headerSwitch);
@@ -197,9 +177,7 @@ describe("ImportModal", () => {
     // so selectedFields will all be "email" and mandatoryFieldsIncluded() will pass.
     const fakeFile = {
       name: "test.csv",
-      text: vi.fn().mockResolvedValue(
-        "email\nuser1@example.com"
-      ),
+      text: vi.fn().mockResolvedValue("email\nuser1@example.com"),
     };
 
     await act(async () => {
@@ -219,9 +197,7 @@ describe("ImportModal", () => {
   });
 
   it("calls onHide when cancel is clicked", async () => {
-    mockUseAPI.mockReturnValue(
-      makeUseAPIResult({ data: { data: IMPORT_METADATA } })
-    );
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ data: { data: IMPORT_METADATA } }));
 
     await act(async () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);

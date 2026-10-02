@@ -18,18 +18,10 @@ const ExportModal = ({ onClose, onExport }) => {
             <p>Click the button below to export the questionnaire data as a JSON file.</p>
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={onExport}
-            >
+            <button type="button" className="btn btn-primary" onClick={onExport}>
               Export
             </button>
           </div>

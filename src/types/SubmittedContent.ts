@@ -9,7 +9,7 @@
  */
 export interface ISubmission {
   id: number;
-  record_type: 'file' | 'hyperlink';
+  record_type: "file" | "hyperlink";
   content: string;
   operation: string;
   user: string;
@@ -23,7 +23,7 @@ export interface ISubmission {
 export interface IFile {
   name: string;
   path: string;
-  type: 'file' | 'directory';
+  type: "file" | "directory";
 }
 
 /**
@@ -31,7 +31,7 @@ export interface IFile {
  */
 export interface IError {
   message: string;
-  type: 'error' | 'success' | 'warning' | 'info';
+  type: "error" | "success" | "warning" | "info";
 }
 
 /**

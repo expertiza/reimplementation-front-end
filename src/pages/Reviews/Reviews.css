@@ -1,69 +1,69 @@
 .centered-container {
-    width: 80%;
-    margin: 0 auto;
-    text-align: center;
-    align-items: center;
+  width: 80%;
+  margin: 0 auto;
+  text-align: center;
+  align-items: center;
 }
 
 .side-by-side-container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
-  
+
 .action-container {
-    flex: 1;
-    justify-content: left;
+  flex: 1;
+  justify-content: left;
 }
 
 .score-comment-wrapper {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .trash-link-wrapper {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .trash-button {
-    margin-right: 10px;
+  margin-right: 10px;
 }
-  
+
 .score {
-    width: 30px; /* Adjust width as needed */
-    height: 30px; /* Adjust height as needed */
-    border-radius: 50%; /* Makes the shape a circle */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px; /* Adjust margin between score and comment */
+  width: 30px; /* Adjust width as needed */
+  height: 30px; /* Adjust height as needed */
+  border-radius: 50%; /* Makes the shape a circle */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 10px; /* Adjust margin between score and comment */
 }
 
 .comment {
-    flex: 1; /* Allows the comment to take up remaining space */
-    margin: 0; /* Remove default margin */
+  flex: 1; /* Allows the comment to take up remaining space */
+  margin: 0; /* Remove default margin */
 }
 
 .reviewTable {
-    text-align: left;
+  text-align: left;
 }
 
 .tableTitle {
-    text-align: center;
+  text-align: center;
 }
 
 .deleteButton {
-    padding-right: 10px;
-    padding-bottom: 10px;
-    padding-top: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 .tableButton {
-    display: inline-block;
-    text-align: left;
-    padding-right: 10px;
-    padding-bottom: 10px;
-    padding-top: 10px;
+  display: inline-block;
+  text-align: left;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
 }
 
 body {
@@ -79,11 +79,21 @@ body {
   margin-bottom: 4px;
 }
 
-.legend-red { color: red; }
-.legend-blue { color: blue; }
-.legend-green { color: green; }
-.legend-purple { color: purple; }
-.legend-brown { color: brown; }
+.legend-red {
+  color: red;
+}
+.legend-blue {
+  color: blue;
+}
+.legend-green {
+  color: green;
+}
+.legend-purple {
+  color: purple;
+}
+.legend-brown {
+  color: brown;
+}
 
 .row-highlight {
   background: #f5f2d8;
@@ -209,11 +219,9 @@ body {
   width: 100%;
 }
 
-
 .review-report-table-wrapper .custom-table-layout {
   table-layout: auto;
 }
-
 
 .review-report-table-wrapper .custom-table-layout tbody td {
   font-size: 15px;
@@ -234,13 +242,32 @@ body {
   color: #000;
 }
 
-.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon,
-.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-icon svg {
+.review-report-table-wrapper
+  .custom-table-layout
+  thead
+  th
+  div
+  .review-report-th
+  .review-report-sort-icon,
+.review-report-table-wrapper
+  .custom-table-layout
+  thead
+  th
+  div
+  .review-report-th
+  .review-report-sort-icon
+  svg {
   display: inline-block;
   vertical-align: middle;
 }
 
-.review-report-table-wrapper .custom-table-layout thead th div .review-report-th .review-report-sort-unsorted {
+.review-report-table-wrapper
+  .custom-table-layout
+  thead
+  th
+  div
+  .review-report-th
+  .review-report-sort-unsorted {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -278,7 +305,6 @@ body {
 .review-report-table-wrapper table td.reviewer-spanned-hovered {
   --bs-table-bg-type: rgba(0, 0, 0, 0.075);
 }
-
 
 .teammate-review-report-page {
   line-height: 1.4;

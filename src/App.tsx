@@ -52,10 +52,10 @@ import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import StudentTaskDetail from "pages/StudentTasks/StudentTaskDetail";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
-import NewTeammateAdvertisement from './pages/Student Teams/NewTeammateAdvertisement';
-import TeammateReview from './pages/Student Teams/TeammateReview';
-import SignupSheet from 'components/SignupSheet/SignupSheet';
-import PartnerAdvertisements from 'components/SignupSheet/PartnerAdvertisements';
+import NewTeammateAdvertisement from "./pages/Student Teams/NewTeammateAdvertisement";
+import TeammateReview from "./pages/Student Teams/TeammateReview";
+import SignupSheet from "components/SignupSheet/SignupSheet";
+import PartnerAdvertisements from "components/SignupSheet/PartnerAdvertisements";
 import Duties from "./pages/Duties/Duties";
 import DutyEditor from "./pages/Duties/DutyEditor";
 import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
@@ -97,7 +97,7 @@ function App() {
           loader: loadAssignment,
         },
 
-        // Assign Reviewer: no route loader (component handles localStorage/URL id) 
+        // Assign Reviewer: no route loader (component handles localStorage/URL id)
         {
           path: "assignments/edit/:id/responsemappings",
           element: <ResponseMappings />,
@@ -364,11 +364,15 @@ function App() {
 
         {
           path: "courses/:courseId/course-report/grade-summary",
-          element: <ProtectedRoute element={<CourseGradeSummaryPage />} leastPrivilegeRole={ROLE.TA} />,
+          element: (
+            <ProtectedRoute element={<CourseGradeSummaryPage />} leastPrivilegeRole={ROLE.TA} />
+          ),
         },
         {
           path: "courses/:courseId/course-report/all-reviews",
-          element: <ProtectedRoute element={<CourseAllReviewsPage />} leastPrivilegeRole={ROLE.TA} />,
+          element: (
+            <ProtectedRoute element={<CourseAllReviewsPage />} leastPrivilegeRole={ROLE.TA} />
+          ),
         },
 
         {
@@ -387,7 +391,7 @@ function App() {
                   path: "new",
                   element: <RoleEditor mode="create" />,
                 },
-                                {
+                {
                   id: "edit-role",
                   path: "edit/:id",
                   element: <RoleEditor mode="update" />,
@@ -400,11 +404,11 @@ function App() {
               element: <Institutions />,
               loader: loadInstitutions,
               children: [
-               {
+                {
                   path: "new",
                   element: <InstitutionEditor mode="create" />,
                 },
-                                {
+                {
                   path: "edit/:id",
                   element: <InstitutionEditor mode="update" />,
                   loader: loadInstitution,
@@ -416,7 +420,7 @@ function App() {
               element: <ManageUserTypes />,
               loader: loadUsers,
               children: [
-                 {
+                {
                   path: "new",
                   element: <Navigate to="/users/new" />,
                 },
@@ -427,29 +431,42 @@ function App() {
                 },
               ],
             },
-            { 
-              path: "questionnaire", 
-              element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
-                      ],
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+              loader: loadQuestionnaire,
+            },
+          ],
         },
 
-       { path: "*", element: <NotFound /> },
+        { path: "*", element: <NotFound /> },
         { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
 
         {
           path: "questionnaires",
-          element: <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute element={<Questionnaire />} leastPrivilegeRole={ROLE.INSTRUCTOR} />
+          ),
           loader: loadQuestionnaire,
         },
         {
           path: "questionnaires/new",
-          element: <ProtectedRoute element={<QuestionnaireEditor mode="create" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute
+              element={<QuestionnaireEditor mode="create" />}
+              leastPrivilegeRole={ROLE.INSTRUCTOR}
+            />
+          ),
           loader: loadQuestionnaire,
         },
         {
           path: "questionnaires/edit/:id",
-          element: <ProtectedRoute element={<QuestionnaireEditor mode="update" />} leastPrivilegeRole={ROLE.INSTRUCTOR} />,
+          element: (
+            <ProtectedRoute
+              element={<QuestionnaireEditor mode="update" />}
+              leastPrivilegeRole={ROLE.INSTRUCTOR}
+            />
+          ),
           loader: loadQuestionnaire,
         },
       ],
