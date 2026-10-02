@@ -1,13 +1,12 @@
 /**
  * SubmittedContent Type Definitions
- * Defines all TypeScript interfaces for the Submitted Content feature
- * @author Team CSC517
+ *
+ * These mirror the JSON contract of the backend `SubmittedContentController`
+ * (reimplementation-back-end: app/controllers/submitted_content_controller.rb).
  */
 
-/**
- * Represents a single submission record
- */
-export interface ISubmission {
+/** A submission record row, as returned by GET /submitted_content[/:id]. */
+export interface ISubmissionRecord {
   id: number;
   record_type: 'file' | 'hyperlink';
   content: string;
@@ -15,121 +14,67 @@ export interface ISubmission {
   user: string;
   team_id: number;
   assignment_id: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
-/**
- * Represents a file or directory in the submissions folder
- */
-export interface IFile {
+/** A file entry inside `files` of the list_files response. */
+export interface ISubmittedFile {
   name: string;
-  path: string;
-  type: 'file' | 'directory';
+  size: number;
+  /** Extension without the dot, e.g. "pdf". Empty string when the file has none. */
+  type: string;
+  modified_at: string;
 }
 
-/**
- * Represents an error state
- */
-export interface IError {
-  message: string;
-  type: 'error' | 'success' | 'warning' | 'info';
+/** A directory entry inside `folders` of the list_files response. */
+export interface ISubmittedFolder {
+  name: string;
+  modified_at: string;
 }
 
-/**
- * Payload for file upload
- */
-export interface IFileUploadPayload {
-  file: File;
-  unzip?: boolean;
-}
-
-/**
- * Payload for hyperlink submission
- */
-export interface IHyperlinkPayload {
-  hyperlink: string;
-}
-
-/**
- * Payload for folder action
- */
-export interface IFolderActionPayload {
-  delete?: string;
-  create?: string;
-  rename?: {
-    old_name: string;
-    new_name: string;
-  };
-}
-
-/**
- * Response from list files endpoint
- */
+/** GET /submitted_content/list_files */
 export interface IListFilesResponse {
-  files?: IFile[];
-  hyperlinks?: string[];
-  error?: string;
-  message?: string;
+  /** Echoed back by the server; absent when the folder had to be created. */
+  current_folder?: string;
+  files: ISubmittedFile[];
+  folders: ISubmittedFolder[];
+  /** Team hyperlinks are a plain array of URL strings. */
+  hyperlinks: string[];
 }
 
-/**
- * Response from submission endpoint
- */
-export interface ISubmissionResponse {
+/** Shape of every success payload from the controller's `render_success`. */
+export interface IMessageResponse {
   message: string;
-  error?: string;
-  success: boolean;
 }
 
-/**
- * Props for SubmittedContent component
- */
-export interface ISubmittedContentProps {
-  assignmentId?: number;
+/** Shape of every failure payload from the controller's `render_error`. */
+export interface IErrorResponse {
+  error: string;
 }
 
-/**
- * State for submitted content modal
- */
-export interface IModalState {
-  show: boolean;
-  loading: boolean;
-  error?: IError;
+/** The `faction` parameter accepted by POST /submitted_content/folder_action. */
+export interface IFolderAction {
+  create?: string;
+  delete?: string;
+  rename?: string;
+  copy?: string;
+  move?: string;
 }
 
-/**
- * Validation result
- */
+/** Result of the client-side guards that mirror the server's own validation. */
 export interface IValidationResult {
   valid: boolean;
   error?: string;
 }
 
-/**
- * File metadata
- */
-export interface IFileMetadata {
-  name: string;
-  size: number;
-  type: string;
-  lastModified: number;
+/** Local UI state for the upload / hyperlink modals. */
+export interface IModalState {
+  show: boolean;
+  isSubmitting: boolean;
 }
 
-/**
- * Submission statistics
- */
-export interface ISubmissionStats {
-  totalSubmissions: number;
-  filesCount: number;
-  hyperlinksCount: number;
-  lastSubmissionDate?: string;
-}
-
-/**
- * Column definition for submission history table
- */
-export interface ITableColumn {
-  id: string;
-  header: string;
-  accessor: string;
-  cell?: (value: any) => React.ReactNode;
+export interface ISubmittedContentProps {
+  /** Overrides the participant id resolved from the route, mainly for tests. */
+  participantId?: number;
 }

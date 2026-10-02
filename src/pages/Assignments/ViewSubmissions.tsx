@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
 import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
 
@@ -12,9 +11,6 @@ interface ISubmission {
 const columnHelper = createColumnHelper<ISubmission>();
 
 const ViewSubmissions: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
   // Dummy data for submissions
   const submissions = useMemo(() => [
     { id: 1, name: 'Submission 1' },
@@ -57,16 +53,6 @@ const ViewSubmissions: React.FC = () => {
           <h1>View Submissions</h1>
         </Col>
         <hr />
-      </Row>
-      <Row className="mt-3">
-        <Col className="d-flex gap-2">
-          <Button 
-            variant="primary" 
-            onClick={() => navigate(`/assignments/edit/${id}/submitcontent`)}
-          >
-            Submit Content
-          </Button>
-        </Col>
       </Row>
       {/* <Row>
         <Col className="text-right">
