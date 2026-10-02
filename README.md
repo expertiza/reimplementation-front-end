@@ -2,7 +2,7 @@
 
 This repository contains the React and TypeScript frontend for Expertiza. The application uses
 [Vite](https://vite.dev/) for local development and production builds, [Vitest](https://vitest.dev/)
-for testing, and Node.js 24 for the development and CI environments.
+for testing, and Node.js for the development and CI environments.
 
 ## Prerequisites
 
