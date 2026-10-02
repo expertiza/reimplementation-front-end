@@ -115,11 +115,6 @@ function App() {
           loader: loadAssignment,
         },
         {
-          path: "assignments/edit/:id/submitcontent",
-          element: <SubmittedContent />,
-          loader: loadAssignment,
-        },
-        {
           path: "assignments/edit/:id/viewscores",
           element: <ViewScores />,
           loader: loadAssignment,
@@ -320,6 +315,12 @@ function App() {
         {
           path: "student_tasks/:assignmentId",
           element: <ProtectedRoute element={<StudentTasks />} />,
+        },
+        {
+          // Student-facing submission page. The param is a participant id, which
+          // is what every submitted_content endpoint keys off.
+          path: "student_tasks/:participantId/submit",
+          element: <ProtectedRoute element={<SubmittedContent />} />,
         },
         {
           path: "assignments/:id/review",

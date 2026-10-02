@@ -1,445 +1,441 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Container, Row, Col, Button, Modal, Form, Alert, Table, Spinner } from 'react-bootstrap';
-import { FaFile, FaLink, FaTrash, FaDownload } from 'react-icons/fa';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Badge, Button, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
+import { FaDownload, FaFile, FaLink, FaTrash } from 'react-icons/fa';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import SubmittedContentService from '../../services/SubmittedContentService';
-import { ISubmittedContentProps, IModalState, IFile } from '../../types/SubmittedContent';
-import './SubmittedContent.css';
+import axiosClient from '../../utils/axios_client';
+import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
+import {
+  ALLOWED_EXTENSIONS,
+  MAX_FILE_SIZE_MB,
+  deleteFiles,
+  formatFileSize,
+  getFileIcon,
+  listFiles,
+  removeHyperlink,
+  saveFileToDisk,
+  submitFile,
+  submitHyperlink,
+} from './SubmittedContentUtil';
+import { IModalState, ISubmittedContentProps, ISubmittedFile } from '../../types/SubmittedContent';
+import styles from './SubmittedContent.module.css';
 
-const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
-  // State Management
-  const [files, setFiles] = useState<IFile[]>([]);
-  const [hyperlinks, setHyperlinks] = useState<{ url: string; title: string; submittedAt: string }[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
+/**
+ * Submissions live directly in the team's directory. Nothing in the backend
+ * creates a subdirectory on its own -- `submit_file` only ever writes to the
+ * current folder, and `extract_entry` flattens archives via `File.basename` --
+ * so the only source of subfolders would be `faction[create]`. That stays out
+ * of the UI while rename/move/delete are unavailable (they need server-absolute
+ * paths that `list_files` does not return), since a folder created by mistake
+ * could never be removed.
+ */
+const SUBMISSION_ROOT = '/';
+
+/** Mirrors the server's own size and extension limits. */
+const fileValidationSchema = Yup.object().shape({
+  file: Yup.mixed()
+    .required('Please choose a file.')
+    .test('fileSize', `Files must be smaller than ${MAX_FILE_SIZE_MB}MB.`, (value: any) =>
+      value?.length ? value[0].size <= MAX_FILE_SIZE_MB * 1024 * 1024 : false
+    )
+    .test('fileType', `Allowed extensions: ${ALLOWED_EXTENSIONS.join(', ')}.`, (value: any) => {
+      if (!value?.length) return false;
+      const extension = value[0].name.split('.').pop()?.toLowerCase();
+      return !!extension && ALLOWED_EXTENSIONS.includes(extension);
+    }),
+});
+
+const hyperlinkValidationSchema = Yup.object().shape({
+  url: Yup.string()
+    .url('Enter a valid URL.')
+    .matches(/^https?:\/\//i, 'Hyperlinks must start with http:// or https://')
+    .required('A URL is required.'),
+});
+
+const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: participantIdProp }) => {
+  // Every submitted_content endpoint keys off an AssignmentParticipant id --
+  // `set_participant` does `AssignmentParticipant.find(params[:id])` -- and the
+  // route carries exactly that.
+  const { participantId: participantIdParam } = useParams<{ participantId: string }>();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+
+  /** Which participant we are acting as, in order of precedence. */
+  const participantId = useMemo<number | null>(() => {
+    if (participantIdProp != null) return participantIdProp;
+
+    const queryValue = searchParams.get('participantId');
+    for (const candidate of [participantIdParam, queryValue]) {
+      const parsed = Number(candidate);
+      if (candidate && Number.isFinite(parsed)) return parsed;
+    }
+    return null;
+  }, [participantIdProp, participantIdParam, searchParams]);
+
+  const [files, setFiles] = useState<ISubmittedFile[]>([]);
+  const [hyperlinks, setHyperlinks] = useState<string[]>([]);
+
+  // Titles the page. StudentTaskDetail already knows the name and passes it in
+  // router state, so the common path needs no request at all.
+  const [assignmentName, setAssignmentName] = useState<string | null>(
+    (location.state as { assignmentName?: string } | null)?.assignmentName ?? null
+  );
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Modal States
-  const [fileModal, setFileModal] = useState<IModalState>({
-    show: false,
-    isSubmitting: false,
-  });
+  // What the confirmation modal is currently asking about, if anything.
+  type PendingDelete =
+    | { kind: 'file'; file: ISubmittedFile }
+    | { kind: 'hyperlink'; index: number; url: string };
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const [hyperlinkModal, setHyperlinkModal] = useState<IModalState>({
-    show: false,
-    isSubmitting: false,
-  });
+  const [fileModal, setFileModal] = useState<IModalState>({ show: false, isSubmitting: false });
+  const [hyperlinkModal, setHyperlinkModal] = useState<IModalState>({ show: false, isSubmitting: false });
 
-  // Get assignment ID from URL
-  const assignmentId = new URLSearchParams(window.location.search).get('id') || 'default';
+  const flashSuccess = useCallback((message: string) => {
+    setSuccess(message);
+    window.setTimeout(() => setSuccess(null), 4000);
+  }, []);
 
-  // Initial data fetch
+  /**
+   * Fetches the assignment name when it was not handed to us in router state.
+   * `student_tasks#show` resolves a participant id to a task whose `assignment`
+   * field is the name.
+   */
   useEffect(() => {
-    fetchSubmissions();
-  }, [assignmentId]);
+    if (assignmentName) return;
 
-  // Fetch submissions list
-  const fetchSubmissions = useCallback(async () => {
+    let cancelled = false;
+
+    const loadAssignmentName = async () => {
+      try {
+        if (participantId != null) {
+          const { data } = await axiosClient.get(`/student_tasks/show/${participantId}`);
+          if (!cancelled) setAssignmentName(data?.assignment ?? null);
+        }
+      } catch {
+        // The heading falls back to the generic title; not worth an alert.
+      }
+    };
+
+    loadAssignmentName();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assignmentName, participantId]);
+
+  /** GET /submitted_content/list_files for the team's submission directory. */
+  const loadSubmissions = useCallback(async () => {
+    if (participantId == null) {
+      setError('No participant was named for this page. Open it from your task list.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      // This would call the backend API to fetch submissions
-      // const response = await SubmittedContentService.listFiles(assignmentId);
-      // setSubmissions(response);
+      const data = await listFiles(participantId, SUBMISSION_ROOT);
+      setFiles(data.files ?? []);
+      setHyperlinks(data.hyperlinks ?? []);
     } catch (err) {
-      setError('Failed to fetch submissions');
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Failed to load submitted content.');
+      setFiles([]);
+      setHyperlinks([]);
     } finally {
       setLoading(false);
     }
-  }, [assignmentId]);
+  }, [participantId]);
 
-  // File Upload Handler
+  useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
+
   const handleFileUpload = useCallback(
-    async (values: any) => {
+    async (values: { file: FileList | null; unzip: boolean }) => {
+      if (participantId == null || !values.file?.length) return;
+      const file = values.file[0];
+
+      setFileModal({ show: true, isSubmitting: true });
+      setError(null);
       try {
-        setFileModal((prev) => ({ ...prev, isSubmitting: true }));
-        setError(null);
-
-        if (values.file && values.file.length > 0) {
-          const file = values.file[0];
-
-          // Validate file
-          const validation = await SubmittedContentService.validateFile(file);
-          if (!validation.isValid) {
-            setError(validation.error || 'Invalid file');
-            return;
-          }
-
-          // Submit file
-          const response = await SubmittedContentService.submitFile(assignmentId, file);
-          
-          // Add to files list
-          setFiles((prev) => [...prev, response.file]);
-          setSuccess('File uploaded successfully');
-
-          // Reset modal
-          setFileModal({ show: false, isSubmitting: false });
-
-          // Clear success message after 3 seconds
-          setTimeout(() => setSuccess(null), 3000);
-        }
+        const { message } = await submitFile(participantId, file, SUBMISSION_ROOT, values.unzip);
+        setFileModal({ show: false, isSubmitting: false });
+        flashSuccess(message);
+        await loadSubmissions();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to upload file');
-        console.error(err);
-      } finally {
-        setFileModal((prev) => ({ ...prev, isSubmitting: false }));
+        setFileModal({ show: true, isSubmitting: false });
+        setError(err instanceof Error ? err.message : 'Failed to upload file.');
       }
     },
-    [assignmentId]
+    [participantId, loadSubmissions, flashSuccess]
   );
 
-  // Hyperlink Submit Handler
   const handleHyperlinkSubmit = useCallback(
-    async (values: any) => {
+    async (values: { url: string }) => {
+      if (participantId == null) return;
+
+      setHyperlinkModal({ show: true, isSubmitting: true });
+      setError(null);
       try {
-        setHyperlinkModal((prev) => ({ ...prev, isSubmitting: true }));
-        setError(null);
-
-        // Validate URL
-        const validation = await SubmittedContentService.validateUrl(values.url);
-        if (!validation.isValid) {
-          setError(validation.error || 'Invalid URL');
-          return;
-        }
-
-        // Submit hyperlink
-        const response = await SubmittedContentService.submitHyperlink(
-          assignmentId,
-          values.url,
-          values.title || values.url
-        );
-
-        // Add to hyperlinks list
-        setHyperlinks((prev) => [...prev, response.hyperlink]);
-        setSuccess('Hyperlink submitted successfully');
-
-        // Reset modal
+        const { message } = await submitHyperlink(participantId, values.url);
         setHyperlinkModal({ show: false, isSubmitting: false });
-
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(null), 3000);
+        flashSuccess(message);
+        await loadSubmissions();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to submit hyperlink');
-        console.error(err);
-      } finally {
-        setHyperlinkModal((prev) => ({ ...prev, isSubmitting: false }));
+        setHyperlinkModal({ show: true, isSubmitting: false });
+        setError(err instanceof Error ? err.message : 'Failed to submit hyperlink.');
       }
     },
-    [assignmentId]
+    [participantId, loadSubmissions, flashSuccess]
   );
 
-  // Remove Hyperlink Handler
-  const handleRemoveHyperlink = useCallback(
-    async (url: string) => {
+  /**
+   * Carries out whatever the confirmation modal was asking about. Files are
+   * removed by name -- the server resolves it against the team's directory, so
+   * the client never handles a server-side path -- and hyperlinks by position.
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (participantId == null || pendingDelete == null) return;
+
+    setIsDeleting(true);
+    setError(null);
+    try {
+      if (pendingDelete.kind === 'file') {
+        const { message } = await deleteFiles(
+          participantId,
+          [pendingDelete.file.name],
+          SUBMISSION_ROOT
+        );
+        flashSuccess(message);
+      } else {
+        await removeHyperlink(participantId, pendingDelete.index);
+        flashSuccess('The hyperlink has been removed.');
+      }
+      setPendingDelete(null);
+      await loadSubmissions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove the item.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [participantId, pendingDelete, loadSubmissions, flashSuccess]);
+
+  const handleDownload = useCallback(
+    async (file: ISubmittedFile) => {
+      if (participantId == null) return;
+      setError(null);
       try {
-        setError(null);
-        await SubmittedContentService.removeHyperlink(assignmentId, url);
-        setHyperlinks((prev) => prev.filter((h) => h.url !== url));
-        setSuccess('Hyperlink removed successfully');
-        setTimeout(() => setSuccess(null), 3000);
+        await saveFileToDisk(participantId, file.name, SUBMISSION_ROOT);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to remove hyperlink');
-        console.error(err);
+        setError(err instanceof Error ? err.message : 'Failed to download file.');
       }
     },
-    [assignmentId]
+    [participantId]
   );
 
-  // Download File Handler
-  const handleDownloadFile = useCallback(
-    async (file: IFile) => {
-      try {
-        setError(null);
-        await SubmittedContentService.downloadFile(assignmentId, file.id);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to download file');
-        console.error(err);
-      }
-    },
-    [assignmentId]
-  );
-
-  // Delete File Handler
-  const handleDeleteFile = useCallback(
-    async (fileId: string) => {
-      try {
-        setError(null);
-        await SubmittedContentService.deleteFile(assignmentId, fileId);
-        setFiles((prev) => prev.filter((f) => f.id !== fileId));
-        setSuccess('File deleted successfully');
-        setTimeout(() => setSuccess(null), 3000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delete file');
-        console.error(err);
-      }
-    },
-    [assignmentId]
-  );
-
-  // Validation Schemas
-  const fileValidationSchema = Yup.object().shape({
-    file: Yup.mixed()
-      .required('File is required')
-      .test('fileSize', 'File is too large', (value: any) => {
-        if (!value || value.length === 0) return false;
-        return value[0].size <= 50 * 1024 * 1024; // 50MB limit
-      }),
-  });
-
-  const hyperlinkValidationSchema = Yup.object().shape({
-    url: Yup.string().url('Invalid URL').required('URL is required'),
-    title: Yup.string().max(255, 'Title is too long'),
-  });
+  const actionsDisabled = participantId == null || loading;
 
   return (
-    <Container className="submitted-content-container py-5">
-      {/* Header */}
-      <Row className="mb-5">
-        <Col className="text-center">
-          <h1 className="submitted-content-title">📝 Submitted Content</h1>
+    <Container className={`${styles.container} py-4`}>
+      <Row className="mb-4">
+        <Col>
+          <h1 className={styles.title}>
+            {assignmentName ? `Submit work for ${assignmentName}` : 'Submit work'}
+          </h1>
         </Col>
       </Row>
 
-      {/* Alerts */}
-      {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-      {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>{success}</Alert>}
+      {error && (
+        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" onClose={() => setSuccess(null)} dismissible>
+          {success}
+        </Alert>
+      )}
 
-      {/* Action Buttons Grid */}
-      <Row className="mb-5 justify-content-center">
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
+      <Row className="mb-4">
+        <Col className="d-flex flex-wrap gap-2">
           <Button
-            onClick={() => setFileModal({ ...fileModal, show: true })}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
+            variant="primary"
+            disabled={actionsDisabled}
+            onClick={() => setFileModal({ show: true, isSubmitting: false })}
           >
-            <FaFile style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
+            <FaFile className="me-2" />
             Upload File
           </Button>
-        </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
           <Button
-            onClick={() => setHyperlinkModal({ ...hyperlinkModal, show: true })}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
+            variant="primary"
+            disabled={actionsDisabled}
+            onClick={() => setHyperlinkModal({ show: true, isSubmitting: false })}
           >
-            <FaLink style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
+            <FaLink className="me-2" />
             Add Hyperlink
           </Button>
         </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={fetchSubmissions}
-            disabled={loading}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              <>
-                <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📋</span>
-                View History
-              </>
-            )}
-          </Button>
-        </Col>
-
-        <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
-          <Button
-            onClick={() => window.location.href = '/'}
-            style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
-            }}
-          >
-            <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔙</span>
-            Go Back
-          </Button>
-        </Col>
       </Row>
 
-      {/* Submission History Table */}
       {loading ? (
-        <Row className="mb-5">
+        <Row className="py-5">
           <Col className="text-center">
-            <Spinner animation="border" />
+            <Spinner animation="border" role="status" />
           </Col>
         </Row>
-      ) : submissions.length > 0 ? (
-        <Row className="mb-5">
-          <Col>
-            <h3>📊 Submission History</h3>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Submission ID</th>
-                  <th>Type</th>
-                  <th>Submitted At</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{submission.id}</td>
-                    <td>{submission.type}</td>
-                    <td>{new Date(submission.submittedAt).toLocaleString()}</td>
-                    <td>{submission.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-      ) : null}
+      ) : (
+        <>
+          <Row className="mb-4">
+            <Col>
+              <h5>
+                Files <Badge bg="secondary">{files.length}</Badge>
+              </h5>
+              {files.length === 0 ? (
+                <p className="text-muted">No files submitted yet.</p>
+              ) : (
+                <Table striped bordered hover responsive size="sm">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Size</th>
+                      <th>Last modified</th>
+                      <th className="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {files.map((file) => (
+                      <tr key={file.name}>
+                        <td>
+                          {getFileIcon(file.name)} {file.name}
+                        </td>
+                        <td>{formatFileSize(file.size)}</td>
+                        <td>{new Date(file.modified_at).toLocaleString()}</td>
+                        <td className="text-end">
+                          <Button
+                            variant="link"
+                            className="p-0 me-3"
+                            title={`Download ${file.name}`}
+                            onClick={() => handleDownload(file)}
+                          >
+                            <FaDownload />
+                          </Button>
+                          <Button
+                            variant="link"
+                            className="p-0 text-danger"
+                            title={`Delete ${file.name}`}
+                            onClick={() => setPendingDelete({ kind: 'file', file })}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </Col>
+          </Row>
 
-      {/* Files Section */}
-      {files.length > 0 && (
-        <Row className="mb-5">
-          <Col>
-            <h3>📁 Uploaded Files</h3>
-            <div className="files-list">
-              {files.map((file) => (
-                <div key={file.id} className="file-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{file.name}</strong>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      {SubmittedContentService.formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <Button
-                      variant="link"
-                      onClick={() => handleDownloadFile(file)}
-                      title="Download"
-                      style={{ color: '#007bff', marginRight: '0.5rem' }}
-                    >
-                      <FaDownload />
-                    </Button>
-                    <Button
-                      variant="link"
-                      onClick={() => handleDeleteFile(file.id)}
-                      title="Delete"
-                      style={{ color: '#dc3545' }}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Col>
-        </Row>
+          <Row className="mb-4">
+            <Col>
+              <h5>
+                Hyperlinks <Badge bg="secondary">{hyperlinks.length}</Badge>
+              </h5>
+              {hyperlinks.length === 0 ? (
+                <p className="text-muted">No hyperlinks submitted yet.</p>
+              ) : (
+                <Table striped bordered hover responsive size="sm">
+                  <tbody>
+                    {hyperlinks.map((url, index) => (
+                      <tr key={url}>
+                        <td>
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            {url}
+                          </a>
+                        </td>
+                        <td className="text-end" style={{ width: '6rem' }}>
+                          <Button
+                            variant="link"
+                            className="p-0 text-danger"
+                            title={`Remove ${url}`}
+                            onClick={() => setPendingDelete({ kind: 'hyperlink', index, url })}
+                          >
+                            <FaTrash />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </Col>
+          </Row>
+        </>
       )}
 
-      {/* Hyperlinks Section */}
-      {hyperlinks.length > 0 && (
-        <Row className="mb-5">
-          <Col>
-            <h3>🔗 Submitted Hyperlinks</h3>
-            <div className="hyperlinks-list">
-              {hyperlinks.map((hyperlink) => (
-                <div key={hyperlink.url} className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
-                  <div>
-                    <a href={hyperlink.url} target="_blank" rel="noopener noreferrer">
-                      <strong>{hyperlink.title}</strong>
-                    </a>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      Submitted: {new Date(hyperlink.submittedAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <Button
-                    variant="link"
-                    onClick={() => handleRemoveHyperlink(hyperlink.url)}
-                    title="Remove"
-                    style={{ color: '#dc3545' }}
-                  >
-                    <FaTrash />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </Col>
-        </Row>
-      )}
+      <ConfirmDeleteModal
+        show={pendingDelete != null}
+        title={pendingDelete?.kind === 'hyperlink' ? 'Remove Hyperlink' : 'Delete File'}
+        itemType={pendingDelete?.kind === 'hyperlink' ? 'hyperlink' : 'file'}
+        itemLabel={pendingDelete?.kind === 'file' ? pendingDelete.file.name : pendingDelete?.url ?? ''}
+        action={pendingDelete?.kind === 'hyperlink' ? 'Remove' : 'Delete'}
+        isSubmitting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
 
-      {/* File Upload Modal */}
-      <Modal show={fileModal.show} onHide={() => setFileModal({ ...fileModal, show: false })}>
+      <Modal
+        show={fileModal.show}
+        onHide={() => setFileModal({ show: false, isSubmitting: false })}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Upload File</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
-            initialValues={{ file: null }}
+            initialValues={{ file: null as FileList | null, unzip: false }}
             validationSchema={fileValidationSchema}
             onSubmit={handleFileUpload}
           >
-            {({ isSubmitting, setFieldValue }) => (
+            {({ setFieldValue, values }) => (
               <FormikForm>
                 <Form.Group className="mb-3">
-                  <Form.Label>Select File</Form.Label>
+                  <Form.Label htmlFor="uploaded_file">Select file</Form.Label>
                   <Form.Control
+                    id="uploaded_file"
                     type="file"
                     name="file"
-                    onChange={(event) => {
-                      const files = (event.target as HTMLInputElement).files;
-                      setFieldValue('file', files);
-                    }}
-                    disabled={isSubmitting}
+                    disabled={fileModal.isSubmitting}
+                    onChange={(event) =>
+                      setFieldValue('file', (event.target as HTMLInputElement).files)
+                    }
                   />
+                  <Form.Text muted>
+                    Max {MAX_FILE_SIZE_MB}MB. Allowed: {ALLOWED_EXTENSIONS.join(', ')}.
+                  </Form.Text>
                   <ErrorMessage name="file" component="div" className="text-danger" />
                 </Form.Group>
 
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={isSubmitting || fileModal.isSubmitting}
-                  className="w-100"
-                >
-                  {isSubmitting || fileModal.isSubmitting ? 'Uploading...' : 'Upload'}
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    id="unzip"
+                    type="checkbox"
+                    label="Expand this archive after upload (.zip only)"
+                    checked={values.unzip}
+                    disabled={fileModal.isSubmitting}
+                    onChange={(event) => setFieldValue('unzip', event.target.checked)}
+                  />
+                  <Form.Text muted>
+                    The server flattens archives — every entry lands alongside your other files.
+                  </Form.Text>
+                </Form.Group>
+
+                <Button type="submit" variant="primary" className="w-100" disabled={fileModal.isSubmitting}>
+                  {fileModal.isSubmitting ? 'Uploading…' : 'Upload'}
                 </Button>
               </FormikForm>
             )}
@@ -447,53 +443,42 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Hyperlink Modal */}
-      <Modal show={hyperlinkModal.show} onHide={() => setHyperlinkModal({ ...hyperlinkModal, show: false })}>
+      <Modal
+        show={hyperlinkModal.show}
+        onHide={() => setHyperlinkModal({ show: false, isSubmitting: false })}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Add Hyperlink</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
-            initialValues={{ url: '', title: '' }}
+            initialValues={{ url: '' }}
             validationSchema={hyperlinkValidationSchema}
             onSubmit={handleHyperlinkSubmit}
           >
-            {({ isSubmitting }) => (
-              <FormikForm>
-                <Form.Group className="mb-3">
-                  <Form.Label>URL</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="url"
-                    name="url"
-                    placeholder="https://example.com"
-                    disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  />
-                  <ErrorMessage name="url" component="div" className="text-danger" />
-                </Form.Group>
+            <FormikForm>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="url">URL</Form.Label>
+                <Field
+                  as={Form.Control}
+                  id="url"
+                  type="url"
+                  name="url"
+                  placeholder="https://example.com"
+                  disabled={hyperlinkModal.isSubmitting}
+                />
+                <ErrorMessage name="url" component="div" className="text-danger" />
+              </Form.Group>
 
-                <Form.Group className="mb-3">
-                  <Form.Label>Title (Optional)</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="text"
-                    name="title"
-                    placeholder="Link title"
-                    disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  />
-                  <ErrorMessage name="title" component="div" className="text-danger" />
-                </Form.Group>
-
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={isSubmitting || hyperlinkModal.isSubmitting}
-                  className="w-100"
-                >
-                  {isSubmitting || hyperlinkModal.isSubmitting ? 'Submitting...' : 'Submit'}
-                </Button>
-              </FormikForm>
-            )}
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-100"
+                disabled={hyperlinkModal.isSubmitting}
+              >
+                {hyperlinkModal.isSubmitting ? 'Submitting…' : 'Submit'}
+              </Button>
+            </FormikForm>
           </Formik>
         </Modal.Body>
       </Modal>

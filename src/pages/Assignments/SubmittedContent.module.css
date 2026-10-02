@@ -1,0 +1,21 @@
+/* Scoped as a CSS module: a plain .css import here is global, and the previous
+   version reached into bare `button` plus Bootstrap's own .table/.modal-header/
+   .alert/.spinner-border classes, restyling the rest of the app. */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.75rem;
+  }
+}
