@@ -76,10 +76,10 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
         <span className={styles.badge}>{notStartedTasks.length}</span>&nbsp;
         <strong>Tasks not yet started</strong>
         {notStartedTasks.map((task, index) => {
-          const daysLeft = daysLeft(task.dueDate);
+          const remainingDays = daysLeft(task.dueDate);
           return (
             <div key={index}>
-              &raquo; {task.name} {task.currentStage} ({daysLeft} day{daysLeft !== 1 ? 's' : ''} left)
+              &raquo; {task.name} {task.currentStage} ({remainingDays} day{remainingDays !== 1 ? 's' : ''} left)
             </div>
           );
         })}
@@ -89,14 +89,14 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
         <span className={styles.greyBadge}>{submissionUpdateddTasks.length}</span>&nbsp;
         <strong>Revisions</strong>
         {submissionUpdateddTasks.map((task, index) => {
-          const daysLeft = daysLeft(task.dueDate);
+          const remainingDays = daysLeft(task.dueDate);
           return (
             <div key={index}>
               &raquo;{' '}
               <Link to={`/student_review/list/${task.participantId}`} className={styles.revisionLink}>
                 {task.name} {task.currentStage}
               </Link>
-              {' '}({daysLeft} day{daysLeft !== 1 ? 's' : ''} left)
+              {' '}({remainingDays} day{remainingDays !== 1 ? 's' : ''} left)
             </div>
           );
         })}
