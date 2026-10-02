@@ -158,7 +158,8 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   }, [fetchAssignments, showDeleteConfirmation.visible]);
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
-    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col =>
+    const noop = () => {};
+    let baseColumns = getBaseAssignmentColumns(noop, noop, noop, noop, noop, noop, noop, noop).filter(col =>
       !["edit", "delete", "actions"].includes(String(col.id))
     );
     baseColumns = baseColumns
@@ -227,6 +228,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
         showGlobalFilter={false}
         showColumnFilter={false}
         showPagination={false}
+        showHeader={false}
         tableSize={{ span: 12, offset: 0 }}
       />
     </div>
