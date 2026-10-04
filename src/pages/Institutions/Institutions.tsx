@@ -57,7 +57,7 @@ const Institutions = () => {
           </Row>
           <Row>
             <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-primary" onClick={() => navigate("new")}>
+              <Button variant="outline-success" onClick={() => navigate("new")}>
                 <BsPlusSquareFill />
               </Button>
             </Col>

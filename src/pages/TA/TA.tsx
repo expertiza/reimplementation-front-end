@@ -89,7 +89,7 @@ const TAs = () => {
               <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
                 <ColumnButton
                   id="add-ta"
-                  variant="outline-primary"
+                  variant="outline-success"
                   size="lg"
                   className="ms-sm-2"
                   onClick={() => navigate("new")}

@@ -185,7 +185,7 @@ const renderSubComponent = useCallback(({ row }: { row: TRow<ICourseResponse> })
           {hasAllPrivilegesOf(auth.user?.role, ROLE.INSTRUCTOR) && (
             <Row>
               <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
-                <Button variant="outline-primary" onClick={() => navigate("new")}>
+                <Button variant="outline-success" onClick={() => navigate("new")}>
                   <RiHealthBookLine />
                 </Button>
               </Col>

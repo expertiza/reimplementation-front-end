@@ -89,7 +89,7 @@ const Duties = () => {
                     {/* create new (+) like Courses/Assignments */}
                     <Row>
                         <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
-                            <Button variant="outline-primary" onClick={() => setShowEditor({ visible: true, mode: "create" })}>
+                            <Button variant="outline-success" onClick={() => setShowEditor({ visible: true, mode: "create" })}>
                                 +
                             </Button>
                         </Col>
