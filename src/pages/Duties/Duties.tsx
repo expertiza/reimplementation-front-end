@@ -63,10 +63,79 @@ const Duties = () => {
     [auth.user?.id]
   );
 
+<<<<<<< HEAD
   const tableData = useMemo(() => {
     const userId = auth.user?.id;
     const filteredDuties = (allDuties || []).filter(
       (d) => !d.private || d.instructor_id === userId
+=======
+    const tableData = useMemo(() => {
+        const userId = auth.user?.id;
+        const filteredDuties = (allDuties || []).filter(d => !d.private || d.instructor_id === userId);
+        console.log("Table Data:", filteredDuties); // Debugging
+        return filteredDuties;
+    }, [allDuties, auth.user?.id]);
+
+    // handlers
+    const onEdit = useCallback((row: any) => {
+        setShowEditor({ visible: true, mode: "update", initial: row.original });
+    }, []);
+    const onDelete = useCallback((row: any) => {
+        setShowDelete({ visible: true, duty: row.original });
+    }, []);
+    const onCloseEditor = useCallback(() => setShowEditor({ visible: false }), []);
+    const onCloseDelete = useCallback(() => setShowDelete({ visible: false }), []);
+
+    const columns = useMemo(() => dutyColumns(onEdit, onDelete), [onEdit, onDelete]);
+
+    return (
+        <>
+            <Outlet />
+            <main>
+                <Container fluid className="px-md-4">
+                    <Row className="mt-4 mb-4">
+                        <Col className="text-center">
+                            <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: 600 }}>
+                                Manage Duties
+                            </h1>
+                        </Col>
+                    </Row>
+
+                    {/* create new (+) like Courses/Assignments */}
+                    <Row>
+                        <Col md={{ span: 1, offset: 11 }} style={{ paddingBottom: "10px" }}>
+                            <Button variant="outline-primary" onClick={() => setShowEditor({ visible: true, mode: "create" })}>
+                                +
+                            </Button>
+                        </Col>
+                    </Row>
+
+                    <Row>
+                        <Table
+                            data={tableData}
+                            columns={columns}
+                            showGlobalFilter={false}
+                            showColumnFilter={true}
+                            showPagination={true}
+                        // your shared Table handles sorting/filtering/pagination/selection/expanders:contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
+                        />
+                    </Row>
+                </Container>
+            </main>
+
+            {showEditor.visible && (
+                <DutyEditor
+                    mode={showEditor.mode!}
+                    initial={showEditor.initial}
+                    onClose={onCloseEditor}
+                    fetchDuties={() => fetchDuties({ url: `/duties` })}
+                />
+            )}
+            {showDelete.visible && showDelete.duty && (
+                <DutyDelete duty={{ id: showDelete.duty.id, name: showDelete.duty.name }} onClose={onCloseDelete} fetchDuties={() => fetchDuties({ url: `/duties` })}  />
+            )}
+        </>
+>>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
     );
     console.log("Table Data:", filteredDuties); // Debugging
     return filteredDuties;

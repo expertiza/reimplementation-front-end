@@ -70,7 +70,7 @@ function App() {
       children: [
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
-        { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        { path: "logout", element: <Logout /> },
 
         {
           path: "view-team-grades",
