@@ -39,8 +39,12 @@ export interface IItem {
   textarea_width?: number | string;
   textarea_height?: number | string;
   textbox_width?: number | string;
-  col_names?: string;
+  // Grid label lists (stored in `alternatives` as "column_names|row_names")
+  column_names?: string;
   row_names?: string;
+  // Grid / textarea dimensions (stored in `size` as "columns,rows")
+  columns?: number | string;
+  rows?: number | string;
   break_before?: boolean | number;
   questionnaire_id?: number;
   _destroy?: boolean;
@@ -51,8 +55,8 @@ export interface IItem {
 export interface QuestionnaireFormValues {
   id?: number;
   name: string;
-  questionnaire_type:string;
-  private:boolean;
+  questionnaire_type: string;
+  private: boolean;
   created_at?: string;
   updated_at?: string;
   min_question_score: number;
@@ -65,10 +69,10 @@ export interface QuestionnaireFormValues {
 export interface QuestionnaireResponse {
   id?: number;
   name: string;
-  private:boolean;
+  private: boolean;
   created_at: string;
   updated_at: string;
-  questionnaire_type:string;
+  questionnaire_type: string;
   min_question_score: number;
   max_question_score: number;
   instructor_id: number;
@@ -79,8 +83,8 @@ export interface QuestionnaireResponse {
 export interface QuestionnaireRequest {
   id?: number;
   name: string;
-  private:boolean;
-  questionnaire_type:string;
+  private: boolean;
+  questionnaire_type: string;
   min_question_score: number;
   max_question_score: number;
   instructor_id?: number;
@@ -141,15 +145,27 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
     instructor_id: values.instructor_id,
     items_attributes: values.items
       ? values.items.map((item, index) => {
-          let sizeStr = item.size;
-          if (item.question_type === 'Text area' || item.question_type === 'Criterion') {
-            sizeStr = `${item.textarea_width || ''},${item.textarea_height || ''}`;
-          } else if (item.question_type === 'Text field') {
-            sizeStr = `${item.textbox_width || ''}`;
+          let size: string | number | undefined = item.size;
+          let alternatives: string | undefined = item.alternatives;
+
+          if (item.question_type === "Text area" || item.question_type === "Criterion") {
+            // size = "textarea_width,textarea_height"
+            size = `${item.textarea_width ?? ""},${item.textarea_height ?? ""}`;
+          } else if (item.question_type === "Grid") {
+            // Use ?? (not ||) so that 0 is preserved, not treated as empty
+            const cols = item.columns != null && item.columns !== "" ? item.columns : "";
+            const rws = item.rows != null && item.rows !== "" ? item.rows : "";
+            size = `${cols},${rws}`;
+            // Store label lists in alternatives as "column_names|row_names"
+            alternatives = `${item.column_names ?? ""}|${item.row_names ?? ""}`;
+          } else if (item.question_type === "Text field") {
+            size = `${item.textbox_width ?? ""}`;
           }
+
           return {
             ...item,
-            size: sizeStr,
+            size,
+            alternatives,
             seq: index + 1,
             break_before: item.break_before ?? false,
           };
@@ -172,28 +188,56 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     instructor: data.instructor,
     created_at: data.created_at,
     updated_at: data.updated_at,
-    items: data.items ? data.items.map((item: any) => {
-      let textarea_width = item.textarea_width ?? "";
-      let textarea_height = item.textarea_height ?? "";
-      let textbox_width = item.textbox_width ?? "";
+    items: data.items
+      ? data.items.map((item: any) => {
+          let textarea_width: number | string = "";
+          let textarea_height: number | string = "";
+          let textbox_width: number | string = "";
+          let column_names: string = "";
+          let row_names: string = "";
+          let columns: number | string = "";
+          let rows: number | string = "";
 
-      if (item.size) {
-        const parts = String(item.size).split(",");
-        if (item.question_type === "Text area" || item.question_type === "Criterion" || item.question_type === "TextArea") {
-          textarea_width = parts[0] || "";
-          textarea_height = parts[1] || "";
-        } else if (item.question_type === "Text field" || item.question_type === "TextField") {
-          textbox_width = parts[0] || "";
-        }
-      }
-      return {
-        ...item,
-        question_type: mapToFrontendType(item.question_type ?? ""),
-        textarea_width,
-        textarea_height,
-        textbox_width,
-      };
-    }) : [],
+          const qType = (item.question_type ?? "") as string;
+          const sizeStr = item.size ? String(item.size) : "";
+          const altStr  = item.alternatives ? String(item.alternatives) : "";
+
+          if (qType === "Text area" || qType === "Criterion" || qType === "TextArea") {
+            // size = "width,height"
+            const parts = sizeStr.split(",");
+            textarea_width  = parts[0] || "";
+            textarea_height = parts[1] || "";
+
+          } else if (qType === "Text field" || qType === "TextField") {
+            textbox_width = sizeStr;
+
+          } else if (qType === "Grid") {
+            // alternatives = "column_names|row_names"
+            const altParts = altStr.split("|");
+            column_names = altParts[0] ?? "";
+            row_names    = altParts[1] ?? "";
+
+            // size = "columns,rows" (numeric)
+            const sizeParts = sizeStr.split(",");
+            const parsedCols = parseInt(sizeParts[0], 10);
+            const parsedRows = parseInt(sizeParts[1], 10);
+            columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
+            rows    = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
+          }
+
+          return {
+            ...item,
+            question_type: mapToFrontendType(qType),
+            textarea_width,
+            textarea_height,
+            textbox_width,
+            column_names,
+            row_names,
+            columns,
+            rows,
+          };
+        })
+      : [],
   };
 };
 
@@ -207,5 +251,3 @@ export async function loadQuestionnaire({ params }: any) {
     return response.data.map((q: any) => transformQuestionnaireResponse(q));
   }
 }
-
-

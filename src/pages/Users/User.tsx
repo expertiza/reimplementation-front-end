@@ -123,7 +123,7 @@ const Users = () => {
 
             </Col>
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => navigate("new")}>
+              <Button variant="outline-primary" onClick={() => navigate("new")}>
                 <BsPersonFillAdd />
               </Button>
             </Col>

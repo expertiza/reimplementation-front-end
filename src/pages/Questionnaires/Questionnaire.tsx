@@ -105,7 +105,7 @@ const Questionnaires = () => {
           </Row>
           <Row className="mb-3">
             <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-success" onClick={() => setShowTypeModal(true)}>
+              <Button variant="outline-primary" onClick={() => setShowTypeModal(true)}>
                 <RiHealthBookLine />
               </Button>
             </Col>

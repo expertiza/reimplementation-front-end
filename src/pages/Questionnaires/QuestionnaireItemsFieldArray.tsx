@@ -12,7 +12,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
-import { RiHealthBookLine } from "react-icons/ri";
+import { FaPlus, FaInfoCircle } from "react-icons/fa";
 import { IItem } from "./QuestionnaireUtils";
 
 interface Props {
@@ -31,6 +31,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   const [questionType, setQuestionType] = useState("");
   const [numQuestions, setNumQuestions] = useState<number | "">("");
   const [showNumbers, setShowNumbers] = useState(false);
+
 
   return (
     <FieldArray name="items">
@@ -63,25 +64,74 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
                     {visibleItems.length > 0 && (
-                      <div className="table-responsive">
-                        <table
-                          className="table table-bordered table-hover align-middle mb-2"
-                          style={{ fontSize: "13px" }}
+                      <table
+                          className="table table-bordered table-hover table-striped align-middle mb-2 w-100"
+                          style={{ fontSize: "13px", tableLayout: "fixed" }}
                         >
                           <thead className="table-light">
                             <tr>
                               {showNumbers && (
                                 <th style={{ width: "36px" }}>#</th>
                               )}
-                              <th style={{ width: "130px" }}>Type</th>
-                              <th style={{ minWidth: "250px" }}>Question Text</th>
-                              <th style={{ width: "200px" }}>Choices / Grid Cols</th>
-                              <th style={{ width: "160px" }}>Grid Rows</th>
-                              <th style={{ width: "110px" }}>Min Label</th>
-                              <th style={{ width: "110px" }}>Max Label</th>
-                              <th style={{ width: "70px" }}>Width</th>
-                              <th style={{ width: "70px" }}>Height</th>
-                              <th style={{ width: "70px" }}>Weight</th>
+                              <th style={{ width: "110px" }}>Type</th>
+                              <th style={{ width: "200px" }}>
+                                Prompt{" "}
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={
+                                    <Tooltip>
+                                      The question or statement shown to the reviewer.
+                                      Max 100 characters.
+                                    </Tooltip>
+                                  }
+                                >
+                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                    <FaInfoCircle size={11} />
+                                  </span>
+                                </OverlayTrigger>
+                              </th>
+                              <th style={{ width: "140px" }}>Row Names</th>
+                              <th style={{ width: "160px" }}>Column Names</th>
+                              <th style={{ width: "85px" }}>Min Label</th>
+                              <th style={{ width: "85px" }}>Max Label</th>
+                              <th style={{ width: "70px" }}>
+                                Rows{" "}
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={
+                                    <Tooltip>
+                                      Height (number of rows) — applies to{" "}
+                                      <strong>Criterion</strong>,{" "}
+                                      <strong>Text area</strong>, and{" "}
+                                      <strong>Grid</strong> items.
+                                    </Tooltip>
+                                  }
+                                >
+                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                    <FaInfoCircle size={11} />
+                                  </span>
+                                </OverlayTrigger>
+                              </th>
+                              <th style={{ width: "70px" }}>
+                                Cols{" "}
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={
+                                    <Tooltip>
+                                      Width (number of columns) — applies to{" "}
+                                      <strong>Criterion</strong>,{" "}
+                                      <strong>Text area</strong>,{" "}
+                                      <strong>Text field</strong>, and{" "}
+                                      <strong>Grid</strong> items.
+                                    </Tooltip>
+                                  }
+                                >
+                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                    <FaInfoCircle size={11} />
+                                  </span>
+                                </OverlayTrigger>
+                              </th>
+                              <th style={{ width: "60px" }}>Weight</th>
                               <th
                                 style={{ width: "50px" }}
                                 className="text-center"
@@ -112,9 +162,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       className={
-                                        snapshot.isDragging
-                                          ? "table-primary"
-                                          : ""
+                                        snapshot.isDragging ? "table-primary" : ""
                                       }
                                       style={{
                                         ...provided.draggableProps.style,
@@ -142,10 +190,10 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                           as="textarea"
                                           rows={2}
                                           name={`items[${index}].txt`}
-                                          placeholder="Item text"
+                                          placeholder="Prompt"
                                           className="form-control form-control-sm"
                                           maxLength={100}
-                                          style={{ resize: "vertical" }}
+                                          style={{ resize: "vertical", fieldSizing: "content" } as React.CSSProperties}
                                         />
                                         <ErrorMessage
                                           name={`items[${index}].txt`}
@@ -154,7 +202,22 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                         />
                                       </td>
 
-                                      {/* Choices / Grid Cols */}
+                                      {/* Row Names (Grid only) */}
+                                      <td>
+                                        {item.question_type === "Grid" ? (
+                                          <Field
+                                            as="textarea"
+                                            name={`items[${index}].row_names`}
+                                            placeholder="Rows (comma-sep)"
+                                            className="form-control form-control-sm"
+                                            style={{ width: "100%", minHeight: "2.5rem", fieldSizing: "content", resize: "vertical" } as React.CSSProperties}
+                                          />
+                                        ) : (
+                                          <span className="text-muted">N/A</span>
+                                        )}
+                                      </td>
+
+                                      {/* Column Names / Choices */}
                                       <td>
                                         {(item.question_type ===
                                           "Multiple choice" ||
@@ -174,25 +237,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                           </>
                                         ) : item.question_type === "Grid" ? (
                                           <Field
-                                            name={`items[${index}].col_names`}
+                                            as="textarea"
+                                            name={`items[${index}].column_names`}
                                             placeholder="Columns (comma-sep)"
                                             className="form-control form-control-sm"
+                                            style={{ width: "100%", minHeight: "2.5rem", fieldSizing: "content", resize: "vertical" } as React.CSSProperties}
                                           />
                                         ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
-                                        )}
-                                      </td>
-
-                                      {/* Grid Rows */}
-                                      <td>
-                                        {item.question_type === "Grid" ? (
-                                          <Field
-                                            name={`items[${index}].row_names`}
-                                            placeholder="Rows (comma-sep)"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
+                                          <span className="text-muted">N/A</span>
                                         )}
                                       </td>
 
@@ -207,7 +259,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             className="form-control form-control-sm"
                                           />
                                         ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
+                                          <span className="text-muted">N/A</span>
                                         )}
                                       </td>
 
@@ -222,34 +274,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             className="form-control form-control-sm"
                                           />
                                         ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
+                                          <span className="text-muted">N/A</span>
                                         )}
                                       </td>
 
-                                      {/* Width */}
-                                      <td>
-                                        {(item.question_type === "Criterion" ||
-                                          item.question_type ===
-                                            "Text area") ? (
-                                          <Field
-                                            name={`items[${index}].textarea_width`}
-                                            type="number"
-                                            placeholder="Wd."
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : item.question_type === "Text field" ? (
-                                          <Field
-                                            name={`items[${index}].textbox_width`}
-                                            type="number"
-                                            placeholder="Wd."
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
-                                        )}
-                                      </td>
-
-                                      {/* Height */}
+                                      {/* Height / Rows */}
                                       <td>
                                         {(item.question_type === "Criterion" ||
                                           item.question_type ===
@@ -257,11 +286,48 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                           <Field
                                             name={`items[${index}].textarea_height`}
                                             type="number"
-                                            placeholder="Ht."
+                                            placeholder="Rows"
+                                            className="form-control form-control-sm"
+                                          />
+                                        ) : item.question_type === "Grid" ? (
+                                          <Field
+                                            name={`items[${index}].rows`}
+                                            type="number"
+                                            placeholder="# Rows"
                                             className="form-control form-control-sm"
                                           />
                                         ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
+                                          <span className="text-muted">N/A</span>
+                                        )}
+                                      </td>
+
+                                      {/* Width / Cols */}
+                                      <td>
+                                        {(item.question_type === "Criterion" ||
+                                          item.question_type ===
+                                            "Text area") ? (
+                                          <Field
+                                            name={`items[${index}].textarea_width`}
+                                            type="number"
+                                            placeholder="Cols."
+                                            className="form-control form-control-sm"
+                                          />
+                                        ) : item.question_type === "Text field" ? (
+                                          <Field
+                                            name={`items[${index}].textbox_width`}
+                                            type="number"
+                                            placeholder="Cols."
+                                            className="form-control form-control-sm"
+                                          />
+                                        ) : item.question_type === "Grid" ? (
+                                          <Field
+                                            name={`items[${index}].columns`}
+                                            type="number"
+                                            placeholder="# Cols"
+                                            className="form-control form-control-sm"
+                                          />
+                                        ) : (
+                                          <span className="text-muted">N/A</span>
                                         )}
                                       </td>
 
@@ -281,7 +347,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             className="form-control form-control-sm"
                                           />
                                         ) : (
-                                          <input type="text" className="form-control form-control-sm bg-light text-muted" disabled placeholder="N/A" />
+                                          <span className="text-muted">N/A</span>
                                         )}
                                       </td>
 
@@ -316,7 +382,6 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                             )}
                           </tbody>
                         </table>
-                      </div>
                     )}
                     {provided.placeholder}
                   </div>
@@ -328,18 +393,29 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             <div className="d-flex gap-2 mb-3 align-items-center flex-wrap">
               <button
                 type="button"
-                className="btn btn-outline-success btn-sm fw-semibold px-3"
+                className="btn btn-outline-primary btn-sm fw-semibold px-3"
                 onClick={() => {
                   const questionCount =
                     typeof numQuestions === "number" ? numQuestions : 0;
                   for (let i = 0; i < questionCount; i++) {
+                    const isGrid = questionType === "Grid";
                     push({
                       id: undefined,
-                      txt: "",
+                      txt: isGrid
+                        ? "Please rate the following aspects of the submission:"
+                        : "",
                       weight: "",
                       question_type: questionType,
                       break_before: 1,
                       alternatives: "",
+                      column_names: isGrid
+                        ? "Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree"
+                        : "",
+                      row_names: isGrid
+                        ? "Clarity,Completeness,Correctness,Creativity"
+                        : "",
+                      columns: isGrid ? "5" : "",
+                      rows: isGrid ? "4" : "",
                       min_label: "",
                       max_label: "",
                       seq: values.items.length + 1,
@@ -349,7 +425,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   setQuestionType("");
                 }}
               >
-                <RiHealthBookLine className="me-1 mb-1" /> Add
+                <FaPlus className="me-1 mb-1" /> Add
               </button>
 
               <span title="How many items?">

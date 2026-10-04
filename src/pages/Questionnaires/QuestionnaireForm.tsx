@@ -1,6 +1,6 @@
   import React, { useEffect, useState } from "react";
   import { Formik, Field, Form, ErrorMessage } from "formik";
-  import { Button, Tabs, Tab } from 'react-bootstrap';
+  import { Button } from 'react-bootstrap';
   import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
   import * as Yup from "yup";
   import useAPI from "hooks/useAPI";
@@ -92,48 +92,48 @@
       >
         {({ values, handleChange, errors, touched }) => (
           <Form>
-            <Tabs defaultActiveKey="general" id="questionnaire-tabs" className="mb-3">
-              <Tab eventKey="general" title="General">
-                <div style={{ width: '60%', marginTop: '20px', marginBottom: '20px' }}>
-                  <div style={{ display: 'grid', alignItems: 'center', rowGap: '15px', columnGap: '20px', gridTemplateColumns: 'max-content 1fr' }}>
-                    
-                    <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Name</label>
-                    <div>
-                      <Field
-                        name="name"
-                        className="form-control"
-                        placeholder="Enter questionnaire name"
-                        value={values.name}
-                        onChange={handleChange}
-                      />
-                      <ErrorMessage name="name" component="div" className="text-danger small mt-1" />
-                    </div>
+            <div className="mb-4">
+              <h5 className="mb-3">Questionnaire Details</h5>
+              <div style={{ width: '60%', marginTop: '20px', marginBottom: '20px' }}>
+                <div style={{ display: 'grid', alignItems: 'center', rowGap: '15px', columnGap: '20px', gridTemplateColumns: 'max-content 1fr' }}>
+                  
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Name</label>
+                  <div>
+                    <Field
+                      name="name"
+                      className="form-control"
+                      placeholder="Enter questionnaire name"
+                      value={values.name}
+                      onChange={handleChange}
+                    />
+                    <ErrorMessage name="name" component="div" className="text-danger small mt-1" />
+                  </div>
 
-                    <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Min Item Score</label>
-                    <div>
-                      <Field
-                        type="number"
-                        name="min_question_score"
-                        placeholder="0"
-                        className="form-control"
-                        style={{ width: "100px" }}
-                      />
-                      <ErrorMessage name="min_question_score" component="div" className="text-danger small mt-1" />
-                    </div>
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Min Item Score</label>
+                  <div>
+                    <Field
+                      type="number"
+                      name="min_question_score"
+                      placeholder="0"
+                      className="form-control"
+                      style={{ width: "100px" }}
+                    />
+                    <ErrorMessage name="min_question_score" component="div" className="text-danger small mt-1" />
+                  </div>
 
-                    <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Max Item Score</label>
-                    <div>
-                      <Field
-                        type="number"
-                        name="max_question_score"
-                        placeholder="10"
-                        className="form-control"
-                        style={{ width: "100px" }}
-                      />
-                      <ErrorMessage name="max_question_score" component="div" className="text-danger small mt-1" />
-                    </div>
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Max Item Score</label>
+                  <div>
+                    <Field
+                      type="number"
+                      name="max_question_score"
+                      placeholder="10"
+                      className="form-control"
+                      style={{ width: "100px" }}
+                    />
+                    <ErrorMessage name="max_question_score" component="div" className="text-danger small mt-1" />
                   </div>
                 </div>
+              </div>
 
                 <div className="mb-4">
                   <div className="form-check mb-2">
@@ -196,14 +196,12 @@
                     </div>
                   )}
                 </div>
-              </Tab>
+              </div>
 
-              <Tab eventKey="questions" title="Questions">
-                <div className="mt-3">
-                  <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={finalItemTypes} />
-                </div>
-              </Tab>
-            </Tabs>
+              <div className="mt-4">
+                <h5 className="mb-3">Items</h5>
+                <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={finalItemTypes} />
+              </div>
 
             <Field
               name="questionnaire_type"
@@ -215,7 +213,7 @@
             />
             
             <div className="mt-4 pt-3 border-top">
-              <Button type="submit" variant="success" className="px-4">
+              <Button type="submit" variant="primary" className="px-4">
                 Save
               </Button>
             </div>

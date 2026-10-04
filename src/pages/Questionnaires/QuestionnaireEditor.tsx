@@ -11,33 +11,52 @@ import { alertActions } from "store/slices/alertSlice";
 
 
 const mapItemToFormField = (item: any) => {
-  let textarea_width = item.textarea_width ?? "";
-  let textarea_height = item.textarea_height ?? "";
-  let textbox_width = item.textbox_width ?? "";
+  const qType: string = item.question_type ?? "";
+  const sizeStr = item.size ? String(item.size) : "";
+  const altStr  = item.alternatives ? String(item.alternatives) : "";
 
-  if (item.size) {
-    const parts = String(item.size).split(",");
-    if (item.question_type === "Text area" || item.question_type === "Criterion") {
-      textarea_width = parts[0] || "";
-      textarea_height = parts[1] || "";
-    } else if (item.question_type === "Text field") {
-      textbox_width = parts[0] || "";
-    }
+  let textarea_width: number | string = "";
+  let textarea_height: number | string = "";
+  let textbox_width: number | string = "";
+  let column_names = "";
+  let row_names = "";
+  let columns: number | string = "";
+  let rows: number | string = "";
+
+  if (qType === "Text area" || qType === "Criterion") {
+    const parts = sizeStr.split(",");
+    textarea_width  = parts[0] || "";
+    textarea_height = parts[1] || "";
+  } else if (qType === "Text field") {
+    textbox_width = sizeStr;
+  } else if (qType === "Grid") {
+    // Parse labels from alternatives
+    const altParts = altStr.split("|");
+    column_names = altParts[0] ?? "";
+    row_names    = altParts[1] ?? "";
+    // Parse numeric grid dimensions from size
+    const sizeParts = sizeStr.split(",");
+    const parsedCols = parseInt(sizeParts[0], 10);
+    const parsedRows = parseInt(sizeParts[1], 10);
+    columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
+    rows    = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
   }
 
   return {
     id: item.id,
     txt: item.txt ?? "",
-    question_type: item.question_type ?? "",
+    question_type: qType,
     weight: item.weight ?? "",
-    alternatives: item.alternatives ?? "",
+    alternatives: altStr,
     min_label: item.min_label ?? "",
     max_label: item.max_label ?? "",
-    textarea_width: textarea_width,
-    textarea_height: textarea_height,
-    textbox_width: textbox_width,
-    col_names: item.col_names ?? "",
-    row_names: item.row_names ?? "",
+    textarea_width,
+    textarea_height,
+    textbox_width,
+    column_names,
+    row_names,
+    columns,
+    rows,
     seq: item.seq,
     break_before: item.break_before,
     _destroy: item._destroy || false,

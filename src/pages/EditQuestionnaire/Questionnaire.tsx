@@ -200,7 +200,7 @@ const Questionnaire = () => {
              
         <div className="row m-2">
           <div className="col-1">Seq</div>
-          <div className="col-3">Question</div>
+          <div className="col-3">Prompt</div>
           <div className="col-1">Type</div>
           <div className="col-1">Weight</div>
           <div className="col-1">Text_area_size</div>
@@ -321,7 +321,7 @@ const Questionnaire = () => {
         </div>
         <div className="col-1">
         <p style={{ fontSize: "18px" }}>
-        question(s)
+        item(s)
         </p>
         </div>
         <div className="col-2">
@@ -330,7 +330,7 @@ const Questionnaire = () => {
             style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
             className="btn btn-primary"
           >
-            Add Question
+            Add Item
           </button> 
           </div>
         </div>
@@ -342,7 +342,7 @@ const Questionnaire = () => {
             style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
             className="btn btn-primary"
           >
-            Save all questions
+            Save all items
           </button>
         </div>
         </div>
