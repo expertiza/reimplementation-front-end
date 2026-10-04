@@ -53,7 +53,7 @@ const Roles = () => {
           </Row>
           <Row className="mb-1">
             <Col md={{ span: 1, offset: 8 }}>
-              <Button variant="outline-primary" onClick={() => navigate("new")}>
+              <Button variant="outline-success" onClick={() => navigate("new")}>
                 <BsPlusSquareFill />
               </Button>
             </Col>
