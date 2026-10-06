@@ -194,9 +194,11 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
   );
 
   /**
-   * Carries out whatever the confirmation modal was asking about. Files are
-   * removed by name -- the server resolves it against the team's directory, so
-   * the client never handles a server-side path -- and hyperlinks by position.
+   * Carries out whatever the confirmation modal was asking about.
+   *
+   * A file is removed by its bare name: the server resolves that name against
+   * the team's directory itself, so the client never handles a path on the
+   * server. A hyperlink is removed by its position in the list instead.
    */
   const handleConfirmDelete = useCallback(async () => {
     if (participantId == null || pendingDelete == null) return;
