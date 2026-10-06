@@ -135,6 +135,13 @@ export interface IAssignmentRequest {
   use_drop_topic_deadline?: boolean;
   use_team_formation_deadline?: boolean;
 
+  // Topic settings
+  allow_topic_suggestion_from_students?: boolean;
+  enable_bidding_for_topics?: boolean;
+  enable_authors_to_review_other_topics?: boolean;
+  allow_reviewer_to_choose_topic_to_review?: boolean;
+  enable_bidding_for_reviews?: boolean;
+
   // Misc flags matching tabs
   allow_tag_prompts?: boolean;
   available_to_students?: boolean;

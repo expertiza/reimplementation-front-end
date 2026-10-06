@@ -63,7 +63,13 @@ export interface IAssignmentFormValues {
   weights?: number[];
   notification_limits?: number[];
   dropdowns?: boolean[];
-   // Misc flags from the form
+   // Topic settings
+  allow_topic_suggestion_from_students?: boolean;
+  enable_bidding_for_topics?: boolean;
+  enable_authors_to_review_other_topics?: boolean;
+  allow_reviewer_to_choose_topic_to_review?: boolean;
+  enable_bidding_for_reviews?: boolean;
+  // Misc flags from the form
   allow_tag_prompts?: boolean;
   course_id?: number;
   available_to_students?: boolean;
@@ -305,6 +311,13 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
     use_signup_deadline: values.use_signup_deadline ?? false,
     use_drop_topic_deadline: values.use_drop_topic_deadline ?? false,
     use_team_formation_deadline: values.use_team_formation_deadline ?? false,
+
+    // Topic settings
+    allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
+    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
+    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
+    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
+    enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
 
     // Misc flags
     allow_tag_prompts: values.allow_tag_prompts ?? false,

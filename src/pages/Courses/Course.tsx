@@ -24,6 +24,7 @@ const Courses = () => {
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
   const { data: InstructorResponse, sendRequest: fetchInstructors } = useAPI();
   const { data: assignmentResponse, sendRequest: fetchAssignments } = useAPI();
+  const { data: copyResponse, error: copyError, sendRequest: sendCopyRequest } = useAPI();
 
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -48,6 +49,7 @@ const Courses = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
+
   useEffect(() => {
     if (!showDeleteCourseConfirmation.visible && !showCopyConfirmation.visible) {
       fetchCourses({ url: `/courses` });
@@ -71,6 +73,19 @@ const Courses = () => {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
   }, [error, dispatch]);
+
+  useEffect(() => {
+    if (copyError) {
+      dispatch(alertActions.showAlert({ variant: "danger", message: copyError }));
+    }
+  }, [copyError, dispatch]);
+
+  useEffect(() => {
+    if (copyResponse?.data?.id) {
+      dispatch(alertActions.showAlert({ variant: "success", message: "Assignment copied successfully." }));
+      navigate(`/assignments/edit/${copyResponse.data.id}`);
+    }
+  }, [copyResponse, dispatch, navigate]);
 
   // Course handlers
   const onEditHandle = useCallback(
@@ -131,16 +146,13 @@ const Courses = () => {
     [navigate]
   );
   const handleCopyAssignment = useCallback(
-    (_row: TRow<UnifiedRow>) => {
-      // TODO: call POST /assignments/:id/copy_assignment
-      console.log("Copy assignment:", _row.original.id);
+    (row: TRow<UnifiedRow>) => {
+      sendCopyRequest({ url: `/assignments/${row.original.id}/copy_assignment`, method: "POST" });
     },
-    []
+    [sendCopyRequest]
   );
   const handleExportAssignment = useCallback(
-    (_row: TRow<UnifiedRow>) => {
-      console.log("Export assignment:", _row.original.id);
-    },
+    (_row: TRow<UnifiedRow>) => { /* not yet implemented */ },
     []
   );
 
@@ -219,8 +231,8 @@ const Courses = () => {
   const unifiedData = useMemo(() => {
     const toAssignmentRow = (a: IAssignmentResponse) => ({
       ...a,
-      created_at: a.created_at ? formatDate(a.created_at) : "—",
-      updated_at: a.updated_at ? formatDate(a.updated_at) : "—",
+      created_at: a.created_at ? formatDate(a.created_at) : "–",
+      updated_at: a.updated_at ? formatDate(a.updated_at) : "–",
       rowType: "assignment" as const,
     });
 
@@ -314,7 +326,7 @@ const Courses = () => {
           getRowCanExpand={(row) => row.original?.rowType === "course"}
           getExpanderFallback={(row) =>
             row.original?.rowType === "assignment" && row.depth === 1
-              ? <span style={{ color: "#0d6efd", fontSize: "1rem", paddingLeft: 4 }}>—</span>
+              ? <span style={{ color: "#0d6efd", fontSize: "1rem", paddingLeft: 4 }}>–</span>
               : null
           }
           getCellProps={(cell, row) => {

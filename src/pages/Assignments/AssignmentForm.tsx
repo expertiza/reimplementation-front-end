@@ -138,15 +138,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const formikRef = useRef<any>(null);
 
   // ── Topics state (used in edit mode; available in create after first save) ─
-  const [topicSettings, setTopicSettings] = useState<TopicSettings>({
-    allowTopicSuggestions: false,
-    enableBidding: false,
-    enableAuthorsReview: true,
-    allowReviewerChoice: true,
-    allowBiddingForReviewers: false,
-    allowAdvertiseForPartners: false,
-    allowBookmarks: false,
-  });
   const [topicsData, setTopicsData] = useState<TopicData[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [topicsError, setTopicsError] = useState<string | null>(null);
@@ -236,8 +227,19 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     if (dropTeamErr) dispatch(alertActions.showAlert({ variant: "danger", message: dropTeamErr }));
   }, [dropTeamErr, dispatch]);
 
+  const topicSettingFieldMap: Record<string, string> = {
+    allowTopicSuggestions: 'allow_topic_suggestion_from_students',
+    enableBidding: 'enable_bidding_for_topics',
+    enableAuthorsReview: 'enable_authors_to_review_other_topics',
+    allowReviewerChoice: 'allow_reviewer_to_choose_topic_to_review',
+    allowBiddingForReviewers: 'enable_bidding_for_reviews',
+  };
+
   const handleTopicSettingChange = useCallback((setting: string, value: boolean) => {
-    setTopicSettings((prev) => ({ ...prev, [setting]: value }));
+    const formikField = topicSettingFieldMap[setting];
+    if (formikField && formikRef.current) {
+      formikRef.current.setFieldValue(formikField, value);
+    }
   }, []);
 
   const handleDropTeam = useCallback((topicId: string, teamId: string) => {
@@ -483,7 +485,15 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                     <TopicsTab
                       assignmentName={formik.values.name}
                       assignmentId={String(effectiveId)}
-                      topicSettings={topicSettings}
+                      topicSettings={{
+                        allowTopicSuggestions: formik.values.allow_topic_suggestion_from_students ?? false,
+                        enableBidding: formik.values.enable_bidding_for_topics ?? false,
+                        enableAuthorsReview: formik.values.enable_authors_to_review_other_topics ?? false,
+                        allowReviewerChoice: formik.values.allow_reviewer_to_choose_topic_to_review ?? false,
+                        allowBiddingForReviewers: formik.values.enable_bidding_for_reviews ?? false,
+                        allowAdvertiseForPartners: false,
+                        allowBookmarks: false,
+                      }}
                       topicsData={topicsData}
                       topicsLoading={topicsLoading}
                       topicsError={topicsError}

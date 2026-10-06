@@ -144,6 +144,12 @@ const initialValues: IAssignmentFormValues = {
   use_signup_deadline: false,
   use_drop_topic_deadline: false,
   use_team_formation_deadline: false,
+  // Topic settings
+  allow_topic_suggestion_from_students: false,
+  enable_bidding_for_topics: false,
+  enable_authors_to_review_other_topics: false,
+  allow_reviewer_to_choose_topic_to_review: false,
+  enable_bidding_for_reviews: false,
   date_time: {} as Record<string | number, Date | null>,
   weights: [],
   notification_limits: [],
@@ -211,15 +217,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const [assignmentDuties, setAssignmentDuties] = useState<any[]>([]);
   const [selectedDutyIds, setSelectedDutyIds] = useState<number[]>([]);
   const [roleBasedLocalError, setRoleBasedLocalError] = useState<string | null>(null);
-  const [topicSettings, setTopicSettings] = useState<TopicSettings>({
-    allowTopicSuggestions: false,
-    enableBidding: false,
-    enableAuthorsReview: true,
-    allowReviewerChoice: true,
-    allowBiddingForReviewers: false,
-    allowAdvertiseForPartners: false,
-    allowBookmarks: false,
-  });
   const [topicsData, setTopicsData] = useState<TopicData[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [topicsError, setTopicsError] = useState<string | null>(null);
@@ -701,12 +698,28 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <TopicsTab
                     assignmentName={assignmentName}
                     assignmentId={id!}
-                    topicSettings={topicSettings}
+                    topicSettings={{
+                      allowTopicSuggestions: formik.values.allow_topic_suggestion_from_students ?? false,
+                      enableBidding: formik.values.enable_bidding_for_topics ?? false,
+                      enableAuthorsReview: formik.values.enable_authors_to_review_other_topics ?? false,
+                      allowReviewerChoice: formik.values.allow_reviewer_to_choose_topic_to_review ?? false,
+                      allowBiddingForReviewers: formik.values.enable_bidding_for_reviews ?? false,
+                      allowAdvertiseForPartners: false,
+                      allowBookmarks: false,
+                    }}
                     topicsData={topicsData}
                     topicsLoading={topicsLoading}
                     topicsError={topicsError}
                     onTopicSettingChange={(setting, value) => {
-                      setTopicSettings((prev) => ({ ...prev, [setting]: value }));
+                      const fieldMap: Record<string, string> = {
+                        allowTopicSuggestions: 'allow_topic_suggestion_from_students',
+                        enableBidding: 'enable_bidding_for_topics',
+                        enableAuthorsReview: 'enable_authors_to_review_other_topics',
+                        allowReviewerChoice: 'allow_reviewer_to_choose_topic_to_review',
+                        allowBiddingForReviewers: 'enable_bidding_for_reviews',
+                      };
+                      const formikField = fieldMap[setting];
+                      if (formikField) formik.setFieldValue(formikField, value);
                     }}
                     onDropTeam={handleDropTeam}
                     onDeleteTopic={handleDeleteTopic}

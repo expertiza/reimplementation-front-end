@@ -88,22 +88,22 @@ export const courseColumns = (
     cell: ({ row }) => (
       <div className="text-start py-1 px-3">
         {row.original.rowType === "course"
-          ? row.original.instructor?.name || "—"
-          : "—"}
+          ? row.original.instructor?.name || "–"
+          : "–"}
       </div>
     ),
   }),
 
   columnHelper.accessor("created_at", {
     header: "Creation Date",
-    cell: (info) => <div className="text-start py-1 px-3" style={{ whiteSpace: "nowrap" }}>{info.getValue() || "—"}</div>,
+    cell: (info) => <div className="text-start py-1 px-3" style={{ whiteSpace: "nowrap" }}>{info.getValue() || "–"}</div>,
     enableSorting: true,
     meta: { whiteSpace: "nowrap", width: "175px" },
   }),
 
   columnHelper.accessor("updated_at", {
     header: "Updated Date",
-    cell: (info) => <div className="text-start py-1 px-3" style={{ whiteSpace: "nowrap" }}>{info.getValue() || "—"}</div>,
+    cell: (info) => <div className="text-start py-1 px-3" style={{ whiteSpace: "nowrap" }}>{info.getValue() || "–"}</div>,
     enableSorting: true,
     meta: { whiteSpace: "nowrap", width: "175px" },
   }),
@@ -260,12 +260,13 @@ export const courseColumns = (
           <GroupDivider />
 
           {/* Group 4: Export / Delete */}
-          <ActionIcon
-            src="/assets/icons/export-temp.png"
-            alt="Export"
-            title="Export Assignment"
-            onClick={() => handleExportAssignment(row)}
-          />
+          <OverlayTrigger overlay={<Tooltip>Export not yet available</Tooltip>}>
+            <span style={{ display: "inline-flex" }}>
+              <Button variant="link" disabled aria-label="Export Assignment" className="p-0" style={{ opacity: 0.4, pointerEvents: "none" }}>
+                <img src="/assets/icons/export-temp.png" alt="Export" style={{ width: "20px", height: "20px" }} />
+              </Button>
+            </span>
+          </OverlayTrigger>
           <ActionIcon
             src="/assets/images/delete-icon-24.png"
             alt="Delete"

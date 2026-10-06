@@ -103,9 +103,9 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
       <BSTable striped bordered size="sm" className="mt-2" style={{ fontSize: "0.875rem", width: "75%" }}>
         <thead>
           <tr>
-            <th style={{ width: "12%", whiteSpace: "nowrap" }}></th>
+            <th style={{ width: "20%", whiteSpace: "nowrap" }}></th>
             <th className="text-center" style={{ width: "38%" }}>Questionnaire</th>
-            <th className="text-center" style={{ width: "22%", whiteSpace: "nowrap" }}>
+            <th className="text-center" style={{ width: "14%", whiteSpace: "nowrap" }}>
               Display style
               <ToolTip id="display-style-tip" info="For scored questions: Scale displays scores as radio buttons on the next line; Dropdown displays scores as a dropdown." />
             </th>
