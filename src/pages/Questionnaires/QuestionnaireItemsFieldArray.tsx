@@ -13,10 +13,9 @@ interface Props {
 }
 
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched, itemTypes }) => {
-  const [questionType, setQuestionType] = useState("");
-  const [numQuestions, setNumQuestions] = useState<number | "">("");
+  const [itemType, setItemType] = useState("");
+  const [numItems, setNumItems] = useState<number | "">("");
   const [showNumbers, setShowNumbers] = useState(false);
-
 
   return (
     <FieldArray name="items">
@@ -44,535 +43,308 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                 move(result.source.index, result.destination.index);
               }}
             >
-              <Droppable droppableId="questions">
+              <Droppable droppableId="items">
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
                     {visibleItems.length > 0 && (
                       <table
-                          className="table table-bordered table-hover table-striped align-middle mb-2 w-100"
-                          style={{ fontSize: "13px", tableLayout: "fixed" }}
-                        >
-                          <thead className="table-light">
-                            <tr>
-<<<<<<< HEAD
-                              {showNumbers && <th style={{ width: "36px" }}>#</th>}
-                              <th style={{ width: "130px" }}>Type</th>
-                              <th style={{ minWidth: "250px" }}>Question Text</th>
-                              <th style={{ width: "200px" }}>Choices / Grid Cols</th>
-                              <th style={{ width: "160px" }}>Grid Rows</th>
-                              <th style={{ width: "110px" }}>Min Label</th>
-                              <th style={{ width: "110px" }}>Max Label</th>
-                              <th style={{ width: "70px" }}>Width</th>
-                              <th style={{ width: "70px" }}>Height</th>
-                              <th style={{ width: "70px" }}>Weight</th>
-                              <th style={{ width: "50px" }} className="text-center">
-=======
-                              {showNumbers && (
-                                <th style={{ width: "36px" }}>#</th>
-                              )}
-                              <th style={{ width: "110px" }}>Type</th>
-                              <th style={{ width: "200px" }}>
-                                Prompt{" "}
-                                <OverlayTrigger
-                                  placement="top"
-                                  overlay={
-                                    <Tooltip>
-                                      The question or statement shown to the reviewer.
-                                      Max 100 characters.
-                                    </Tooltip>
-                                  }
-                                >
-                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
-                                    <FaInfoCircle size={11} />
-                                  </span>
-                                </OverlayTrigger>
-                              </th>
-                              <th style={{ width: "140px" }}>Row Names</th>
-                              <th style={{ width: "160px" }}>Column Names</th>
-                              <th style={{ width: "85px" }}>Min Label</th>
-                              <th style={{ width: "85px" }}>Max Label</th>
-                              <th style={{ width: "70px" }}>
-                                Rows{" "}
-                                <OverlayTrigger
-                                  placement="top"
-                                  overlay={
-                                    <Tooltip>
-                                      Height (number of rows) — applies to{" "}
-                                      <strong>Criterion</strong>,{" "}
-                                      <strong>Text area</strong>, and{" "}
-                                      <strong>Grid</strong> items.
-                                    </Tooltip>
-                                  }
-                                >
-                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
-                                    <FaInfoCircle size={11} />
-                                  </span>
-                                </OverlayTrigger>
-                              </th>
-                              <th style={{ width: "70px" }}>
-                                Cols{" "}
-                                <OverlayTrigger
-                                  placement="top"
-                                  overlay={
-                                    <Tooltip>
-                                      Width (number of columns) — applies to{" "}
-                                      <strong>Criterion</strong>,{" "}
-                                      <strong>Text area</strong>,{" "}
-                                      <strong>Text field</strong>, and{" "}
-                                      <strong>Grid</strong> items.
-                                    </Tooltip>
-                                  }
-                                >
-                                  <span style={{ cursor: "pointer", color: "#6c757d" }}>
-                                    <FaInfoCircle size={11} />
-                                  </span>
-                                </OverlayTrigger>
-                              </th>
-                              <th style={{ width: "60px" }}>Weight</th>
-                              <th
-                                style={{ width: "50px" }}
-                                className="text-center"
+                        className="table table-bordered table-hover table-striped align-middle mb-2 w-100"
+                        style={{ fontSize: "13px", tableLayout: "fixed" }}
+                      >
+                        <thead className="table-light">
+                          <tr>
+                            {showNumbers && <th style={{ width: "36px" }}>#</th>}
+                            <th style={{ width: "110px" }}>Type</th>
+                            <th style={{ width: "200px" }}>
+                              Prompt{" "}
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                  <Tooltip>
+                                    The item or statement shown to the reviewer. Max 100 characters.
+                                  </Tooltip>
+                                }
                               >
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
-                                Del
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-<<<<<<< HEAD
-                            {visibleItems.map(({ item, index }: { item: IItem; index: number }) => (
-                              <Draggable
-                                key={item.id ?? `new-${index}`}
-                                draggableId={(item.id ?? `new-${index}`).toString()}
-                                index={index}
+                                <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                  <FaInfoCircle size={11} />
+                                </span>
+                              </OverlayTrigger>
+                            </th>
+                            <th style={{ width: "140px" }}>Row Names</th>
+                            <th style={{ width: "160px" }}>Column Names</th>
+                            <th style={{ width: "85px" }}>Min Label</th>
+                            <th style={{ width: "85px" }}>Max Label</th>
+                            <th style={{ width: "70px" }}>
+                              Rows{" "}
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                  <Tooltip>
+                                    Height (number of rows) — applies to <strong>Criterion</strong>,{" "}
+                                    <strong>Text area</strong>, and <strong>Grid</strong> items.
+                                  </Tooltip>
+                                }
                               >
-                                {(provided, snapshot) => (
-                                  <tr
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className={snapshot.isDragging ? "table-primary" : ""}
-                                    style={{
-                                      ...provided.draggableProps.style,
-                                      cursor: "grab",
-                                    }}
-                                  >
-                                    {/* # column */}
-                                    {showNumbers && (
-                                      <td className="fw-semibold text-center">{index + 1}</td>
-                                    )}
-=======
-                            {visibleItems.map(
-                              ({
-                                item,
-                                index,
-                              }: {
-                                item: IItem;
-                                index: number;
-                              }) => (
-                                <Draggable
-                                  key={item.id ?? `new-${index}`}
-                                  draggableId={(
-                                    item.id ?? `new-${index}`
-                                  ).toString()}
-                                  index={index}
+                                <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                  <FaInfoCircle size={11} />
+                                </span>
+                              </OverlayTrigger>
+                            </th>
+                            <th style={{ width: "70px" }}>
+                              Cols{" "}
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={
+                                  <Tooltip>
+                                    Width (number of columns) — applies to{" "}
+                                    <strong>Criterion</strong>, <strong>Text area</strong>,{" "}
+                                    <strong>Text field</strong>, and <strong>Grid</strong> items.
+                                  </Tooltip>
+                                }
+                              >
+                                <span style={{ cursor: "pointer", color: "#6c757d" }}>
+                                  <FaInfoCircle size={11} />
+                                </span>
+                              </OverlayTrigger>
+                            </th>
+                            <th style={{ width: "60px" }}>Weight</th>
+                            <th style={{ width: "50px" }} className="text-center">
+                              Del
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visibleItems.map(({ item, index }: { item: IItem; index: number }) => (
+                            <Draggable
+                              key={item.id ?? `new-${index}`}
+                              draggableId={(item.id ?? `new-${index}`).toString()}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <tr
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={snapshot.isDragging ? "table-primary" : ""}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    cursor: "grab",
+                                  }}
                                 >
-                                  {(provided, snapshot) => (
-                                    <tr
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      className={
-                                        snapshot.isDragging ? "table-primary" : ""
+                                  {/* # column */}
+                                  {showNumbers && (
+                                    <td className="fw-semibold text-center">{index + 1}</td>
+                                  )}
+
+                                  {/* Type */}
+                                  <td className="fw-semibold" style={{ whiteSpace: "nowrap" }}>
+                                    {item.question_type}
+                                  </td>
+
+                                  {/* Item Text */}
+                                  <td>
+                                    <Field
+                                      as="textarea"
+                                      rows={2}
+                                      name={`items[${index}].txt`}
+                                      placeholder="Prompt"
+                                      className="form-control form-control-sm"
+                                      maxLength={100}
+                                      style={
+                                        {
+                                          resize: "vertical",
+                                          fieldSizing: "content",
+                                        } as React.CSSProperties
                                       }
-                                      style={{
-                                        ...provided.draggableProps.style,
-                                        cursor: "grab",
-                                      }}
-                                    >
-                                      {/* # column */}
-                                      {showNumbers && (
-                                        <td className="fw-semibold text-center">
-                                          {index + 1}
-                                        </td>
-                                      )}
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
+                                    />
+                                    <ErrorMessage
+                                      name={`items[${index}].txt`}
+                                      component="div"
+                                      className="text-danger small"
+                                    />
+                                  </td>
 
-                                    {/* Type */}
-                                    <td className="fw-semibold" style={{ whiteSpace: "nowrap" }}>
-                                      {item.question_type}
-                                    </td>
-
-                                    {/* Question Text */}
-                                    <td>
+                                  {/* Row Names (Grid only) */}
+                                  <td>
+                                    {item.question_type === "Grid" ? (
                                       <Field
                                         as="textarea"
-                                        rows={2}
-                                        name={`items[${index}].txt`}
-                                        placeholder="Item text"
+                                        name={`items[${index}].row_names`}
+                                        placeholder="Rows (comma-sep)"
                                         className="form-control form-control-sm"
-                                        maxLength={100}
-                                        style={{ resize: "vertical" }}
+                                        style={
+                                          {
+                                            width: "100%",
+                                            minHeight: "2.5rem",
+                                            fieldSizing: "content",
+                                            resize: "vertical",
+                                          } as React.CSSProperties
+                                        }
                                       />
-                                      <ErrorMessage
-                                        name={`items[${index}].txt`}
-                                        component="div"
-                                        className="text-danger small"
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
+
+                                  {/* Column Names / Choices */}
+                                  <td>
+                                    {item.question_type === "Multiple choice" ||
+                                    item.question_type === "Dropdown" ? (
+                                      <>
+                                        <Field
+                                          name={`items[${index}].alternatives`}
+                                          placeholder="Choices (comma-sep)"
+                                          className="form-control form-control-sm"
+                                        />
+                                        <ErrorMessage
+                                          name={`items[${index}].alternatives`}
+                                          component="div"
+                                          className="text-danger small"
+                                        />
+                                      </>
+                                    ) : item.question_type === "Grid" ? (
+                                      <Field
+                                        as="textarea"
+                                        name={`items[${index}].column_names`}
+                                        placeholder="Columns (comma-sep)"
+                                        className="form-control form-control-sm"
+                                        style={
+                                          {
+                                            width: "100%",
+                                            minHeight: "2.5rem",
+                                            fieldSizing: "content",
+                                            resize: "vertical",
+                                          } as React.CSSProperties
+                                        }
                                       />
-                                    </td>
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
 
-                                    {/* Choices / Grid Cols */}
-                                    <td>
-                                      {item.question_type === "Multiple choice" ||
-                                      item.question_type === "Dropdown" ? (
-                                        <>
-                                          <Field
-                                            name={`items[${index}].alternatives`}
-                                            placeholder="Choices (comma-sep)"
-                                            className="form-control form-control-sm"
-                                          />
-                                          <ErrorMessage
-                                            name={`items[${index}].alternatives`}
-                                            component="div"
-                                            className="text-danger small"
-                                          />
-                                        </>
-                                      ) : item.question_type === "Grid" ? (
-                                        <Field
-<<<<<<< HEAD
-                                          name={`items[${index}].col_names`}
-                                          placeholder="Columns (comma-sep)"
-                                          className="form-control form-control-sm"
-=======
-                                          as="textarea"
-                                          rows={2}
-                                          name={`items[${index}].txt`}
-                                          placeholder="Prompt"
-                                          className="form-control form-control-sm"
-                                          maxLength={100}
-                                          style={{ resize: "vertical", fieldSizing: "content" } as React.CSSProperties}
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
+                                  {/* Min Label */}
+                                  <td>
+                                    {item.question_type === "Scale" ||
+                                    item.question_type === "Criterion" ? (
+                                      <Field
+                                        name={`items[${index}].min_label`}
+                                        placeholder="Min Label"
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
 
-<<<<<<< HEAD
-                                    {/* Grid Rows */}
-                                    <td>
-                                      {item.question_type === "Grid" ? (
-                                        <Field
-                                          name={`items[${index}].row_names`}
-                                          placeholder="Rows (comma-sep)"
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
+                                  {/* Max Label */}
+                                  <td>
+                                    {item.question_type === "Scale" ||
+                                    item.question_type === "Criterion" ? (
+                                      <Field
+                                        name={`items[${index}].max_label`}
+                                        placeholder="Max Label"
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
 
-                                    {/* Min Label */}
-                                    <td>
-                                      {item.question_type === "Scale" ||
-                                      item.question_type === "Criterion" ? (
-                                        <Field
-                                          name={`items[${index}].min_label`}
-                                          placeholder="Min Label"
-                                          className="form-control form-control-sm"
+                                  {/* Height / Rows */}
+                                  <td>
+                                    {item.question_type === "Criterion" ||
+                                    item.question_type === "Text area" ? (
+                                      <Field
+                                        name={`items[${index}].textarea_height`}
+                                        type="number"
+                                        placeholder="Rows"
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : item.question_type === "Grid" ? (
+                                      <Field
+                                        name={`items[${index}].rows`}
+                                        type="number"
+                                        placeholder="# Rows"
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
+
+                                  {/* Width / Cols */}
+                                  <td>
+                                    {item.question_type === "Criterion" ||
+                                    item.question_type === "Text area" ? (
+                                      <Field
+                                        name={`items[${index}].textarea_width`}
+                                        type="number"
+                                        placeholder="Cols."
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : item.question_type === "Text field" ? (
+                                      <Field
+                                        name={`items[${index}].textbox_width`}
+                                        type="number"
+                                        placeholder="Cols."
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : item.question_type === "Grid" ? (
+                                      <Field
+                                        name={`items[${index}].columns`}
+                                        type="number"
+                                        placeholder="# Cols"
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
+
+                                  {/* Weight */}
+                                  <td>
+                                    {item.question_type === "Multiple choice" ||
+                                    item.question_type === "Dropdown" ||
+                                    item.question_type === "Scale" ||
+                                    item.question_type === "Criterion" ? (
+                                      <Field
+                                        name={`items[${index}].weight`}
+                                        type="number"
+                                        placeholder="Wt."
+                                        maxLength={3}
+                                        className="form-control form-control-sm"
+                                      />
+                                    ) : (
+                                      <span className="text-muted">N/A</span>
+                                    )}
+                                  </td>
+
+                                  {/* Delete */}
+                                  <td className="text-center">
+                                    <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
+                                      <Button
+                                        variant="link"
+                                        onClick={() => handleRemove(index)}
+                                        aria-label="Remove Item"
+                                        className="p-0"
+                                      >
+                                        <img
+                                          src="/assets/images/delete-icon-24.png"
+                                          alt="remove item"
+                                          style={{
+                                            width: "20px",
+                                            height: "20px",
+                                          }}
                                         />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
-
-                                    {/* Max Label */}
-                                    <td>
-                                      {item.question_type === "Scale" ||
-                                      item.question_type === "Criterion" ? (
-                                        <Field
-                                          name={`items[${index}].max_label`}
-                                          placeholder="Max Label"
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
-
-                                    {/* Width */}
-                                    <td>
-                                      {item.question_type === "Criterion" ||
-                                      item.question_type === "Text area" ? (
-                                        <Field
-                                          name={`items[${index}].textarea_width`}
-                                          type="number"
-                                          placeholder="Wd."
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : item.question_type === "Text field" ? (
-                                        <Field
-                                          name={`items[${index}].textbox_width`}
-                                          type="number"
-                                          placeholder="Wd."
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
-
-                                    {/* Height */}
-                                    <td>
-                                      {item.question_type === "Criterion" ||
-                                      item.question_type === "Text area" ? (
-                                        <Field
-                                          name={`items[${index}].textarea_height`}
-                                          type="number"
-                                          placeholder="Ht."
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
-
-                                    {/* Weight */}
-                                    <td>
-                                      {item.question_type === "Multiple choice" ||
-                                      item.question_type === "Dropdown" ||
-                                      item.question_type === "Scale" ||
-                                      item.question_type === "Criterion" ? (
-                                        <Field
-                                          name={`items[${index}].weight`}
-                                          type="number"
-                                          placeholder="Wt."
-                                          maxLength={3}
-                                          className="form-control form-control-sm"
-                                        />
-                                      ) : (
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm bg-light text-muted"
-                                          disabled
-                                          placeholder="N/A"
-                                        />
-                                      )}
-                                    </td>
-
-                                    {/* Delete */}
-                                    <td className="text-center">
-                                      <OverlayTrigger overlay={<Tooltip>Remove Item</Tooltip>}>
-                                        <Button
-                                          variant="link"
-                                          onClick={() => handleRemove(index)}
-                                          aria-label="Remove Item"
-                                          className="p-0"
-=======
-                                      {/* Row Names (Grid only) */}
-                                      <td>
-                                        {item.question_type === "Grid" ? (
-                                          <Field
-                                            as="textarea"
-                                            name={`items[${index}].row_names`}
-                                            placeholder="Rows (comma-sep)"
-                                            className="form-control form-control-sm"
-                                            style={{ width: "100%", minHeight: "2.5rem", fieldSizing: "content", resize: "vertical" } as React.CSSProperties}
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Column Names / Choices */}
-                                      <td>
-                                        {(item.question_type ===
-                                          "Multiple choice" ||
-                                          item.question_type ===
-                                            "Dropdown") ? (
-                                          <>
-                                            <Field
-                                              name={`items[${index}].alternatives`}
-                                              placeholder="Choices (comma-sep)"
-                                              className="form-control form-control-sm"
-                                            />
-                                            <ErrorMessage
-                                              name={`items[${index}].alternatives`}
-                                              component="div"
-                                              className="text-danger small"
-                                            />
-                                          </>
-                                        ) : item.question_type === "Grid" ? (
-                                          <Field
-                                            as="textarea"
-                                            name={`items[${index}].column_names`}
-                                            placeholder="Columns (comma-sep)"
-                                            className="form-control form-control-sm"
-                                            style={{ width: "100%", minHeight: "2.5rem", fieldSizing: "content", resize: "vertical" } as React.CSSProperties}
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Min Label */}
-                                      <td>
-                                        {(item.question_type === "Scale" ||
-                                          item.question_type ===
-                                            "Criterion") ? (
-                                          <Field
-                                            name={`items[${index}].min_label`}
-                                            placeholder="Min Label"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Max Label */}
-                                      <td>
-                                        {(item.question_type === "Scale" ||
-                                          item.question_type ===
-                                            "Criterion") ? (
-                                          <Field
-                                            name={`items[${index}].max_label`}
-                                            placeholder="Max Label"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Height / Rows */}
-                                      <td>
-                                        {(item.question_type === "Criterion" ||
-                                          item.question_type ===
-                                            "Text area") ? (
-                                          <Field
-                                            name={`items[${index}].textarea_height`}
-                                            type="number"
-                                            placeholder="Rows"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : item.question_type === "Grid" ? (
-                                          <Field
-                                            name={`items[${index}].rows`}
-                                            type="number"
-                                            placeholder="# Rows"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Width / Cols */}
-                                      <td>
-                                        {(item.question_type === "Criterion" ||
-                                          item.question_type ===
-                                            "Text area") ? (
-                                          <Field
-                                            name={`items[${index}].textarea_width`}
-                                            type="number"
-                                            placeholder="Cols."
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : item.question_type === "Text field" ? (
-                                          <Field
-                                            name={`items[${index}].textbox_width`}
-                                            type="number"
-                                            placeholder="Cols."
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : item.question_type === "Grid" ? (
-                                          <Field
-                                            name={`items[${index}].columns`}
-                                            type="number"
-                                            placeholder="# Cols"
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Weight */}
-                                      <td>
-                                        {(item.question_type ===
-                                          "Multiple choice" ||
-                                          item.question_type === "Dropdown" ||
-                                          item.question_type === "Scale" ||
-                                          item.question_type ===
-                                            "Criterion") ? (
-                                          <Field
-                                            name={`items[${index}].weight`}
-                                            type="number"
-                                            placeholder="Wt."
-                                            maxLength={3}
-                                            className="form-control form-control-sm"
-                                          />
-                                        ) : (
-                                          <span className="text-muted">N/A</span>
-                                        )}
-                                      </td>
-
-                                      {/* Delete */}
-                                      <td className="text-center">
-                                        <OverlayTrigger
-                                          overlay={
-                                            <Tooltip>Remove Item</Tooltip>
-                                          }
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
-                                        >
-                                          <img
-                                            src="/assets/images/delete-icon-24.png"
-                                            alt="remove item"
-                                            style={{
-                                              width: "20px",
-                                              height: "20px",
-                                            }}
-                                          />
-                                        </Button>
-                                      </OverlayTrigger>
-                                    </td>
-                                  </tr>
-                                )}
-                              </Draggable>
-                            ))}
-                          </tbody>
-                        </table>
+                                      </Button>
+                                    </OverlayTrigger>
+                                  </td>
+                                </tr>
+                              )}
+                            </Draggable>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                     {provided.placeholder}
                   </div>
@@ -586,24 +358,20 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                 type="button"
                 className="btn btn-outline-primary btn-sm fw-semibold px-3"
                 onClick={() => {
-                  const questionCount = typeof numQuestions === "number" ? numQuestions : 0;
-                  for (let i = 0; i < questionCount; i++) {
-                    const isGrid = questionType === "Grid";
+                  const itemCount = typeof numItems === "number" ? numItems : 0;
+                  for (let i = 0; i < itemCount; i++) {
+                    const isGrid = itemType === "Grid";
                     push({
                       id: undefined,
-                      txt: isGrid
-                        ? "Please rate the following aspects of the submission:"
-                        : "",
+                      txt: isGrid ? "Please rate the following aspects of the submission:" : "",
                       weight: "",
-                      question_type: questionType,
+                      question_type: itemType,
                       break_before: 1,
                       alternatives: "",
                       column_names: isGrid
                         ? "Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree"
                         : "",
-                      row_names: isGrid
-                        ? "Clarity,Completeness,Correctness,Creativity"
-                        : "",
+                      row_names: isGrid ? "Clarity,Completeness,Correctness,Creativity" : "",
                       columns: isGrid ? "5" : "",
                       rows: isGrid ? "4" : "",
                       min_label: "",
@@ -611,8 +379,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
                       seq: values.items.length + 1,
                     });
                   }
-                  setNumQuestions("");
-                  setQuestionType("");
+                  setNumItems("");
+                  setItemType("");
                 }}
               >
                 <FaPlus className="me-1 mb-1" /> Add
@@ -621,11 +389,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
               <span title="How many items?">
                 <Field
                   type="number"
-                  name="numQuestions"
+                  name="numItems"
                   placeholder="#"
-                  value={numQuestions}
+                  value={numItems}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNumQuestions(Number(e.target.value))
+                    setNumItems(Number(e.target.value))
                   }
                   className="form-control form-control-sm"
                   maxLength={3}
@@ -635,9 +403,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, errors, touched
 
               <select
                 className="form-control form-control-sm"
-                value={questionType}
+                value={itemType}
                 style={{ width: "160px" }}
-                onChange={(e) => setQuestionType(e.target.value)}
+                onChange={(e) => setItemType(e.target.value)}
               >
                 <option value="">- Select item type -</option>
                 {itemTypes.map((type) => (

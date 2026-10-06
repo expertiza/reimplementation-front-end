@@ -136,7 +136,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     }
   };
 
-  // Don't render the form until items are ready to avoid Formik initialising with []
+  // Don't render the form until items are ready to avoid Formik initializing with []
   if (fetchedItems === null) {
     return (
       <Container fluid className="px-md-4">
