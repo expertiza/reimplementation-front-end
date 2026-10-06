@@ -23,7 +23,11 @@ import {
  * does `AssignmentParticipant.find(params[:id])` — not an assignment id.
  */
 
-/** Extensions accepted by `valid_file_extension?` in submitted_content_helper.rb. */
+/**
+ * Mirrors ALLOWED_EXTENSIONS in submitted_content_helper.rb, which is what
+ * `valid_file_extension?` actually enforces. Adding one here alone only moves the rejection
+ * from the browser to a 400 from the server.
+ */
 export const ALLOWED_EXTENSIONS = [
   "pdf",
   "png",
@@ -34,7 +38,12 @@ export const ALLOWED_EXTENSIONS = [
   "gz",
   "7z",
   "odt",
+  "doc",
   "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
   "md",
   "rb",
   "mp4",
