@@ -12,10 +12,22 @@
   
 
     useEffect(() => {
-          
-            fetchItemTypes({ url: "/item_types" });
-          console.log(itemTypes?.data);
-        }, [fetchItemTypes]);
+      fetchItemTypes({ url: "/items/types" });
+    }, [fetchItemTypes]);
+    
+    const fallbackItemTypes = [
+      "Criterion",
+      "Scale",
+      "Dropdown",
+      "Multiple choice",
+      "Text area",
+      "Text field",
+      "Grid"
+    ];
+
+    const finalItemTypes = itemTypes?.data && itemTypes.data.length > 0
+      ? itemTypes.data.map((t: any) => t.name || t)
+      : fallbackItemTypes;
       
 
     const itemFields = Yup.object().shape({
@@ -28,7 +40,7 @@
       .notRequired(), 
 
       alternatives: Yup.string().when("question_type", ([questionType], schema) => {
-        if (questionType === "dropdown" || questionType === "multiple_choice") {
+        if (questionType === "Dropdown" || questionType === "Multiple choice") {
           return schema
             .required("Options are required")
             .test(
@@ -47,14 +59,14 @@
         return schema.notRequired();
       }),
 
-      min_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+      min_label: Yup.string().when("question_type", ([questionType], schema) => {
+        return questionType === "Scale"
           ? schema.required("Minimum label is required")
           : schema.notRequired();
       }),
 
-      max_label: Yup.string().when("question_type", ([question_type], schema) => {
-        return question_type === "scale"
+      max_label: Yup.string().when("question_type", ([questionType], schema) => {
+        return questionType === "Scale"
           ? schema.required("Maximum label is required")
           : schema.notRequired();
       }),
@@ -71,7 +83,7 @@
 
 
     return (
-      <div style={{ maxWidth: "800px", margin: "auto" }}>
+      <div className="bg-transparent shadow-none border-0" style={{ maxWidth: "1200px", margin: "auto", background: "transparent" }}>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -80,64 +92,116 @@
       >
         {({ values, handleChange, errors, touched }) => (
           <Form>
-            {values.questionnaire_type === "Teammate Review" && (
-      <div className="mb-3">
-        <div className="form-check mb-2">
-          <Field
-            type="checkbox"
-            name="relatesToRole"
-            className="form-check-input"
-            id="relatesToRole"
-          />
-          <label
-            htmlFor="relatesToRole"
-            className="form-check-label fw-semibold"
-            style={{ fontSize: "14px" }}
-          >
-            This rubric relates to a particular role.
-          </label>
-        </div>
+            <div className="mb-4">
+              <h5 className="mb-3">Questionnaire Details</h5>
+              <div style={{ width: '60%', marginTop: '20px', marginBottom: '20px' }}>
+                <div style={{ display: 'grid', alignItems: 'center', rowGap: '15px', columnGap: '20px', gridTemplateColumns: 'max-content 1fr' }}>
+                  
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Name</label>
+                  <div>
+                    <Field
+                      name="name"
+                      className="form-control"
+                      placeholder="Enter questionnaire name"
+                      value={values.name}
+                      onChange={handleChange}
+                    />
+                    <ErrorMessage name="name" component="div" className="text-danger small mt-1" />
+                  </div>
 
-        {values.relatesToRole && (
-          <div>
-            <span style={{ fontSize: "14px" }} className="fw-semibold">
-              Select Duty
-            </span>
-            <Field
-              as="select"
-              name="selectedDuty"
-              className="form-control mt-1"
-            >
-              <option value="">- Select a duty -</option>
-              {["Project Management", "Code Review", "Testing", "Documentation"].map(
-                (duty) => (
-                  <option key={duty} value={duty}>
-                    {duty}
-                  </option>
-                )
-              )}
-            </Field>
-            <ErrorMessage
-              name="selectedDuty"
-              component="div"
-              className="text-danger"
-            />
-          </div>
-        )}
-      </div>
-    )}
-            <span style={{ fontSize: "14px"}} className="fw-semibold">Name</span>
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Min Item Score</label>
+                  <div>
+                    <Field
+                      type="number"
+                      name="min_question_score"
+                      placeholder="0"
+                      className="form-control"
+                      style={{ width: "100px" }}
+                    />
+                    <ErrorMessage name="min_question_score" component="div" className="text-danger small mt-1" />
+                  </div>
 
-            <Field
-              name="name"
-              className="form-control"
-              placeholder="Enter questionnaire name"
-              value={values.name}
-              onChange={handleChange}
-              style={{ marginBottom: "0px" }}
-            />
-            <ErrorMessage name="name" component="div" className="text-danger" />
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>Max Item Score</label>
+                  <div>
+                    <Field
+                      type="number"
+                      name="max_question_score"
+                      placeholder="10"
+                      className="form-control"
+                      style={{ width: "100px" }}
+                    />
+                    <ErrorMessage name="max_question_score" component="div" className="text-danger small mt-1" />
+                  </div>
+                </div>
+              </div>
 
+                <div className="mb-4">
+                  <div className="form-check mb-2">
+                    <Field
+                      type="checkbox"
+                      name="private"
+                      className="form-check-input"
+                      id="private"
+                    />
+                    <label htmlFor="private" className="form-check-label fw-semibold" style={{ fontSize: "14px" }}>
+                      Private Questionnaire
+                    </label>
+                  </div>
+
+                  {values.questionnaire_type === "Teammate Review" && (
+                    <div className="mb-3">
+                      <div className="form-check mb-2">
+                        <Field
+                          type="checkbox"
+                          name="relatesToRole"
+                          className="form-check-input"
+                          id="relatesToRole"
+                        />
+                        <label
+                          htmlFor="relatesToRole"
+                          className="form-check-label fw-semibold"
+                          style={{ fontSize: "14px" }}
+                        >
+                          This rubric relates to a particular role.
+                        </label>
+                      </div>
+
+                      {values.relatesToRole && (
+                        <div style={{ paddingLeft: "25px" }}>
+                          <span style={{ fontSize: "14px" }} className="fw-semibold">
+                            Select Duty
+                          </span>
+                          <Field
+                            as="select"
+                            name="selectedDuty"
+                            className="form-control mt-1"
+                            style={{ maxWidth: "300px" }}
+                          >
+                            <option value="">- Select a duty -</option>
+                            {["Project Management", "Code Review", "Testing", "Documentation"].map(
+                              (duty) => (
+                                <option key={duty} value={duty}>
+                                  {duty}
+                                </option>
+                              )
+                            )}
+                          </Field>
+                          <ErrorMessage
+                            name="selectedDuty"
+                            component="div"
+                            className="text-danger small mt-1"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h5 className="mb-3">Items</h5>
+                <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={finalItemTypes} />
+              </div>
 
             <Field
               name="questionnaire_type"
@@ -147,42 +211,12 @@
               onChange={handleChange}
               type="hidden"
             />
-            <ErrorMessage name="questionnaire_type" component="div" className="text-danger" />
-
-            <div className="d-flex align-items-center mt-1 mb-1">
-              <div className="form-check me-2" title="Make questionnaire private, so other instructors cannot see it">
-      <input type="checkbox" className="form-check-input" id="private" />
-                <span style={{ fontSize: "14px"}} className="fw-semibold">Private</span>
-
-    </div>
-
-    
-    <input
-      type="number"
-      placeholder="0"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
-
-    <span style={{ fontSize: "14px"}} className="fw-semibold">&nbsp; &larr; Min &nbsp;&nbsp;&nbsp; Item Score &nbsp;&nbsp;&nbsp; Max &rarr;&nbsp;</span>
-
-    
-    <input
-      type="number"
-      placeholder="10"
-      className="form-control"
-      style={{ width: "60px" }}
-    />
-  </div>
-
-
-            {/* Allows users to input a variable number of questions / items */}
-            <QuestionnaireItemsFieldArray values={values} errors={errors} touched={touched} itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []} />
-
-            <br />
-            <Button type="submit" variant="primary">
-              Save
-            </Button>
+            
+            <div className="mt-4 pt-3 border-top">
+              <Button type="submit" variant="primary" className="px-4">
+                Save
+              </Button>
+            </div>
           </Form>
         )}
       </Formik>

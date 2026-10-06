@@ -70,7 +70,7 @@ function App() {
       children: [
         { index: true, element: <ProtectedRoute element={<Home />} /> },
         { path: "login", element: <Login /> },
-        { path: "logout", element: <ProtectedRoute element={<Logout />} /> },
+        { path: "logout", element: <Logout /> },
 
         {
           path: "view-team-grades",
@@ -427,15 +427,32 @@ function App() {
                 },
               ],
             },
-            { 
-              path: "questionnaire", 
-              element: <Questionnaire />, 
-              loader: loadQuestionnaire, },
+            {
+              path: "questionnaire",
+              element: <Questionnaire />,
+              loader: loadQuestionnaire,
+              children: [
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/questionnaires/edit/:id" replace />,
+                },
+              ],
+            },
                       ],
         },
 
        { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        { 
+          path: "questionnaire", 
+          element: <Questionnaire />, 
+          loader: loadQuestionnaire,
+          children: [
+            {
+              path: "edit/:id",
+              element: <Navigate to="/questionnaires/edit/:id" replace />,
+            },
+          ],
+        },
 
         {
           path: "questionnaires",

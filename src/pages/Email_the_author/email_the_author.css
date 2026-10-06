@@ -8,20 +8,21 @@
 }
 
 /* Styling for the form */
-form {
+/* Styling for the form */
+#div1 form {
     background-color: #f8f9fa;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
+#div1 h2 {
     text-align: center;
     color: #333;
     font-family: 'Arial', sans-serif;
 }
 
-label {
+#div1 label {
     display: block;
     margin-bottom: 5px;
     color: #666;
@@ -29,8 +30,8 @@ label {
     font-family: 'Arial', sans-serif;
 }
 
-input[type="text"],
-textarea {
+#div1 input[type="text"],
+#div1 textarea {
     width: 100%;
     padding: 8px;
     margin-bottom: 20px;
@@ -39,11 +40,11 @@ textarea {
     box-sizing: border-box; /* Include padding and border in element's width */
 }
 
-input[type="text"] {
+#div1 input[type="text"] {
     height: 40px; /* Fixed height for text input */
 }
 
-textarea {
+#div1 textarea {
     height: 120px; /* Height for textarea */
     resize: none; /* Disables resizing */
 }
@@ -61,6 +62,6 @@ textarea {
     transition: background-color 0.3s ease;
 }
 
-button:hover {
+#div1 button:hover, #b1:hover {
     background-color: #004494;
 }

@@ -3,7 +3,7 @@ import Table from "components/Table/Table";
 import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
 import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
-import { IoIosAddCircle } from "react-icons/io";
+import { FaPlus } from "react-icons/fa";
 import useAPI from "hooks/useAPI";
 import { useEffect } from "react";
 import { useMemo } from "react";
@@ -61,20 +61,20 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
       cell: ({ row }) => {
         const type = row.original.type;
         return (
-          <IoIosAddCircle
+          <FaPlus
             onClick={() => onCreate(type)}
             style={{
               cursor: "pointer",
               transition: "all 0.2s",
-              color: "#3b82f6",
+              color: "#0d6efd",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#2563eb";
+              e.currentTarget.style.color = "#0a58ca";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#3b82f6";
+              e.currentTarget.style.color = "#0d6efd";
             }}
-            size={24}
+            size={16}
           />
         );
       },
