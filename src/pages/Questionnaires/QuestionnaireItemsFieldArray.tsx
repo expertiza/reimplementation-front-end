@@ -28,8 +28,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   touched,
   itemTypes,
 }) => {
-  const [questionType, setQuestionType] = useState("");
-  const [numQuestions, setNumQuestions] = useState<number | "">("");
+  const [itemType, setItemType] = useState("");
+  const [numItems, setNumItems] = useState<number | "">("");
   const [showNumbers, setShowNumbers] = useState(false);
 
 
@@ -60,7 +60,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 move(result.source.index, result.destination.index);
               }}
             >
-              <Droppable droppableId="questions">
+              <Droppable droppableId="items">
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
                     {visibleItems.length > 0 && (
@@ -80,7 +80,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   placement="top"
                                   overlay={
                                     <Tooltip>
-                                      The question or statement shown to the reviewer.
+                                      The item or statement shown to the reviewer.
                                       Max 100 characters.
                                     </Tooltip>
                                   }
@@ -184,7 +184,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                         {item.question_type}
                                       </td>
 
-                                      {/* Question Text */}
+                                      {/* Item Text */}
                                       <td>
                                         <Field
                                           as="textarea"
@@ -395,17 +395,17 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 type="button"
                 className="btn btn-outline-primary btn-sm fw-semibold px-3"
                 onClick={() => {
-                  const questionCount =
-                    typeof numQuestions === "number" ? numQuestions : 0;
-                  for (let i = 0; i < questionCount; i++) {
-                    const isGrid = questionType === "Grid";
+                  const itemCount =
+                    typeof numItems === "number" ? numItems : 0;
+                  for (let i = 0; i < itemCount; i++) {
+                    const isGrid = itemType === "Grid";
                     push({
                       id: undefined,
                       txt: isGrid
                         ? "Please rate the following aspects of the submission:"
                         : "",
                       weight: "",
-                      question_type: questionType,
+                      question_type: itemType,
                       break_before: 1,
                       alternatives: "",
                       column_names: isGrid
@@ -421,8 +421,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                       seq: values.items.length + 1,
                     });
                   }
-                  setNumQuestions("");
-                  setQuestionType("");
+                  setNumItems("");
+                  setItemType("");
                 }}
               >
                 <FaPlus className="me-1 mb-1" /> Add
@@ -431,11 +431,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
               <span title="How many items?">
                 <Field
                   type="number"
-                  name="numQuestions"
+                  name="numItems"
                   placeholder="#"
-                  value={numQuestions}
+                  value={numItems}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNumQuestions(Number(e.target.value))
+                    setNumItems(Number(e.target.value))
                   }
                   className="form-control form-control-sm"
                   maxLength={3}
@@ -445,9 +445,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
               <select
                 className="form-control form-control-sm"
-                value={questionType}
+                value={itemType}
                 style={{ width: "160px" }}
-                onChange={(e) => setQuestionType(e.target.value)}
+                onChange={(e) => setItemType(e.target.value)}
               >
                 <option value="">- Select item type -</option>
                 {itemTypes.map((type) => (

@@ -12,7 +12,7 @@
   
 
     useEffect(() => {
-      fetchItemTypes({ url: "/questions/types" });
+      fetchItemTypes({ url: "/items/types" });
     }, [fetchItemTypes]);
     
     const fallbackItemTypes = [
