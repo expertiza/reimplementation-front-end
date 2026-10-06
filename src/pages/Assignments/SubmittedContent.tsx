@@ -194,8 +194,6 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
   );
 
   /**
-   * Carries out whatever the confirmation modal was asking about.
-   *
    * A file is removed by its bare name: the server resolves that name against
    * the team's directory itself, so the client never handles a path on the
    * server. A hyperlink is removed by its position in the list instead.
