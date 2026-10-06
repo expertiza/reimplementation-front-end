@@ -134,8 +134,14 @@ export const submitHyperlink = async (
 /**
  * DELETE /submitted_content/remove_hyperlink
  *
- * The server removes by position in `team.hyperlinks`, so pass the index from
- * the most recent listFiles call. Responds 204 with no body.
+ * `index` is a position, not an id: the server deletes whichever URL currently
+ * sits at that spot in the team's hyperlink list. An index is therefore only
+ * valid while that list is unchanged — once a hyperlink has been added or
+ * removed, the same index points at a different URL, or at nothing at all, and
+ * the server answers 404.
+ *
+ * On success the server sends 204 (no content), so there is no message to show
+ * the user; the caller supplies its own.
  */
 export const removeHyperlink = async (participantId: number, index: number): Promise<void> => {
   try {
