@@ -2,11 +2,6 @@
    version reached into bare `button` plus Bootstrap's own .table/.modal-header/
    .alert/.spinner-border classes, restyling the rest of the app. */
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .title {
   font-size: 2.5rem;
   font-weight: 700;

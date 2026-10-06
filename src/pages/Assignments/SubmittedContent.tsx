@@ -240,7 +240,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
   const actionsDisabled = participantId == null || loading;
 
   return (
-    <Container className={`${styles.container} py-4`}>
+    <Container className="mt-4">
       <Row className="mb-4">
         <Col>
           <h1 className={styles.title}>
@@ -301,9 +301,9 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Size</th>
-                      <th>Last modified</th>
-                      <th className="text-end">Actions</th>
+                      <th style={{ width: '90px' }}>Size</th>
+                      <th style={{ width: '180px' }}>Last modified</th>
+                      <th className="text-end" style={{ width: '80px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -357,7 +357,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                             {url}
                           </a>
                         </td>
-                        <td className="text-end" style={{ width: '6rem' }}>
+                        <td className="text-end" style={{ width: '80px' }}>
                           <Button
                             variant="link"
                             className="p-0 text-danger"
