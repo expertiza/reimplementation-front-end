@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Badge, Button, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
+import { Alert, Button, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
 import { FaDownload, FaFile, FaLink, FaTrash } from 'react-icons/fa';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
@@ -292,7 +292,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
           <Row className="mb-4">
             <Col>
               <h5>
-                Files <Badge bg="secondary">{files.length}</Badge>
+                Files&nbsp;<span className={styles.count}>{files.length}</span>
               </h5>
               {files.length === 0 ? (
                 <p className="text-muted">No files submitted yet.</p>
@@ -343,7 +343,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
           <Row className="mb-4">
             <Col>
               <h5>
-                Hyperlinks <Badge bg="secondary">{hyperlinks.length}</Badge>
+                Hyperlinks&nbsp;<span className={styles.count}>{hyperlinks.length}</span>
               </h5>
               {hyperlinks.length === 0 ? (
                 <p className="text-muted">No hyperlinks submitted yet.</p>
