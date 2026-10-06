@@ -154,7 +154,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
     loadSubmissions();
   }, [loadSubmissions]);
 
-  const handleFileUpload = useCallback(
+  const uploadSelectedFile = useCallback(
     async (values: { file: FileList | null; unzip: boolean }) => {
       if (participantId == null || !values.file?.length) return;
       const file = values.file[0];
@@ -174,7 +174,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
     [participantId, loadSubmissions, flashSuccess]
   );
 
-  const handleHyperlinkSubmit = useCallback(
+  const addHyperlink = useCallback(
     async (values: { url: string }) => {
       if (participantId == null) return;
 
@@ -399,7 +399,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
           <Formik
             initialValues={{ file: null as FileList | null, unzip: false }}
             validationSchema={fileValidationSchema}
-            onSubmit={handleFileUpload}
+            onSubmit={uploadSelectedFile}
           >
             {({ setFieldValue, values }) => (
               <FormikForm>
@@ -454,7 +454,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
           <Formik
             initialValues={{ url: '' }}
             validationSchema={hyperlinkValidationSchema}
-            onSubmit={handleHyperlinkSubmit}
+            onSubmit={addHyperlink}
           >
             <FormikForm>
               <Form.Group className="mb-3">
