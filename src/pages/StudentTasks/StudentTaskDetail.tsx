@@ -214,7 +214,13 @@ const StudentTaskDetail: React.FC = () => {
           </li>
           {canSubmit && (
             <li className={styles.taskItem}>
-              <Link to={`/student_tasks/${id}`} className={styles.clickableLink}>Your work</Link>
+              <Link
+                to={`/student_tasks/${id}/submit`}
+                state={{ assignmentName: assignment }}
+                className={styles.clickableLink}
+              >
+                Your work
+              </Link>
               <span className={styles.taskDescription}> (View your work)</span>
             </li>
           )}
