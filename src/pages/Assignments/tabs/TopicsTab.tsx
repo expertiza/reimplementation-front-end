@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Col, Row, Form, Button, Modal, FloatingLabel, Stack } from "react-bootstrap";
 // Reverting to the standard import path for react-icons/bs
-import { BsPersonPlusFill, BsBookmark, BsBookmarkFill } from "react-icons/bs";
+import { BsPersonPlusFill } from "react-icons/bs";
 import TopicsTable from "pages/Assignments/components/TopicsTable";
 import DeleteTopics from "../TopicDelete";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -353,14 +353,6 @@ const TopicsTab = ({
                 onChange={(e) => onTopicSettingChange('allowReviewerChoice', e.target.checked)}
               />
             
-              <Form.Check
-                type="checkbox"
-                id="allowBookmarks"
-                label="Allow participants to create bookmarks?"
-                checked={topicSettings.allowBookmarks}
-                onChange={(e) => onTopicSettingChange('allowBookmarks', e.target.checked)}
-              />
-
               <Form.Check
                 type="checkbox"
                 id="allowAdvertiseForPartners"
