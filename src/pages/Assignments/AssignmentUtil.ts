@@ -65,8 +65,8 @@ export interface IAssignmentFormValues {
   dropdowns?: boolean[];
    // Topic settings
   allow_topic_suggestion_from_students?: boolean;
-  enable_bidding_for_topics?: boolean;
-  enable_authors_to_review_other_topics?: boolean;
+  topics_assigned_by_bidding?: boolean;
+  can_review_same_topic?: boolean;
   allow_reviewer_to_choose_topic_to_review?: boolean;
   enable_bidding_for_reviews?: boolean;
   // Misc flags from the form
@@ -314,8 +314,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
 
     // Topic settings
     allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
-    enable_bidding_for_topics: values.enable_bidding_for_topics ?? false,
-    enable_authors_to_review_other_topics: values.enable_authors_to_review_other_topics ?? false,
+    topics_assigned_by_bidding: values.topics_assigned_by_bidding ?? false,
+    can_review_same_topic: values.can_review_same_topic ?? false,
     allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
     enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
 
@@ -439,8 +439,8 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
     allow_self_reviews: assignment.allow_self_reviews ?? assignment.is_selfreview_enabled ?? false,
     set_allowed_number_of_reviews_per_reviewer: assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed,
     set_required_number_of_reviews_per_reviewer: assignment.set_required_number_of_reviews_per_reviewer ?? assignment.num_reviews_required,
-    is_review_done_by_teams: assignment.is_review_done_by_teams ?? assignment.team_reviewing_enabled ?? false,
-    is_role_based: assignment.is_role_based ?? assignment.duty_based_assignment ?? false,
+    is_review_done_by_teams: assignment.is_review_done_by_teams ?? false,
+    is_role_based: assignment.is_role_based ?? false,
     // Derive from the actual limit value: positive integer means a limit was configured
     has_max_review_limit: (() => {
       const allowed = assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed;

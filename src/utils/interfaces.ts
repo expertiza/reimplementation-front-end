@@ -137,8 +137,8 @@ export interface IAssignmentRequest {
 
   // Topic settings
   allow_topic_suggestion_from_students?: boolean;
-  enable_bidding_for_topics?: boolean;
-  enable_authors_to_review_other_topics?: boolean;
+  topics_assigned_by_bidding?: boolean;
+  can_review_same_topic?: boolean;
   allow_reviewer_to_choose_topic_to_review?: boolean;
   enable_bidding_for_reviews?: boolean;
 

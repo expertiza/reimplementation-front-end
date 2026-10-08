@@ -40,6 +40,21 @@ const GroupDivider = () => (
   />
 );
 
+// Action buttons in the Actions column are split into groups separated by a
+// GroupDivider. Each group clusters buttons by intent so the instructor's eye
+// lands on the right area quickly:
+//
+// Course row groups:
+//   Group 1 — Edit / Copy    : mutate the course record itself
+//   Group 2 — People mgmt    : add assignments, assign TAs
+//   Group 3 — Reports         : course-level grade and review summaries
+//   Group 4 — Delete          : destructive action kept far from the others
+//
+// Assignment row groups:
+//   Group 1 — Edit / Copy    : mutate the assignment record itself
+//   Group 2 — People / teams : add participants, assign reviewers, create teams
+//   Group 3 — View results   : reports, scores, submissions
+//   Group 4 — Export / Delete: data export and destructive action
 export const courseColumns = (
   // Course actions
   handleEdit: Fn,

@@ -146,8 +146,8 @@ const initialValues: IAssignmentFormValues = {
   use_team_formation_deadline: false,
   // Topic settings
   allow_topic_suggestion_from_students: false,
-  enable_bidding_for_topics: false,
-  enable_authors_to_review_other_topics: false,
+  topics_assigned_by_bidding: false,
+  can_review_same_topic: false,
   allow_reviewer_to_choose_topic_to_review: false,
   enable_bidding_for_reviews: false,
   date_time: {} as Record<string | number, Date | null>,
@@ -700,8 +700,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     assignmentId={id!}
                     topicSettings={{
                       allowTopicSuggestions: formik.values.allow_topic_suggestion_from_students ?? false,
-                      enableBidding: formik.values.enable_bidding_for_topics ?? false,
-                      enableAuthorsReview: formik.values.enable_authors_to_review_other_topics ?? false,
+                      enableBidding: formik.values.topics_assigned_by_bidding ?? false,
+                      enableAuthorsReview: formik.values.can_review_same_topic ?? false,
                       allowReviewerChoice: formik.values.allow_reviewer_to_choose_topic_to_review ?? false,
                       allowBiddingForReviewers: formik.values.enable_bidding_for_reviews ?? false,
                       allowAdvertiseForPartners: false,
@@ -713,8 +713,8 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                     onTopicSettingChange={(setting, value) => {
                       const fieldMap: Record<string, string> = {
                         allowTopicSuggestions: 'allow_topic_suggestion_from_students',
-                        enableBidding: 'enable_bidding_for_topics',
-                        enableAuthorsReview: 'enable_authors_to_review_other_topics',
+                        enableBidding: 'topics_assigned_by_bidding',
+                        enableAuthorsReview: 'can_review_same_topic',
                         allowReviewerChoice: 'allow_reviewer_to_choose_topic_to_review',
                         allowBiddingForReviewers: 'enable_bidding_for_reviews',
                       };

@@ -229,8 +229,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   const topicSettingFieldMap: Record<string, string> = {
     allowTopicSuggestions: 'allow_topic_suggestion_from_students',
-    enableBidding: 'enable_bidding_for_topics',
-    enableAuthorsReview: 'enable_authors_to_review_other_topics',
+    enableBidding: 'topics_assigned_by_bidding',
+    enableAuthorsReview: 'can_review_same_topic',
     allowReviewerChoice: 'allow_reviewer_to_choose_topic_to_review',
     allowBiddingForReviewers: 'enable_bidding_for_reviews',
   };
@@ -487,8 +487,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                       assignmentId={String(effectiveId)}
                       topicSettings={{
                         allowTopicSuggestions: formik.values.allow_topic_suggestion_from_students ?? false,
-                        enableBidding: formik.values.enable_bidding_for_topics ?? false,
-                        enableAuthorsReview: formik.values.enable_authors_to_review_other_topics ?? false,
+                        enableBidding: formik.values.topics_assigned_by_bidding ?? false,
+                        enableAuthorsReview: formik.values.can_review_same_topic ?? false,
                         allowReviewerChoice: formik.values.allow_reviewer_to_choose_topic_to_review ?? false,
                         allowBiddingForReviewers: formik.values.enable_bidding_for_reviews ?? false,
                         allowAdvertiseForPartners: false,
