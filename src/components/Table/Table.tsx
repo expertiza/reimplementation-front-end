@@ -42,7 +42,11 @@ interface TableProps {
   // Optional callback to add arbitrary HTML attributes to each <tr> (e.g. onMouseEnter for hover tracking).
   getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
   // Optional callback to add extra <td> props (e.g. rowSpan). Return { skip: true } to omit the <td> entirely (used for rowspan).
-  getCellProps?: (cell: any, row: any, allRows: any[]) => (React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean });
+  getCellProps?: (
+    cell: any,
+    row: any,
+    allRows: any[]
+  ) => React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean };
   // Optional style applied to the <table> element itself (e.g. width: "fit-content").
   tableStyle?: React.CSSProperties;
   // When false, disables Bootstrap's nth-child striping (useful when applying manual group-based row colors).
@@ -92,7 +96,9 @@ const Table: React.FC<TableProps> = ({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [JSON.stringify(columnVisibility)]);
+  useEffect(() => {
+    setColumnVisibilityState(columnVisibility);
+  }, [JSON.stringify(columnVisibility)]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
@@ -236,7 +242,14 @@ const Table: React.FC<TableProps> = ({
       <Container fluid={fluid}>
         <Row>
           <Col md={tableSize}>
-            <BTable striped={striped} bordered={bordered} hover responsive size="sm" style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}>
+            <BTable
+              striped={striped}
+              bordered={bordered}
+              hover
+              responsive
+              size="sm"
+              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+            >
               {showHeader && (
                 <thead className="table-secondary">
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -245,7 +258,21 @@ const Table: React.FC<TableProps> = ({
                         // Add info icon to Heading if comment exists.
                         const comment = headingComments[header.column.columnDef.header as string];
                         return (
-                          <th key={header.id} colSpan={header.colSpan} style={(() => { const m = header.column.columnDef.meta as any; return m ? { ...(m.minWidth ? { minWidth: m.minWidth } : {}), ...(m.maxWidth ? { maxWidth: m.maxWidth } : {}), ...(m.width ? { width: m.width } : {}), ...(m.whiteSpace ? { whiteSpace: m.whiteSpace } : {}) } : undefined; })()}>
+                          <th
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            style={(() => {
+                              const m = header.column.columnDef.meta as any;
+                              return m
+                                ? {
+                                    ...(m.minWidth ? { minWidth: m.minWidth } : {}),
+                                    ...(m.maxWidth ? { maxWidth: m.maxWidth } : {}),
+                                    ...(m.width ? { width: m.width } : {}),
+                                    ...(m.whiteSpace ? { whiteSpace: m.whiteSpace } : {}),
+                                  }
+                                : undefined;
+                            })()}
+                          >
                             {header.isPlaceholder ? null : (
                               <>
                                 <div
@@ -278,19 +305,31 @@ const Table: React.FC<TableProps> = ({
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                    <tr className={getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined} {...(getRowProps ? getRowProps(row) : {})}>
+                    <tr
+                      className={
+                        getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined
+                      }
+                      {...(getRowProps ? getRowProps(row) : {})}
+                    >
                       {row.getVisibleCells().map((cell) => {
-                        const { skip, ...tdProps } = getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
+                        const { skip, ...tdProps } =
+                          getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
                         if (skip) return null;
                         const colMeta = cell.column.columnDef.meta as any;
-                        const colMetaStyle = colMeta ? {
-                          ...(colMeta.width ? { width: colMeta.width } : {}),
-                          ...(colMeta.minWidth ? { minWidth: colMeta.minWidth } : {}),
-                          ...(colMeta.maxWidth ? { maxWidth: colMeta.maxWidth } : {}),
-                          ...(colMeta.whiteSpace ? { whiteSpace: colMeta.whiteSpace } : {}),
-                        } : {};
+                        const colMetaStyle = colMeta
+                          ? {
+                              ...(colMeta.width ? { width: colMeta.width } : {}),
+                              ...(colMeta.minWidth ? { minWidth: colMeta.minWidth } : {}),
+                              ...(colMeta.maxWidth ? { maxWidth: colMeta.maxWidth } : {}),
+                              ...(colMeta.whiteSpace ? { whiteSpace: colMeta.whiteSpace } : {}),
+                            }
+                          : {};
                         return (
-                          <td key={cell.id} style={{ ...colMetaStyle, ...(tdProps.style ?? {}) }} {...tdProps}>
+                          <td
+                            key={cell.id}
+                            style={{ ...colMetaStyle, ...(tdProps.style ?? {}) }}
+                            {...tdProps}
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         );

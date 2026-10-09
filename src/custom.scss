@@ -10,7 +10,6 @@ $info: #9ab6da;
 $warning: #e49b1f;
 $danger: #f00678;
 
-
 // test theme
 // scss-docs-start theme-color-variables
 $primary: #0d6efd;
@@ -28,63 +27,63 @@ $grey: #212529;
 $darkgrey: #2b2c2d;
 
 $theme-colors: (
-        "primary": $primary,
-        "secondary": $secondary,
-        "success": $success,
-        "info": $info,
-        "warning": $warning,
-        "danger": $danger,
-        "light": $light,
-        "dark": $dark,
-        "wolf-red": $wolf-red,
-        "smoke": $smoke,
-        "grey": $grey,
-        "darkgrey": $darkgrey
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark,
+  "wolf-red": $wolf-red,
+  "smoke": $smoke,
+  "grey": $grey,
+  "darkgrey": $darkgrey,
 );
 // Custom styles for the action buttons in the Etc tab
 .assignment-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px; // This will create space between the buttons and the ETC tab line
-        justify-content: flex-start;
-        padding-top: 10px; // Add more space above the buttons if needed
-      }
-      
-      .custom-tab-button {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-        background-color: white;
-        text-decoration: none;
-        color: inherit;
-        font-size: 1rem;
-        cursor: pointer;
-        width: calc(100% / 3 - 10px); // Adjust the width depending on the number of buttons per row
-        height: 100px ;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      
-        .icon {
-          margin-bottom: 5px;
-          font-size: 1.5em;
-        }
-      
-        &:hover {
-          background-color: #f8f9fa;
-          border-color: #adb5bd;
-        }
-      }
-      
-      // Responsive adjustments
-      @media (max-width: 768px) {
-        .custom-tab-button {
-          width: calc(100% - 10px); // Full width on small screens
-          margin-bottom: 10px; // Space between stacked buttons
-        }
-      }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; // This will create space between the buttons and the ETC tab line
+  justify-content: flex-start;
+  padding-top: 10px; // Add more space above the buttons if needed
+}
+
+.custom-tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  width: calc(100% / 3 - 10px); // Adjust the width depending on the number of buttons per row
+  height: 100px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .icon {
+    margin-bottom: 5px;
+    font-size: 1.5em;
+  }
+
+  &:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .custom-tab-button {
+    width: calc(100% - 10px); // Full width on small screens
+    margin-bottom: 10px; // Space between stacked buttons
+  }
+}
 
 #assignment-tabs {
   .nav-link {
@@ -101,15 +100,15 @@ $theme-colors: (
     }
   }
 }
-      // Custom tab hover styling
-      .nav-tabs .nav-link {
-        transition: background-color 0.2s ease;
-        
-        &:hover {
-          background-color: #e9ecef;
-          border-color: #dee2e6;
-        }
-      }
+// Custom tab hover styling
+.nav-tabs .nav-link {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+  }
+}
 
 // Remove the gray background under the topics checkboxes
 .topics-settings-form {
@@ -120,53 +119,77 @@ $theme-colors: (
   margin-bottom: 1rem !important;
 }
 
-      body {
+body {
   background: #f7f7f7;
-    }
+}
 
-    .legend {
-      font-size: 14px;
-    }
+.legend {
+  font-size: 14px;
+}
 
-    .legend li {
-      margin-bottom: 4px;
-    }
+.legend li {
+  margin-bottom: 4px;
+}
 
-    .legend-red { color: red; }
-    .legend-blue { color: blue; }
-    .legend-green { color: green; }
-    .legend-purple { color: purple; }
-    .legend-brown { color: brown; }
+.legend-red {
+  color: red;
+}
+.legend-blue {
+  color: blue;
+}
+.legend-green {
+  color: green;
+}
+.legend-purple {
+  color: purple;
+}
+.legend-brown {
+  color: brown;
+}
 
-    .row-highlight {
-      background: #f5f2d8;
-    }
+.row-highlight {
+  background: #f5f2d8;
+}
 
-    .metrics-chart {
-      width: 160px;
-      height: 140px;
-      background: #eee;
-    }
+.metrics-chart {
+  width: 160px;
+  height: 140px;
+  background: #eee;
+}
 
-    .reviewer-name {
-      color: #005bbb;
-    }
+.reviewer-name {
+  color: #005bbb;
+}
 
-    .grade-box {
-      display: flex;
-      gap: 5px;
-    }
+.grade-box {
+  display: flex;
+  gap: 5px;
+}
 
 // import bootstrap styles at the bottom!
-@import 'bootstrap/scss/bootstrap.scss';
+@import "bootstrap/scss/bootstrap.scss";
 
 // Heat grid color classes — defined after Bootstrap so they win the cascade.
 // Shared by ReviewTable, ReviewTableRow, ScoreWidgets, and course report tables.
 // getColorClass() and getHeatColorClass() in src/utils/heatgridUtils.ts return these class names.
-.c0 { background-color: #d3d3d3 !important; }
-.c1 { background-color: #ff8080 !important; }
-.c2 { background-color: #FD992D !important; }
-.c3 { background-color: #FFEC8B !important; }
-.c4 { background-color: #BCED91 !important; }
-.c5 { background-color: #2DE636 !important; }
-.cf { background-color: #FFFFFF !important; }
+.c0 {
+  background-color: #d3d3d3 !important;
+}
+.c1 {
+  background-color: #ff8080 !important;
+}
+.c2 {
+  background-color: #fd992d !important;
+}
+.c3 {
+  background-color: #ffec8b !important;
+}
+.c4 {
+  background-color: #bced91 !important;
+}
+.c5 {
+  background-color: #2de636 !important;
+}
+.cf {
+  background-color: #ffffff !important;
+}

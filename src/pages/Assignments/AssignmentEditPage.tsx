@@ -20,10 +20,19 @@ const AssignmentEditPage: React.FC = () => {
 
   const { data: assignmentResp, error: assignmentErr, sendRequest: fetchAssignment } = useAPI();
   const { data: coursesResp, error: coursesErr, sendRequest: fetchCourses } = useAPI();
-  const { data: questionnairesResp, error: questionnaireErr, sendRequest: fetchQuestionnaires } = useAPI();
+  const {
+    data: questionnairesResp,
+    error: questionnaireErr,
+    sendRequest: fetchQuestionnaires,
+  } = useAPI();
 
   useEffect(() => {
-    if (id) fetchAssignment({ url: `/assignments/${id}`, method: HttpMethod.GET, transformResponse: transformAssignmentResponse });
+    if (id)
+      fetchAssignment({
+        url: `/assignments/${id}`,
+        method: HttpMethod.GET,
+        transformResponse: transformAssignmentResponse,
+      });
     fetchCourses({ url: "/courses", method: HttpMethod.GET });
     fetchQuestionnaires({ url: "/questionnaires", method: HttpMethod.GET });
   }, [id, fetchAssignment, fetchCourses, fetchQuestionnaires]);
@@ -54,13 +63,15 @@ const AssignmentEditPage: React.FC = () => {
   }, [questionnairesResp]);
 
   useEffect(() => {
-    if (assignmentErr) dispatch(alertActions.showAlert({ variant: "danger", message: assignmentErr }));
+    if (assignmentErr)
+      dispatch(alertActions.showAlert({ variant: "danger", message: assignmentErr }));
   }, [assignmentErr, dispatch]);
   useEffect(() => {
     if (coursesErr) dispatch(alertActions.showAlert({ variant: "danger", message: coursesErr }));
   }, [coursesErr, dispatch]);
   useEffect(() => {
-    if (questionnaireErr) dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireErr }));
+    if (questionnaireErr)
+      dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireErr }));
   }, [questionnaireErr, dispatch]);
 
   if (!assignmentValues) {

@@ -44,8 +44,15 @@ const CourseGradeSummaryPage = () => {
   const report: GradeSummaryResponse | null = data?.data ?? null;
 
   const gradeRanges = useMemo(() => {
-    if (!report) return {} as Record<number, { peerMin: number; peerMax: number; gradeMin: number; gradeMax: number }>;
-    const ranges: Record<number, { peerMin: number; peerMax: number; gradeMin: number; gradeMax: number }> = {};
+    if (!report)
+      return {} as Record<
+        number,
+        { peerMin: number; peerMax: number; gradeMin: number; gradeMax: number }
+      >;
+    const ranges: Record<
+      number,
+      { peerMin: number; peerMax: number; gradeMin: number; gradeMax: number }
+    > = {};
     report.assignments.forEach((a) => {
       const peerVals = report.rows
         .map((r) => r.assignments.find((c) => c.assignment_id === a.id)?.peer_score)
@@ -54,8 +61,8 @@ const CourseGradeSummaryPage = () => {
         .map((r) => r.assignments.find((c) => c.assignment_id === a.id)?.instructor_grade)
         .filter((v): v is number => v != null);
       ranges[a.id] = {
-        peerMin:  peerVals.length  ? Math.min(...peerVals)  : 0,
-        peerMax:  peerVals.length  ? Math.max(...peerVals)  : 100,
+        peerMin: peerVals.length ? Math.min(...peerVals) : 0,
+        peerMax: peerVals.length ? Math.max(...peerVals) : 100,
         gradeMin: gradeVals.length ? Math.min(...gradeVals) : 0,
         gradeMax: gradeVals.length ? Math.max(...gradeVals) : 100,
       };
@@ -63,9 +70,19 @@ const CourseGradeSummaryPage = () => {
     return ranges;
   }, [report]);
 
-  if (isLoading) return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>;
-  if (error)     return <Container className="mt-4"><Alert variant="danger">{error}</Alert></Container>;
-  if (!report)   return null;
+  if (isLoading)
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  if (error)
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  if (!report) return null;
 
   const assignments = report.assignments;
 
@@ -82,41 +99,104 @@ const CourseGradeSummaryPage = () => {
             <table className="course-report-table">
               <thead>
                 <tr>
-                  <th rowSpan={2} className="course-report-sticky-col" style={{ verticalAlign: "middle" }}>Student</th>
+                  <th
+                    rowSpan={2}
+                    className="course-report-sticky-col"
+                    style={{ verticalAlign: "middle" }}
+                  >
+                    Student
+                  </th>
                   {assignments.map((a) => (
-                    <th key={a.id} colSpan={a.has_topics ? 3 : 2} style={{ textAlign: "center" }}>{a.name}</th>
+                    <th key={a.id} colSpan={a.has_topics ? 3 : 2} style={{ textAlign: "center" }}>
+                      {a.name}
+                    </th>
                   ))}
-                  <th rowSpan={2} style={{ verticalAlign: "middle", textAlign: "center" }}>Final Grade</th>
+                  <th rowSpan={2} style={{ verticalAlign: "middle", textAlign: "center" }}>
+                    Final Grade
+                  </th>
                 </tr>
                 <tr>
                   {assignments.flatMap((a) => [
-                    ...(a.has_topics ? [<th key={`${a.id}-topic`} style={{ textAlign: "center", minWidth: "140px" }}>Topic</th>] : []),
-                    <th key={`${a.id}-peer`}  style={{ textAlign: "center", width: "72px",  minWidth: "72px"  }}>Peer Score</th>,
-                    <th key={`${a.id}-grade`} style={{ textAlign: "center", width: "70px",  minWidth: "70px"  }}>Instr. Grade</th>,
+                    ...(a.has_topics
+                      ? [
+                          <th
+                            key={`${a.id}-topic`}
+                            style={{ textAlign: "center", minWidth: "140px" }}
+                          >
+                            Topic
+                          </th>,
+                        ]
+                      : []),
+                    <th
+                      key={`${a.id}-peer`}
+                      style={{ textAlign: "center", width: "72px", minWidth: "72px" }}
+                    >
+                      Peer Score
+                    </th>,
+                    <th
+                      key={`${a.id}-grade`}
+                      style={{ textAlign: "center", width: "70px", minWidth: "70px" }}
+                    >
+                      Instr. Grade
+                    </th>,
                   ])}
                 </tr>
               </thead>
               <tbody>
                 {report.rows.map((student) => {
                   const cellByAssignment: Record<number, AssignmentCell> = {};
-                  student.assignments.forEach((c) => { cellByAssignment[c.assignment_id] = c; });
+                  student.assignments.forEach((c) => {
+                    cellByAssignment[c.assignment_id] = c;
+                  });
 
                   return (
                     <tr key={student.user_id}>
-                      <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>{student.user_name}</td>
+                      <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>
+                        {student.user_name}
+                      </td>
                       {assignments.flatMap((a) => {
-                        const cell  = cellByAssignment[a.id];
+                        const cell = cellByAssignment[a.id];
                         const range = gradeRanges[a.id];
-                        const peerClass  = cell?.peer_score != null && range ? getHeatColorClass(cell.peer_score, range.peerMin, range.peerMax) : "";
-                        const gradeClass = cell?.instructor_grade != null && range ? getHeatColorClass(cell.instructor_grade, range.gradeMin, range.gradeMax) : "";
+                        const peerClass =
+                          cell?.peer_score != null && range
+                            ? getHeatColorClass(cell.peer_score, range.peerMin, range.peerMax)
+                            : "";
+                        const gradeClass =
+                          cell?.instructor_grade != null && range
+                            ? getHeatColorClass(
+                                cell.instructor_grade,
+                                range.gradeMin,
+                                range.gradeMax
+                              )
+                            : "";
 
                         return [
-                          ...(a.has_topics ? [<td key={`${a.id}-topic`} style={{ minWidth: "140px" }}>{cell?.topic ?? "—"}</td>] : []),
-                          <td key={`${a.id}-peer`}  className={peerClass}  style={{ textAlign: "center" }}>{cell?.peer_score != null ? `${cell.peer_score}%` : "—"}</td>,
-                          <td key={`${a.id}-grade`} className={gradeClass} style={{ textAlign: "center" }}>{cell?.instructor_grade != null ? cell.instructor_grade : "—"}</td>,
+                          ...(a.has_topics
+                            ? [
+                                <td key={`${a.id}-topic`} style={{ minWidth: "140px" }}>
+                                  {cell?.topic ?? "—"}
+                                </td>,
+                              ]
+                            : []),
+                          <td
+                            key={`${a.id}-peer`}
+                            className={peerClass}
+                            style={{ textAlign: "center" }}
+                          >
+                            {cell?.peer_score != null ? `${cell.peer_score}%` : "—"}
+                          </td>,
+                          <td
+                            key={`${a.id}-grade`}
+                            className={gradeClass}
+                            style={{ textAlign: "center" }}
+                          >
+                            {cell?.instructor_grade != null ? cell.instructor_grade : "—"}
+                          </td>,
                         ];
                       })}
-                      <td style={{ textAlign: "center", fontWeight: "bold" }}>{student.final_grade ?? "—"}</td>
+                      <td style={{ textAlign: "center", fontWeight: "bold" }}>
+                        {student.final_grade ?? "—"}
+                      </td>
                     </tr>
                   );
                 })}

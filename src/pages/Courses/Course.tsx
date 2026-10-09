@@ -49,7 +49,6 @@ const Courses = () => {
     data?: IAssignmentResponse;
   }>({ visible: false });
 
-
   useEffect(() => {
     if (!showDeleteCourseConfirmation.visible && !showCopyConfirmation.visible) {
       fetchCourses({ url: `/courses` });
@@ -82,7 +81,9 @@ const Courses = () => {
 
   useEffect(() => {
     if (copyResponse?.data?.id) {
-      dispatch(alertActions.showAlert({ variant: "success", message: "Assignment copied successfully." }));
+      dispatch(
+        alertActions.showAlert({ variant: "success", message: "Assignment copied successfully." })
+      );
       navigate(`/assignments/edit/${copyResponse.data.id}`);
     }
   }, [copyResponse, dispatch, navigate]);
@@ -118,7 +119,10 @@ const Courses = () => {
   );
   const handleDeleteAssignment = useCallback(
     (row: TRow<UnifiedRow>) =>
-      setShowDeleteAssignmentConfirmation({ visible: true, data: row.original as IAssignmentResponse }),
+      setShowDeleteAssignmentConfirmation({
+        visible: true,
+        data: row.original as IAssignmentResponse,
+      }),
     []
   );
   const handleParticipants = useCallback(
@@ -151,10 +155,9 @@ const Courses = () => {
     },
     [sendCopyRequest]
   );
-  const handleExportAssignment = useCallback(
-    (_row: TRow<UnifiedRow>) => { /* not yet implemented */ },
-    []
-  );
+  const handleExportAssignment = useCallback((_row: TRow<UnifiedRow>) => {
+    /* not yet implemented */
+  }, []);
 
   const tableColumns = useMemo(
     () =>
@@ -173,7 +176,7 @@ const Courses = () => {
         handleViewScores,
         handleViewSubmissions,
         handleCopyAssignment,
-        handleExportAssignment,
+        handleExportAssignment
       ),
     [
       onEditHandle,
@@ -247,14 +250,11 @@ const Courses = () => {
     }
 
     const isAdmin =
-      loggedInUserRole === ROLE.ADMIN.valueOf() ||
-      loggedInUserRole === ROLE.SUPER_ADMIN.valueOf();
+      loggedInUserRole === ROLE.ADMIN.valueOf() || loggedInUserRole === ROLE.SUPER_ADMIN.valueOf();
 
     const filtered = isAdmin
       ? mergedTableData
-      : mergedTableData.filter(
-          (c: { instructor_id: number }) => c.instructor_id === auth.user.id
-        );
+      : mergedTableData.filter((c: { instructor_id: number }) => c.instructor_id === auth.user.id);
 
     const courseRows = filtered.map((c: any) => ({
       ...c,
@@ -325,13 +325,13 @@ const Courses = () => {
           getSubRows={(row) => row.subRows}
           getRowCanExpand={(row) => row.original?.rowType === "course"}
           getExpanderFallback={(row) =>
-            row.original?.rowType === "assignment" && row.depth === 1
-              ? <span style={{ color: "#0d6efd", fontSize: "1rem", paddingLeft: 4 }}>–</span>
-              : null
+            row.original?.rowType === "assignment" && row.depth === 1 ? (
+              <span style={{ color: "#0d6efd", fontSize: "1rem", paddingLeft: 4 }}>–</span>
+            ) : null
           }
           getCellProps={(cell, row) => {
             // Group-based striping: course + its assignments share the same background
-            const groupIdx = row.depth === 0 ? row.index : (row.getParentRow()?.index ?? 0);
+            const groupIdx = row.depth === 0 ? row.index : row.getParentRow()?.index ?? 0;
             const bg = groupIdx % 2 !== 0 ? "rgba(0,0,0,0.05)" : "#ffffff";
             return { style: { backgroundColor: bg } };
           }}

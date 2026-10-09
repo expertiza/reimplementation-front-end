@@ -100,19 +100,35 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
 
       <hr />
 
-      <BSTable striped bordered size="sm" className="mt-2" style={{ fontSize: "0.875rem", width: "75%" }}>
+      <BSTable
+        striped
+        bordered
+        size="sm"
+        className="mt-2"
+        style={{ fontSize: "0.875rem", width: "75%" }}
+      >
         <thead>
           <tr>
             <th style={{ width: "20%", whiteSpace: "nowrap" }}></th>
-            <th className="text-center" style={{ width: "38%" }}>Questionnaire</th>
+            <th className="text-center" style={{ width: "38%" }}>
+              Questionnaire
+            </th>
             <th className="text-center" style={{ width: "14%", whiteSpace: "nowrap" }}>
               Display style
-              <ToolTip id="display-style-tip" info="For scored questions: Scale displays scores as radio buttons on the next line; Dropdown displays scores as a dropdown." />
+              <ToolTip
+                id="display-style-tip"
+                info="For scored questions: Scale displays scores as radio buttons on the next line; Dropdown displays scores as a dropdown."
+              />
             </th>
-            <th className="text-center" style={{ width: "12%", whiteSpace: "nowrap" }}>Weight</th>
+            <th className="text-center" style={{ width: "12%", whiteSpace: "nowrap" }}>
+              Weight
+            </th>
             <th className="text-center" style={{ width: "16%", whiteSpace: "nowrap" }}>
               Notification Limit
-              <ToolTip id="notif-limit-tip" info="If a new review differs from existing reviews by more than this %, the instructor is notified by email." />
+              <ToolTip
+                id="notif-limit-tip"
+                info="If a new review differs from existing reviews by more than this %, the instructor is notified by email."
+              />
             </th>
           </tr>
         </thead>
@@ -130,7 +146,9 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
                 >
                   <option value="">-- None --</option>
                   {row.options.map((q) => (
-                    <option key={q.id} value={q.id}>{q.name}</option>
+                    <option key={q.id} value={q.id}>
+                      {q.name}
+                    </option>
                   ))}
                 </BSForm.Select>
                 {row.options.length === 0 && (
@@ -143,9 +161,7 @@ const RubricsContent: React.FC<RubricsContentProps> = ({ questionnaires }) => {
                 <BSForm.Select
                   size="sm"
                   value={values[row.dropdownField] ? "dropdown" : "scale"}
-                  onChange={(e) =>
-                    setFieldValue(row.dropdownField, e.target.value === "dropdown")
-                  }
+                  onChange={(e) => setFieldValue(row.dropdownField, e.target.value === "dropdown")}
                 >
                   <option value="dropdown">Dropdown</option>
                   <option value="scale">Scale</option>

@@ -11,7 +11,6 @@ export type QuestionnaireType =
   | "Bookmark rating"
   | "Quiz";
 
-
 export const QuestionnaireTypes: QuestionnaireType[] = [
   "Author feedback",
   "Teammate Review",
@@ -22,7 +21,6 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
   "Bookmark rating",
   "Quiz",
 ];
-
 
 export interface IItem {
   id?: number;
@@ -38,15 +36,13 @@ export interface IItem {
   questionnaire_id?: number;
   _destroy?: boolean;
   type?: string;
-  
 }
-
 
 export interface QuestionnaireFormValues {
   id?: number;
   name: string;
-  questionnaire_type:string;
-  private:boolean;
+  questionnaire_type: string;
+  private: boolean;
   created_at?: string;
   updated_at?: string;
   min_question_score: number;
@@ -59,10 +55,10 @@ export interface QuestionnaireFormValues {
 export interface QuestionnaireResponse {
   id?: number;
   name: string;
-  private:boolean;
+  private: boolean;
   created_at: string;
   updated_at: string;
-  questionnaire_type:string;
+  questionnaire_type: string;
   min_question_score: number;
   max_question_score: number;
   instructor_id: number;
@@ -73,8 +69,8 @@ export interface QuestionnaireResponse {
 export interface QuestionnaireRequest {
   id?: number;
   name: string;
-  private:boolean;
-  questionnaire_type:string;
+  private: boolean;
+  questionnaire_type: string;
   min_question_score: number;
   max_question_score: number;
   instructor_id?: number;
@@ -84,14 +80,9 @@ export interface QuestionnaireRequest {
 
 export function getQuestionnaireTypes(quest: QuestionnaireResponse[]): string[] {
   return Array.from(
-    new Set(
-      quest
-        .map((q) => q.questionnaire_type)
-        .filter((type): type is string => type !== null)
-    )
+    new Set(quest.map((q) => q.questionnaire_type).filter((type): type is string => type !== null))
   );
 }
-
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
@@ -131,7 +122,6 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
   };
 };
 
-
 export async function loadQuestionnaire({ params }: any) {
   if (params.id) {
     const response = await axiosClient.get(`/questionnaires/${params.id}`);
@@ -141,5 +131,3 @@ export async function loadQuestionnaire({ params }: any) {
     return response.data.map((q: any) => transformQuestionnaireResponse(q));
   }
 }
-
-

@@ -14,10 +14,10 @@
  * The Revision[] prop is derived from the parent's Task[] via extractAssignments() so this
  * component stays stateless with respect to assignment data — it only owns teammate state.
  */
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import styles from './StudentTasksList.module.css';
-import axiosClient from 'utils/axios_client';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import styles from "./StudentTasksList.module.css";
+import axiosClient from "utils/axios_client";
 
 export type Revision = {
   name: string;
@@ -47,9 +47,9 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
 
   useEffect(() => {
     axiosClient
-      .get('/participants/teammates')
+      .get("/participants/teammates")
       .then((res) => setStudentsTeamedWith(res.data || {}))
-      .catch((err) => console.error('Error fetching teammates:', err))
+      .catch((err) => console.error("Error fetching teammates:", err))
       .finally(() => setLoadingTeammates(false));
   }, []);
 
@@ -79,7 +79,8 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
           const daysLeft = daysLeft(task.dueDate);
           return (
             <div key={index}>
-              &raquo; {task.name} {task.currentStage} ({daysLeft} day{daysLeft !== 1 ? 's' : ''} left)
+              &raquo; {task.name} {task.currentStage} ({daysLeft} day{daysLeft !== 1 ? "s" : ""}{" "}
+              left)
             </div>
           );
         })}
@@ -92,11 +93,14 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
           const daysLeft = daysLeft(task.dueDate);
           return (
             <div key={index}>
-              &raquo;{' '}
-              <Link to={`/student_review/list/${task.participantId}`} className={styles.revisionLink}>
+              &raquo;{" "}
+              <Link
+                to={`/student_review/list/${task.participantId}`}
+                className={styles.revisionLink}
+              >
                 {task.name} {task.currentStage}
-              </Link>
-              {' '}({daysLeft} day{daysLeft !== 1 ? 's' : ''} left)
+              </Link>{" "}
+              ({daysLeft} day{daysLeft !== 1 ? "s" : ""} left)
             </div>
           );
         })}

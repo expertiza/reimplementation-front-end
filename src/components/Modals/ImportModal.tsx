@@ -22,17 +22,17 @@ import { ColumnDef } from "@tanstack/react-table";
  *  Shared text styles for consistency
  * ---------------------------------------- */
 const STANDARD_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '13px',
-  lineHeight: '30px',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "13px",
+  lineHeight: "30px",
 };
 
 const TABLE_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '15px',
-  lineHeight: '1.428em',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "15px",
+  lineHeight: "1.428em",
 };
 
 /* ----------------------------------------
@@ -49,8 +49,7 @@ const getBaseUrl = (): string => {
   const fromGlobal = (globalThis as any)?.__BASE_URL__;
   if (typeof fromGlobal === "string") return fromGlobal.replace(/\/$/, "");
 
-  const fromProcess =
-    (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
+  const fromProcess = (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
 
   return String(fromProcess).replace(/\/$/, "");
 };
@@ -92,22 +91,21 @@ Icon.displayName = "Icon";
  *  Props
  * ---------------------------------------- */
 type ImportModalProps = {
-  show: boolean;       // Parent-controlled visible flag
-  onHide: () => void;  // Callback to parent when modal should close
-  modelClass: string;  // "User", "Team", etc.
+  show: boolean; // Parent-controlled visible flag
+  onHide: () => void; // Callback to parent when modal should close
+  modelClass: string; // "User", "Team", etc.
 };
 
 /* ============================================================================
  *  ImportModal Component
  * ============================================================================ */
 const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) => {
-
   /**
    * Force-close handler — ALWAYS closes modal instantly.
    * Then notifies parent so it can update state if needed.
    */
   const forceClose = () => {
-    setTimeout(onHide, 10);   // Notify parent AFTER close
+    setTimeout(onHide, 10); // Notify parent AFTER close
   };
 
   /* ---------------------------------------------------------
@@ -122,15 +120,15 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   const [csvFirstLine, setCsvFirstLine] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [availableFields, setAvailableFields] = useState<string[]>([]);
-  const [csvData, setCsvData] = useState<string[][]>([]);  // All CSV rows for preview
-  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);  // CSV headers
+  const [csvData, setCsvData] = useState<string[][]>([]); // All CSV rows for preview
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]); // CSV headers
 
   const [duplicateAction, setDuplicateAction] = useState<string>("");
 
   const [file, setFile] = useState<File | null>(null);
   const [useHeader, setUseHeader] = useState<boolean>(true);
   const [status, setStatus] = useState<string>("");
-  const [showConfirmation, setShowConfirmation] = useState<boolean>(false);  // Show confirmation modal
+  const [showConfirmation, setShowConfirmation] = useState<boolean>(false); // Show confirmation modal
 
   /* API hooks */
   const { isLoading, data: importResponse, sendRequest: fetchImports } = useAPI();
@@ -150,7 +148,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
   useEffect(() => {
     if (show) {
-      setStatus('');
+      setStatus("");
       setFile(null);
       setUseHeader(true);
       fetchConfig();
@@ -168,7 +166,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   /** Format fields for multiline tooltip display */
   const formatTooltipList = (fields: string[]) => {
     return (
-      <div style={{ whiteSpace: 'pre-line' }}>
+      <div style={{ whiteSpace: "pre-line" }}>
         {fields.map((f) => transformField(f)).join("\n")}
       </div>
     );
@@ -215,7 +213,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
 
       // Parse all data rows
       const dataRows = useHeader ? lines.slice(1) : lines;
-      const parsedData = dataRows.map(line => line.split(","));
+      const parsedData = dataRows.map((line) => line.split(","));
       setCsvData(parsedData);
 
       if (lines.length > 1) {
@@ -237,8 +235,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   };
 
   /* Ensure all selected columns match mandatory fields */
-  const mandatoryFieldsIncluded = () =>
-    mandatoryFields.every((f) => selectedFields.includes(f));
+  const mandatoryFieldsIncluded = () => mandatoryFields.every((f) => selectedFields.includes(f));
 
   /* ---------------------------------------------------------
    * Submit import to backend
@@ -269,7 +266,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
       formData.append("use_headers", String(useHeader));
 
       if (duplicateAction) {
-        formData.append("dup_action", duplicateAction)
+        formData.append("dup_action", duplicateAction);
       }
 
       if (!useHeader) {
@@ -284,17 +281,16 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
-
     } catch (err: any) {
       setStatus(err.message || "Unexpected error.");
     }
   };
 
   useEffect(() => {
-    if(sendImportResponse) {
+    if (sendImportResponse) {
       setStatus(sendImportResponse.data.message);
 
-      if (!importError){
+      if (!importError) {
         setTimeout(forceClose, 1500);
       }
     } else if (importError) {
@@ -302,7 +298,10 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
     }
   }, [sendImportResponse, importError]);
 
-  const previewHeaders = useMemo(() => (useHeader ? csvHeaders : selectedFields), [useHeader, csvHeaders, selectedFields]);
+  const previewHeaders = useMemo(
+    () => (useHeader ? csvHeaders : selectedFields),
+    [useHeader, csvHeaders, selectedFields]
+  );
 
   const previewData = useMemo(() => {
     return csvData.map((row) => {
@@ -315,10 +314,13 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
     });
   }, [csvData, previewHeaders]);
 
-  const getAvailableOptions = useCallback((colIndex: number) => {
-    const selected = new Set(selectedFields.filter((_, idx) => idx !== colIndex));
-    return availableFields.filter(field => !selected.has(field));
-  }, [selectedFields, availableFields]);
+  const getAvailableOptions = useCallback(
+    (colIndex: number) => {
+      const selected = new Set(selectedFields.filter((_, idx) => idx !== colIndex));
+      return availableFields.filter((field) => !selected.has(field));
+    },
+    [selectedFields, availableFields]
+  );
 
   const previewColumns = useMemo<ColumnDef<any, any>[]>(() => {
     return previewHeaders.map((header, idx) => ({
@@ -355,258 +357,249 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
    * ============================================================================ */
   return (
     <>
-    <Modal
-      show={show}
-      onHide={onHide}
-      centered
-      size="lg"
-      keyboard
-      backdrop={true}
-      contentClassName="border border-2"
-    >
-      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
-        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Import {modelClass}
-        </Modal.Title>
-      </Modal.Header>
+      <Modal
+        show={show}
+        onHide={onHide}
+        centered
+        size="lg"
+        keyboard
+        backdrop={true}
+        contentClassName="border border-2"
+      >
+        <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
+          <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>Import {modelClass}</Modal.Title>
+        </Modal.Header>
 
-      <Modal.Body style={{ ...STANDARD_TEXT }}>
-        {isLoading ? (
-          <div>Loading…</div>
-        ) : (
-          <>
-            {/* ---------------------------------------------------------
-             * FIELD SUMMARY
-             * --------------------------------------------------------- */}
-            <Row className="mb-3">
-              <Col>
-                <div style={TABLE_TEXT}>
-
-                  {/* Mandatory fields */}
-                  <div className="d-flex align-items-center">
-                    <strong>Mandatory fields</strong>
-                    <OverlayTrigger
-                      placement="right"
-                      overlay={
-                        <Tooltip id="mandatory-fields-tip">
-                          {formatTooltipList(mandatoryFields)}
-                        </Tooltip>
-                      }
-                    >
-                      <span style={{ cursor: "help", marginLeft: 6 }}>
-                        <Icon name="info" size={16} />
-                      </span>
-                    </OverlayTrigger>
-                  </div>
-
-                  {/* Optional fields */}
-                  <div className="d-flex align-items-center">
-                    <strong>Optional fields</strong>
-                    <OverlayTrigger
-                      placement="right"
-                      overlay={
-                        <Tooltip id="optional-fields-tip">
-                          {formatTooltipList(optionalFields)}
-                        </Tooltip>
-                      }
-                    >
-                      <span style={{ cursor: "help", marginLeft: 6 }}>
-                        <Icon name="info" size={16} />
-                      </span>
-                    </OverlayTrigger>
-                  </div>
-
-                  {/* External fields */}
-                  <div className="d-flex align-items-center">
-                    <strong>External fields</strong>
-                    <OverlayTrigger
-                      placement="right"
-                      overlay={
-                        <Tooltip id="external-fields-tip">
-                          {formatTooltipList(externalFields)}
-                        </Tooltip>
-                      }
-                    >
-                      <span style={{ cursor: "help", marginLeft: 6 }}>
-                        <Icon name="info" size={16} />
-                      </span>
-                    </OverlayTrigger>
-                  </div>
-
-                </div>
-              </Col>
-            </Row>
-
-            {/* ---------------------------------------------------------
-             * FILE INPUT + HEADER SWITCH
-             * --------------------------------------------------------- */}
-            <Row className="mb-3">
-              <Col md={7}>
-                <Form.Group controlId="importFile">
-                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
-                    CSV file
-                  </Form.Label>
-
-                  <Form.Control
-                    type="file"
-                    accept=".csv,text/csv"
-                    onChange={(e) => on_file_changed(e.target.files?.[0] ?? null)}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={5} className="d-flex align-items-end">
-                <Form.Check
-                  type="switch"
-                  id="importHeader"
-                  label="First row contains headers"
-                  checked={useHeader}
-                  onChange={(e) => setUseHeader(e.target.checked)}
-                  style={TABLE_TEXT}
-                />
-
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip id="import-header-tooltip">
-                      In header mode, fields are matched by name.
-                    </Tooltip>
-                  }
-                >
-                  <span className="ms-2" style={{ cursor: "help", display: "inline-flex" }}>
-                    <Icon name="info" size={16} />
-                  </span>
-                </OverlayTrigger>
-              </Col>
-            </Row>
-
-
-
-            {/* ---------------------------------------------------------
-             * DUPLICATE HANDLING
-             * --------------------------------------------------------- */}
-            <Row className="mb-3">
-              <Col>
-                <Form.Label className="fw-semibold" style={TABLE_TEXT}>
-                  Duplicate handling
-                </Form.Label>
-
-                {duplicateActions.map((action) => {
-                  let tooltipText = "";
-                  
-                  if (action === "SkipRecordAction") {
-                    tooltipText = "Skip importing records that already exist in the system.";
-                  } else if (action === "UpdateExistingRecordAction") {
-                    tooltipText = "Update existing records with new data from the import file.";
-                  } else if (action === "ChangeOffendingFieldAction") {
-                    tooltipText = "Modify the conflicting field to make the record unique before importing.";
-                  }
-
-                  return (
-                    <div key={action} className="d-flex align-items-center mb-1">
-                      <Form.Check
-                        type="radio"
-                        name="duplicate_action"
-                        style={TABLE_TEXT}
-                        checked={duplicateAction === action}
-                        onChange={() => setDuplicateAction(action)}
-                        label={action}
-                      />
+        <Modal.Body style={{ ...STANDARD_TEXT }}>
+          {isLoading ? (
+            <div>Loading…</div>
+          ) : (
+            <>
+              {/* ---------------------------------------------------------
+               * FIELD SUMMARY
+               * --------------------------------------------------------- */}
+              <Row className="mb-3">
+                <Col>
+                  <div style={TABLE_TEXT}>
+                    {/* Mandatory fields */}
+                    <div className="d-flex align-items-center">
+                      <strong>Mandatory fields</strong>
                       <OverlayTrigger
                         placement="right"
                         overlay={
-                          <Tooltip id={`duplicate-action-${action}-tip`}>
-                            {tooltipText}
+                          <Tooltip id="mandatory-fields-tip">
+                            {formatTooltipList(mandatoryFields)}
                           </Tooltip>
                         }
                       >
                         <span style={{ cursor: "help", marginLeft: 6 }}>
-                          <Icon name="info" size={14} />
+                          <Icon name="info" size={16} />
                         </span>
                       </OverlayTrigger>
                     </div>
-                  );
-                })}
-              </Col>
-            </Row>
 
-            {/* STATUS SECTION */}
-            {status && (
-              <Row>
-                <Col>
-                  <div style={{ marginTop: 8, ...TABLE_TEXT }}>
-                    <strong>Status:</strong> {status}
+                    {/* Optional fields */}
+                    <div className="d-flex align-items-center">
+                      <strong>Optional fields</strong>
+                      <OverlayTrigger
+                        placement="right"
+                        overlay={
+                          <Tooltip id="optional-fields-tip">
+                            {formatTooltipList(optionalFields)}
+                          </Tooltip>
+                        }
+                      >
+                        <span style={{ cursor: "help", marginLeft: 6 }}>
+                          <Icon name="info" size={16} />
+                        </span>
+                      </OverlayTrigger>
+                    </div>
+
+                    {/* External fields */}
+                    <div className="d-flex align-items-center">
+                      <strong>External fields</strong>
+                      <OverlayTrigger
+                        placement="right"
+                        overlay={
+                          <Tooltip id="external-fields-tip">
+                            {formatTooltipList(externalFields)}
+                          </Tooltip>
+                        }
+                      >
+                        <span style={{ cursor: "help", marginLeft: 6 }}>
+                          <Icon name="info" size={16} />
+                        </span>
+                      </OverlayTrigger>
+                    </div>
                   </div>
                 </Col>
               </Row>
-            )}
-          </>
-        )}
-      </Modal.Body>
 
-      {/* FOOTER */}
-      <Modal.Footer style={{ ...STANDARD_TEXT }}>
-        <Button variant="outline-secondary" onClick={forceClose}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={on_import} disabled={isLoading}>
-          Import
-        </Button>
-      </Modal.Footer>
+              {/* ---------------------------------------------------------
+               * FILE INPUT + HEADER SWITCH
+               * --------------------------------------------------------- */}
+              <Row className="mb-3">
+                <Col md={7}>
+                  <Form.Group controlId="importFile">
+                    <Form.Label className="fw-semibold" style={TABLE_TEXT}>
+                      CSV file
+                    </Form.Label>
 
-    </Modal>
+                    <Form.Control
+                      type="file"
+                      accept=".csv,text/csv"
+                      onChange={(e) => on_file_changed(e.target.files?.[0] ?? null)}
+                    />
+                  </Form.Group>
+                </Col>
 
-    {/* CONFIRMATION MODAL */}
-    <Modal
-      show={showConfirmation}
-      onHide={() => setShowConfirmation(false)}
-      centered
-      size="xl"
-      contentClassName="border border-2"
-    >
-      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
-        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Confirm Import - {modelClass}
-        </Modal.Title>
-      </Modal.Header>
+                <Col md={5} className="d-flex align-items-end">
+                  <Form.Check
+                    type="switch"
+                    id="importHeader"
+                    label="First row contains headers"
+                    checked={useHeader}
+                    onChange={(e) => setUseHeader(e.target.checked)}
+                    style={TABLE_TEXT}
+                  />
 
-      <Modal.Body style={{ ...STANDARD_TEXT }}>
-        <div style={{ marginBottom: 12 }}>
-          <strong>Preview of data to be imported:</strong>
-        </div>
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      <Tooltip id="import-header-tooltip">
+                        In header mode, fields are matched by name.
+                      </Tooltip>
+                    }
+                  >
+                    <span className="ms-2" style={{ cursor: "help", display: "inline-flex" }}>
+                      <Icon name="info" size={16} />
+                    </span>
+                  </OverlayTrigger>
+                </Col>
+              </Row>
 
-        <div
-          style={{
-            overflowX: "auto",
-            border: "1px solid #e4e6eb",
-            borderRadius: 8,
-            maxHeight: 400,
-            overflowY: "auto",
-            padding: 8,
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <PreviewTable
-            data={previewData}
-            columns={previewColumns}
-            showPagination={true}
-            showGlobalFilter={false}
-            showColumnFilter={false}
-            disableGlobalFilter={true}
-          />
-        </div>
+              {/* ---------------------------------------------------------
+               * DUPLICATE HANDLING
+               * --------------------------------------------------------- */}
+              <Row className="mb-3">
+                <Col>
+                  <Form.Label className="fw-semibold" style={TABLE_TEXT}>
+                    Duplicate handling
+                  </Form.Label>
 
-      </Modal.Body>
+                  {duplicateActions.map((action) => {
+                    let tooltipText = "";
 
-      <Modal.Footer style={{ ...STANDARD_TEXT }}>
-        <Button variant="outline-secondary" onClick={() => setShowConfirmation(false)}>
-          Back
-        </Button>
-        <Button variant="primary" onClick={confirmImport}>
-          Confirm & Import
-        </Button>
-      </Modal.Footer>
-    </Modal>
+                    if (action === "SkipRecordAction") {
+                      tooltipText = "Skip importing records that already exist in the system.";
+                    } else if (action === "UpdateExistingRecordAction") {
+                      tooltipText = "Update existing records with new data from the import file.";
+                    } else if (action === "ChangeOffendingFieldAction") {
+                      tooltipText =
+                        "Modify the conflicting field to make the record unique before importing.";
+                    }
+
+                    return (
+                      <div key={action} className="d-flex align-items-center mb-1">
+                        <Form.Check
+                          type="radio"
+                          name="duplicate_action"
+                          style={TABLE_TEXT}
+                          checked={duplicateAction === action}
+                          onChange={() => setDuplicateAction(action)}
+                          label={action}
+                        />
+                        <OverlayTrigger
+                          placement="right"
+                          overlay={
+                            <Tooltip id={`duplicate-action-${action}-tip`}>{tooltipText}</Tooltip>
+                          }
+                        >
+                          <span style={{ cursor: "help", marginLeft: 6 }}>
+                            <Icon name="info" size={14} />
+                          </span>
+                        </OverlayTrigger>
+                      </div>
+                    );
+                  })}
+                </Col>
+              </Row>
+
+              {/* STATUS SECTION */}
+              {status && (
+                <Row>
+                  <Col>
+                    <div style={{ marginTop: 8, ...TABLE_TEXT }}>
+                      <strong>Status:</strong> {status}
+                    </div>
+                  </Col>
+                </Row>
+              )}
+            </>
+          )}
+        </Modal.Body>
+
+        {/* FOOTER */}
+        <Modal.Footer style={{ ...STANDARD_TEXT }}>
+          <Button variant="outline-secondary" onClick={forceClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={on_import} disabled={isLoading}>
+            Import
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* CONFIRMATION MODAL */}
+      <Modal
+        show={showConfirmation}
+        onHide={() => setShowConfirmation(false)}
+        centered
+        size="xl"
+        contentClassName="border border-2"
+      >
+        <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
+          <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
+            Confirm Import - {modelClass}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body style={{ ...STANDARD_TEXT }}>
+          <div style={{ marginBottom: 12 }}>
+            <strong>Preview of data to be imported:</strong>
+          </div>
+
+          <div
+            style={{
+              overflowX: "auto",
+              border: "1px solid #e4e6eb",
+              borderRadius: 8,
+              maxHeight: 400,
+              overflowY: "auto",
+              padding: 8,
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <PreviewTable
+              data={previewData}
+              columns={previewColumns}
+              showPagination={true}
+              showGlobalFilter={false}
+              showColumnFilter={false}
+              disableGlobalFilter={true}
+            />
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer style={{ ...STANDARD_TEXT }}>
+          <Button variant="outline-secondary" onClick={() => setShowConfirmation(false)}>
+            Back
+          </Button>
+          <Button variant="primary" onClick={confirmImport}>
+            Confirm & Import
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

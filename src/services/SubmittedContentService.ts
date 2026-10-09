@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 /**
  * SubmittedContentService
@@ -10,7 +10,7 @@ interface IListFilesResponse {
   files?: Array<{
     name: string;
     path: string;
-    type: 'file' | 'directory';
+    type: "file" | "directory";
   }>;
   hyperlinks?: string[];
   error?: string;
@@ -35,15 +35,11 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<any> {
     try {
-      const response = await axios.post(
-        '/submitted_content/submit_file',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const response = await axios.post("/submitted_content/submit_file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
@@ -58,7 +54,7 @@ class SubmittedContentService {
    */
   static async submitHyperlink(url: string, participantId: string): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/submit_hyperlink', {
+      const response = await axios.post("/submitted_content/submit_hyperlink", {
         id: participantId,
         submission: url,
       });
@@ -76,7 +72,7 @@ class SubmittedContentService {
    */
   static async removeHyperlink(participantId: string, index: number): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/remove_hyperlink', {
+      const response = await axios.post("/submitted_content/remove_hyperlink", {
         id: participantId,
         chk_links: index,
       });
@@ -97,7 +93,7 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<IListFilesResponse> {
     try {
-      const response = await axios.get('/submitted_content/list_files', {
+      const response = await axios.get("/submitted_content/list_files", {
         params: {
           id: participantId,
           folder: { name: currentFolder },
@@ -122,7 +118,7 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<any> {
     try {
-      const response = await axios.post('/submitted_content/folder_action', {
+      const response = await axios.post("/submitted_content/folder_action", {
         id: participantId,
         current_folder: { name: currentFolder },
         faction: action,
@@ -161,13 +157,13 @@ class SubmittedContentService {
     currentFolder: string
   ): Promise<Blob> {
     try {
-      const response = await axios.get('/submitted_content/download', {
+      const response = await axios.get("/submitted_content/download", {
         params: {
           id: participantId,
           current_folder: { name: currentFolder },
           download: fileName,
         },
-        responseType: 'blob',
+        responseType: "blob",
       });
       return response.data;
     } catch (error: any) {
@@ -192,26 +188,26 @@ class SubmittedContentService {
 
     // Check file extension
     const allowedExtensions = [
-      'pdf',
-      'png',
-      'jpeg',
-      'jpg',
-      'zip',
-      'tar',
-      'gz',
-      '7z',
-      'odt',
-      'docx',
-      'md',
-      'rb',
-      'mp4',
-      'txt',
+      "pdf",
+      "png",
+      "jpeg",
+      "jpg",
+      "zip",
+      "tar",
+      "gz",
+      "7z",
+      "odt",
+      "docx",
+      "md",
+      "rb",
+      "mp4",
+      "txt",
     ];
-    const extension = file.name.split('.').pop()?.toLowerCase();
+    const extension = file.name.split(".").pop()?.toLowerCase();
     if (!extension || !allowedExtensions.includes(extension)) {
       return {
         valid: false,
-        error: `File type not allowed. Allowed types: ${allowedExtensions.join(', ')}`,
+        error: `File type not allowed. Allowed types: ${allowedExtensions.join(", ")}`,
       };
     }
 
@@ -230,7 +226,7 @@ class SubmittedContentService {
     } catch {
       return {
         valid: false,
-        error: 'Invalid URL format. Please enter a valid URL (e.g., https://example.com)',
+        error: "Invalid URL format. Please enter a valid URL (e.g., https://example.com)",
       };
     }
   }
@@ -241,11 +237,11 @@ class SubmittedContentService {
    * @returns Formatted file size string
    */
   static formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   }
 
   /**
@@ -254,8 +250,8 @@ class SubmittedContentService {
    * @returns True if file is a document
    */
   static isDocument(fileName: string): boolean {
-    const documentExtensions = ['pdf', 'odt', 'docx', 'md', 'txt'];
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const documentExtensions = ["pdf", "odt", "docx", "md", "txt"];
+    const extension = fileName.split(".").pop()?.toLowerCase();
     return extension ? documentExtensions.includes(extension) : false;
   }
 
@@ -265,8 +261,8 @@ class SubmittedContentService {
    * @returns True if file is media
    */
   static isMedia(fileName: string): boolean {
-    const mediaExtensions = ['png', 'jpeg', 'jpg', 'mp4'];
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const mediaExtensions = ["png", "jpeg", "jpg", "mp4"];
+    const extension = fileName.split(".").pop()?.toLowerCase();
     return extension ? mediaExtensions.includes(extension) : false;
   }
 
@@ -276,8 +272,8 @@ class SubmittedContentService {
    * @returns True if file is an archive
    */
   static isArchive(fileName: string): boolean {
-    const archiveExtensions = ['zip', 'tar', 'gz', '7z'];
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const archiveExtensions = ["zip", "tar", "gz", "7z"];
+    const extension = fileName.split(".").pop()?.toLowerCase();
     return extension ? archiveExtensions.includes(extension) : false;
   }
 
@@ -287,10 +283,10 @@ class SubmittedContentService {
    * @returns Icon emoji string
    */
   static getFileIcon(fileName: string): string {
-    if (this.isDocument(fileName)) return '📄';
-    if (this.isMedia(fileName)) return '🎬';
-    if (this.isArchive(fileName)) return '📦';
-    return '📁';
+    if (this.isDocument(fileName)) return "📄";
+    if (this.isMedia(fileName)) return "🎬";
+    if (this.isArchive(fileName)) return "📦";
+    return "📁";
   }
 }
 

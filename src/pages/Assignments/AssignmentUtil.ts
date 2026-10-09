@@ -63,7 +63,7 @@ export interface IAssignmentFormValues {
   weights?: number[];
   notification_limits?: number[];
   dropdowns?: boolean[];
-   // Topic settings
+  // Topic settings
   allow_topic_suggestion_from_students?: boolean;
   topics_assigned_by_bidding?: boolean;
   can_review_same_topic?: boolean;
@@ -122,7 +122,9 @@ export type RubricEntry = {
   dropdown: boolean;
 };
 
-function buildRubricAttributes(values: IAssignmentFormValues): (RubricEntry | { id: number; _destroy: true })[] {
+function buildRubricAttributes(
+  values: IAssignmentFormValues
+): (RubricEntry | { id: number; _destroy: true })[] {
   const rubrics: RubricEntry[] = [];
   const roundCount = values.number_of_review_rounds ?? 1;
   const variesByRound = values.review_rubric_varies_by_round && roundCount > 1;
@@ -195,8 +197,8 @@ function buildDueDateAttributes(values: IAssignmentFormValues): DueDateAttr[] {
   const teamMap = values.teammate_allowed as Record<string | number, string> | undefined;
 
   const findExistingId = (typeId: number, round?: number): number | undefined =>
-    existingDueDates.find((d: any) =>
-      d.deadline_type_id === typeId && (round == null ? !d.round : d.round === round)
+    existingDueDates.find(
+      (d: any) => d.deadline_type_id === typeId && (round == null ? !d.round : d.round === round)
     )?.id;
 
   const attrs: DueDateAttr[] = [];
@@ -232,9 +234,9 @@ function buildDueDateAttributes(values: IAssignmentFormValues): DueDateAttr[] {
   }
 
   const namedDeadlines: [string, number][] = [
-    ['signup_deadline', DEADLINE_TYPE.SIGNUP],
-    ['drop_topic_deadline', DEADLINE_TYPE.DROP_TOPIC],
-    ['team_formation_deadline', DEADLINE_TYPE.TEAM_FORMATION],
+    ["signup_deadline", DEADLINE_TYPE.SIGNUP],
+    ["drop_topic_deadline", DEADLINE_TYPE.DROP_TOPIC],
+    ["team_formation_deadline", DEADLINE_TYPE.TEAM_FORMATION],
   ];
   for (const [key, typeId] of namedDeadlines) {
     const date = dateTime[key];
@@ -316,7 +318,8 @@ export const transformAssignmentRequest = (values: IAssignmentFormValues): strin
     allow_topic_suggestion_from_students: values.allow_topic_suggestion_from_students ?? false,
     topics_assigned_by_bidding: values.topics_assigned_by_bidding ?? false,
     can_review_same_topic: values.can_review_same_topic ?? false,
-    allow_reviewer_to_choose_topic_to_review: values.allow_reviewer_to_choose_topic_to_review ?? false,
+    allow_reviewer_to_choose_topic_to_review:
+      values.allow_reviewer_to_choose_topic_to_review ?? false,
     enable_bidding_for_reviews: values.enable_bidding_for_reviews ?? false,
 
     // Misc flags
@@ -339,23 +342,25 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
   const reviewAllowedMap: Record<string | number, string> = {};
   const teammateAllowedMap: Record<string | number, string> = {};
 
-  for (const due of (assignment.due_dates || [])) {
+  for (const due of assignment.due_dates || []) {
     let rowKey: string | number;
-    if (typeof due.round === 'number') {
+    if (typeof due.round === "number") {
       // Even row index = submission, odd = review; rows are 0-indexed, rounds are 1-indexed
-      rowKey = due.deadline_type_id === DEADLINE_TYPE.REVIEW
-        ? 2 * (due.round - 1) + 1
-        : 2 * (due.round - 1);
+      rowKey =
+        due.deadline_type_id === DEADLINE_TYPE.REVIEW
+          ? 2 * (due.round - 1) + 1
+          : 2 * (due.round - 1);
     } else {
       // Match by deadline_type_id (deadline_name may be null when saved without a name)
-      if (due.deadline_type_id === DEADLINE_TYPE.SIGNUP) rowKey = 'signup_deadline';
-      else if (due.deadline_type_id === DEADLINE_TYPE.DROP_TOPIC) rowKey = 'drop_topic_deadline';
-      else if (due.deadline_type_id === DEADLINE_TYPE.TEAM_FORMATION) rowKey = 'team_formation_deadline';
+      if (due.deadline_type_id === DEADLINE_TYPE.SIGNUP) rowKey = "signup_deadline";
+      else if (due.deadline_type_id === DEADLINE_TYPE.DROP_TOPIC) rowKey = "drop_topic_deadline";
+      else if (due.deadline_type_id === DEADLINE_TYPE.TEAM_FORMATION)
+        rowKey = "team_formation_deadline";
       else {
-        const name: string = due.deadline_name || '';
-        if (/signup/i.test(name)) rowKey = 'signup_deadline';
-        else if (/drop[\s_]?topic/i.test(name)) rowKey = 'drop_topic_deadline';
-        else if (/team[\s_]?formation/i.test(name)) rowKey = 'team_formation_deadline';
+        const name: string = due.deadline_name || "";
+        if (/signup/i.test(name)) rowKey = "signup_deadline";
+        else if (/drop[\s_]?topic/i.test(name)) rowKey = "drop_topic_deadline";
+        else if (/team[\s_]?formation/i.test(name)) rowKey = "team_formation_deadline";
         else continue;
       }
     }
@@ -369,14 +374,24 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
 
   // Unpack assignment_questionnaires array → individual form fields
   const aqs: any[] = assignment.assignment_questionnaires ?? [];
-  const reviewAqs = aqs.filter((aq) => aq.questionnaire?.questionnaire_type === "ReviewQuestionnaire");
-  const authorAq  = aqs.find((aq) => aq.questionnaire?.questionnaire_type === "AuthorFeedbackQuestionnaire");
-  const teammateAq = aqs.find((aq) => aq.questionnaire?.questionnaire_type === "TeammateReviewQuestionnaire");
+  const reviewAqs = aqs.filter(
+    (aq) => aq.questionnaire?.questionnaire_type === "ReviewQuestionnaire"
+  );
+  const authorAq = aqs.find(
+    (aq) => aq.questionnaire?.questionnaire_type === "AuthorFeedbackQuestionnaire"
+  );
+  const teammateAq = aqs.find(
+    (aq) => aq.questionnaire?.questionnaire_type === "TeammateReviewQuestionnaire"
+  );
 
   // Determine if peer-review rubric varies by round (multiple review AQs with distinct used_in_round)
-  const reviewRounds = [...new Set(reviewAqs.map((aq) => aq.used_in_round).filter((r) => r != null))] as number[];
+  const reviewRounds = [
+    ...new Set(reviewAqs.map((aq) => aq.used_in_round).filter((r) => r != null)),
+  ] as number[];
   const variesByRound = reviewRounds.length > 1;
-  const numRounds = variesByRound ? reviewRounds.length : (assignment.number_of_review_rounds ?? assignment.rounds_of_reviews ?? 1);
+  const numRounds = variesByRound
+    ? reviewRounds.length
+    : assignment.number_of_review_rounds ?? assignment.rounds_of_reviews ?? 1;
 
   // Build per-round review fields
   const roundFields: Record<string, any> = {};
@@ -409,41 +424,53 @@ export const transformAssignmentResponse = (assignmentResponse: string): IAssign
     review_rubric_varies_by_round: variesByRound,
     number_of_review_rounds: numRounds,
     ...roundFields,
-    ...(authorAq ? {
-      author_feedback_questionnaire_id: authorAq.questionnaire_id,
-      author_feedback_assignment_questionnaire_id: authorAq.id,
-      author_feedback_questionnaire_weight: authorAq.questionnaire_weight ?? 0,
-      author_feedback_questionnaire_notification_limit: authorAq.notification_limit ?? 15,
-      author_feedback_questionnaire_dropdown: authorAq.dropdown ?? false,
-    } : {}),
-    ...(teammateAq ? {
-      teammate_questionnaire_id: teammateAq.questionnaire_id,
-      teammate_assignment_questionnaire_id: teammateAq.id,
-      teammate_questionnaire_weight: teammateAq.questionnaire_weight ?? 0,
-      teammate_questionnaire_notification_limit: teammateAq.notification_limit ?? 15,
-      teammate_questionnaire_dropdown: teammateAq.dropdown ?? false,
-    } : {}),
+    ...(authorAq
+      ? {
+          author_feedback_questionnaire_id: authorAq.questionnaire_id,
+          author_feedback_assignment_questionnaire_id: authorAq.id,
+          author_feedback_questionnaire_weight: authorAq.questionnaire_weight ?? 0,
+          author_feedback_questionnaire_notification_limit: authorAq.notification_limit ?? 15,
+          author_feedback_questionnaire_dropdown: authorAq.dropdown ?? false,
+        }
+      : {}),
+    ...(teammateAq
+      ? {
+          teammate_questionnaire_id: teammateAq.questionnaire_id,
+          teammate_assignment_questionnaire_id: teammateAq.id,
+          teammate_questionnaire_weight: teammateAq.questionnaire_weight ?? 0,
+          teammate_questionnaire_notification_limit: teammateAq.notification_limit ?? 15,
+          teammate_questionnaire_dropdown: teammateAq.dropdown ?? false,
+        }
+      : {}),
     // Map DB column names to form field names (backend returns raw column names)
-    review_rubric_varies_by_topic: assignment.review_rubric_varies_by_topic ?? assignment.vary_by_topic ?? false,
-    review_rubric_varies_by_role: assignment.review_rubric_varies_by_role ?? assignment.vary_by_role ?? false,
+    review_rubric_varies_by_topic:
+      assignment.review_rubric_varies_by_topic ?? assignment.vary_by_topic ?? false,
+    review_rubric_varies_by_role:
+      assignment.review_rubric_varies_by_role ?? assignment.vary_by_role ?? false,
     review_strategy: assignment.review_strategy ?? assignment.review_assignment_strategy ?? "",
-    available_to_students: assignment.available_to_students ?? assignment.availability_flag ?? false,
-    allow_tag_prompts: assignment.allow_tag_prompts ?? assignment.is_answer_tagging_allowed ?? false,
+    available_to_students:
+      assignment.available_to_students ?? assignment.availability_flag ?? false,
+    allow_tag_prompts:
+      assignment.allow_tag_prompts ?? assignment.is_answer_tagging_allowed ?? false,
     auto_assign_mentors: assignment.auto_assign_mentors ?? assignment.auto_assign_mentor ?? false,
     staggered_deadline: assignment.staggered_deadline ?? false,
     // Virtual fields not returned by the API
     show_template_review: assignment.show_template_review ?? false,
     // DB column name → form field name fallbacks (attributes() returns raw column names)
-    maximum_number_of_reviews_per_submission: assignment.maximum_number_of_reviews_per_submission ?? assignment.max_reviews_per_submission,
+    maximum_number_of_reviews_per_submission:
+      assignment.maximum_number_of_reviews_per_submission ?? assignment.max_reviews_per_submission,
     is_review_anonymous: assignment.is_review_anonymous ?? assignment.is_anonymous ?? false,
     allow_self_reviews: assignment.allow_self_reviews ?? assignment.is_selfreview_enabled ?? false,
-    set_allowed_number_of_reviews_per_reviewer: assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed,
-    set_required_number_of_reviews_per_reviewer: assignment.set_required_number_of_reviews_per_reviewer ?? assignment.num_reviews_required,
+    set_allowed_number_of_reviews_per_reviewer:
+      assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed,
+    set_required_number_of_reviews_per_reviewer:
+      assignment.set_required_number_of_reviews_per_reviewer ?? assignment.num_reviews_required,
     is_review_done_by_teams: assignment.is_review_done_by_teams ?? false,
     is_role_based: assignment.is_role_based ?? false,
     // Derive from the actual limit value: positive integer means a limit was configured
     has_max_review_limit: (() => {
-      const allowed = assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed;
+      const allowed =
+        assignment.set_allowed_number_of_reviews_per_reviewer ?? assignment.num_reviews_allowed;
       return allowed != null && Number(allowed) > 0;
     })(),
     // Derive from is_penalty_calculated: the DB boolean that corresponds to this UI toggle
