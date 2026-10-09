@@ -1,6 +1,6 @@
 import React from "react";
-import {OverlayTrigger, Tooltip} from "react-bootstrap";
-import {FcInfo} from "react-icons/fc";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { FcInfo } from "react-icons/fc";
 
 /**
  * @author Ankur Mundra on May, 2023

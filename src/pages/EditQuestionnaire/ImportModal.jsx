@@ -40,24 +40,16 @@ const ImportModal = ({ onClose, onImport }) => {
           </div>
           <div className="modal-body">
             <p>
-              Select a JSON file to import questionnaire data. The file should
-              contain a valid JSON object.
+              Select a JSON file to import questionnaire data. The file should contain a valid JSON
+              object.
             </p>
             <input type="file" onChange={handleFileChange} />
           </div>
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
-            >
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleImport}
-            >
+            <button type="button" className="btn btn-primary" onClick={handleImport}>
               Import
             </button>
           </div>

@@ -1,15 +1,15 @@
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Extend expect with jest-dom matchers
-import { expect, vi } from 'vitest';
-import * as matchers from '@testing-library/jest-dom/matchers';
+import { expect, vi } from "vitest";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
 expect.extend(matchers);
 
 // Mock window.matchMedia for testing
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -21,7 +21,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-Object.defineProperty(window, 'alert', {
+Object.defineProperty(window, "alert", {
   writable: true,
   value: vi.fn(),
 });

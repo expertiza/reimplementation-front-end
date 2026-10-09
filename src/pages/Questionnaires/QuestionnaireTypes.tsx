@@ -8,7 +8,6 @@ import useAPI from "hooks/useAPI";
 import { useEffect } from "react";
 import { useMemo } from "react";
 
-
 interface TableRow {
   type: QuestionnaireType;
 }
@@ -20,22 +19,19 @@ interface QuestionnaireTypeTableProps {
 const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onCloseModal }) => {
   const { data: questionnaireTypes, sendRequest: fetchQuestionnaireTypes } = useAPI();
   useEffect(() => {
-      
-        fetchQuestionnaireTypes({ url: "/questionnaire_types" });
-      
-    }, [fetchQuestionnaireTypes]);
-  
-    const data: TableRow[] = useMemo(() => {
+    fetchQuestionnaireTypes({ url: "/questionnaire_types" });
+  }, [fetchQuestionnaireTypes]);
+
+  const data: TableRow[] = useMemo(() => {
     if (questionnaireTypes?.data?.length) {
       return questionnaireTypes.data.map((t: any) => ({
-        type: t.name ?? t // handle case where backend returns object or string
+        type: t.name ?? t, // handle case where backend returns object or string
       }));
     }
     return QuestionnaireTypes.map((t) => ({ type: t }));
   }, [questionnaireTypes]);
 
-
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const onCreate = (type: QuestionnaireType) => {
     if (onCloseModal) {

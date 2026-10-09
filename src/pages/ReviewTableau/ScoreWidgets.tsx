@@ -1,47 +1,55 @@
-import React from 'react';
-import { scoreToColor } from '../../utils/heatgridUtils';
-import { ScoreWidgetProps } from '../../types/reviewTableau';
-import '../ViewTeamGrades/ViewTeamGrades.module.scss';
+import React from "react";
+import { scoreToColor } from "../../utils/heatgridUtils";
+import { ScoreWidgetProps } from "../../types/reviewTableau";
+import "../ViewTeamGrades/ViewTeamGrades.module.scss";
 
 /**
  * Reusable circular score widget that matches the design used in ViewTeamGrades
  * Shows a score inside a colored circle with color coding based on performance
  */
-export const ScoreWidget: React.FC<ScoreWidgetProps> = ({ 
+export const ScoreWidget: React.FC<ScoreWidgetProps> = ({
   score,
-  maxScore, 
-  comment, 
-  hasComment = false 
+  maxScore,
+  comment,
+  hasComment = false,
 }) => {
   const bgColor = scoreToColor(score, maxScore);
-  const title = comment ? `Score: ${score}/${maxScore}\nComment: ${comment}` : `Score: ${score}/${maxScore}`;
+  const title = comment
+    ? `Score: ${score}/${maxScore}\nComment: ${comment}`
+    : `Score: ${score}/${maxScore}`;
 
   return (
-    <div className="score-widget-container" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+    <div
+      className="score-widget-container"
+      style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+    >
       <div className="circle-container" title={title}>
         <span
-          className={`grade-circle ${hasComment ? 'underlined' : ''}`}
+          className={`grade-circle ${hasComment ? "underlined" : ""}`}
           style={{
             backgroundColor: bgColor,
-            cursor: hasComment ? 'pointer' : 'default',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            fontWeight: 'bold',
+            cursor: hasComment ? "pointer" : "default",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "14px",
+            fontWeight: "bold",
           }}
         >
           {score}
         </span>
       </div>
       {comment && (
-        <div className="score-comment" style={{
-          fontSize: '13px',
-          lineHeight: '1.3',
-          color: '#333',
-          flexGrow: 1,
-          wordWrap: 'break-word'
-        }}>
+        <div
+          className="score-comment"
+          style={{
+            fontSize: "13px",
+            lineHeight: "1.3",
+            color: "#333",
+            flexGrow: 1,
+            wordWrap: "break-word",
+          }}
+        >
           {comment}
         </div>
       )}
@@ -64,9 +72,5 @@ export const MaxScoreWidget: React.FC<{ maxScore: number }> = ({ maxScore }) => 
  * Simple checkmark widget for boolean/completed items
  */
 export const CheckWidget: React.FC<{ checked?: boolean }> = ({ checked = false }) => {
-  return (
-    <div className="tick">
-      {checked ? '✓' : ''}
-    </div>
-  );
+  return <div className="tick">{checked ? "✓" : ""}</div>;
 };

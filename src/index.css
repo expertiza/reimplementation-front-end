@@ -39,9 +39,9 @@ html {
 .checkbox-contrast .form-check-input {
   width: 1rem;
   height: 1rem;
-  border: 1px solid black;            /* Bootstrap primary */
+  border: 1px solid black; /* Bootstrap primary */
   box-shadow: none;
-  margin-top: 0.25rem;                   /* aligns with label text */
+  margin-top: 0.25rem; /* aligns with label text */
 }
 
 /* Solid “checked” state */
@@ -63,13 +63,13 @@ html {
 } */
 
 .custom-table-layout {
-    table-layout: auto;
-    width: 100%;
+  table-layout: auto;
+  width: 100%;
 }
 /* Ensure dropdown width matches the longest option text */
 .auto-width-select-import {
-    width: auto !important;
-    min-width: max-content !important;
-    display: inline-block !important;
-    padding-right: 2rem; /* keeps the dropdown arrow visible */
+  width: auto !important;
+  min-width: max-content !important;
+  display: inline-block !important;
+  padding-right: 2rem; /* keeps the dropdown arrow visible */
 }

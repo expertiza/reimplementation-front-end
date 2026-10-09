@@ -158,11 +158,19 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
   }, [fetchAssignments, showDeleteConfirmation.visible]);
 
   const getAssignmentColumns = (actions: ActionHandler[]) => {
-    let baseColumns = getBaseAssignmentColumns(() => {}, () => {}, () => {}).filter(col =>
-      !["edit", "delete", "actions"].includes(String(col.id))
-    );
+    const noop = () => {};
+    let baseColumns = getBaseAssignmentColumns(
+      noop,
+      noop,
+      noop,
+      noop,
+      noop,
+      noop,
+      noop,
+      noop
+    ).filter((col) => !["edit", "delete", "actions"].includes(String(col.id)));
     baseColumns = baseColumns
-      .filter(col => col.header !== "Course Name")
+      .filter((col) => col.header !== "Course Name")
       .map((col) => {
         const columnKey = String((col as any).id ?? (col as any).accessorKey ?? "");
         if (columnKey === "created_at" || columnKey === "updated_at") {
@@ -194,22 +202,18 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
               title={action.label}
               style={{ lineHeight: 0 }}
             >
-              <img
-                src={action.icon}
-                alt={action.label}
-                width="21"
-                height="21"
-              />
+              <img src={action.icon} alt={action.label} width="21" height="21" />
             </button>
           ))}
         </div>
-      )
+      ),
     };
     return [...baseColumns, actionsColumn];
   };
 
   const assignments = (assignmentResponse?.data || []).filter(
-    (assignment: any) => assignment.course_id === courseId);
+    (assignment: any) => assignment.course_id === courseId
+  );
   const columns = useMemo(() => getAssignmentColumns(actionHandlers), [actionHandlers]);
 
   return (
@@ -227,6 +231,7 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
         showGlobalFilter={false}
         showColumnFilter={false}
         showPagination={false}
+        showHeader={false}
         tableSize={{ span: 12, offset: 0 }}
       />
     </div>

@@ -9,17 +9,17 @@ import { HttpMethod } from "../../utils/httpMethods";
 ============================================================================= */
 
 const STANDARD_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '13px',
-  lineHeight: '30px',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "13px",
+  lineHeight: "30px",
 };
 
 const TABLE_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '15px',
-  lineHeight: '1.428em',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "15px",
+  lineHeight: "1.428em",
 };
 
 /* =============================================================================
@@ -27,23 +27,20 @@ const TABLE_TEXT: React.CSSProperties = {
 ============================================================================= */
 
 const getBaseUrl = (): string => {
-  if (typeof document !== 'undefined') {
-    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, '');
+  if (typeof document !== "undefined") {
+    const base = document.querySelector("base[href]") as HTMLBaseElement | null;
+    if (base?.href) return base.href.replace(/\/$/, "");
   }
   const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
-  const fromProcess =
-    (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
-  return String(fromProcess).replace(/\/$/, '');
+  if (typeof fromGlobal === "string" && fromGlobal) return fromGlobal.replace(/\/$/, "");
+  const fromProcess = (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
+  return String(fromProcess).replace(/\/$/, "");
 };
 
-const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
-
-
+const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, "")}`;
 
 const ICONS = {
-  info: 'assets/images/info-icon-16.png',
+  info: "assets/images/info-icon-16.png",
 } as const;
 
 type IconName = keyof typeof ICONS;
@@ -61,10 +58,10 @@ const Icon: React.FC<{
     height={size}
     alt={alt ?? name}
     className={className}
-    style={{ verticalAlign: 'middle', ...style }}
+    style={{ verticalAlign: "middle", ...style }}
   />
 ));
-Icon.displayName = 'Icon';
+Icon.displayName = "Icon";
 
 /* =============================================================================
    Types
@@ -80,7 +77,7 @@ Icon.displayName = 'Icon';
 type ExportModal = {
   show: boolean;
   onHide: () => void;
-    modelClass: string;
+  modelClass: string;
 };
 
 /* =============================================================================
@@ -88,24 +85,24 @@ type ExportModal = {
 ============================================================================= */
 
 const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
-    const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
-    const [optionalFields, setOptionalFields] = useState<string[]>([]);
-    const [externalFields, setExternalFields] = useState<string[]>([]);
-    const [allFields, setAllFields] = useState<string[]>([]);
-    const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>('');
+  const [mandatoryFields, setMandatoryFields] = useState<string[]>([]);
+  const [optionalFields, setOptionalFields] = useState<string[]>([]);
+  const [externalFields, setExternalFields] = useState<string[]>([]);
+  const [allFields, setAllFields] = useState<string[]>([]);
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [status, setStatus] = useState<string>("");
   const { error, isLoading, data: exportResponse, sendRequest: fetchExports } = useAPI();
   const { data: sendExportResponse, error: exportError, sendRequest: sendExport } = useAPI();
 
-    const fetchConfig = useCallback(async () => {
-        try {
-            fetchExports({ url: `/export/${modelClass}` });
-            // Handle the responses as needed
-        } catch (err) {
-            // Handle any errors that occur during the fetch
-            console.error("Error fetching data:", err);
-        }
-    }, [fetchExports]);
+  const fetchConfig = useCallback(async () => {
+    try {
+      fetchExports({ url: `/export/${modelClass}` });
+      // Handle the responses as needed
+    } catch (err) {
+      // Handle any errors that occur during the fetch
+      console.error("Error fetching data:", err);
+    }
+  }, [fetchExports]);
 
   const transformField = (field: string) => {
     let f = field.replace(/_/g, " ");
@@ -115,7 +112,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
   /** Format fields for multiline tooltip display */
   const formatTooltipList = (fields: string[]) => {
     return (
-      <div style={{ whiteSpace: 'pre-line' }}>
+      <div style={{ whiteSpace: "pre-line" }}>
         {fields.map((f) => transformField(f)).join("\n")}
       </div>
     );
@@ -124,7 +121,7 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
   useEffect(() => {
     if (!show) return;
 
-    fetchConfig()
+    fetchConfig();
   }, [show]);
 
   useEffect(() => {
@@ -136,19 +133,19 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
       const fields = [
         ...exportResponse.data.mandatory_fields,
         ...exportResponse.data.optional_fields,
-        ...exportResponse.data.external_fields
-      ]
+        ...exportResponse.data.external_fields,
+      ];
 
-      setAllFields(fields)
-      setSelectedFields(exportResponse.data.mandatory_fields)
+      setAllFields(fields);
+      setSelectedFields(exportResponse.data.mandatory_fields);
 
-      setStatus('');
+      setStatus("");
     }
   }, [exportResponse]);
 
   const toggleField = (field: string) => {
     setSelectedFields((prev) =>
-      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field],
+      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]
     );
   };
 
@@ -175,37 +172,37 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
 
     // Get year, month, day
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const day = String(now.getDate()).padStart(2, "0");
 
     // Get hours, minutes, seconds
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
 
     // Combine into a string without invalid characters
     return `${year}${month}${day}_${hours}${minutes}${seconds}`;
   }
 
   const downloadFile = (file) => {
-    const url = window.URL.createObjectURL(new Blob([file]))
-    const link = document.createElement('a')
-    link.href = url
+    const url = window.URL.createObjectURL(new Blob([file]));
+    const link = document.createElement("a");
+    link.href = url;
 
     const timestamp = Date.now().toLocaleString();
 
-    link.setAttribute('download', `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-  }
+    link.setAttribute("download", `${modelClass}_export_${getFormattedDateTimeForFilename()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
   const on_export = async () => {
     if (selectedFields.length === 0) {
-      setStatus('Please select at least one field.');
+      setStatus("Please select at least one field.");
       return;
     }
 
-    setStatus('Generating CSV…');
+    setStatus("Generating CSV…");
 
     try {
       const formData = new FormData();
@@ -223,22 +220,18 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-
-      console.log(sendExportResponse)
-
+      console.log(sendExportResponse);
     } catch (err: any) {
       setStatus(err.message || "Unexpected error.");
     }
-
   };
 
-
   useEffect(() => {
-    if(sendExportResponse) {
+    if (sendExportResponse) {
       setStatus(sendExportResponse.data.message);
-      downloadFile(sendExportResponse.data.file)
+      downloadFile(sendExportResponse.data.file);
 
-      if (!exportError){
+      if (!exportError) {
         setTimeout(onHide, 1500);
       }
     } else if (exportError) {
@@ -256,10 +249,8 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
       keyboard
       contentClassName="border border-2"
     >
-      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: '#f7f8fa' }}>
-        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>
-          Export {modelClass}
-        </Modal.Title>
+      <Modal.Header closeButton style={{ ...STANDARD_TEXT, background: "#f7f8fa" }}>
+        <Modal.Title style={{ fontSize: 18, fontWeight: 600 }}>Export {modelClass}</Modal.Title>
       </Modal.Header>
 
       <Modal.Body style={{ ...STANDARD_TEXT }}>
@@ -300,21 +291,21 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
                       </span>
                     </OverlayTrigger>
                   </div>
-                    <div>
-                        <strong>Optional fields:</strong>
-                      <OverlayTrigger
-                        placement="right"
-                        overlay={
-                          <Tooltip id="external-fields-tip">
-                            {formatTooltipList(externalFields)}
-                          </Tooltip>
-                        }
-                      >
+                  <div>
+                    <strong>Optional fields:</strong>
+                    <OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <Tooltip id="external-fields-tip">
+                          {formatTooltipList(externalFields)}
+                        </Tooltip>
+                      }
+                    >
                       <span style={{ cursor: "help", marginLeft: 6 }}>
                         <Icon name="info" size={16} />
                       </span>
-                      </OverlayTrigger>
-                    </div>
+                    </OverlayTrigger>
+                  </div>
                 </div>
               </Col>
             </Row>
@@ -324,23 +315,21 @@ const ExportModal: React.FC<ExportModal> = ({ show, onHide, modelClass }) => {
                 <Form.Label className="fw-semibold" style={TABLE_TEXT}>
                   Columns to export
                 </Form.Label>
-                <div style={{ ...TABLE_TEXT, color: '#666', marginBottom: 6 }}>
+                <div style={{ ...TABLE_TEXT, color: "#666", marginBottom: 6 }}>
                   Only checked fields will be included. Use ↑ / ↓ to adjust column order.
                 </div>
                 <div
                   style={{
-                    border: '1px solid #e4e6eb',
+                    border: "1px solid #e4e6eb",
                     borderRadius: 8,
                     padding: 8,
                     maxHeight: 220,
-                    overflowY: 'auto',
-                    backgroundColor: '#ffffff',
+                    overflowY: "auto",
+                    backgroundColor: "#ffffff",
                   }}
                 >
                   {selectedFields.length === 0 ? (
-                    <span style={{ ...TABLE_TEXT, color: '#6b7280' }}>
-                      No fields selected.
-                    </span>
+                    <span style={{ ...TABLE_TEXT, color: "#6b7280" }}>No fields selected.</span>
                   ) : (
                     allFields.map((field, idx) => (
                       <div

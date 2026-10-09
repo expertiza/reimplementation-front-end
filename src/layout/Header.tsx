@@ -6,7 +6,6 @@ import { RootState } from "../store/store";
 import { ROLE } from "../utils/interfaces";
 import { hasAllPrivilegesOf } from "../utils/util";
 
-
 /**
  * @author Ankur Mundra on May, 2023
  */
@@ -123,10 +122,7 @@ const Header: React.FC = () => {
                       Users
                     </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/courses">
-                      Courses
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/assignments">
-                      Assignments
+                      Courses/Assignments
                     </NavDropdown.Item>
                     <NavDropdown.Item as={Link} to="/questionnaire">
                       Questionnaire

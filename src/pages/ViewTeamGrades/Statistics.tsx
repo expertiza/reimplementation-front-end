@@ -1,7 +1,7 @@
 // Statistics.tsx
 import React, { useEffect } from "react";
 import { calculateAverages, normalizeReviewDataArray } from "../../utils/heatgridUtils";
-import styles from "./ViewTeamGrades.module.scss"
+import styles from "./ViewTeamGrades.module.scss";
 
 //props for statistics component
 interface StatisticsProps {
@@ -19,17 +19,16 @@ const Statistics: React.FC<StatisticsProps> = ({ roundsSource = null }) => {
     // Use the first round as a reference for the stats calculation (legacy behavior preserved)
     const firstRound = roundsSource[0] || [];
     const normalizedData = normalizeReviewDataArray(firstRound);
-    const { sortedData } = calculateAverages(
-      normalizedData,
-      "asc"
-    );
+    const { sortedData } = calculateAverages(normalizedData, "asc");
     // Filter out SectionHeader sentinels before accessing ReviewData-only fields
-    const rowAvgArray = sortedData.filter(item => !('type' in item)).map((item: any) => item.RowAvg);
+    const rowAvgArray = sortedData
+      .filter((item) => !("type" in item))
+      .map((item: any) => item.RowAvg);
     console.log(rowAvgArray);
   }, [roundsSource]);
 
   // Statistics component focuses on rendering round summary. No local UI toggles required currently.
-  
+
   if (!roundsSource || roundsSource.length === 0) {
     return null; // Don't render if no data available
   }
@@ -52,7 +51,10 @@ const Statistics: React.FC<StatisticsProps> = ({ roundsSource = null }) => {
               // Normalize data to handle both old and new field names
               const normalizedData = normalizeReviewDataArray(roundData);
               // Calculate averages for each category using data from utils or manually.
-              const submittedWorkAvg = calculateAverages(normalizedData, "asc").averagePeerReviewScore;
+              const submittedWorkAvg = calculateAverages(
+                normalizedData,
+                "asc"
+              ).averagePeerReviewScore;
 
               return (
                 <tr key={index}>
