@@ -17,9 +17,9 @@
 }
 
 /* Standard text elements - excluding review sections */
-.page-wrapper>div:not([class*="review"]) p,
-.page-wrapper>div:not([class*="review"]) span,
-.page-wrapper>div:not([class*="review"]) label,
+.page-wrapper > div:not([class*="review"]) p,
+.page-wrapper > div:not([class*="review"]) span,
+.page-wrapper > div:not([class*="review"]) label,
 .page-wrapper label {
   font-size: 13px;
   line-height: 30px;
@@ -100,27 +100,27 @@
 
   /* Orange */
   .c2 {
-    background-color: #FD992D;
+    background-color: #fd992d;
   }
 
   /* Yellow, indicative of a median score */
   .c3 {
-    background-color: #FFEC8B;
+    background-color: #ffec8b;
   }
 
   /* Light green */
   .c4 {
-    background-color: #BCED91;
+    background-color: #bced91;
   }
 
   /* Green, indicative of a good score */
   .c5 {
-    background-color: #2DE636;
+    background-color: #2de636;
   }
 
   /* Default background color */
   .cf {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
   }
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
@@ -203,7 +203,6 @@
   position: relative;
 }
 
-
 /* Styling for table headers */
 .tbl_heat th {
   border: 1px black solid;
@@ -215,12 +214,10 @@
   table-layout: fixed;
 }
 
-
 /* Hides padding for specific rows */
 .hiddenRow {
   padding: 0 !important;
 }
-
 
 /* Tooltip span styling */
 .spn_tooltip {
@@ -278,7 +275,6 @@
   font-weight: bold !important;
 }
 
-
 .round-selector {
   display: flex;
   gap: 8px;
@@ -306,7 +302,6 @@
     background-color: rgba(176, 4, 4, 0.1);
     /* Light red background on hover */
   }
-
 }
 
 .round-button.current {
@@ -316,7 +311,6 @@
   /* White text for selected button */
 }
 
-
 .container {
   display: flex;
   justify-content: space-between;
@@ -324,7 +318,6 @@
   width: 80%;
   /* Ensure the container takes up the full width */
 }
-
 
 /* Classes used as plain strings in ShowReviews.tsx and FeedbackTable.tsx —
    must not be locally scoped. */
@@ -392,7 +385,6 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-
 /* Shared between ReviewTableRow and FeedbackTable — item number cell layout */
 .itemCell {
   display: flex;
@@ -423,8 +415,7 @@
   gap: 8px;
 }
 
-
- /* Styling the checkbox if needed */
+/* Styling the checkbox if needed */
 .toggle-container input[type="checkbox"] {
   margin: 0;
   padding: 0;

@@ -32,23 +32,23 @@ const Users = () => {
   const dispatch = useDispatch();
 
   const STANDARD_TEXT: React.CSSProperties = {
-    fontFamily: 'verdana, arial, helvetica, sans-serif',
-    color: '#333',
-    fontSize: '13px',
-    lineHeight: '30px',
+    fontFamily: "verdana, arial, helvetica, sans-serif",
+    color: "#333",
+    fontSize: "13px",
+    lineHeight: "30px",
   };
 
   const toolbarLinkBase: React.CSSProperties = {
     ...STANDARD_TEXT,
-    color: '#8b5e3c',
-    background: 'transparent',
-    border: 'none',
+    color: "#8b5e3c",
+    background: "transparent",
+    border: "none",
     padding: 0,
     margin: 0,
-    cursor: 'pointer',
-    textDecoration: 'none',
+    cursor: "pointer",
+    textDecoration: "none",
   };
-  const pipe: React.CSSProperties = { margin: '0 8px', color: '#8b5e3c' };
+  const pipe: React.CSSProperties = { margin: "0 8px", color: "#8b5e3c" };
 
   const ToolbarLink: React.FC<{
     onClick: () => void;
@@ -63,8 +63,6 @@ const Users = () => {
     visible: boolean;
     data?: IUserResponse;
   }>({ visible: false });
-
-
 
   useEffect(() => {
     if (!showDeleteConfirmation.visible) fetchUsers({ url: `/users/${auth.user.id}/managed` });
@@ -101,8 +99,8 @@ const Users = () => {
 
   const handleHideImportModal = () => {
     fetchUsers({ url: `/users/${auth.user.id}/managed` });
-    setShowImportUserModal(false)
-  }
+    setShowImportUserModal(false);
+  };
 
   return (
     <>
@@ -120,7 +118,6 @@ const Users = () => {
               <ToolbarLink onClick={() => setShowImportUserModal(true)}>Import users</ToolbarLink>
               <span style={pipe}>|</span>
               <ToolbarLink onClick={() => setShowExportUserModal(true)}>Export users</ToolbarLink>
-
             </Col>
             <Col md={{ span: 1, offset: 11 }}>
               <Button variant="outline-success" onClick={() => navigate("new")}>

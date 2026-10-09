@@ -59,7 +59,11 @@ const CreateAssignment: React.FC = () => {
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireOption[]>([]);
 
   const { data: coursesResp, error: coursesErr, sendRequest: fetchCourses } = useAPI();
-  const { data: questionnairesResp, error: questionnaireErr, sendRequest: fetchQuestionnaires } = useAPI();
+  const {
+    data: questionnairesResp,
+    error: questionnaireErr,
+    sendRequest: fetchQuestionnaires,
+  } = useAPI();
 
   useEffect(() => {
     fetchCourses({ url: "/courses", method: HttpMethod.GET });
@@ -89,7 +93,8 @@ const CreateAssignment: React.FC = () => {
   }, [coursesErr, dispatch]);
 
   useEffect(() => {
-    if (questionnaireErr) dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireErr }));
+    if (questionnaireErr)
+      dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireErr }));
   }, [questionnaireErr, dispatch]);
 
   return (

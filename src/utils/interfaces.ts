@@ -44,7 +44,6 @@ export interface IUserResponse {
   updated_at: string;
 }
 
-
 export interface IParticipantResponse {
   id: number;
   name: string;
@@ -193,7 +192,7 @@ export interface ILoggedInUser {
   institution_id: number;
 }
 
-export interface ICourseResponse{
+export interface ICourseResponse {
   id: number;
   name: string;
   directory_path: string;
@@ -208,7 +207,7 @@ export interface ICourseResponse{
   date_format_pref: string;
 }
 
-export interface ICourseRequest{
+export interface ICourseRequest {
   name: string;
   directory_path: string;
   info: string;
@@ -244,13 +243,13 @@ export interface IAssignmentResponse {
   created_at: string;
   updated_at: string;
   directory_path: string;
-  spec_location:string;
-  private:boolean;
+  spec_location: string;
+  private: boolean;
   show_template_review: boolean;
-  require_quiz:boolean;
-  has_badge:boolean;
-  staggered_deadline:boolean;
-  is_calibrated:boolean;
+  require_quiz: boolean;
+  has_badge: boolean;
+  staggered_deadline: boolean;
+  is_calibrated: boolean;
   vary_by_round?: boolean;
   varying_rubrics_by_round?: boolean;
   rounds_of_reviews?: number;
@@ -261,10 +260,9 @@ export interface IAssignmentResponse {
     questionnaire?: { id: number; name: string };
   }[];
   num_review_rounds?: number;
-  
 }
 
-export interface StudentTeamsProps { }
+export interface StudentTeamsProps {}
 
 // Define the structure of a team member object
 export interface TeamMember {
@@ -343,7 +341,7 @@ export interface AdvertisementDetails {
 export interface JoinTeamRequest {
   id: number;
   comments: string;
-  reply_status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  reply_status: "PENDING" | "ACCEPTED" | "DECLINED";
   created_at: string;
   updated_at: string;
   participant: {

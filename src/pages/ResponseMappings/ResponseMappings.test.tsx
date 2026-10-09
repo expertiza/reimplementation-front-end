@@ -6,23 +6,22 @@ import ResponseMappings, {
   Team,
   TeamUser,
   User,
-    demo
+  demo,
 } from "./ResponseMappings";
 import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import "@testing-library/jest-dom";
-import {Simulate} from "react-dom/test-utils";
+import { Simulate } from "react-dom/test-utils";
 import click = Simulate.click;
 import type { MockInstance } from "vitest";
 
 const APIAssignmentData = {
-      id: 2,
-      name: "Assignment 2",
-      courseName: "Test Course",
-      description: "Description 2",
-      created_at: "2023-01-03",
-      updated_at: "2023-01-04",
-    };
-
+  id: 2,
+  name: "Assignment 2",
+  courseName: "Test Course",
+  description: "Description 2",
+  created_at: "2023-01-03",
+  updated_at: "2023-01-04",
+};
 
 /**
  * To be used when API is introduced to the page
@@ -77,9 +76,7 @@ const APITeamData = [
       },
     ],
   },
-]
-
-
+];
 
 // Mock the useAPI hook to return mock assignments
 vi.mock("hooks/useAPI", () => ({
@@ -87,7 +84,7 @@ vi.mock("hooks/useAPI", () => ({
     error: null,
     isLoading: false,
     data: {
-      data: APITeamData
+      data: APITeamData,
     },
     sendRequest: vi.fn(),
   }),
@@ -99,7 +96,7 @@ const renderWithRouter = (component: React.ReactNode) => {
       {
         path: "/ssignments/edit/:id/responsemappings",
         element: component,
-        loader: () => (APIAssignmentData), // Mock your loader data
+        loader: () => APIAssignmentData, // Mock your loader data
       },
     ],
     {
@@ -122,12 +119,12 @@ const renderAndLoad = async () => {
     renderWithRouter(<ResponseMappings />);
   });
 
-  await act (async () => {
+  await act(async () => {
     // Load Table Data
-    const loadButton = screen.getByRole("button", {'name': /Load demo data/i})
-    loadButton.click()
+    const loadButton = screen.getByRole("button", { name: /Load demo data/i });
+    loadButton.click();
   });
-}
+};
 
 describe("Test Response Mappings Displays Correctly", () => {
   it("Renders the table correctly", async () => {
@@ -137,8 +134,8 @@ describe("Test Response Mappings Displays Correctly", () => {
 
     const table = screen.getByRole("table");
     expect(table).toBeInTheDocument();
-    var memberRegex = new RegExp(`Assign Reviewer: ${APIAssignmentData.name}` , "i");
-    expect(screen.getAllByText(/Assign Reviewer: /i)).toHaveLength(2)
+    var memberRegex = new RegExp(`Assign Reviewer: ${APIAssignmentData.name}`, "i");
+    expect(screen.getAllByText(/Assign Reviewer: /i)).toHaveLength(2);
 
     expect(screen.getByText(/Contributor/i)).toBeInTheDocument();
     expect(screen.getByText(/Reviewed by/i)).toBeInTheDocument();
@@ -150,16 +147,14 @@ describe("Test Response Mappings Displays Correctly", () => {
    * classes/ids.
    */
   it("Renders the Contributor Column Correctly", async () => {
+    await renderAndLoad();
 
-    await renderAndLoad()
-
-    const data = demo(APIAssignmentData.id)
-    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id)
-
+    const data = demo(APIAssignmentData.id);
+    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id);
 
     // Get the table rows, and remove the first (column headers)
-    const allTableRows = screen.getAllByRole('row')
-    allTableRows.shift()
+    const allTableRows = screen.getAllByRole("row");
+    allTableRows.shift();
 
     allTableRows.forEach((row, idx) => {
       // Skip the header row
@@ -170,9 +165,9 @@ describe("Test Response Mappings Displays Correctly", () => {
         const contributerCol = cols[0];
         const reviewedByCol = cols[1];
 
-        var team = sortedTeams[idx]
-        var mentorName = data.users.find((user: User) => user.id === team.mentor_id)?.full_name
-        var members = data.teams_users.filter((user: TeamUser) => user.team_id === team.id)
+        var team = sortedTeams[idx];
+        var mentorName = data.users.find((user: User) => user.id === team.mentor_id)?.full_name;
+        var members = data.teams_users.filter((user: TeamUser) => user.team_id === team.id);
 
         // Team Name
         expect(within(contributerCol).getByText(sortedTeams[idx].name)).toBeInTheDocument();
@@ -182,64 +177,72 @@ describe("Test Response Mappings Displays Correctly", () => {
 
         // Members
         members.forEach((member: TeamUser) => {
-          var memberName = data.users.find((user: User) => user.id === member.user_id)?.full_name
-          expect(memberName).toBeTruthy()
-          expect(contributerCol).toHaveTextContent(memberName || "")
-        })
+          var memberName = data.users.find((user: User) => user.id === member.user_id)?.full_name;
+          expect(memberName).toBeTruthy();
+          expect(contributerCol).toHaveTextContent(memberName || "");
+        });
 
         // Buttons
-        var buttons = within(contributerCol).getAllByRole('button')
-        expect(buttons).toHaveLength(2)
-        expect(buttons[0]).toHaveTextContent("Add reviewer")
-        expect(buttons[1]).toHaveTextContent("Delete outstanding reviewers")
+        var buttons = within(contributerCol).getAllByRole("button");
+        expect(buttons).toHaveLength(2);
+        expect(buttons[0]).toHaveTextContent("Add reviewer");
+        expect(buttons[1]).toHaveTextContent("Delete outstanding reviewers");
       }
-    })
+    });
   });
 
   it("Renders the Reviewed By Column Correctly", async () => {
+    await renderAndLoad();
 
-    await renderAndLoad()
-
-    const data = demo(APIAssignmentData.id)
-    console.log(data.users)
-    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id)
+    const data = demo(APIAssignmentData.id);
+    console.log(data.users);
+    const sortedTeams = data.teams.sort((teamA: Team, teamB: Team) => teamA.id - teamB.id);
 
     // Get the table rows, and remove the first (column headers)
-    const allTableRows = screen.getAllByRole('row')
-    allTableRows.shift()
+    const allTableRows = screen.getAllByRole("row");
+    allTableRows.shift();
 
     allTableRows.forEach((row, idx) => {
-        var team = sortedTeams[idx]
-        var teamResponseMaps = data.response_maps.filter((responseMap: ResponseMapRow) => responseMap.reviewee_team_id == team.id)
-        var teamReviewers = teamResponseMaps.map((responseMap: ResponseMapRow) => {return data.users.find((user: User) => user.id === responseMap.reviewer_user_id)})
-        var teamReviews  = teamResponseMaps.map((responseMap: ResponseMapRow) => {return data.responses.find((response: ResponseRow) => response.map_id === responseMap.id)})
-        var cleanedTeamReviews = teamReviews.filter(item => item !== null && item !== undefined);
-        const reviewerRows = within(row).queryAllByTestId("ex-review-row")
+      var team = sortedTeams[idx];
+      var teamResponseMaps = data.response_maps.filter(
+        (responseMap: ResponseMapRow) => responseMap.reviewee_team_id == team.id
+      );
+      var teamReviewers = teamResponseMaps.map((responseMap: ResponseMapRow) => {
+        return data.users.find((user: User) => user.id === responseMap.reviewer_user_id);
+      });
+      var teamReviews = teamResponseMaps.map((responseMap: ResponseMapRow) => {
+        return data.responses.find((response: ResponseRow) => response.map_id === responseMap.id);
+      });
+      var cleanedTeamReviews = teamReviews.filter((item) => item !== null && item !== undefined);
+      const reviewerRows = within(row).queryAllByTestId("ex-review-row");
 
+      reviewerRows.forEach((reviewerRow, reviewerIdx) => {
+        var review = cleanedTeamReviews.find(
+          (review: ResponseRow) => teamResponseMaps[reviewerIdx].id === review?.map_id
+        );
 
-        reviewerRows.forEach((reviewerRow, reviewerIdx) => {
-          var review = cleanedTeamReviews.find((review: ResponseRow) => teamResponseMaps[reviewerIdx].id === review?.map_id )
+        // Name
+        expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.full_name || "");
 
-          // Name
-          expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.full_name || "")
+        // Status
+        // If the review is submitted
+        if (review && review.is_submitted) {
+          expect(reviewerRow).toHaveTextContent("Submitted");
 
-          // Status
-          // If the review is submitted
-          if (review && review.is_submitted) {
-            expect(reviewerRow).toHaveTextContent("Submitted")
-
-            expect(within(reviewerRow).getByRole('button', {name: "(unsubmit)"})).toBeInTheDocument()
+          expect(
+            within(reviewerRow).getByRole("button", { name: "(unsubmit)" })
+          ).toBeInTheDocument();
+        } else {
+          if (review) {
+            expect(reviewerRow).toHaveTextContent("Saved");
           } else {
-            if (review) {
-              expect(reviewerRow).toHaveTextContent("Saved")
-            } else {
-              expect(reviewerRow).toHaveTextContent("Not saved")
-            }
+            expect(reviewerRow).toHaveTextContent("Not saved");
           }
+        }
 
-          expect(within(reviewerRow).getByRole('button', {name: "delete"})).toBeInTheDocument()
-        })
-    })
+        expect(within(reviewerRow).getByRole("button", { name: "delete" })).toBeInTheDocument();
+      });
+    });
   });
 });
 
@@ -247,7 +250,7 @@ describe("Test Response Mappings Functions Correctly", () => {
   let promptSpy: MockInstance;
 
   beforeEach(() => {
-    promptSpy = vi.spyOn(window, 'prompt');
+    promptSpy = vi.spyOn(window, "prompt");
   });
 
   afterEach(() => {
@@ -255,45 +258,36 @@ describe("Test Response Mappings Functions Correctly", () => {
   });
 
   it("Test Assigning a Reviewer", async () => {
-    promptSpy.mockReturnValue('1005');
-    await renderAndLoad()
-    const data = demo(APIAssignmentData.id)
+    promptSpy.mockReturnValue("1005");
+    await renderAndLoad();
+    const data = demo(APIAssignmentData.id);
 
     // Finds the first "Add Reviewer" button on the screen
-    var user_name = data.users.find((user: User) => user.id === 1005)?.full_name || ""
-    var firstRow = screen.getAllByRole('row')[1]
+    var user_name = data.users.find((user: User) => user.id === 1005)?.full_name || "";
+    var firstRow = screen.getAllByRole("row")[1];
     var firstRowContributorCell = within(firstRow).getAllByRole("cell")[1];
 
-    expect(firstRowContributorCell).not.toHaveTextContent(user_name)
+    expect(firstRowContributorCell).not.toHaveTextContent(user_name);
 
+    var addReviewerButton = within(firstRow).getByRole("button", { name: "Add reviewer" });
+    addReviewerButton.click();
 
-    var addReviewerButton = within(firstRow).getByRole('button', {name: "Add reviewer"})
-    addReviewerButton.click()
+    console.log(promptSpy);
+    expect(promptSpy).toBeCalled();
 
-    console.log(promptSpy)
-    expect(promptSpy).toBeCalled()
-
-    firstRowContributorCell = (await within((await screen.findAllByRole('row'))[1]).findAllByRole("cell"))[1]
-    expect(firstRowContributorCell).toHaveTextContent(user_name)
+    firstRowContributorCell = (
+      await within((await screen.findAllByRole("row"))[1]).findAllByRole("cell")
+    )[1];
+    expect(firstRowContributorCell).toHaveTextContent(user_name);
   });
 
-  it.skip("Test Adding a Reviewer", () => {
+  it.skip("Test Adding a Reviewer", () => {});
 
-  });
+  it.skip("Test Removing a Reviewer", () => {});
 
-  it.skip("Test Removing a Reviewer", () => {
+  it.skip("Test Removing all Current Reviewer", () => {});
 
-  });
+  it.skip("Test Unsubmitting a Review", () => {});
 
-  it.skip("Test Removing all Current Reviewer", () => {
-
-  });
-
-  it.skip("Test Unsubmitting a Review", () => {
-
-  });
-
-  it.skip("Test Showing Names / Usernames", () => {
-
-  });
+  it.skip("Test Showing Names / Usernames", () => {});
 });

@@ -6,52 +6,40 @@ import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
  */
 
 interface ColumnButtonProps {
-    id: string;
-    label?: string;
-    tooltip?: string;
-    variant: string;
-    size?: "sm" | "lg"; // Matches React-Bootstrap Button prop
-    className?: string;
-    onClick: () => void;
-    icon: React.ReactNode;
+  id: string;
+  label?: string;
+  tooltip?: string;
+  variant: string;
+  size?: "sm" | "lg"; // Matches React-Bootstrap Button prop
+  className?: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+}
+
+const ColumnButton: React.FC<ColumnButtonProps> = (props) => {
+  const { id, label, tooltip, variant, size, className, onClick, icon } = props;
+
+  const displayButton = (
+    <Button
+      variant={variant}
+      size={size}
+      className={className}
+      onClick={onClick}
+      aria-label={label}
+    >
+      {icon}
+    </Button>
+  );
+
+  if (tooltip) {
+    return (
+      <OverlayTrigger placement="top" overlay={<Tooltip id={`${id}-tooltip`}>{tooltip}</Tooltip>}>
+        {displayButton}
+      </OverlayTrigger>
+    );
   }
 
-  const ColumnButton: React.FC<ColumnButtonProps> = (props) => {
-    const {
-      id,
-      label,
-      tooltip,
-      variant,
-      size,
-      className,
-      onClick,
-      icon,
-    } = props;
+  return displayButton;
+};
 
-    const displayButton = (
-      <Button
-        variant={variant}
-        size={size}
-        className={className}
-        onClick={onClick}
-        aria-label={label}
-      >
-        {icon}
-      </Button>
-    );
-
-    if (tooltip) {
-      return (
-        <OverlayTrigger
-          placement="top"
-          overlay={<Tooltip id={`${id}-tooltip`}>{tooltip}</Tooltip>}
-        >
-          {displayButton}
-        </OverlayTrigger>
-      );
-    }
-
-    return displayButton;
-  };
-
-  export default ColumnButton;
+export default ColumnButton;

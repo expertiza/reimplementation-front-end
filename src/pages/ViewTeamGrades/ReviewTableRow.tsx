@@ -26,7 +26,7 @@ interface ReviewTableRowProps {
 }
 
 const STICKY_NO_WIDTH = 68; // wide enough for two-digit item numbers + weight badge on one line
-const STICKY_Q_WIDTH  = 340;
+const STICKY_Q_WIDTH = 340;
 
 const cellBase: React.CSSProperties = {
   padding: "4px 10px",
@@ -72,7 +72,13 @@ const reviewerCell: React.CSSProperties = {
   width: 110,
 };
 
-const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReviewClick, dataMin, dataMax }) => {
+const ReviewTableRow: React.FC<ReviewTableRowProps> = ({
+  row,
+  rowIndex,
+  onReviewClick,
+  dataMin,
+  dataMax,
+}) => {
   const bg = rowIndex % 2 === 0 ? "#fff" : "#f5f5f5";
 
   let cellContent;
@@ -120,9 +126,7 @@ const ReviewTableRow: React.FC<ReviewTableRowProps> = ({ row, rowIndex, onReview
       <td style={stickyNo(bg)}>
         <div className={styles.itemCell}>
           <span style={{ fontWeight: "bold" }}>{row.itemNumber}</span>
-          {row.maxScore !== 1 && (
-            <span className={styles.weightCircle}>{row.maxScore}</span>
-          )}
+          {row.maxScore !== 1 && <span className={styles.weightCircle}>{row.maxScore}</span>}
         </div>
       </td>
       <td style={stickyQ(bg)}>{row.itemText}</td>

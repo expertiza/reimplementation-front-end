@@ -1,16 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Container, Row, Col, Button, Modal, Form, Alert, Table, Spinner } from 'react-bootstrap';
-import { FaFile, FaLink, FaTrash, FaDownload } from 'react-icons/fa';
-import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import SubmittedContentService from '../../services/SubmittedContentService';
-import { ISubmittedContentProps, IModalState, IFile } from '../../types/SubmittedContent';
-import './SubmittedContent.css';
+import React, { useState, useCallback, useEffect } from "react";
+import { Container, Row, Col, Button, Modal, Form, Alert, Table, Spinner } from "react-bootstrap";
+import { FaFile, FaLink, FaTrash, FaDownload } from "react-icons/fa";
+import { Formik, Form as FormikForm, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import SubmittedContentService from "../../services/SubmittedContentService";
+import { ISubmittedContentProps, IModalState, IFile } from "../../types/SubmittedContent";
+import "./SubmittedContent.css";
 
 const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
   // State Management
   const [files, setFiles] = useState<IFile[]>([]);
-  const [hyperlinks, setHyperlinks] = useState<{ url: string; title: string; submittedAt: string }[]>([]);
+  const [hyperlinks, setHyperlinks] = useState<
+    { url: string; title: string; submittedAt: string }[]
+  >([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
   });
 
   // Get assignment ID from URL
-  const assignmentId = new URLSearchParams(window.location.search).get('id') || 'default';
+  const assignmentId = new URLSearchParams(window.location.search).get("id") || "default";
 
   // Initial data fetch
   useEffect(() => {
@@ -44,7 +46,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
       // const response = await SubmittedContentService.listFiles(assignmentId);
       // setSubmissions(response);
     } catch (err) {
-      setError('Failed to fetch submissions');
+      setError("Failed to fetch submissions");
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,16 +66,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           // Validate file
           const validation = await SubmittedContentService.validateFile(file);
           if (!validation.isValid) {
-            setError(validation.error || 'Invalid file');
+            setError(validation.error || "Invalid file");
             return;
           }
 
           // Submit file
           const response = await SubmittedContentService.submitFile(assignmentId, file);
-          
+
           // Add to files list
           setFiles((prev) => [...prev, response.file]);
-          setSuccess('File uploaded successfully');
+          setSuccess("File uploaded successfully");
 
           // Reset modal
           setFileModal({ show: false, isSubmitting: false });
@@ -82,7 +84,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           setTimeout(() => setSuccess(null), 3000);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to upload file');
+        setError(err instanceof Error ? err.message : "Failed to upload file");
         console.error(err);
       } finally {
         setFileModal((prev) => ({ ...prev, isSubmitting: false }));
@@ -101,7 +103,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         // Validate URL
         const validation = await SubmittedContentService.validateUrl(values.url);
         if (!validation.isValid) {
-          setError(validation.error || 'Invalid URL');
+          setError(validation.error || "Invalid URL");
           return;
         }
 
@@ -114,7 +116,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
 
         // Add to hyperlinks list
         setHyperlinks((prev) => [...prev, response.hyperlink]);
-        setSuccess('Hyperlink submitted successfully');
+        setSuccess("Hyperlink submitted successfully");
 
         // Reset modal
         setHyperlinkModal({ show: false, isSubmitting: false });
@@ -122,7 +124,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to submit hyperlink');
+        setError(err instanceof Error ? err.message : "Failed to submit hyperlink");
         console.error(err);
       } finally {
         setHyperlinkModal((prev) => ({ ...prev, isSubmitting: false }));
@@ -138,10 +140,10 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         setError(null);
         await SubmittedContentService.removeHyperlink(assignmentId, url);
         setHyperlinks((prev) => prev.filter((h) => h.url !== url));
-        setSuccess('Hyperlink removed successfully');
+        setSuccess("Hyperlink removed successfully");
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to remove hyperlink');
+        setError(err instanceof Error ? err.message : "Failed to remove hyperlink");
         console.error(err);
       }
     },
@@ -155,7 +157,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         setError(null);
         await SubmittedContentService.downloadFile(assignmentId, file.id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to download file');
+        setError(err instanceof Error ? err.message : "Failed to download file");
         console.error(err);
       }
     },
@@ -169,10 +171,10 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
         setError(null);
         await SubmittedContentService.deleteFile(assignmentId, fileId);
         setFiles((prev) => prev.filter((f) => f.id !== fileId));
-        setSuccess('File deleted successfully');
+        setSuccess("File deleted successfully");
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delete file');
+        setError(err instanceof Error ? err.message : "Failed to delete file");
         console.error(err);
       }
     },
@@ -182,16 +184,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
   // Validation Schemas
   const fileValidationSchema = Yup.object().shape({
     file: Yup.mixed()
-      .required('File is required')
-      .test('fileSize', 'File is too large', (value: any) => {
+      .required("File is required")
+      .test("fileSize", "File is too large", (value: any) => {
         if (!value || value.length === 0) return false;
         return value[0].size <= 50 * 1024 * 1024; // 50MB limit
       }),
   });
 
   const hyperlinkValidationSchema = Yup.object().shape({
-    url: Yup.string().url('Invalid URL').required('URL is required'),
-    title: Yup.string().max(255, 'Title is too long'),
+    url: Yup.string().url("Invalid URL").required("URL is required"),
+    title: Yup.string().max(255, "Title is too long"),
   });
 
   return (
@@ -204,8 +206,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
       </Row>
 
       {/* Alerts */}
-      {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>{error}</Alert>}
-      {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>{success}</Alert>}
+      {error && (
+        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" onClose={() => setSuccess(null)} dismissible>
+          {success}
+        </Alert>
+      )}
 
       {/* Action Buttons Grid */}
       <Row className="mb-5 justify-content-center">
@@ -213,19 +223,19 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           <Button
             onClick={() => setFileModal({ ...fileModal, show: true })}
             style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
+              backgroundColor: "#e9ecef",
+              border: "1px solid #dee2e6",
+              color: "#000",
+              width: "150px",
+              height: "150px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              fontSize: "1rem",
             }}
           >
-            <FaFile style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
+            <FaFile style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }} />
             Upload File
           </Button>
         </Col>
@@ -234,19 +244,19 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
           <Button
             onClick={() => setHyperlinkModal({ ...hyperlinkModal, show: true })}
             style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
+              backgroundColor: "#e9ecef",
+              border: "1px solid #dee2e6",
+              color: "#000",
+              width: "150px",
+              height: "150px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              fontSize: "1rem",
             }}
           >
-            <FaLink style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }} />
+            <FaLink style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }} />
             Add Hyperlink
           </Button>
         </Col>
@@ -256,23 +266,23 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
             onClick={fetchSubmissions}
             disabled={loading}
             style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
+              backgroundColor: "#e9ecef",
+              border: "1px solid #dee2e6",
+              color: "#000",
+              width: "150px",
+              height: "150px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              fontSize: "1rem",
             }}
           >
             {loading ? (
               <Spinner animation="border" size="sm" />
             ) : (
               <>
-                <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📋</span>
+                <span style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>📋</span>
                 View History
               </>
             )}
@@ -281,21 +291,21 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
 
         <Col xs={6} sm={6} md={3} className="d-flex justify-content-center mb-3">
           <Button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = "/")}
             style={{
-              backgroundColor: '#e9ecef',
-              border: '1px solid #dee2e6',
-              color: '#000',
-              width: '150px',
-              height: '150px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              fontSize: '1rem',
+              backgroundColor: "#e9ecef",
+              border: "1px solid #dee2e6",
+              color: "#000",
+              width: "150px",
+              height: "150px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              fontSize: "1rem",
             }}
           >
-            <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔙</span>
+            <span style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🔙</span>
             Go Back
           </Button>
         </Col>
@@ -343,11 +353,15 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
             <h3>📁 Uploaded Files</h3>
             <div className="files-list">
               {files.map((file) => (
-                <div key={file.id} className="file-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
+                <div
+                  key={file.id}
+                  className="file-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center"
+                >
                   <div>
                     <strong>{file.name}</strong>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                      {SubmittedContentService.formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleString()}
+                    <div style={{ fontSize: "0.85rem", color: "#666" }}>
+                      {SubmittedContentService.formatFileSize(file.size)} •{" "}
+                      {new Date(file.uploadedAt).toLocaleString()}
                     </div>
                   </div>
                   <div>
@@ -355,7 +369,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                       variant="link"
                       onClick={() => handleDownloadFile(file)}
                       title="Download"
-                      style={{ color: '#007bff', marginRight: '0.5rem' }}
+                      style={{ color: "#007bff", marginRight: "0.5rem" }}
                     >
                       <FaDownload />
                     </Button>
@@ -363,7 +377,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                       variant="link"
                       onClick={() => handleDeleteFile(file.id)}
                       title="Delete"
-                      style={{ color: '#dc3545' }}
+                      style={{ color: "#dc3545" }}
                     >
                       <FaTrash />
                     </Button>
@@ -382,12 +396,15 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
             <h3>🔗 Submitted Hyperlinks</h3>
             <div className="hyperlinks-list">
               {hyperlinks.map((hyperlink) => (
-                <div key={hyperlink.url} className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center">
+                <div
+                  key={hyperlink.url}
+                  className="hyperlink-item p-3 mb-2 border rounded d-flex justify-content-between align-items-center"
+                >
                   <div>
                     <a href={hyperlink.url} target="_blank" rel="noopener noreferrer">
                       <strong>{hyperlink.title}</strong>
                     </a>
-                    <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                    <div style={{ fontSize: "0.85rem", color: "#666" }}>
                       Submitted: {new Date(hyperlink.submittedAt).toLocaleString()}
                     </div>
                   </div>
@@ -395,7 +412,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                     variant="link"
                     onClick={() => handleRemoveHyperlink(hyperlink.url)}
                     title="Remove"
-                    style={{ color: '#dc3545' }}
+                    style={{ color: "#dc3545" }}
                   >
                     <FaTrash />
                   </Button>
@@ -426,7 +443,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                     name="file"
                     onChange={(event) => {
                       const files = (event.target as HTMLInputElement).files;
-                      setFieldValue('file', files);
+                      setFieldValue("file", files);
                     }}
                     disabled={isSubmitting}
                   />
@@ -439,7 +456,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                   disabled={isSubmitting || fileModal.isSubmitting}
                   className="w-100"
                 >
-                  {isSubmitting || fileModal.isSubmitting ? 'Uploading...' : 'Upload'}
+                  {isSubmitting || fileModal.isSubmitting ? "Uploading..." : "Upload"}
                 </Button>
               </FormikForm>
             )}
@@ -448,13 +465,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
       </Modal>
 
       {/* Hyperlink Modal */}
-      <Modal show={hyperlinkModal.show} onHide={() => setHyperlinkModal({ ...hyperlinkModal, show: false })}>
+      <Modal
+        show={hyperlinkModal.show}
+        onHide={() => setHyperlinkModal({ ...hyperlinkModal, show: false })}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Add Hyperlink</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
-            initialValues={{ url: '', title: '' }}
+            initialValues={{ url: "", title: "" }}
             validationSchema={hyperlinkValidationSchema}
             onSubmit={handleHyperlinkSubmit}
           >
@@ -490,7 +510,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = () => {
                   disabled={isSubmitting || hyperlinkModal.isSubmitting}
                   className="w-100"
                 >
-                  {isSubmitting || hyperlinkModal.isSubmitting ? 'Submitting...' : 'Submit'}
+                  {isSubmitting || hyperlinkModal.isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
               </FormikForm>
             )}
