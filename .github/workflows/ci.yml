@@ -45,6 +45,106 @@ jobs:
           path: coverage/
           if-no-files-found: warn
           retention-days: 7
+
+  changed-coverage:
+    name: Changed-file coverage
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository with Git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run changed-file coverage
+        run: npm run test:coverage:changed -- --coverage.changed=${{ github.event.pull_request.base.sha }}
+
+      - name: Upload changed-file coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-changed-coverage
+          path: coverage-changed/
+          if-no-files-found: warn
+          retention-days: 7
+
+  coverage-comparison:
+    name: Overall coverage comparison
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+        with:
+          path: coverage-head-source
+
+      - name: Check out target branch commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: coverage-base-source
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: coverage-head-source/.nvmrc
+          cache: npm
+          cache-dependency-path: coverage-head-source/package-lock.json
+
+      - name: Install pull request dependencies
+        working-directory: coverage-head-source
+        run: npm ci
+
+      - name: Install target branch dependencies
+        working-directory: coverage-base-source
+        run: npm ci
+
+      - name: Collect target branch coverage
+        id: base-coverage
+        working-directory: coverage-base-source
+        run: >-
+          npx vitest run --coverage --coverage.reportOnFailure
+          --coverage.reporter=json-summary
+          --coverage.reportsDirectory=../coverage-base
+
+      - name: Collect pull request coverage
+        id: head-coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: npm run test:coverage:summary -- --coverage.reportsDirectory=../coverage-head
+
+      - name: Compare target and pull request coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: >-
+          npm run coverage:compare --
+          ../coverage-base/coverage-summary.json
+          ../coverage-head/coverage-summary.json
+
+      - name: Upload coverage comparison data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-comparison
+          path: |
+            coverage-base/coverage-summary.json
+            coverage-head/coverage-summary.json
+          if-no-files-found: warn
+          retention-days: 7
+
   lint:
     name: ESLint
     if: ${{ github.event_name == 'push' || github.event.pull_request.draft == false }}
