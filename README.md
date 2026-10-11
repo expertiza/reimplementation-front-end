@@ -119,13 +119,25 @@ branch or commit when another target is required. The report is generated even w
 the command still returns a failure and does not hide the test result. It does not enforce a coverage
 threshold.
 
+For non-draft pull requests, GitHub Actions uploads this HTML report as the
+`frontend-changed-coverage` artifact. The artifact is retained for seven days. Pull requests that do
+not change measurable source files may report `0/0` coverage.
+
 ### Overall coverage comparison
 
 Pull requests also receive an overall coverage comparison. CI checks out the exact target-branch
 commit, runs the full coverage suite against both versions, and displays their line, statement,
 branch, and function coverage in the workflow summary. The difference is reported in percentage
 points. A negative value means the pull request reduced that metric. This comparison is
-informational and does not currently enforce a minimum coverage percentage.
+informational and does not enforce a minimum coverage percentage.
+
+If any metric decreases, the comparison produces a visible warning in the GitHub Check and workflow
+summary naming the affected metrics and their percentage-point reductions. The warning does not fail
+the comparison by itself and has no tolerance: any decrease is reported. Test failures remain
+unchanged and are never hidden by the comparison.
+
+GitHub Actions uploads the machine-readable target-branch and pull-request JSON summaries as the
+`frontend-coverage-comparison` artifact. The artifact is retained for seven days.
 
 To run the same comparison locally without switching away from work in progress, create a temporary
 Git worktree for the target branch. Run the following commands from the root of the feature-branch

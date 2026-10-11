@@ -1,13 +1,7 @@
 import { appendFile, readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
-const [baseReportPath, headReportPath] = process.argv.slice(2);
-
-if (!baseReportPath || !headReportPath) {
-  console.error(
-    "Usage: node scripts/compare-coverage.mjs <base-coverage-summary.json> <head-coverage-summary.json>"
-  );
-  process.exit(1);
-}
+const metrics = ["lines", "statements", "branches", "functions"];
 
 async function readSummary(reportPath) {
   const report = JSON.parse(await readFile(reportPath, "utf8"));
@@ -17,6 +11,10 @@ async function readSummary(reportPath) {
   }
 
   return report.total;
+}
+
+function formatMetric(metric) {
+  return `${metric[0].toUpperCase()}${metric.slice(1)}`;
 }
 
 function formatPercentage(value) {
@@ -32,19 +30,36 @@ function formatDifference(value) {
   return `${sign}${value.toFixed(2)} percentage points`;
 }
 
-try {
-  const base = await readSummary(baseReportPath);
-  const head = await readSummary(headReportPath);
-  const metrics = ["lines", "statements", "branches", "functions"];
-  const rows = metrics.map((metric) => {
+export function buildCoverageComparison(base, head) {
+  const comparisons = metrics.map((metric) => {
     const basePercentage = Number(base[metric].pct);
     const headPercentage = Number(head[metric].pct);
-    const difference = headPercentage - basePercentage;
 
-    return `| ${metric[0].toUpperCase()}${metric.slice(1)} | ${formatPercentage(
-      basePercentage
-    )} | ${formatPercentage(headPercentage)} | ${formatDifference(difference)} |`;
+    return {
+      metric,
+      basePercentage,
+      headPercentage,
+      difference: headPercentage - basePercentage,
+    };
   });
+  const reductions = comparisons.filter(({ difference }) => difference < 0);
+  const rows = comparisons.map(
+    ({ metric, basePercentage, headPercentage, difference }) =>
+      `| ${formatMetric(metric)} | ${formatPercentage(basePercentage)} | ${formatPercentage(
+        headPercentage
+      )} | ${formatDifference(difference)} |`
+  );
+  const result = reductions.length
+    ? [
+        "> [!WARNING]",
+        `> Coverage decreased for ${reductions
+          .map(
+            ({ metric, difference }) => `${formatMetric(metric)} (${formatDifference(difference)})`
+          )
+          .join(", ")}.`,
+        "> This warning is informational and does not fail the comparison by itself.",
+      ]
+    : ["No coverage metrics decreased."];
   const output = [
     "## Frontend coverage comparison",
     "",
@@ -52,15 +67,52 @@ try {
     "| --- | ---: | ---: | ---: |",
     ...rows,
     "",
-    "A negative difference means the pull request reduced that coverage metric.",
+    ...result,
   ].join("\n");
+
+  return { output, reductions };
+}
+
+export async function compareCoverage([baseReportPath, headReportPath], environment = process.env) {
+  if (!baseReportPath || !headReportPath) {
+    throw new Error(
+      "Usage: node scripts/compare-coverage.mjs <base-coverage-summary.json> <head-coverage-summary.json>"
+    );
+  }
+
+  const base = await readSummary(baseReportPath);
+  const head = await readSummary(headReportPath);
+  const { output, reductions } = buildCoverageComparison(base, head);
 
   console.log(output);
 
-  if (process.env.GITHUB_STEP_SUMMARY) {
-    await appendFile(process.env.GITHUB_STEP_SUMMARY, `${output}\n`);
+  if (environment.GITHUB_ACTIONS === "true" && reductions.length > 0) {
+    const warning = reductions
+      .map(
+        ({ metric, difference }) =>
+          `${formatMetric(metric)} decreased by ${Math.abs(difference).toFixed(
+            2
+          )} percentage points`
+      )
+      .join("; ");
+    console.log(`::warning title=Frontend coverage decreased::${warning}`);
   }
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
+
+  if (environment.GITHUB_STEP_SUMMARY) {
+    await appendFile(environment.GITHUB_STEP_SUMMARY, `${output}\n`);
+  }
+
+  return { output, reductions };
+}
+
+const isDirectExecution =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectExecution) {
+  try {
+    await compareCoverage(process.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  }
 }
