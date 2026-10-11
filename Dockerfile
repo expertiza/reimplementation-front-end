@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application with nginx
-FROM nginx:alpine
+FROM nginx:alpine-slim
 
 # Copy built assets from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
@@ -40,4 +40,3 @@ EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-
