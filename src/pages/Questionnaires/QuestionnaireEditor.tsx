@@ -12,7 +12,7 @@ import { alertActions } from "store/slices/alertSlice";
 const mapItemToFormField = (item: any) => {
   const qType: string = item.question_type ?? "";
   const sizeStr = item.size ? String(item.size) : "";
-  const altStr  = item.alternatives ? String(item.alternatives) : "";
+  const altStr = item.alternatives ? String(item.alternatives) : "";
 
   let textarea_width: number | string = "";
   let textarea_height: number | string = "";
@@ -24,7 +24,7 @@ const mapItemToFormField = (item: any) => {
 
   if (qType === "Text area" || qType === "Criterion") {
     const parts = sizeStr.split(",");
-    textarea_width  = parts[0] || "";
+    textarea_width = parts[0] || "";
     textarea_height = parts[1] || "";
   } else if (qType === "Text field") {
     textbox_width = sizeStr;
@@ -32,13 +32,13 @@ const mapItemToFormField = (item: any) => {
     // Parse labels from alternatives
     const altParts = altStr.split("|");
     column_names = altParts[0] ?? "";
-    row_names    = altParts[1] ?? "";
+    row_names = altParts[1] ?? "";
     // Parse numeric grid dimensions from size
     const sizeParts = sizeStr.split(",");
     const parsedCols = parseInt(sizeParts[0], 10);
     const parsedRows = parseInt(sizeParts[1], 10);
     columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
-    rows    = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
+    rows = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
   }
 
   return {
@@ -83,7 +83,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     // Only fetch separately when the loader returned no items for an existing questionnaire
     if (mode === "update" && questionnaire?.id && loaderItems.length === 0) {
       axiosClient
-        .get(`/questions/show_all/questionnaire/${questionnaire.id}`)
+        .get(`/items/show_all/questionnaire/${questionnaire.id}`)
         .then((res) => setFetchedItems(res.data.map(mapItemToFormField)))
         .catch((err) => {
           console.error("Error fetching questionnaire items:", err);

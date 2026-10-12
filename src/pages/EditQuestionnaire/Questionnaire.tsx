@@ -304,10 +304,9 @@ const Questionnaire = () => {
               <option value="TableHeader">TableHeader</option>
               <option value="ColumnHeader">ColumnHeader</option>
             </select>
-<<<<<<< HEAD
           </div>
           <div className="col-1">
-            <p style={{ fontSize: "18px" }}>question(s)</p>
+            <p style={{ fontSize: "18px" }}>item(s)</p>
           </div>
           <div className="col-2">
             <button
@@ -315,49 +314,21 @@ const Questionnaire = () => {
               style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0", marginBottom: "20px" }}
               className="btn btn-primary"
             >
-              Add Question
+              Add Item
             </button>
-=======
-        </div>
-        <div className="col-1">
-        <p style={{ fontSize: "18px" }}>
-        item(s)
-        </p>
-        </div>
-        <div className="col-2">
-        <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" ,  marginBottom: '20px' }}
-            className="btn btn-primary"
-          >
-            Add Item
-          </button> 
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
           </div>
         </div>
         <br />
         <div className="row m-2">
-<<<<<<< HEAD
           <div className="col-2">
             <button
               type="button"
               style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
               className="btn btn-primary"
             >
-              Save all questions
+              Save all items
             </button>
           </div>
-=======
-        <div className="col-2">
-          <button
-            type="button"
-            style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0" }}
-            className="btn btn-primary"
-          >
-            Save all items
-          </button>
-        </div>
->>>>>>> 99891da (UI consistency: blue add buttons, questionnaire table improvements)
         </div>
         <div className="row m-2">
           <div className="col-2">
