@@ -28,9 +28,22 @@ const TH: React.CSSProperties = {
   letterSpacing: "0.04em",
   color: "#6b7280",
   background: "#f9fafb",
-  whiteSpace: "nowrap",
   padding: "8px 10px",
   borderBottom: "2px solid #e5e7eb",
+  verticalAlign: "bottom",
+  boxSizing: "border-box",
+  whiteSpace: "normal",
+  lineHeight: "1.3",
+};
+
+const subTH: React.CSSProperties = {
+  fontWeight: 400,
+  fontSize: "11px",
+  color: "#9ca3af",
+  textTransform: "none",
+  letterSpacing: "normal",
+  marginTop: "2px",
+  whiteSpace: "nowrap",
 };
 
 const TD: React.CSSProperties = {
@@ -100,11 +113,22 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
         const showAlternatives = [...activeTypes].some((t) => TYPES_WITH_ALTERNATIVES.has(t));
         const showRowNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
-        const showColNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t) || TYPES_WITH_ALTERNATIVES.has(t));
+        const showColNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
         const showMinMax       = [...activeTypes].some((t) => TYPES_WITH_MIN_MAX.has(t));
         const showRows         = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
         const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
         const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
+
+        /* dynamic minimum table width so columns never get squished below fit */
+        let minTableWidth = 32 /* grip */ + 120 /* type */ + 220 /* prompt */ + 44 /* del */;
+        if (showNumbers) minTableWidth += 36;
+        if (showAlternatives) minTableWidth += 170;
+        if (showRowNames) minTableWidth += 170;
+        if (showColNames) minTableWidth += 170;
+        if (showMinMax) minTableWidth += 220;
+        if (showRows) minTableWidth += 64;
+        if (showCols) minTableWidth += 64;
+        if (showWeight) minTableWidth += 70;
 
         /* shared textarea style */
         const taStyle: React.CSSProperties = {
@@ -125,6 +149,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   borderRadius: "10px",
                   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                   marginBottom: "4px",
+                  maxWidth: "100%",
                 }}
               >
                 <DragDropContext onDragEnd={handleDragEnd}>
@@ -136,7 +161,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                           borderCollapse: "collapse",
                           fontSize: "13px",
                           tableLayout: "fixed",
-                          minWidth: "580px",
+                          minWidth: `${minTableWidth}px`,
                         }}
                       >
                         {/* ── Header ── */}
@@ -146,43 +171,29 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                             <th style={{ ...TH, width: "32px", padding: "8px 6px" }} />
                             {/* # */}
                             {showNumbers && (
-                              <th style={{ ...TH, width: "32px", textAlign: "center" }}>#</th>
+                              <th style={{ ...TH, width: "36px", textAlign: "center" }}>#</th>
                             )}
                             {/* type */}
                             <th style={{ ...TH, width: "120px" }}>Type</th>
-                            {/* prompt — fixed width so it doesn't eat all remaining space */}
-                            <th style={{ ...TH, width: "200px" }}>Prompt</th>
+                            {/* prompt */}
+                            <th style={{ ...TH, width: "220px" }}>Prompt</th>
                             {/* optional columns */}
                             {showAlternatives && (
-                              <th style={{ ...TH, width: "160px" }}>
-                                Choices
-                                <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
-                                  (comma-sep)
-                                </span>
+                              <th style={{ ...TH, width: "170px" }}>
+                                <div>Choices</div>
+                                <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
                             {showRowNames && (
-                              <th style={{ ...TH, width: "160px" }}>
-                                Row Names
-                                <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
-                                  (comma-sep)
-                                </span>
+                              <th style={{ ...TH, width: "170px" }}>
+                                <div>Row Names</div>
+                                <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
-                            {showColNames && !showAlternatives && (
-                              <th style={{ ...TH, width: "160px" }}>
-                                Column Names
-                                <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
-                                  (comma-sep)
-                                </span>
-                              </th>
-                            )}
-                            {showColNames && showAlternatives && showRowNames && (
-                              <th style={{ ...TH, width: "160px" }}>
-                                Column Names
-                                <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
-                                  (Grid, comma-sep)
-                                </span>
+                            {showColNames && (
+                              <th style={{ ...TH, width: "170px" }}>
+                                <div>Column Names</div>
+                                <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
                             {showMinMax && (
