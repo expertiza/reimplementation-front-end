@@ -154,8 +154,15 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
             size = `${item.textbox_width ?? ""}`;
           }
 
+          const rawWeight = item.weight;
+          const weight =
+            rawWeight === "" || rawWeight == null
+              ? null
+              : Number(rawWeight);
+
           return {
             ...item,
+            weight,
             size,
             alternatives,
             seq: index + 1,

@@ -23,21 +23,35 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   ];
 
   const finalItemTypes =
-    itemTypes?.data && itemTypes.data.length > 0
-      ? itemTypes.data.map((t: any) => t.name || t)
+    Array.isArray(itemTypes?.data) && itemTypes.data.length > 0
+      ? itemTypes.data.map((t: any) => (typeof t === "object" ? t.name || t.label || String(t) : t))
       : fallbackItemTypes;
 
   const itemFields = Yup.object().shape({
-    txt: Yup.string().required("Item text is required"),
-    question_type: Yup.string().required("Item type is required"),
+    _destroy: Yup.boolean(),
+    txt: Yup.string().when("_destroy", {
+      is: true,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required("Item text is required"),
+    }),
+    question_type: Yup.string().when("_destroy", {
+      is: true,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required("Item type is required"),
+    }),
     weight: Yup.number()
-      .typeError("Score must be a number")
-      .positive("Score must be a positive number")
+      .transform((value, originalValue) =>
+        originalValue === "" || originalValue === null || originalValue === undefined
+          ? null
+          : Number(value)
+      )
+      .typeError("Weight must be a number")
+      .min(0, "Weight must be greater than or equal to 0")
       .nullable()
       .notRequired(),
 
-    alternatives: Yup.string().when("question_type", ([questionType], schema) => {
-      if (questionType === "Dropdown" || questionType === "Multiple choice") {
+    alternatives: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
+      if (!destroy && (questionType === "Dropdown" || questionType === "Multiple choice")) {
         return schema
           .required("Options are required")
           .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
@@ -52,14 +66,14 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       return schema.notRequired();
     }),
 
-    min_label: Yup.string().when("question_type", ([questionType], schema) => {
-      return questionType === "Scale"
+    min_label: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
+      return !destroy && questionType === "Scale"
         ? schema.required("Minimum label is required")
         : schema.notRequired();
     }),
 
-    max_label: Yup.string().when("question_type", ([questionType], schema) => {
-      return questionType === "Scale"
+    max_label: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
+      return !destroy && questionType === "Scale"
         ? schema.required("Maximum label is required")
         : schema.notRequired();
     }),
@@ -69,9 +83,27 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
     name: Yup.string().required("Name is required"),
     questionnaire_type: Yup.string().required("Questionnaire type is required"),
     private: Yup.boolean(),
-    min_question_score: Yup.number().required("Minimum item score is required"),
-    max_question_score: Yup.number().required("Maximum item score is required"),
-    items: Yup.array().of(itemFields).min(1, "At least one item is required"),
+    min_question_score: Yup.number()
+      .typeError("Minimum item score must be a number")
+      .required("Minimum item score is required"),
+    max_question_score: Yup.number()
+      .typeError("Maximum item score must be a number")
+      .required("Maximum item score is required")
+      .test(
+        "max-gte-min",
+        "Maximum item score must be greater than or equal to minimum score",
+        function (val) {
+          const { min_question_score } = this.parent;
+          return val == null || min_question_score == null || val >= min_question_score;
+        }
+      ),
+    items: Yup.array()
+      .of(itemFields)
+      .test(
+        "at-least-one-item",
+        "At least one item is required",
+        (items) => !items || items.filter((item: any) => !item?._destroy).length >= 1
+      ),
   });
 
   return (
@@ -85,7 +117,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
         enableReinitialize={true}
         onSubmit={onSubmit}
       >
-        {({ values, handleChange, errors, touched }) => (
+        {({ values, handleChange, errors, touched, submitCount }) => (
           <Form>
             <div className="mb-4">
               <h5 className="mb-3">Questionnaire Details</h5>
@@ -215,6 +247,11 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
 
             <div className="mt-4">
               <h5 className="mb-3">Items</h5>
+              <ErrorMessage
+                name="items"
+                component="div"
+                className="alert alert-danger py-2 mb-2"
+              />
               <QuestionnaireItemsFieldArray
                 values={values}
                 errors={errors}
@@ -233,6 +270,21 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
             />
 
             <div className="mt-4 pt-3 border-top">
+              {submitCount > 0 && Object.keys(errors).length > 0 && (
+                <div className="alert alert-danger py-2 mb-3 small">
+                  Please fix the following before saving:
+                  <ul className="mb-0 mt-1 ps-3">
+                    {errors.name && <li>{errors.name as string}</li>}
+                    {errors.min_question_score && <li>{errors.min_question_score as string}</li>}
+                    {errors.max_question_score && <li>{errors.max_question_score as string}</li>}
+                    {typeof errors.items === "string" && <li>{errors.items}</li>}
+                    {Array.isArray(errors.items) &&
+                      errors.items.some(Boolean) && (
+                        <li>Some questionnaire items have errors (e.g. missing prompt or invalid options).</li>
+                      )}
+                  </ul>
+                </div>
+              )}
               <Button type="submit" variant="primary" className="px-4">
                 Save
               </Button>

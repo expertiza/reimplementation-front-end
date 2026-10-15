@@ -57,7 +57,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   itemTypes,
 }) => {
   const [itemType, setItemType]   = useState("");
-  const [numItems, setNumItems]   = useState<number | "">("");
+  const [numItems, setNumItems]   = useState<number | "">(1);
   const [showNumbers, setShowNumbers] = useState(false);
 
   return (
@@ -135,7 +135,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                           width: "100%",
                           borderCollapse: "collapse",
                           fontSize: "13px",
-                          tableLayout: "auto",        /* let browser fit content */
+                          tableLayout: "fixed",
+                          minWidth: "580px",
                         }}
                       >
                         {/* ── Header ── */}
@@ -149,11 +150,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                             )}
                             {/* type */}
                             <th style={{ ...TH, width: "120px" }}>Type</th>
-                            {/* prompt — gets whatever space is left */}
-                            <th style={{ ...TH, minWidth: "240px" }}>Prompt</th>
+                            {/* prompt — fixed width so it doesn't eat all remaining space */}
+                            <th style={{ ...TH, width: "200px" }}>Prompt</th>
                             {/* optional columns */}
                             {showAlternatives && (
-                              <th style={{ ...TH, minWidth: "180px" }}>
+                              <th style={{ ...TH, width: "160px" }}>
                                 Choices
                                 <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
                                   (comma-sep)
@@ -161,7 +162,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               </th>
                             )}
                             {showRowNames && (
-                              <th style={{ ...TH, minWidth: "180px" }}>
+                              <th style={{ ...TH, width: "160px" }}>
                                 Row Names
                                 <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
                                   (comma-sep)
@@ -169,7 +170,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               </th>
                             )}
                             {showColNames && !showAlternatives && (
-                              <th style={{ ...TH, minWidth: "180px" }}>
+                              <th style={{ ...TH, width: "160px" }}>
                                 Column Names
                                 <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
                                   (comma-sep)
@@ -177,7 +178,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               </th>
                             )}
                             {showColNames && showAlternatives && showRowNames && (
-                              <th style={{ ...TH, minWidth: "180px" }}>
+                              <th style={{ ...TH, width: "160px" }}>
                                 Column Names
                                 <span style={{ fontWeight: 400, fontSize: "11px", color: "#9ca3af", marginLeft: "4px" }}>
                                   (Grid, comma-sep)
@@ -315,7 +316,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                         placeholder="Enter the question / statement…"
                                         className="form-control form-control-sm"
                                         maxLength={100}
-                                        style={{ ...taStyle, minHeight: "34px" }}
+                                        style={{ ...taStyle, minHeight: "34px", maxWidth: "260px" }}
                                       />
                                       <ErrorMessage
                                         name={`items[${fullIndex}].txt`}
@@ -452,13 +453,21 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                     {showWeight && (
                                       <td style={{ ...TD, textAlign: "center" }}>
                                         {TYPES_WITH_WEIGHT.has(type) ? (
-                                          <Field
-                                            name={`items[${fullIndex}].weight`}
-                                            type="number"
-                                            placeholder="—"
-                                            className="form-control form-control-sm text-center"
-                                            style={{ width: "60px" }}
-                                          />
+                                          <>
+                                            <Field
+                                              name={`items[${fullIndex}].weight`}
+                                              type="number"
+                                              placeholder="—"
+                                              className="form-control form-control-sm text-center"
+                                              style={{ width: "60px", margin: "0 auto" }}
+                                            />
+                                            <ErrorMessage
+                                              name={`items[${fullIndex}].weight`}
+                                              component="div"
+                                              className="text-danger"
+                                              style={{ fontSize: "11px", marginTop: "2px" }}
+                                            />
+                                          </>
                                         ) : (
                                           <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
                                         )}
@@ -513,15 +522,58 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
             {/* ── Add toolbar ── */}
             <div
-              className="d-flex gap-2 align-items-center flex-wrap mt-2 pt-2"
+              className="d-flex gap-2 align-items-center flex-wrap mt-3 pt-3"
               style={{ borderTop: "1px solid #f3f4f6" }}
             >
+              <select
+                className="form-control form-control-sm"
+                value={itemType}
+                style={{ width: "190px" }}
+                onChange={(e) => setItemType(e.target.value)}
+              >
+                <option value="">— Select item type —</option>
+                {itemTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+
+              <OverlayTrigger overlay={<Tooltip>Number of items to add</Tooltip>}>
+                <input
+                  type="number"
+                  placeholder="1"
+                  value={numItems}
+                  min={1}
+                  max={20}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setNumItems("");
+                    } else {
+                      const parsed = parseInt(val, 10);
+                      setNumItems(isNaN(parsed) ? "" : parsed);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!numItems || numItems < 1) {
+                      setNumItems(1);
+                    }
+                  }}
+                  className="form-control form-control-sm text-center"
+                  style={{ width: "56px" }}
+                />
+              </OverlayTrigger>
+
+              <span style={{ fontSize: "13px", color: "#6b7280" }}>items</span>
+
               <button
                 type="button"
                 className="btn btn-outline-primary btn-sm fw-semibold px-3"
-                disabled={!itemType || !numItems}
+                disabled={!itemType}
                 onClick={() => {
-                  const count = typeof numItems === "number" ? numItems : 0;
+                  const count =
+                    typeof numItems === "number" && numItems > 0 ? numItems : 1;
                   for (let i = 0; i < count; i++) {
                     const isGrid = itemType === "Grid";
                     push({
@@ -546,47 +598,15 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                       seq: values.items.length + i + 1,
                     });
                   }
-                  setNumItems("");
                   setItemType("");
+                  setNumItems(1);
                 }}
               >
                 <FaPlus style={{ marginBottom: "2px", marginRight: "4px" }} />
                 Add
               </button>
 
-              <OverlayTrigger overlay={<Tooltip>How many items to add at once</Tooltip>}>
-                <Field
-                  type="number"
-                  name="numItems"
-                  placeholder="#"
-                  value={numItems}
-                  min={1}
-                  max={20}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNumItems(Number(e.target.value))
-                  }
-                  className="form-control form-control-sm"
-                  style={{ width: "64px" }}
-                />
-              </OverlayTrigger>
-
-              <select
-                className="form-control form-control-sm"
-                value={itemType}
-                style={{ width: "180px" }}
-                onChange={(e) => setItemType(e.target.value)}
-              >
-                <option value="">— Select item type —</option>
-                {itemTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-
-              <span style={{ fontSize: "13px", color: "#6b7280" }}>items</span>
-
-              <div className="form-check ms-2 mb-0">
+              <div className="form-check ms-3 mb-0">
                 <input
                   type="checkbox"
                   className="form-check-input"
@@ -597,6 +617,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 <label
                   htmlFor="showNumbersToggle"
                   className="form-check-label small fw-semibold"
+                  style={{ cursor: "pointer" }}
                 >
                   Show numbers
                 </label>
