@@ -315,7 +315,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                         placeholder="Enter the question / statement…"
                                         className="form-control form-control-sm"
                                         maxLength={100}
-                                        style={taStyle}
+                                        style={{ ...taStyle, minHeight: "34px" }}
                                       />
                                       <ErrorMessage
                                         name={`items[${fullIndex}].txt`}
