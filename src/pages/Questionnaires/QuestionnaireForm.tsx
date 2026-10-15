@@ -2,8 +2,57 @@ import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
+import { QuestionnaireTypes } from "./QuestionnaireUtils";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
+
+const extractErrors = (errors: any): string[] => {
+  const result: string[] = [];
+  const recurse = (err: any, prefix = "") => {
+    if (!err) return;
+    if (typeof err === "string") {
+      result.push(prefix ? `${prefix}: ${err}` : err);
+    } else if (Array.isArray(err)) {
+      err.forEach((item, index) => {
+        if (item) recurse(item, `Item #${index + 1}`);
+      });
+    } else if (typeof err === "object") {
+      Object.entries(err).forEach(([key, val]) => {
+        const readableKey =
+          key === "txt"
+            ? "Prompt"
+            : key === "question_type"
+            ? "Type"
+            : key === "min_label"
+            ? "Min label"
+            : key === "max_label"
+            ? "Max label"
+            : key === "alternatives"
+            ? "Options"
+            : key === "weight"
+            ? "Weight"
+            : key === "name"
+            ? "Name"
+            : key === "questionnaire_type"
+            ? "Questionnaire type"
+            : key === "min_question_score"
+            ? "Min item score"
+            : key === "max_question_score"
+            ? "Max item score"
+            : key === "selectedDuty"
+            ? "Duty"
+            : key;
+        if (typeof val === "string") {
+          result.push(prefix ? `${prefix} (${readableKey}): ${val}` : `${readableKey}: ${val}`);
+        } else {
+          recurse(val, prefix ? `${prefix} (${readableKey})` : readableKey);
+        }
+      });
+    }
+  };
+  recurse(errors);
+  return result;
+};
 
 const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   const { data: itemTypes, sendRequest: fetchItemTypes } = useAPI();
@@ -146,6 +195,31 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
                   </div>
 
                   <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>
+                    Type
+                  </label>
+                  <div>
+                    <Field
+                      as="select"
+                      name="questionnaire_type"
+                      className="form-control"
+                      value={values.questionnaire_type}
+                      onChange={handleChange}
+                    >
+                      <option value="">— Select questionnaire type —</option>
+                      {QuestionnaireTypes.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </Field>
+                    <ErrorMessage
+                      name="questionnaire_type"
+                      component="div"
+                      className="text-danger small mt-1"
+                    />
+                  </div>
+
+                  <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>
                     Min Item Score
                   </label>
                   <div>
@@ -260,28 +334,14 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
               />
             </div>
 
-            <Field
-              name="questionnaire_type"
-              className="form-control"
-              placeholder="Enter type"
-              value={values.questionnaire_type}
-              onChange={handleChange}
-              type="hidden"
-            />
-
             <div className="mt-4 pt-3 border-top">
               {submitCount > 0 && Object.keys(errors).length > 0 && (
                 <div className="alert alert-danger py-2 mb-3 small">
-                  Please fix the following before saving:
+                  <strong>Please fix the following before saving:</strong>
                   <ul className="mb-0 mt-1 ps-3">
-                    {errors.name && <li>{errors.name as string}</li>}
-                    {errors.min_question_score && <li>{errors.min_question_score as string}</li>}
-                    {errors.max_question_score && <li>{errors.max_question_score as string}</li>}
-                    {typeof errors.items === "string" && <li>{errors.items}</li>}
-                    {Array.isArray(errors.items) &&
-                      errors.items.some(Boolean) && (
-                        <li>Some questionnaire items have errors (e.g. missing prompt or invalid options).</li>
-                      )}
+                    {extractErrors(errors).map((msg, idx) => (
+                      <li key={idx}>{msg}</li>
+                    ))}
                   </ul>
                 </div>
               )}
