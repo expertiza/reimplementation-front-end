@@ -119,9 +119,10 @@ branch or commit when another target is required. The report is generated even w
 the command still returns a failure and does not hide the test result. It does not enforce a coverage
 threshold.
 
-For non-draft pull requests, GitHub Actions uploads this HTML report as the
-`frontend-changed-coverage` artifact. The artifact is retained for seven days. Pull requests that do
-not change measurable source files may report `0/0` coverage.
+For non-draft pull requests, GitHub Actions includes this HTML report in the unified
+`frontend-pr-coverage` artifact under `changed-files/`. Open `changed-files/index.html` after
+downloading and extracting the artifact. The artifact is retained for seven days. Pull requests
+that do not change measurable source files may report `0/0` coverage.
 
 ### Overall coverage comparison
 
@@ -136,8 +137,9 @@ summary naming the affected metrics and their percentage-point reductions. The w
 the comparison by itself and has no tolerance: any decrease is reported. Test failures remain
 unchanged and are never hidden by the comparison.
 
-GitHub Actions uploads the machine-readable target-branch and pull-request JSON summaries as the
-`frontend-coverage-comparison` artifact. The artifact is retained for seven days.
+GitHub Actions uploads one `frontend-pr-coverage` artifact containing a human-readable
+`comparison.md`, the changed-file HTML report, and the machine-readable target-branch and
+pull-request JSON summaries under `raw/`. The artifact is retained for seven days.
 
 To run the same comparison locally without switching away from work in progress, create a temporary
 Git worktree for the target branch. Run the following commands from the root of the feature-branch
@@ -253,17 +255,16 @@ docker compose up --build
 
 ## GitHub Actions
 
-The frontend workflow runs for pull requests and pushes to `main`. It contains eight independent
+The frontend workflow runs for pull requests and pushes to `main`. It contains seven independent
 jobs:
 
 1. Frontend tests with coverage
-2. Changed-file coverage for pull requests
-3. Overall coverage comparison for pull requests
-4. ESLint
-5. Prettier formatting check
-6. TypeScript type check
-7. Vite production build
-8. Docker image build
+2. Pull request coverage analysis, combining changed-file coverage and overall comparison
+3. ESLint
+4. Prettier formatting check
+5. TypeScript type check
+6. Vite production build
+7. Docker image build
 
 Each job uses a clean Ubuntu runner and has its own timeout. The jobs run independently so that a
 failure in one check does not prevent the remaining checks from reporting their results.

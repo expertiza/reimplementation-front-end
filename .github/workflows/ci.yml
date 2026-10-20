@@ -46,41 +46,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  changed-coverage:
-    name: Changed-file coverage
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Check out repository with Git history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run changed-file coverage
-        run: npm run test:coverage:changed -- --coverage.changed=${{ github.event.pull_request.base.sha }}
-
-      - name: Upload changed-file coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-changed-coverage
-          path: coverage-changed/
-          if-no-files-found: warn
-          retention-days: 7
-
-  coverage-comparison:
-    name: Overall coverage comparison
+  pr-coverage:
+    name: Pull request coverage analysis
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -89,6 +56,7 @@ jobs:
       - name: Check out pull request
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           path: coverage-head-source
 
       - name: Check out target branch commit
@@ -116,32 +84,46 @@ jobs:
         id: base-coverage
         working-directory: coverage-base-source
         run: >-
-          npx vitest run --coverage --coverage.reportOnFailure
+          npx vitest run --reporter=default --coverage --coverage.reportOnFailure
           --coverage.reporter=json-summary
-          --coverage.reportsDirectory=../coverage-base
+          --coverage.reportsDirectory=../frontend-pr-coverage/raw/base
 
       - name: Collect pull request coverage
         id: head-coverage
         if: always()
         working-directory: coverage-head-source
-        run: npm run test:coverage:summary -- --coverage.reportsDirectory=../coverage-head
+        run: >-
+          npm run test:coverage:summary --
+          --reporter=default
+          --coverage.reportsDirectory=../frontend-pr-coverage/raw/pull-request
+
+      - name: Collect coverage for changed files
+        id: changed-coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: >-
+          npx vitest run --reporter=default --coverage --coverage.reportOnFailure
+          --coverage.changed=${{ github.event.pull_request.base.sha }}
+          --coverage.reporter=html
+          --coverage.reporter=json-summary
+          --coverage.reportsDirectory=../frontend-pr-coverage/changed-files
 
       - name: Compare target and pull request coverage
         if: always()
         working-directory: coverage-head-source
         run: >-
           npm run coverage:compare --
-          ../coverage-base/coverage-summary.json
-          ../coverage-head/coverage-summary.json
+          ../frontend-pr-coverage/raw/base/coverage-summary.json
+          ../frontend-pr-coverage/raw/pull-request/coverage-summary.json
+          ../frontend-pr-coverage/comparison.md
+          ../frontend-pr-coverage/changed-files/coverage-summary.json
 
-      - name: Upload coverage comparison data
+      - name: Upload pull request coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-coverage-comparison
-          path: |
-            coverage-base/coverage-summary.json
-            coverage-head/coverage-summary.json
+          name: frontend-pr-coverage
+          path: frontend-pr-coverage/
           if-no-files-found: warn
           retention-days: 7
 
