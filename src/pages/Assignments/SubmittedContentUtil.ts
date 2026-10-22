@@ -53,12 +53,19 @@ export const ALLOWED_EXTENSIONS = [
 /** Mirrors MAX_FILE_SIZE_MB in submitted_content_controller.rb. */
 export const MAX_FILE_SIZE_MB = 5;
 
+/** The parts of a rejected axios request that carry a usable message. */
+interface IRequestFailure {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+}
+
 /** Unwraps the `{ error: "..." }` body the controller renders on failure. */
-const toError = (error: any): Error => {
+const toError = (error: unknown): Error => {
+  const failure = error as IRequestFailure;
   const message =
-    error?.response?.data?.error ??
-    error?.response?.data?.message ??
-    error?.message ??
+    failure?.response?.data?.error ??
+    failure?.response?.data?.message ??
+    failure?.message ??
     "Request failed";
   return new Error(message);
 };

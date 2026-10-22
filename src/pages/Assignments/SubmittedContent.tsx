@@ -34,12 +34,12 @@ const SUBMISSION_ROOT = "/";
 
 /** Mirrors the server's own size and extension limits. */
 const fileValidationSchema = Yup.object().shape({
-  file: Yup.mixed()
+  file: Yup.mixed<FileList>()
     .required("Please choose a file.")
-    .test("fileSize", `Files must be smaller than ${MAX_FILE_SIZE_MB}MB.`, (value: any) =>
+    .test("fileSize", `Files must be smaller than ${MAX_FILE_SIZE_MB}MB.`, (value) =>
       value?.length ? value[0].size <= MAX_FILE_SIZE_MB * 1024 * 1024 : false
     )
-    .test("fileType", `Allowed extensions: ${ALLOWED_EXTENSIONS.join(", ")}.`, (value: any) => {
+    .test("fileType", `Allowed extensions: ${ALLOWED_EXTENSIONS.join(", ")}.`, (value) => {
       if (!value?.length) return false;
       const extension = value[0].name.split(".").pop()?.toLowerCase();
       return !!extension && ALLOWED_EXTENSIONS.includes(extension);
