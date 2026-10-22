@@ -125,7 +125,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         if (showAlternatives) minTableWidth += 170;
         if (showRowNames) minTableWidth += 170;
         if (showColNames) minTableWidth += 170;
-        if (showMinMax) minTableWidth += 220;
+        if (showMinMax) minTableWidth += 200;
         if (showRows) minTableWidth += 64;
         if (showCols) minTableWidth += 64;
         if (showWeight) minTableWidth += 70;
@@ -141,15 +141,20 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         return (
           <>
             {/* ── Items table ── */}
+            <style>{`
+              .qifa-scroll-wrapper::-webkit-scrollbar { display: none; }
+            `}</style>
             {visible.length > 0 ? (
               <div
+                className="qifa-scroll-wrapper"
                 style={{
                   overflowX: "auto",
+                  scrollbarWidth: "none",
                   border: "1px solid #e5e7eb",
                   borderRadius: "10px",
                   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                   marginBottom: "4px",
-                  maxWidth: "100%",
+                  width: "100%",
                 }}
               >
                 <DragDropContext onDragEnd={handleDragEnd}>
@@ -160,7 +165,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                           width: "100%",
                           borderCollapse: "collapse",
                           fontSize: "13px",
-                          tableLayout: "fixed",
+                          tableLayout: "auto",
                           minWidth: `${minTableWidth}px`,
                         }}
                       >
@@ -198,8 +203,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                             )}
                             {showMinMax && (
                               <>
-                                <th style={{ ...TH, width: "110px" }}>Min Label</th>
-                                <th style={{ ...TH, width: "110px" }}>Max Label</th>
+                                <th style={{ ...TH, width: "100px" }}>Min Label</th>
+                                <th style={{ ...TH, width: "100px" }}>Max Label</th>
                               </>
                             )}
                             {showRows && (
@@ -401,9 +406,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                       <td style={TD}>
                                         {TYPES_WITH_MIN_MAX.has(type) ? (
                                           <Field
+                                            as="textarea"
                                             name={`items[${fullIndex}].min_label`}
                                             placeholder="e.g. Poor"
                                             className="form-control form-control-sm"
+                                            style={{ color: "#212529", width: "100%", resize: "vertical", minHeight: "52px" }}
                                           />
                                         ) : (
                                           <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
@@ -416,9 +423,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                       <td style={TD}>
                                         {TYPES_WITH_MIN_MAX.has(type) ? (
                                           <Field
+                                            as="textarea"
                                             name={`items[${fullIndex}].max_label`}
                                             placeholder="e.g. Excellent"
                                             className="form-control form-control-sm"
+                                            style={{ color: "#212529", width: "100%", resize: "vertical", minHeight: "52px" }}
                                           />
                                         ) : (
                                           <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
@@ -428,14 +437,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
                                     {/* Rows */}
                                     {showRows && (
-                                      <td style={{ ...TD, textAlign: "center" }}>
+                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
                                         {TYPES_WITH_ROWS.has(type) ? (
                                           <Field
                                             name={rowFieldName(type, fullIndex)}
                                             type="number"
                                             placeholder="—"
                                             className="form-control form-control-sm text-center"
-                                            style={{ width: "56px" }}
+                                            style={{ width: "56px", display: "block", margin: "0 auto" }}
                                           />
                                         ) : (
                                           <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
@@ -445,14 +454,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
                                     {/* Cols */}
                                     {showCols && (
-                                      <td style={{ ...TD, textAlign: "center" }}>
+                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
                                         {TYPES_WITH_COLS.has(type) ? (
                                           <Field
                                             name={colFieldName(type, fullIndex)}
                                             type="number"
                                             placeholder="—"
                                             className="form-control form-control-sm text-center"
-                                            style={{ width: "56px" }}
+                                            style={{ width: "56px", display: "block", margin: "0 auto" }}
                                           />
                                         ) : (
                                           <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
@@ -462,7 +471,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
                                     {/* Weight */}
                                     {showWeight && (
-                                      <td style={{ ...TD, textAlign: "center" }}>
+                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
                                         {TYPES_WITH_WEIGHT.has(type) ? (
                                           <>
                                             <Field
@@ -470,7 +479,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                               type="number"
                                               placeholder="—"
                                               className="form-control form-control-sm text-center"
-                                              style={{ width: "60px", margin: "0 auto" }}
+                                              style={{ width: "60px", display: "block", margin: "0 auto" }}
                                             />
                                             <ErrorMessage
                                               name={`items[${fullIndex}].weight`}
@@ -486,7 +495,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                     )}
 
                                     {/* Delete */}
-                                    <td style={{ ...TD, textAlign: "center", paddingTop: "10px" }}>
+                                    <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
                                       <OverlayTrigger overlay={<Tooltip>Remove item</Tooltip>}>
                                         <Button
                                           variant="link"
