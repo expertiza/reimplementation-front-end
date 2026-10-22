@@ -5,7 +5,7 @@
  *    anything yet (started=false, set by the backend). Shows days remaining.
  *
  * 2. "Revisions" — assignments currently in a revision stage (submissionUpdated flag). Each
- *    entry links to /student_review/list/:participantId so the student can act on feedback.
+ *    entry links to /student_review/list/:assignmentId so the student can act on feedback.
  *
  * 3. "Students who have teamed with you" — fetched independently via GET /participants/teammates,
  *    which returns { course_name: [full_name, ...] }. Grouped by course with a count badge.
@@ -26,6 +26,7 @@ export type Revision = {
   started: boolean;
   currentStage: string;
   participantId: number;
+  assignmentId: number | null;
 };
 
 // Students teamed with data structure: course name -> list of teammate names
@@ -95,7 +96,7 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
             <div key={index}>
               &raquo;{" "}
               <Link
-                to={`/student_review/list/${task.participantId}`}
+                to={`/student_review/list/${task.assignmentId ?? task.participantId}`}
                 className={styles.revisionLink}
               >
                 {task.name} {task.currentStage}

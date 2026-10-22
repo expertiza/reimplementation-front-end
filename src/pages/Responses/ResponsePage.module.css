@@ -1,0 +1,259 @@
+.container {
+  font-family: Arial, sans-serif;
+  padding: 1.5rem 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-family: Arial, sans-serif;
+  color: #666;
+}
+
+/* Header */
+.header {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.25rem;
+}
+
+.subhead {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Submitted banner */
+.submittedBanner {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  color: #155724;
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+}
+
+.noQuestionnaire {
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 2rem;
+}
+
+/* Rubric header */
+.rubricHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.rubricName {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.scoreRange {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Question blocks */
+.questionBlock {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.questionText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.questionSeq {
+  color: #986633;
+  font-weight: 700;
+  margin-right: 0.3rem;
+}
+
+.questionWeight {
+  color: #888;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Score radio row */
+.scoreRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: #666;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.radioLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  color: #444;
+  gap: 2px;
+  cursor: pointer;
+  min-width: 28px;
+}
+
+.radioInput {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #A90201;
+}
+
+/* Comment areas */
+.commentArea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  color: #333;
+}
+
+.commentArea:focus {
+  outline: none;
+  border-color: #986633;
+  box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
+}
+
+.commentArea:disabled {
+  background: #f5f5f5;
+  color: #555;
+  cursor: default;
+}
+
+.textField {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+}
+
+.textField:focus {
+  outline: none;
+  border-color: #986633;
+  box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
+}
+
+.textField:disabled {
+  background: #f5f5f5;
+  color: #555;
+  cursor: default;
+}
+
+/* Action bar */
+.actionBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.btnPrimary {
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSubmit {
+  background: #A90201;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnSubmit:hover:not(:disabled) {
+  background: #870100;
+}
+
+.btnSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saveOk {
+  color: #198754;
+  font-size: 13px;
+}
+
+.saveErr {
+  color: #dc3545;
+  font-size: 13px;
+}
+
+/* Error */
+.errorMsg {
+  color: #dc3545;
+  font-size: 15px;
+  margin-bottom: 1rem;
+}
+
+/* Back link */
+.backLink {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: #986633;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.backLink:hover {
+  color: #7a4f1f;
+  text-decoration: underline;
+}
