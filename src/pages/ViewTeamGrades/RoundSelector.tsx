@@ -50,7 +50,11 @@ const caretStyle: React.CSSProperties = {
   fontSize: "10px",
 };
 
-const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange, roundsData }) => {
+const RoundSelector: React.FC<RoundSelectorProps> = ({
+  currentRound,
+  handleRoundChange,
+  roundsData,
+}) => {
   const rounds = roundsData || [];
 
   if (rounds.length === 0) {

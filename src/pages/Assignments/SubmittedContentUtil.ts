@@ -201,10 +201,11 @@ export const folderAction = async (
   extraParams: Record<string, unknown> = {}
 ): Promise<IMessageResponse> => {
   try {
-    const response = await axiosClient.post<IMessageResponse>(
-      "/submitted_content/folder_action",
-      { id: participantId, faction, ...extraParams }
-    );
+    const response = await axiosClient.post<IMessageResponse>("/submitted_content/folder_action", {
+      id: participantId,
+      faction,
+      ...extraParams,
+    });
     return response.data;
   } catch (error) {
     throw toError(error);
@@ -212,8 +213,10 @@ export const folderAction = async (
 };
 
 /** Creates a folder, resolved relative to the team's submission directory. */
-export const createFolder = (participantId: number, folderName: string): Promise<IMessageResponse> =>
-  folderAction(participantId, { create: folderName });
+export const createFolder = (
+  participantId: number,
+  folderName: string
+): Promise<IMessageResponse> => folderAction(participantId, { create: folderName });
 
 /**
  * Deletes files from the team's submission directory.
@@ -227,11 +230,7 @@ export const deleteFiles = (
   filenames: string[],
   folder = "/"
 ): Promise<IMessageResponse> =>
-  folderAction(
-    participantId,
-    { delete: "true" },
-    { current_folder: { name: folder }, filenames }
-  );
+  folderAction(participantId, { delete: "true" }, { current_folder: { name: folder }, filenames });
 
 /** GET /submitted_content — every submission record in the system. */
 export const listSubmissionRecords = async (): Promise<ISubmissionRecord[]> => {

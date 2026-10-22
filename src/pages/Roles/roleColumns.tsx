@@ -1,8 +1,8 @@
-import {createColumnHelper, Row} from "@tanstack/react-table";
-import {MdOutlineDeleteForever as Remove} from "react-icons/md";
-import {BsPencilFill as Edit} from "react-icons/bs";
-import {Button} from "react-bootstrap";
-import {IRole} from "../../utils/interfaces";
+import { createColumnHelper, Row } from "@tanstack/react-table";
+import { MdOutlineDeleteForever as Remove } from "react-icons/md";
+import { BsPencilFill as Edit } from "react-icons/bs";
+import { Button } from "react-bootstrap";
+import { IRole } from "../../utils/interfaces";
 
 /**
  * @author Ankur Mundra on June, 2023

@@ -938,9 +938,8 @@
 
 // export default CreateTeams;
 
-
 // src/pages/Assignments/CreateTeams.tsx
-import React, { useMemo, useState, useCallback, memo } from 'react';
+import React, { useMemo, useState, useCallback, memo } from "react";
 import {
   Button,
   Container,
@@ -952,8 +951,8 @@ import {
   Tab,
   OverlayTrigger,
   Tooltip,
-} from 'react-bootstrap';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+} from "react-bootstrap";
+import { useLoaderData, useNavigate } from "react-router-dom";
 
 import ImportModal from "../../components/Modals/ImportModal";
 import ExportModal from "../../components/Modals/ExportModal";
@@ -962,7 +961,7 @@ import ExportModal from "../../components/Modals/ExportModal";
    Types
 ============================================================================= */
 
-type ContextType = 'assignment' | 'course';
+type ContextType = "assignment" | "course";
 
 interface Participant {
   id: string | number;
@@ -992,27 +991,25 @@ interface LoaderPayload {
 // Safe base URL (no import.meta)
 const getBaseUrl = (): string => {
   // 1) <base href="..."> if present
-  if (typeof document !== 'undefined') {
-    const base = document.querySelector('base[href]') as HTMLBaseElement | null;
-    if (base?.href) return base.href.replace(/\/$/, '');
+  if (typeof document !== "undefined") {
+    const base = document.querySelector("base[href]") as HTMLBaseElement | null;
+    if (base?.href) return base.href.replace(/\/$/, "");
   }
   // 2) Optional global you can set from Rails/layout, etc.
   const fromGlobal = (globalThis as any)?.__BASE_URL__;
-  if (typeof fromGlobal === 'string' && fromGlobal) return fromGlobal.replace(/\/$/, '');
+  if (typeof fromGlobal === "string" && fromGlobal) return fromGlobal.replace(/\/$/, "");
 
   // 3) CRA-style env if available in tests/builds
-  const fromProcess =
-    (typeof process !== 'undefined' && (process as any)?.env?.PUBLIC_URL) || '';
-  return String(fromProcess).replace(/\/$/, '');
+  const fromProcess = (typeof process !== "undefined" && (process as any)?.env?.PUBLIC_URL) || "";
+  return String(fromProcess).replace(/\/$/, "");
 };
 
-const assetUrl = (rel: string) =>
-  `${getBaseUrl()}/${rel.replace(/^\//, '')}`;
+const assetUrl = (rel: string) => `${getBaseUrl()}/${rel.replace(/^\//, "")}`;
 
 const ICONS = {
-  add: 'assets/icons/add-participant-24.png',
-  delete: 'assets/images/delete-icon-24.png',
-  edit: 'assets/images/edit-icon-24.png',
+  add: "assets/icons/add-participant-24.png",
+  delete: "assets/images/delete-icon-24.png",
+  edit: "assets/images/edit-icon-24.png",
 } as const;
 
 type IconName = keyof typeof ICONS;
@@ -1030,124 +1027,124 @@ const Icon: React.FC<{
     height={size}
     alt={alt ?? name}
     className={className}
-    style={{ verticalAlign: 'middle', ...style }}
+    style={{ verticalAlign: "middle", ...style }}
   />
 ));
-Icon.displayName = 'Icon';
+Icon.displayName = "Icon";
 
 /* =============================================================================
    Demo data
 ============================================================================= */
 
 const sampleUnassigned: Participant[] = [
-  { id: 2001, username: 'Student 10933', fullName: 'Kai Moore' },
-  { id: 2002, username: 'Student 10934', fullName: 'Rowan Diaz' },
-  { id: 2003, username: 'Student 10935', fullName: 'Parker Lee' },
-  { id: 2004, username: 'Student 10936', fullName: 'Jamie Rivera' },
+  { id: 2001, username: "Student 10933", fullName: "Kai Moore" },
+  { id: 2002, username: "Student 10934", fullName: "Rowan Diaz" },
+  { id: 2003, username: "Student 10935", fullName: "Parker Lee" },
+  { id: 2004, username: "Student 10936", fullName: "Jamie Rivera" },
 ];
 
 const sampleTeams: Team[] = [
   {
-    id: 't1',
-    name: 'sshivas MentoredTeam',
+    id: "t1",
+    name: "sshivas MentoredTeam",
     mentor: {
-      id: 'm1',
-      username: 'Teaching Assistant 10816',
-      fullName: 'Teaching Assistant 10816',
+      id: "m1",
+      username: "Teaching Assistant 10816",
+      fullName: "Teaching Assistant 10816",
     },
     members: [
       {
         id: 1001,
-        username: 'Student 10917',
-        fullName: 'Avery Chen',
-        teamName: 'sshivas MentoredTeam',
+        username: "Student 10917",
+        fullName: "Avery Chen",
+        teamName: "sshivas MentoredTeam",
       },
       {
         id: 1002,
-        username: 'Student 10916',
-        fullName: 'Jordan Park',
-        teamName: 'sshivas MentoredTeam',
+        username: "Student 10916",
+        fullName: "Jordan Park",
+        teamName: "sshivas MentoredTeam",
       },
       {
         id: 1003,
-        username: 'Teaching Assistant 10816 (Mentor)',
-        fullName: 'Teaching Assistant 10816 (Mentor)',
-        teamName: 'sshivas MentoredTeam',
+        username: "Teaching Assistant 10816 (Mentor)",
+        fullName: "Teaching Assistant 10816 (Mentor)",
+        teamName: "sshivas MentoredTeam",
       },
       {
         id: 1004,
-        username: 'Student 10928',
-        fullName: 'Sam Patel',
-        teamName: 'sshivas MentoredTeam',
+        username: "Student 10928",
+        fullName: "Sam Patel",
+        teamName: "sshivas MentoredTeam",
       },
     ],
   },
   {
-    id: 't2',
-    name: 'agaudan MentoredTeam',
+    id: "t2",
+    name: "agaudan MentoredTeam",
     mentor: {
-      id: 'm2',
-      username: 'Teaching Assistant 10624',
-      fullName: 'Teaching Assistant 10624',
+      id: "m2",
+      username: "Teaching Assistant 10624",
+      fullName: "Teaching Assistant 10624",
     },
     members: [
       {
         id: 1005,
-        username: 'Student 10925',
-        fullName: 'Riley Gomez',
-        teamName: 'agaudan MentoredTeam',
+        username: "Student 10925",
+        fullName: "Riley Gomez",
+        teamName: "agaudan MentoredTeam",
       },
     ],
   },
   {
-    id: 't3',
-    name: 'tjbrown8 MentoredTeam',
+    id: "t3",
+    name: "tjbrown8 MentoredTeam",
     mentor: {
-      id: 'm3',
-      username: 'Teaching Assistant 10199',
-      fullName: 'Teaching Assistant 10199',
+      id: "m3",
+      username: "Teaching Assistant 10199",
+      fullName: "Teaching Assistant 10199",
     },
     members: [
       {
         id: 1006,
-        username: 'Student 10909',
-        fullName: 'Taylor Nguyen',
-        teamName: 'tjbrown8 MentoredTeam',
+        username: "Student 10909",
+        fullName: "Taylor Nguyen",
+        teamName: "tjbrown8 MentoredTeam",
       },
       {
         id: 1007,
-        username: 'Student 10921',
-        fullName: 'Casey Morgan',
-        teamName: 'tjbrown8 MentoredTeam',
+        username: "Student 10921",
+        fullName: "Casey Morgan",
+        teamName: "tjbrown8 MentoredTeam",
       },
       {
         id: 1008,
-        username: 'Teaching Assistant 10199 (Mentor)',
-        fullName: 'Teaching Assistant 10199 (Mentor)',
-        teamName: 'tjbrown8 MentoredTeam',
+        username: "Teaching Assistant 10199 (Mentor)",
+        fullName: "Teaching Assistant 10199 (Mentor)",
+        teamName: "tjbrown8 MentoredTeam",
       },
     ],
   },
   {
-    id: 't4',
-    name: 'IronMan2 MentoredTeam',
+    id: "t4",
+    name: "IronMan2 MentoredTeam",
     mentor: {
-      id: 'm4',
-      username: 'Teaching Assistant 10234',
-      fullName: 'Teaching Assistant 10234',
+      id: "m4",
+      username: "Teaching Assistant 10234",
+      fullName: "Teaching Assistant 10234",
     },
     members: [
       {
         id: 1009,
-        username: 'Student 10931',
-        fullName: 'Aria Brooks',
-        teamName: 'IronMan2 MentoredTeam',
+        username: "Student 10931",
+        fullName: "Aria Brooks",
+        teamName: "IronMan2 MentoredTeam",
       },
       {
         id: 1010,
-        username: 'Student 10932',
-        fullName: 'Noah Shah',
-        teamName: 'IronMan2 MentoredTeam',
+        username: "Student 10932",
+        fullName: "Noah Shah",
+        teamName: "IronMan2 MentoredTeam",
       },
     ],
   },
@@ -1161,28 +1158,28 @@ const sampleTeams: Team[] = [
 ============================================================================= */
 
 const HEADING_TEXT: React.CSSProperties = {
-  fontSize: '30px',
-  lineHeight: '1.2em',
+  fontSize: "30px",
+  lineHeight: "1.2em",
   fontWeight: 700,
 };
 
 const STANDARD_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '13px',
-  lineHeight: '30px',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "13px",
+  lineHeight: "30px",
 };
 
 const SUBHEADING_TEXT: React.CSSProperties = {
-  fontSize: '1.2em',
-  lineHeight: '18px',
+  fontSize: "1.2em",
+  lineHeight: "18px",
 };
 
 const TABLE_TEXT: React.CSSProperties = {
-  fontFamily: 'verdana, arial, helvetica, sans-serif',
-  color: '#333',
-  fontSize: '15px',
-  lineHeight: '1.428em',
+  fontFamily: "verdana, arial, helvetica, sans-serif",
+  color: "#333",
+  fontSize: "15px",
+  lineHeight: "1.428em",
 };
 
 /* =============================================================================
@@ -1192,45 +1189,45 @@ const TABLE_TEXT: React.CSSProperties = {
 const pageWrap: React.CSSProperties = {
   ...STANDARD_TEXT,
   maxWidth: 1160,
-  margin: '20px auto 40px',
-  padding: '0 16px',
+  margin: "20px auto 40px",
+  padding: "0 16px",
 };
 
 const frame: React.CSSProperties = {
-  border: '1px solid #9aa0a6',
+  border: "1px solid #9aa0a6",
   borderRadius: 12,
-  backgroundColor: '#fff',
-  boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-  overflow: 'hidden',
+  backgroundColor: "#fff",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+  overflow: "hidden",
 };
 
 const headerBar: React.CSSProperties = {
-  background: '#f7f8fa',
-  padding: '12px 16px',
-  borderBottom: '1px solid #e4e6eb',
+  background: "#f7f8fa",
+  padding: "12px 16px",
+  borderBottom: "1px solid #e4e6eb",
   fontWeight: 600,
-  display: 'flex',
+  display: "flex",
 };
 
 const teamRowStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  padding: '10px 16px',
-  background: '#d8d8b8',
-  borderBottom: '1px solid #ebe9dc',
-  whiteSpace: 'nowrap',
+  display: "flex",
+  alignItems: "center",
+  padding: "10px 16px",
+  background: "#d8d8b8",
+  borderBottom: "1px solid #ebe9dc",
+  whiteSpace: "nowrap",
 };
 
 const membersRowBase: React.CSSProperties = {
-  padding: '12px 16px',
-  background: '#ffffff',
-  borderBottom: '1px solid #f0f1f3',
+  padding: "12px 16px",
+  background: "#ffffff",
+  borderBottom: "1px solid #f0f1f3",
 };
 
 const caretButton: React.CSSProperties = {
-  border: 'none',
-  background: 'transparent',
-  cursor: 'pointer',
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
   fontSize: 14,
   lineHeight: 1,
   padding: 0,
@@ -1238,41 +1235,41 @@ const caretButton: React.CSSProperties = {
   height: 24,
 };
 
-const actionCell: React.CSSProperties = { width: 200, textAlign: 'right' };
+const actionCell: React.CSSProperties = { width: 200, textAlign: "right" };
 
 const chipBase: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '6px 12px',
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "6px 12px",
   marginRight: 10,
   marginBottom: 10,
-  background: '#ffffff',
-  border: '1px solid #e2e8f0',
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
   borderRadius: 18,
-  boxShadow: '0 1px 0 rgba(0,0,0,0.03)',
+  boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
 };
 
 const chipRemoveButton: React.CSSProperties = {
   marginLeft: 10,
-  border: 'none',
-  background: 'transparent',
-  cursor: 'pointer',
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
   padding: 0,
   lineHeight: 1,
 };
 
-const toolbarWrap: React.CSSProperties = { margin: '4px 0 10px' };
+const toolbarWrap: React.CSSProperties = { margin: "4px 0 10px" };
 const toolbarLinkBase: React.CSSProperties = {
   ...STANDARD_TEXT,
-  color: '#8b5e3c',
-  background: 'transparent',
-  border: 'none',
+  color: "#8b5e3c",
+  background: "transparent",
+  border: "none",
   padding: 0,
   margin: 0,
-  cursor: 'pointer',
-  textDecoration: 'none',
+  cursor: "pointer",
+  textDecoration: "none",
 };
-const pipe: React.CSSProperties = { margin: '0 8px', color: '#8b5e3c' };
+const pipe: React.CSSProperties = { margin: "0 8px", color: "#8b5e3c" };
 
 /* =============================================================================
    Small presentational helpers
@@ -1305,16 +1302,16 @@ const MentorRemovalButton: React.FC<{ onClick: () => void }> = ({ onClick }) => 
 ============================================================================= */
 
 const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }> = ({
-                                                                                      contextType,
-                                                                                      contextName,
-                                                                                    }) => {
+  contextType,
+  contextName,
+}) => {
   // Loader / routing
   const loader = (useLoaderData?.() as LoaderPayload) || {};
   const navigate = useNavigate();
 
   // Context
-  const ctxType = (contextType || loader.contextType || 'assignment') as ContextType;
-  const ctxName = contextName || loader.contextName || 'Program';
+  const ctxType = (contextType || loader.contextType || "assignment") as ContextType;
+  const ctxName = contextName || loader.contextName || "Program";
 
   // Initial data
   const baseTeams = loader.initialTeams || sampleTeams;
@@ -1322,17 +1319,15 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
 
   // Compute initial unassigned list excluding already-assigned members
   const initialUnassigned = useMemo(() => {
-    const assignedIds = new Set(
-      baseTeams.flatMap((t) => t.members.map((m) => String(m.id))),
-    );
+    const assignedIds = new Set(baseTeams.flatMap((t) => t.members.map((m) => String(m.id))));
     return baseUnassigned.filter((u) => !assignedIds.has(String(u.id)));
   }, [baseTeams, baseUnassigned]);
 
   // State
   const [teams, setTeams] = useState<Team[]>(baseTeams);
   const [unassigned, setUnassigned] = useState<Participant[]>(initialUnassigned);
-  const [expanded, setExpanded] = useState<Record<string | number, boolean>>(
-    () => Object.fromEntries(baseTeams.map((t) => [t.id, true])),
+  const [expanded, setExpanded] = useState<Record<string | number, boolean>>(() =>
+    Object.fromEntries(baseTeams.map((t) => [t.id, true]))
   );
   const [showUsernames, setShowUsernames] = useState(true);
 
@@ -1347,32 +1342,31 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   const [showExportTeamsModal, setShowExportTeamsModal] = useState(false);
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [selectedParticipantId, setSelectedParticipantId] = useState<string>('');
-  const [editTeamName, setEditTeamName] = useState('');
-  const [newTeamName, setNewTeamName] = useState('');
-  const [copyTarget, setCopyTarget] = useState('');
-  const [copySource, setCopySource] = useState('');
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string>("");
+  const [editTeamName, setEditTeamName] = useState("");
+  const [newTeamName, setNewTeamName] = useState("");
+  const [copyTarget, setCopyTarget] = useState("");
+  const [copySource, setCopySource] = useState("");
 
   /* -------------------------------------------------------------------------
      Derived helpers
   ------------------------------------------------------------------------- */
 
   const displayName = useCallback(
-    (p?: Participant) =>
-      p ? (showUsernames ? p.username : p.fullName || p.username) : '',
-    [showUsernames],
+    (p?: Participant) => (p ? (showUsernames ? p.username : p.fullName || p.username) : ""),
+    [showUsernames]
   );
 
   const normalizedTeamName = useCallback(
-    (name: string) => name.replace(/\s*MentoredTeam$/i, ''),
-    [],
+    (name: string) => name.replace(/\s*MentoredTeam$/i, ""),
+    []
   );
 
   const studentsWithoutTeams = useMemo(() => unassigned, [unassigned]);
 
   const isMentorMember = useCallback((team: Team, m: Participant) => {
     if (!team.mentor) return false;
-    const normalize = (s: string) => s.replace(/\s*\(Mentor\)\s*$/i, '').trim();
+    const normalize = (s: string) => s.replace(/\s*\(Mentor\)\s*$/i, "").trim();
     const idMatch = String(m.id) === String(team.mentor.id);
     const usernameMatch = normalize(m.username) === normalize(team.mentor.username);
     const nameMatch =
@@ -1386,13 +1380,13 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
      UI event handlers
   ------------------------------------------------------------------------- */
 
-  const toggleTeamExpand = useCallback((teamId: Team['id']) => {
+  const toggleTeamExpand = useCallback((teamId: Team["id"]) => {
     setExpanded((prev) => ({ ...prev, [teamId]: !prev[teamId] }));
   }, []);
 
   const openAddMemberModal = useCallback((team: Team) => {
     setSelectedTeam(team);
-    setSelectedParticipantId('');
+    setSelectedParticipantId("");
     setShowAddModal(true);
   }, []);
 
@@ -1406,39 +1400,42 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       prev.map((t) =>
         t.id === selectedTeam.id
           ? { ...t, members: [...t.members, { ...member, teamName: t.name }] }
-          : t,
-      ),
+          : t
+      )
     );
     setShowAddModal(false);
   }, [selectedParticipantId, selectedTeam, unassigned]);
 
   const removeMemberFromTeam = useCallback(
-    (teamId: Team['id'], memberId: Participant['id']) => {
+    (teamId: Team["id"], memberId: Participant["id"]) => {
       const team = teams.find((t) => t.id === teamId);
       if (!team) return;
 
       const member = team.members.find((m) => m.id === memberId);
       setTeams((prev) =>
         prev.map((t) =>
-          t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t,
-        ),
+          t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t
+        )
       );
       if (member) {
-        setUnassigned((prev) => [...prev, { ...member, teamName: '' }]);
+        setUnassigned((prev) => [...prev, { ...member, teamName: "" }]);
       }
     },
-    [teams],
+    [teams]
   );
 
-  const removeMentor = useCallback((teamId: Team['id']) => {
-    setTeams((prev) =>
-      prev.map((t) => {
-        if (t.id !== teamId || !t.mentor) return t;
-        const filtered = t.members.filter((m) => !isMentorMember(t, m));
-        return { ...t, mentor: undefined, members: filtered };
-      }),
-    );
-  }, [isMentorMember]);
+  const removeMentor = useCallback(
+    (teamId: Team["id"]) => {
+      setTeams((prev) =>
+        prev.map((t) => {
+          if (t.id !== teamId || !t.mentor) return t;
+          const filtered = t.members.filter((m) => !isMentorMember(t, m));
+          return { ...t, mentor: undefined, members: filtered };
+        })
+      );
+    },
+    [isMentorMember]
+  );
 
   const openEditTeamModal = useCallback((team: Team) => {
     setSelectedTeam(team);
@@ -1454,24 +1451,24 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
         t.id !== selectedTeam.id
           ? t
           : {
-            ...t,
-            name: newName,
-            members: t.members.map((m) => ({ ...m, teamName: newName })),
-          },
-      ),
+              ...t,
+              name: newName,
+              members: t.members.map((m) => ({ ...m, teamName: newName })),
+            }
+      )
     );
     setShowEditModal(false);
   }, [editTeamName, selectedTeam]);
 
   const deleteTeam = useCallback(
-    (teamId: Team['id']) => {
+    (teamId: Team["id"]) => {
       const team = teams.find((t) => t.id === teamId);
       setTeams((prev) => prev.filter((t) => t.id !== teamId));
       if (team) {
-        setUnassigned((prev) => [...prev, ...team.members.map((m) => ({ ...m, teamName: '' }))]);
+        setUnassigned((prev) => [...prev, ...team.members.map((m) => ({ ...m, teamName: "" }))]);
       }
     },
-    [teams],
+    [teams]
   );
 
   const createTeam = useCallback(() => {
@@ -1479,25 +1476,25 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     if (!name || teams.some((t) => t.name === name)) return;
     const id = `t-${Date.now()}`;
     setTeams((prev) => [...prev, { id, name, members: [] }]);
-    setNewTeamName('');
+    setNewTeamName("");
     setShowCreateModal(false);
   }, [newTeamName, teams]);
 
   const deleteAllTeams = useCallback(() => {
-    if (!window.confirm('Delete all teams? This returns all members to the unassigned list.'))
+    if (!window.confirm("Delete all teams? This returns all members to the unassigned list."))
       return;
     const everyone = teams.flatMap((t) => t.members);
-    setUnassigned((prev) => [...prev, ...everyone.map((m) => ({ ...m, teamName: '' }))]);
+    setUnassigned((prev) => [...prev, ...everyone.map((m) => ({ ...m, teamName: "" }))]);
     setTeams([]);
   }, [teams]);
 
   const copyTeamsToCourse = useCallback(() => {
-    alert(`Copying ${teams.length} team(s) to "${copyTarget || '(choose destination)'}"`);
+    alert(`Copying ${teams.length} team(s) to "${copyTarget || "(choose destination)"}"`);
     setShowCopyToModal(false);
   }, [copyTarget, teams.length]);
 
   const copyTeamsFromCourse = useCallback(() => {
-    alert(`Copying teams from "${copySource || '(choose source)'}" into this ${ctxType}`);
+    alert(`Copying teams from "${copySource || "(choose source)"}" into this ${ctxType}`);
     setShowCopyFromModal(false);
   }, [copySource, ctxType]);
 
@@ -1516,7 +1513,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
           <Form.Check
             type="switch"
             id="toggle-names"
-            label={showUsernames ? 'Showing usernames' : 'Showing names'}
+            label={showUsernames ? "Showing usernames" : "Showing names"}
             checked={!showUsernames}
             onChange={() => setShowUsernames((prev) => !prev)}
           />
@@ -1527,7 +1524,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       <Row style={toolbarWrap}>
         <Col
           className="text-start"
-          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+          style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}
         >
           <ToolbarLink onClick={() => setShowCreateModal(true)}>Create team</ToolbarLink>
           <span style={pipe}>|</span>
@@ -1550,22 +1547,22 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
       {/* Card wrapper */}
       <div
         style={{
-          border: '2px solid #9aa0a6',
+          border: "2px solid #9aa0a6",
           borderRadius: 12,
           padding: 12,
-          backgroundColor: '#fff',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          backgroundColor: "#fff",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
         }}
       >
         <Tabs defaultActiveKey="teams" className="mb-3">
           <Tab eventKey="teams" title="Teams">
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: "auto" }}>
               {/* All table text: 15px / 1.428em */}
-              <div style={{ ...frame, width: 'max-content', minWidth: '100%', ...TABLE_TEXT }}>
+              <div style={{ ...frame, width: "max-content", minWidth: "100%", ...TABLE_TEXT }}>
                 <div style={{ ...headerBar }}>
                   <div style={{ width: 40 }} />
                   <div className="flex-grow-1">Details</div>
-                  <div style={{ width: 200, textAlign: 'center' }}>Actions</div>
+                  <div style={{ width: 200, textAlign: "center" }}>Actions</div>
                 </div>
 
                 {teams.map((team) => {
@@ -1578,18 +1575,18 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
                           <button
                             style={caretButton}
                             onClick={() => toggleTeamExpand(team.id)}
-                            aria-label={open ? 'Collapse team' : 'Expand team'}
+                            aria-label={open ? "Collapse team" : "Expand team"}
                           >
-                            {open ? '▾' : '▸'}
+                            {open ? "▾" : "▸"}
                           </button>
                         </div>
 
-                        <div className="flex-grow-1" style={{ overflow: 'hidden' }}>
+                        <div className="flex-grow-1" style={{ overflow: "hidden" }}>
                           <strong>{normalizedTeamName(team.name)}</strong>
                           {team.mentor && (
                             <>
                               <span className="ms-2">
-                                : {displayName(team.mentor)}{' '}
+                                : {displayName(team.mentor)}{" "}
                                 <span style={{ opacity: 0.9 }}>(Mentor)</span>
                               </span>
                               <MentorRemovalButton onClick={() => removeMentor(team.id)} />
@@ -1629,7 +1626,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
                       {open && (
                         <div style={{ ...membersRowBase }}>
                           {visibleMembers.length === 0 ? (
-                            <span style={{ color: '#6b7280' }}>No students yet.</span>
+                            <span style={{ color: "#6b7280" }}>No students yet.</span>
                           ) : (
                             visibleMembers.map((m) => (
                               <span key={`${team.id}-${m.id}`} style={{ ...chipBase }}>
@@ -1655,14 +1652,14 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
           </Tab>
 
           <Tab eventKey="students" title="Students without teams">
-            <div style={{ overflowX: 'auto' }}>
-              <div style={{ ...frame, width: 'max-content', minWidth: '100%', ...TABLE_TEXT }}>
+            <div style={{ overflowX: "auto" }}>
+              <div style={{ ...frame, width: "max-content", minWidth: "100%", ...TABLE_TEXT }}>
                 <div style={{ ...headerBar }}>
                   <div className="flex-grow-1">Student</div>
                 </div>
                 <div style={{ padding: 16 }} data-testid="student-list">
                   {studentsWithoutTeams.length === 0 ? (
-                    <span style={{ color: '#6b7280' }}>All students are on a team.</span>
+                    <span style={{ color: "#6b7280" }}>All students are on a team.</span>
                   ) : (
                     studentsWithoutTeams.map((u) => (
                       <span key={`un-${u.id}`} style={{ ...chipBase }}>
@@ -1838,4 +1835,3 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
 };
 
 export default CreateTeams;
-

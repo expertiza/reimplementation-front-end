@@ -6,7 +6,6 @@ import { HttpMethod } from "../../utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
-
 // DeleteCourse Component: Modal for deleting a course
 
 interface IDeleteCourse {
@@ -15,7 +14,6 @@ interface IDeleteCourse {
 }
 
 const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
-  
   const { data: deletedCourse, error: courseError, sendRequest: DeleteCourse } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
@@ -28,7 +26,7 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
   useEffect(() => {
     if (courseError) dispatch(alertActions.showAlert({ variant: "danger", message: courseError }));
   }, [courseError, dispatch]);
- 
+
   //Added this method to be called in below and achieve LSP
   const handleDeleteSuccess = () => {
     setShow(false);
@@ -55,7 +53,7 @@ const DeleteCourse: React.FC<IDeleteCourse> = ({ courseData, onClose }) => {
 
   // Render the DeleteCourse modal
   return (
-    <Modal show={show} onHide={closeHandler}centered>
+    <Modal show={show} onHide={closeHandler} centered>
       <Modal.Header closeButton>
         <Modal.Title>Delete Course</Modal.Title>
       </Modal.Header>

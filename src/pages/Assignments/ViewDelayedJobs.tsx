@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import React, { useMemo } from "react";
+import { Button, Container, Row, Col } from "react-bootstrap";
 // import { useNavigate } from 'react-router-dom';
 import Table from "../../components/Table/Table";
 import { createColumnHelper } from "@tanstack/react-table";
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData } from "react-router-dom";
 
 interface IDelayedJob {
   id: number;
@@ -18,31 +18,41 @@ const ViewDelayedJobs: React.FC = () => {
   // const navigate = useNavigate();
 
   // Dummy data for delayed jobs
-  const delayedJobs = useMemo(() => [
-    { id: 1, jobName: 'Job 1', scheduledTime: '2023-01-01 12:00' },
-    { id: 2, jobName: 'Job 2', scheduledTime: '2023-02-01 15:30' },
-    // ...other delayed jobs
-  ], []);
+  const delayedJobs = useMemo(
+    () => [
+      { id: 1, jobName: "Job 1", scheduledTime: "2023-01-01 12:00" },
+      { id: 2, jobName: "Job 2", scheduledTime: "2023-02-01 15:30" },
+      // ...other delayed jobs
+    ],
+    []
+  );
 
-  const columns = useMemo(() => [
-    columnHelper.accessor('jobName', {
-      header: () => 'Job Name',
-      cell: info => info.getValue()
-    }),
-    columnHelper.accessor('scheduledTime', {
-      header: () => 'Scheduled Time',
-      cell: info => info.getValue()
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: () => 'Actions',
-      cell: ({ row }) => (
-        <Button variant="outline-danger" size="sm" onClick={() => handleActionClick(row.original.id)}>
-          Action
-        </Button>
-      )
-    })
-  ], []);
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("jobName", {
+        header: () => "Job Name",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("scheduledTime", {
+        header: () => "Scheduled Time",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: () => "Actions",
+        cell: ({ row }) => (
+          <Button
+            variant="outline-danger"
+            size="sm"
+            onClick={() => handleActionClick(row.original.id)}
+          >
+            Action
+          </Button>
+        ),
+      }),
+    ],
+    []
+  );
 
   const handleActionClick = (jobId: number) => {
     console.log(`Action clicked for delayed job ID ${jobId}`);
@@ -55,7 +65,16 @@ const ViewDelayedJobs: React.FC = () => {
 
   return (
     <Container className="mt-4">
-      <div style={{ color: '#31708f', backgroundColor: '#d9edf7', padding: '10px', borderRadius: '5px', border: '1px solid #bce8f1', marginBottom: '20px' }}>
+      <div
+        style={{
+          color: "#31708f",
+          backgroundColor: "#d9edf7",
+          padding: "10px",
+          borderRadius: "5px",
+          border: "1px solid #bce8f1",
+          marginBottom: "20px",
+        }}
+      >
         This is a placeholder page and is still in progress.
       </div>
       <Row className="mt-md-2 mb-md-2">
@@ -71,7 +90,6 @@ const ViewDelayedJobs: React.FC = () => {
             columns={columns}
             columnVisibility={{
               id: false,
-
             }}
           />
         </Col>

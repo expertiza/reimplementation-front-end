@@ -1,7 +1,7 @@
-import React from 'react';
-import TeamPeerGrades from './TeamPeerGrades';
+import React from "react";
+import TeamPeerGrades from "./TeamPeerGrades";
 
-export type { ReviewData, SectionHeaderData } from '../../utils/reviewTypes';
+export type { ReviewData, SectionHeaderData } from "../../utils/reviewTypes";
 
 // Interface defining the structure of a team member
 export interface TeamMember {

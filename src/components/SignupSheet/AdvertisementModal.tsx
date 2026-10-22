@@ -1,8 +1,8 @@
-import React, { FC, useState } from 'react';
-import { Modal, Button, Alert, Spinner } from 'react-bootstrap';
-import { AdvertisementDetails } from '../../utils/interfaces';
-import axios from 'axios';
-import styles from './AdvertisementModal.module.css';
+import React, { FC, useState } from "react";
+import { Modal, Button, Alert, Spinner } from "react-bootstrap";
+import { AdvertisementDetails } from "../../utils/interfaces";
+import axios from "axios";
+import styles from "./AdvertisementModal.module.css";
 
 interface AdvertisementModalProps {
   show: boolean;
@@ -13,8 +13,7 @@ interface AdvertisementModalProps {
   onRequestSent?: () => void;
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002";
 
 const AdvertisementModal: FC<AdvertisementModalProps> = ({
   show,
@@ -36,10 +35,10 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+      const token = localStorage.getItem("token") || localStorage.getItem("jwt");
       const headers = {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       await axios.post(
@@ -52,8 +51,8 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
         { headers }
       );
 
-      setSuccess('Join team request sent successfully!');
-      
+      setSuccess("Join team request sent successfully!");
+
       if (onRequestSent) {
         onRequestSent();
       }
@@ -64,12 +63,12 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
         setSuccess(null);
       }, 2000);
     } catch (err: any) {
-      console.error('Error sending join team request:', err);
+      console.error("Error sending join team request:", err);
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to send join team request'
+          "Failed to send join team request"
       );
     } finally {
       setLoading(false);
@@ -91,7 +90,7 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
     <Modal show={show} onHide={handleClose} centered size="lg">
       <Modal.Header closeButton>
         <Modal.Title>
-          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>📢</span>
+          <span style={{ fontSize: "1.2rem", marginRight: "8px" }}>📢</span>
           Teammate Advertisement
         </Modal.Title>
       </Modal.Header>
@@ -101,15 +100,17 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
             {error}
           </Alert>
         )}
-        
+
         {success && (
           <Alert variant="success" dismissible onClose={() => setSuccess(null)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.5rem' }}>✅</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "1.5rem" }}>✅</span>
               <div>
                 <strong>Success!</strong>
                 <div>{success}</div>
-                <small style={{ color: '#155724' }}>The team will be notified of your request.</small>
+                <small style={{ color: "#155724" }}>
+                  The team will be notified of your request.
+                </small>
               </div>
             </div>
           </Alert>
@@ -159,8 +160,9 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
           )}
 
           <div className={styles.infoBox}>
-            <span style={{ marginRight: '8px' }}>ℹ️</span>
-            This team is looking for partners to join them for this topic. Click "Request to Join" to send a join request to the team.
+            <span style={{ marginRight: "8px" }}>ℹ️</span>
+            This team is looking for partners to join them for this topic. Click "Request to Join"
+            to send a join request to the team.
           </div>
         </div>
       </Modal.Body>
@@ -168,11 +170,7 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
         <Button variant="secondary" onClick={handleClose} disabled={loading}>
           Close
         </Button>
-        <Button
-          variant="primary"
-          onClick={handleRequestToJoin}
-          disabled={loading || !!success}
-        >
+        <Button variant="primary" onClick={handleRequestToJoin} disabled={loading || !!success}>
           {loading ? (
             <>
               <Spinner
@@ -187,7 +185,7 @@ const AdvertisementModal: FC<AdvertisementModalProps> = ({
             </>
           ) : (
             <>
-              <span style={{ marginRight: '8px' }}>➕</span>
+              <span style={{ marginRight: "8px" }}>➕</span>
               Request to Join Team
             </>
           )}

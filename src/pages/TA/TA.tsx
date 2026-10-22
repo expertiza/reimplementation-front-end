@@ -55,10 +55,7 @@ const TAs = () => {
     []
   );
 
-  const tableColumns = useMemo(
-    () => TA_COLUMNS(onDeleteHandle),
-    [onDeleteHandle]
-  );
+  const tableColumns = useMemo(() => TA_COLUMNS(onDeleteHandle), [onDeleteHandle]);
 
   const tableData = useMemo(
     () => (isLoading || !TAResponse?.data ? [] : TAResponse.data),
@@ -94,11 +91,13 @@ const TAs = () => {
                   className="ms-sm-2"
                   onClick={() => navigate("new")}
                   tooltip="Add TA to this course"
-                  icon={<img
-              src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
-              alt="Assign TA"
-              style={{ width: "20px", height: "20px" }}
-            />}
+                  icon={
+                    <img
+                      src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+                      alt="Assign TA"
+                      style={{ width: "20px", height: "20px" }}
+                    />
+                  }
                 />
               </Col>
             </Row>

@@ -9,31 +9,35 @@ import { QuestionnaireResponse } from "./QuestionnaireUtils";
 interface IDeleteQuestionnaire {
   questionnaireData: QuestionnaireResponse;
   onClose: () => void;
-  onDeleteSuccess?: (deletedId: number) => void; 
+  onDeleteSuccess?: (deletedId: number) => void;
 }
 
-const DeleteQuestionnaire: React.FC<IDeleteQuestionnaire> = ({ questionnaireData, onClose, onDeleteSuccess }) => {
-  
-  const { data: deletedQuestionnaire, error: questionnaireError, sendRequest: deleteQuestionnaire } = useAPI();
-  
+const DeleteQuestionnaire: React.FC<IDeleteQuestionnaire> = ({
+  questionnaireData,
+  onClose,
+  onDeleteSuccess,
+}) => {
+  const {
+    data: deletedQuestionnaire,
+    error: questionnaireError,
+    sendRequest: deleteQuestionnaire,
+  } = useAPI();
+
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
- 
-  const deleteHandler = () => 
-    deleteQuestionnaire({ 
-      url: `/questionnaires/${questionnaireData.id}`, 
-      method: HttpMethod.DELETE 
+  const deleteHandler = () =>
+    deleteQuestionnaire({
+      url: `/questionnaires/${questionnaireData.id}`,
+      method: HttpMethod.DELETE,
     });
 
- 
   useEffect(() => {
     if (questionnaireError) {
       dispatch(alertActions.showAlert({ variant: "danger", message: questionnaireError }));
     }
   }, [questionnaireError, dispatch]);
 
- 
   const handleDeleteSuccess = () => {
     setShow(false);
     dispatch(
@@ -46,14 +50,16 @@ const DeleteQuestionnaire: React.FC<IDeleteQuestionnaire> = ({ questionnaireData
     onClose();
   };
 
- 
   useEffect(() => {
-    if (deletedQuestionnaire?.status && deletedQuestionnaire?.status >= 200 && deletedQuestionnaire?.status < 300) {
+    if (
+      deletedQuestionnaire?.status &&
+      deletedQuestionnaire?.status >= 200 &&
+      deletedQuestionnaire?.status < 300
+    ) {
       handleDeleteSuccess();
     }
   }, [deletedQuestionnaire?.status, dispatch, onClose, questionnaireData.name]);
 
-  
   const closeHandler = () => {
     setShow(false);
     onClose();

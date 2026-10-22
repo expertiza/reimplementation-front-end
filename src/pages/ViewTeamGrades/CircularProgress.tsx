@@ -1,5 +1,5 @@
 // CircularProgress.tsx
-import React from 'react';
+import React from "react";
 
 interface CircularProgressProps {
   size: number; // Diameter of the progress bar
@@ -7,23 +7,22 @@ interface CircularProgressProps {
   strokeWidth: number; // Width of the stroke
 }
 
-
 const CircularProgress: React.FC<CircularProgressProps> = ({ size, progress, strokeWidth }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
 
   const circleStyle: React.CSSProperties = {
-    fill: 'none',
-    stroke: 'rgba(255, 193, 7)',
-    strokeLinecap: 'round',
+    fill: "none",
+    stroke: "rgba(255, 193, 7)",
+    strokeLinecap: "round",
     strokeDasharray: `${circumference} ${circumference}`,
     strokeDashoffset: offset,
     strokeWidth,
   };
 
   return (
-    <div style={{ position: 'relative', width: size, height: size }}>
+    <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size}>
         {/* Background circle */}
         <circle
@@ -45,12 +44,12 @@ const CircularProgress: React.FC<CircularProgressProps> = ({ size, progress, str
       </svg>
       <div
         style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontSize: '1.5rem',
-          color: 'black',
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          fontSize: "1.5rem",
+          color: "black",
         }}
       >
         {progress}

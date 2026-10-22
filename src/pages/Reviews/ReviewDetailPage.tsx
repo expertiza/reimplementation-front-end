@@ -15,9 +15,15 @@ const ReviewDetailPage = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const key = params.get("key");
-    if (!key) { setError(true); return; }
+    if (!key) {
+      setError(true);
+      return;
+    }
     const raw = sessionStorage.getItem(key);
-    if (!raw) { setError(true); return; }
+    if (!raw) {
+      setError(true);
+      return;
+    }
     try {
       setDetail(JSON.parse(raw));
     } catch {
@@ -38,10 +44,11 @@ const ReviewDetailPage = () => {
   return (
     <Container fluid className="p-4">
       <h2 style={{ textAlign: "left", marginBottom: "16px" }}>{detail.title}</h2>
-      {detail.data.length === 0
-        ? <p>No submitted responses found.</p>
-        : <ReviewTable data={detail.data} roundSelected={-1} />
-      }
+      {detail.data.length === 0 ? (
+        <p>No submitted responses found.</p>
+      ) : (
+        <ReviewTable data={detail.data} roundSelected={-1} />
+      )}
     </Container>
   );
 };

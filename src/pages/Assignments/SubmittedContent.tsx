@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
-import { FaDownload, FaFile, FaLink, FaTrash } from 'react-icons/fa';
-import { useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { Formik, Form as FormikForm, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import axiosClient from '../../utils/axios_client';
-import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Button, Col, Container, Form, Modal, Row, Spinner, Table } from "react-bootstrap";
+import { FaDownload, FaFile, FaLink, FaTrash } from "react-icons/fa";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Formik, Form as FormikForm, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import axiosClient from "../../utils/axios_client";
+import ConfirmDeleteModal from "../../components/Modals/ConfirmDeleteModal";
 import {
   ALLOWED_EXTENSIONS,
   MAX_FILE_SIZE_MB,
@@ -17,9 +17,9 @@ import {
   saveFileToDisk,
   submitFile,
   submitHyperlink,
-} from './SubmittedContentUtil';
-import { IModalState, ISubmittedContentProps, ISubmittedFile } from '../../types/SubmittedContent';
-import styles from './SubmittedContent.module.css';
+} from "./SubmittedContentUtil";
+import { IModalState, ISubmittedContentProps, ISubmittedFile } from "../../types/SubmittedContent";
+import styles from "./SubmittedContent.module.css";
 
 /**
  * Submissions live directly in the team's directory. Nothing in the backend
@@ -30,30 +30,32 @@ import styles from './SubmittedContent.module.css';
  * paths that `list_files` does not return), since a folder created by mistake
  * could never be removed.
  */
-const SUBMISSION_ROOT = '/';
+const SUBMISSION_ROOT = "/";
 
 /** Mirrors the server's own size and extension limits. */
 const fileValidationSchema = Yup.object().shape({
   file: Yup.mixed()
-    .required('Please choose a file.')
-    .test('fileSize', `Files must be smaller than ${MAX_FILE_SIZE_MB}MB.`, (value: any) =>
+    .required("Please choose a file.")
+    .test("fileSize", `Files must be smaller than ${MAX_FILE_SIZE_MB}MB.`, (value: any) =>
       value?.length ? value[0].size <= MAX_FILE_SIZE_MB * 1024 * 1024 : false
     )
-    .test('fileType', `Allowed extensions: ${ALLOWED_EXTENSIONS.join(', ')}.`, (value: any) => {
+    .test("fileType", `Allowed extensions: ${ALLOWED_EXTENSIONS.join(", ")}.`, (value: any) => {
       if (!value?.length) return false;
-      const extension = value[0].name.split('.').pop()?.toLowerCase();
+      const extension = value[0].name.split(".").pop()?.toLowerCase();
       return !!extension && ALLOWED_EXTENSIONS.includes(extension);
     }),
 });
 
 const hyperlinkValidationSchema = Yup.object().shape({
   url: Yup.string()
-    .url('Enter a valid URL.')
-    .matches(/^https?:\/\//i, 'Hyperlinks must start with http:// or https://')
-    .required('A URL is required.'),
+    .url("Enter a valid URL.")
+    .matches(/^https?:\/\//i, "Hyperlinks must start with http:// or https://")
+    .required("A URL is required."),
 });
 
-const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: participantIdProp }) => {
+const SubmittedContent: React.FC<ISubmittedContentProps> = ({
+  participantId: participantIdProp,
+}) => {
   // Every submitted_content endpoint keys off an AssignmentParticipant id --
   // `set_participant` does `AssignmentParticipant.find(params[:id])` -- and the
   // route carries exactly that.
@@ -65,7 +67,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
   const participantId = useMemo<number | null>(() => {
     if (participantIdProp != null) return participantIdProp;
 
-    const queryValue = searchParams.get('participantId');
+    const queryValue = searchParams.get("participantId");
     for (const candidate of [participantIdParam, queryValue]) {
       const parsed = Number(candidate);
       if (candidate && Number.isFinite(parsed)) return parsed;
@@ -88,13 +90,16 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
 
   // What the confirmation modal is currently asking about, if anything.
   type PendingDelete =
-    | { kind: 'file'; file: ISubmittedFile }
-    | { kind: 'hyperlink'; index: number; url: string };
+    | { kind: "file"; file: ISubmittedFile }
+    | { kind: "hyperlink"; index: number; url: string };
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [fileModal, setFileModal] = useState<IModalState>({ show: false, isSubmitting: false });
-  const [hyperlinkModal, setHyperlinkModal] = useState<IModalState>({ show: false, isSubmitting: false });
+  const [hyperlinkModal, setHyperlinkModal] = useState<IModalState>({
+    show: false,
+    isSubmitting: false,
+  });
 
   const flashSuccess = useCallback((message: string) => {
     setSuccess(message);
@@ -132,7 +137,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
   /** GET /submitted_content/list_files for the team's submission directory. */
   const loadSubmissions = useCallback(async () => {
     if (participantId == null) {
-      setError('No participant was named for this page. Open it from your task list.');
+      setError("No participant was named for this page. Open it from your task list.");
       return;
     }
     setLoading(true);
@@ -142,7 +147,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
       setFiles(data.files ?? []);
       setHyperlinks(data.hyperlinks ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load submitted content.');
+      setError(err instanceof Error ? err.message : "Failed to load submitted content.");
       setFiles([]);
       setHyperlinks([]);
     } finally {
@@ -168,7 +173,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
         await loadSubmissions();
       } catch (err) {
         setFileModal({ show: true, isSubmitting: false });
-        setError(err instanceof Error ? err.message : 'Failed to upload file.');
+        setError(err instanceof Error ? err.message : "Failed to upload file.");
       }
     },
     [participantId, loadSubmissions, flashSuccess]
@@ -187,7 +192,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
         await loadSubmissions();
       } catch (err) {
         setHyperlinkModal({ show: true, isSubmitting: false });
-        setError(err instanceof Error ? err.message : 'Failed to submit hyperlink.');
+        setError(err instanceof Error ? err.message : "Failed to submit hyperlink.");
       }
     },
     [participantId, loadSubmissions, flashSuccess]
@@ -204,7 +209,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
     setIsDeleting(true);
     setError(null);
     try {
-      if (pendingDelete.kind === 'file') {
+      if (pendingDelete.kind === "file") {
         const { message } = await deleteFiles(
           participantId,
           [pendingDelete.file.name],
@@ -213,12 +218,12 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
         flashSuccess(message);
       } else {
         await removeHyperlink(participantId, pendingDelete.index);
-        flashSuccess('The hyperlink has been removed.');
+        flashSuccess("The hyperlink has been removed.");
       }
       setPendingDelete(null);
       await loadSubmissions();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove the item.');
+      setError(err instanceof Error ? err.message : "Failed to remove the item.");
     } finally {
       setIsDeleting(false);
     }
@@ -231,7 +236,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
       try {
         await saveFileToDisk(participantId, file.name, SUBMISSION_ROOT);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to download file.');
+        setError(err instanceof Error ? err.message : "Failed to download file.");
       }
     },
     [participantId]
@@ -244,7 +249,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
       <Row className="mb-4">
         <Col>
           <h1 className={styles.title}>
-            {assignmentName ? `Submit work for ${assignmentName}` : 'Submit work'}
+            {assignmentName ? `Submit work for ${assignmentName}` : "Submit work"}
           </h1>
         </Col>
       </Row>
@@ -301,9 +306,11 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th style={{ width: '90px' }}>Size</th>
-                      <th style={{ width: '180px' }}>Last modified</th>
-                      <th className="text-end" style={{ width: '80px' }}>Actions</th>
+                      <th style={{ width: "90px" }}>Size</th>
+                      <th style={{ width: "180px" }}>Last modified</th>
+                      <th className="text-end" style={{ width: "80px" }}>
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -327,7 +334,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                             variant="link"
                             className="p-0 text-danger"
                             title={`Delete ${file.name}`}
-                            onClick={() => setPendingDelete({ kind: 'file', file })}
+                            onClick={() => setPendingDelete({ kind: "file", file })}
                           >
                             <FaTrash />
                           </Button>
@@ -357,12 +364,12 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                             {url}
                           </a>
                         </td>
-                        <td className="text-end" style={{ width: '80px' }}>
+                        <td className="text-end" style={{ width: "80px" }}>
                           <Button
                             variant="link"
                             className="p-0 text-danger"
                             title={`Remove ${url}`}
-                            onClick={() => setPendingDelete({ kind: 'hyperlink', index, url })}
+                            onClick={() => setPendingDelete({ kind: "hyperlink", index, url })}
                           >
                             <FaTrash />
                           </Button>
@@ -379,10 +386,12 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
 
       <ConfirmDeleteModal
         show={pendingDelete != null}
-        title={pendingDelete?.kind === 'hyperlink' ? 'Remove Hyperlink' : 'Delete File'}
-        itemType={pendingDelete?.kind === 'hyperlink' ? 'hyperlink' : 'file'}
-        itemLabel={pendingDelete?.kind === 'file' ? pendingDelete.file.name : pendingDelete?.url ?? ''}
-        action={pendingDelete?.kind === 'hyperlink' ? 'Remove' : 'Delete'}
+        title={pendingDelete?.kind === "hyperlink" ? "Remove Hyperlink" : "Delete File"}
+        itemType={pendingDelete?.kind === "hyperlink" ? "hyperlink" : "file"}
+        itemLabel={
+          pendingDelete?.kind === "file" ? pendingDelete.file.name : pendingDelete?.url ?? ""
+        }
+        action={pendingDelete?.kind === "hyperlink" ? "Remove" : "Delete"}
         isSubmitting={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setPendingDelete(null)}
@@ -411,11 +420,11 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                     name="file"
                     disabled={fileModal.isSubmitting}
                     onChange={(event) =>
-                      setFieldValue('file', (event.target as HTMLInputElement).files)
+                      setFieldValue("file", (event.target as HTMLInputElement).files)
                     }
                   />
                   <Form.Text muted>
-                    Max {MAX_FILE_SIZE_MB}MB. Allowed: {ALLOWED_EXTENSIONS.join(', ')}.
+                    Max {MAX_FILE_SIZE_MB}MB. Allowed: {ALLOWED_EXTENSIONS.join(", ")}.
                   </Form.Text>
                   <ErrorMessage name="file" component="div" className="text-danger" />
                 </Form.Group>
@@ -427,15 +436,20 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                     label="Expand this archive after upload (.zip only)"
                     checked={values.unzip}
                     disabled={fileModal.isSubmitting}
-                    onChange={(event) => setFieldValue('unzip', event.target.checked)}
+                    onChange={(event) => setFieldValue("unzip", event.target.checked)}
                   />
                   <Form.Text muted>
                     The server flattens archives — every entry lands alongside your other files.
                   </Form.Text>
                 </Form.Group>
 
-                <Button type="submit" variant="primary" className="w-100" disabled={fileModal.isSubmitting}>
-                  {fileModal.isSubmitting ? 'Uploading…' : 'Upload'}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100"
+                  disabled={fileModal.isSubmitting}
+                >
+                  {fileModal.isSubmitting ? "Uploading…" : "Upload"}
                 </Button>
               </FormikForm>
             )}
@@ -452,7 +466,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
         </Modal.Header>
         <Modal.Body>
           <Formik
-            initialValues={{ url: '' }}
+            initialValues={{ url: "" }}
             validationSchema={hyperlinkValidationSchema}
             onSubmit={addHyperlink}
           >
@@ -476,7 +490,7 @@ const SubmittedContent: React.FC<ISubmittedContentProps> = ({ participantId: par
                 className="w-100"
                 disabled={hyperlinkModal.isSubmitting}
               >
-                {hyperlinkModal.isSubmitting ? 'Submitting…' : 'Submit'}
+                {hyperlinkModal.isSubmitting ? "Submitting…" : "Submit"}
               </Button>
             </FormikForm>
           </Formik>

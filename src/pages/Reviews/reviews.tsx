@@ -5,7 +5,16 @@ import { useNavigate } from "react-router-dom";
 import { getReviewItems, getFeedbackItems, ReviewItem } from "./reviewData"; // Import function and interface
 
 import { Row, Col, Button, Modal } from "react-bootstrap";
-import { BsEnvelopeFill, BsEyeFill, BsEyeSlashFill, BsShareFill, BsTrashFill, BsCheck, BsX, BsFileEarmarkArrowUp} from "react-icons/bs";
+import {
+  BsEnvelopeFill,
+  BsEyeFill,
+  BsEyeSlashFill,
+  BsShareFill,
+  BsTrashFill,
+  BsCheck,
+  BsX,
+  BsFileEarmarkArrowUp,
+} from "react-icons/bs";
 
 type HandleMethod = () => void;
 
@@ -56,23 +65,23 @@ const Reviews: React.FC = () => {
 
   const [links, setLinks] = useState([
     "https://github.ncsu.edu/npatil2/CSC517_Program2",
-    "http://152.7.177.84:8080/"
+    "http://152.7.177.84:8080/",
   ]);
 
   const removeLink = (index: number) => {
-    setLinks(prevLinks => prevLinks.filter((_, i) => i !== index));
-  }
+    setLinks((prevLinks) => prevLinks.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
-    console.log('Component mounted or reviewSetId changed');
+    console.log("Component mounted or reviewSetId changed");
     const items = getReviewItems(reviewSetId);
     const feedback = getFeedbackItems(reviewSetId);
     setReviewItems(items);
     setFeedbackItems(feedback);
-  }, [reviewSetId]);  // Make sure reviewSetId is managed correctly
+  }, [reviewSetId]); // Make sure reviewSetId is managed correctly
 
   if (!reviewItems.length) {
-    console.log('No review items to display');
+    console.log("No review items to display");
     return <div>No reviews available.</div>;
   }
 
@@ -80,13 +89,13 @@ const Reviews: React.FC = () => {
     const files = event.target.files;
     if (files) {
       const fileList = Array.from(files); // Convert FileList to array
-      setSelectedFiles(prevFiles => [...prevFiles, ...fileList]);
-      event.target.value = ''; // Allowing for duplicate files
+      setSelectedFiles((prevFiles) => [...prevFiles, ...fileList]);
+      event.target.value = ""; // Allowing for duplicate files
     }
   };
 
   const handleRemoveFile = (index: number) => {
-    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleShareReview = () => {
@@ -96,19 +105,19 @@ const Reviews: React.FC = () => {
   const getScoreColor = (score: number) => {
     switch (score) {
       case 5:
-        return 'green';
+        return "green";
       case 4:
-        return 'lightgreen';
+        return "lightgreen";
       case 3:
-        return 'yellow';
+        return "yellow";
       case 2:
-        return 'orange';
+        return "orange";
       case 1:
-        return 'pink';
+        return "pink";
       case 0:
-        return 'red';
+        return "red";
       default:
-        return 'black';
+        return "black";
     }
   };
 
@@ -121,14 +130,12 @@ const Reviews: React.FC = () => {
   return (
     <div className="centered-container">
       <h1>Review for Program 2</h1>
-      <br/>
+      <br />
       <Modal show={showWarning} onHide={handleCloseWarning}>
         <Modal.Header closeButton>
           <Modal.Title>Warning!</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          {warningPrompt}
-        </Modal.Body>
+        <Modal.Body>{warningPrompt}</Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={handleCancelWarning}>
             <BsX />
@@ -138,19 +145,24 @@ const Reviews: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      
+
       <Row className="side-by-side-container">
         <Col xs={12} md={6} className="action-container">
           <Row className="reviewTable">
             <Col xs={12}>
               <div className="tableButton">
-                <Button title="Toggle Visibility" onClick={() => setshowSubmissions(!showSubmissions)}>
+                <Button
+                  title="Toggle Visibility"
+                  onClick={() => setshowSubmissions(!showSubmissions)}
+                >
                   {showSubmissions ? <BsEyeFill /> : <BsEyeSlashFill />}
-                  {showSubmissions  ? <span style={{ paddingLeft: "5px" }}>Hide Links</span> :
-                    <span style={{ paddingLeft: "5px" }}>Show Links</span>}
+                  {showSubmissions ? (
+                    <span style={{ paddingLeft: "5px" }}>Hide Links</span>
+                  ) : (
+                    <span style={{ paddingLeft: "5px" }}>Show Links</span>
+                  )}
                 </Button>
               </div>
-
             </Col>
           </Row>
           <Table striped bordered>
@@ -160,25 +172,32 @@ const Reviews: React.FC = () => {
                   <h4>Link Submissions</h4>
                 </td>
               </tr>
-              {showSubmissions && (
+              {showSubmissions &&
                 links.map((item, index) => (
                   <tr key={index}>
                     <td>
                       <div className="trash-link-wrapper">
                         <div className="trash-button">
-                          <Button size="sm" title="Remove Link" variant="danger" onClick={
-                            () => handleShowWarning(`Are you sure you want to remove the link '${item}'?`, () => removeLink(index))
-                          }>
+                          <Button
+                            size="sm"
+                            title="Remove Link"
+                            variant="danger"
+                            onClick={() =>
+                              handleShowWarning(
+                                `Are you sure you want to remove the link '${item}'?`,
+                                () => removeLink(index)
+                              )
+                            }
+                          >
                             <BsTrashFill />
                           </Button>
                         </div>
-                        
+
                         <a href={item}>{item}</a>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                ))}
             </tbody>
           </Table>
         </Col>
@@ -186,14 +205,13 @@ const Reviews: React.FC = () => {
         <Col xs={12} md={6} className="action-container">
           <Row className="reviewTable">
             <Col xs={12}>
-              
               <div className="tableButton">
-                  <input
-                    type="file"
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }} // Hide the default file input
-                    ref={fileInputRef}
-                  />
+                <input
+                  type="file"
+                  onChange={handleFileSelect}
+                  style={{ display: "none" }} // Hide the default file input
+                  ref={fileInputRef}
+                />
                 <Button variant="info" title="Submit File" onClick={handleFileUploadButtonClick}>
                   <BsFileEarmarkArrowUp />
                   <span style={{ paddingLeft: "5px" }}>Submit File</span>
@@ -204,7 +222,9 @@ const Reviews: React.FC = () => {
           <Table striped bordered>
             <thead>
               <tr>
-                <th colSpan={3} style={{backgroundColor:"##f2f2f2"}}><h4 >File Submissions</h4></th>
+                <th colSpan={3} style={{ backgroundColor: "##f2f2f2" }}>
+                  <h4>File Submissions</h4>
+                </th>
               </tr>
               <tr>
                 <th>File Name</th>
@@ -213,15 +233,22 @@ const Reviews: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-            {
-              selectedFiles.map((item, index) => (
+              {selectedFiles.map((item, index) => (
                 <tr key={index}>
                   <td>
                     <div className="trash-link-wrapper">
                       <div className="trash-button">
-                        <Button size="sm" title="Remove File" variant="danger" onClick={
-                          () => handleShowWarning(`Are you sure you want to remove the file '${item.name}'?`, () => handleRemoveFile(index))
-                        }>
+                        <Button
+                          size="sm"
+                          title="Remove File"
+                          variant="danger"
+                          onClick={() =>
+                            handleShowWarning(
+                              `Are you sure you want to remove the file '${item.name}'?`,
+                              () => handleRemoveFile(index)
+                            )
+                          }
+                        >
                           <BsTrashFill />
                         </Button>
                       </div>
@@ -229,15 +256,10 @@ const Reviews: React.FC = () => {
                       {item.name}
                     </div>
                   </td>
-                  <td>
-                    {item.size}
-                  </td>
-                  <td>
-                    {item.type}
-                  </td>
+                  <td>{item.size}</td>
+                  <td>{item.type}</td>
                 </tr>
-              ))
-            }
+              ))}
             </tbody>
           </Table>
         </Col>
@@ -248,29 +270,43 @@ const Reviews: React.FC = () => {
           <div className="tableButton">
             <Button title="Toggle Visibility" onClick={() => setShowReview(!showReview)}>
               {showReview ? <BsEyeFill /> : <BsEyeSlashFill />}
-              {showReview ? <span style={{ paddingLeft: "5px" }}>Hide Review</span> :
-                <span style={{ paddingLeft: "5px" }}>Show Review</span>}
-
+              {showReview ? (
+                <span style={{ paddingLeft: "5px" }}>Hide Review</span>
+              ) : (
+                <span style={{ paddingLeft: "5px" }}>Show Review</span>
+              )}
             </Button>
           </div>
 
           <div className="tableButton">
-            <Button title="Email Author" variant="warning" onClick={() => navigate("../email_the_author")}>
+            <Button
+              title="Email Author"
+              variant="warning"
+              onClick={() => navigate("../email_the_author")}
+            >
               <BsEnvelopeFill />
               <span style={{ paddingLeft: "5px" }}>Email Author </span>
             </Button>
           </div>
 
           <div className="tableButton">
-            <Button title="Share My Review" variant="info" onClick={
-              () => handleShowWarning("Your review may now be available for other students to view. Are you sure?", () => handleShareReview)
-            }>
+            <Button
+              title="Share My Review"
+              variant="info"
+              onClick={() =>
+                handleShowWarning(
+                  "Your review may now be available for other students to view. Are you sure?",
+                  () => handleShareReview
+                )
+              }
+            >
               <BsShareFill /> <span style={{ paddingLeft: "5px" }}>Share My Review </span>
             </Button>
           </div>
-
         </Col>
-        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM</span>
+        <span style={{ textAlign: "right" }}>
+          <strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM
+        </span>
       </Row>
 
       <Row className="reviewTable">
@@ -282,70 +318,89 @@ const Reviews: React.FC = () => {
                   <h3 className="tableTitle">Software Engineering and Testing</h3>
                 </td>
               </tr>
-              {showReview && (
+              {showReview &&
                 reviewItems.map((item) => (
                   <tr key={item.id}>
-                    <div style={{background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3"}}>
+                    <div style={{ background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3" }}>
                       <td>
-                        <h5><span>{item.id}. {item.question}</span></h5>
+                        <h5>
+                          <span>
+                            {item.id}. {item.question}
+                          </span>
+                        </h5>
                         <div className="score-comment-wrapper">
-                          <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
+                          <span
+                            className="score"
+                            style={{ backgroundColor: getScoreColor(item.score) }}
+                          >
                             {`${item.score}`}
                           </span>
-                          <p className="comment" style={{padding:"10px"}}>{item.comment}</p>
+                          <p className="comment" style={{ padding: "10px" }}>
+                            {item.comment}
+                          </p>
                         </div>
                       </td>
                     </div>
                   </tr>
-                ))
-              )}
+                ))}
             </tbody>
           </Table>
         </Col>
       </Row>
-      <br/>
-      <br/>
-      <br/>
+      <br />
+      <br />
+      <br />
 
       <Row className="reviewTable">
-
         <div className="tableButton">
           <Button title="Toggle Visibility" onClick={() => setShowReviewSecond(!showReviewSecond)}>
             {showReviewSecond ? <BsEyeFill /> : <BsEyeSlashFill />}
-            {showReviewSecond ? <span style={{ paddingLeft: "5px" }}>Hide Review</span> :
-              <span style={{ paddingLeft: "5px" }}>Show Review</span>}
-
+            {showReviewSecond ? (
+              <span style={{ paddingLeft: "5px" }}>Hide Review</span>
+            ) : (
+              <span style={{ paddingLeft: "5px" }}>Show Review</span>
+            )}
           </Button>
         </div>
 
-        <span style={{ textAlign: "right" }}><strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM</span>
+        <span style={{ textAlign: "right" }}>
+          <strong>Last Reviewed:</strong> Sunday February 25 2024, 08:27PM
+        </span>
       </Row>
       <Row className="reviewTable">
         <Col xs={12}>
           <Table striped bordered>
             <tbody>
-            <tr>
-              <td>
-                <h3 className="tableTitle">FeedBack from the Author</h3>
-              </td>
-            </tr>
-            {showReviewSecond && (
-              feedbackItems.map((item) => (
-                <tr key={item.id}>
-                <div style={{background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3"}}>
-                    <td>
-                      <h5><span>{item.id}. {item.question}</span></h5>
-                      <div className="score-comment-wrapper">
-                          <span className="score" style={{ backgroundColor: getScoreColor(item.score) }}>
+              <tr>
+                <td>
+                  <h3 className="tableTitle">FeedBack from the Author</h3>
+                </td>
+              </tr>
+              {showReviewSecond &&
+                feedbackItems.map((item) => (
+                  <tr key={item.id}>
+                    <div style={{ background: item.id % 2 == 0 ? "#D9EDF7" : "#FCF8E3" }}>
+                      <td>
+                        <h5>
+                          <span>
+                            {item.id}. {item.question}
+                          </span>
+                        </h5>
+                        <div className="score-comment-wrapper">
+                          <span
+                            className="score"
+                            style={{ backgroundColor: getScoreColor(item.score) }}
+                          >
                             {`${item.score}`}
                           </span>
-                        <p className="comment" style={{padding:"10px"}}>{item.comment}</p>
-                      </div>
-                    </td>
-                  </div>
-                </tr>
-              ))
-            )}
+                          <p className="comment" style={{ padding: "10px" }}>
+                            {item.comment}
+                          </p>
+                        </div>
+                      </td>
+                    </div>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </Col>

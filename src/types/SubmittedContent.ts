@@ -8,7 +8,7 @@
 /** A submission record row, as returned by GET /submitted_content[/:id]. */
 export interface ISubmissionRecord {
   id: number;
-  record_type: 'file' | 'hyperlink';
+  record_type: "file" | "hyperlink";
   content: string;
   operation: string;
   user: string;

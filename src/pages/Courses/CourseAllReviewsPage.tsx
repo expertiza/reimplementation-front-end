@@ -59,9 +59,19 @@ const CourseAllReviewsPage = () => {
     };
   }, [report]);
 
-  if (isLoading) return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>;
-  if (error)     return <Container className="mt-4"><Alert variant="danger">{error}</Alert></Container>;
-  if (!report)   return null;
+  if (isLoading)
+    return (
+      <Container className="mt-5 text-center">
+        <Spinner animation="border" />
+      </Container>
+    );
+  if (error)
+    return (
+      <Container className="mt-4">
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  if (!report) return null;
 
   const assignments = report.assignments;
 
@@ -71,7 +81,8 @@ const CourseAllReviewsPage = () => {
         <Col>
           <h2 style={{ fontWeight: 600 }}>Teammate Reviews Summary — {report.course_name}</h2>
           <p className="text-muted mb-0" style={{ fontSize: "0.9rem" }}>
-            Scores shown are the average peer review scores <strong>received</strong> by each student from their teammates.
+            Scores shown are the average peer review scores <strong>received</strong> by each
+            student from their teammates.
           </p>
         </Col>
       </Row>
@@ -81,16 +92,42 @@ const CourseAllReviewsPage = () => {
             <table className="course-report-table">
               <thead>
                 <tr>
-                  <th rowSpan={2} className="course-report-sticky-col" style={{ verticalAlign: "middle" }}>Student</th>
-                  <th rowSpan={2} style={{ verticalAlign: "middle", textAlign: "center", width: "80px" }}>Teammate Count</th>
+                  <th
+                    rowSpan={2}
+                    className="course-report-sticky-col"
+                    style={{ verticalAlign: "middle" }}
+                  >
+                    Student
+                  </th>
+                  <th
+                    rowSpan={2}
+                    style={{ verticalAlign: "middle", textAlign: "center", width: "80px" }}
+                  >
+                    Teammate Count
+                  </th>
                   {assignments.map((a) => (
-                    <th key={a.id} style={{ textAlign: "center" }}>{a.name}</th>
+                    <th key={a.id} style={{ textAlign: "center" }}>
+                      {a.name}
+                    </th>
                   ))}
-                  <th rowSpan={2} style={{ verticalAlign: "middle", textAlign: "center", width: "80px" }}>Aggregate</th>
+                  <th
+                    rowSpan={2}
+                    style={{ verticalAlign: "middle", textAlign: "center", width: "80px" }}
+                  >
+                    Aggregate
+                  </th>
                 </tr>
                 <tr>
                   {assignments.map((a) => (
-                    <th key={`${a.id}-sub`} style={{ textAlign: "center", fontWeight: "normal", fontSize: "11px", minWidth: "90px" }}>
+                    <th
+                      key={`${a.id}-sub`}
+                      style={{
+                        textAlign: "center",
+                        fontWeight: "normal",
+                        fontSize: "11px",
+                        minWidth: "90px",
+                      }}
+                    >
                       Avg Score Received (%)
                     </th>
                   ))}
@@ -99,23 +136,36 @@ const CourseAllReviewsPage = () => {
               <tbody>
                 {report.rows.map((student) => {
                   const cellByAssignment: Record<number, AssignmentCell> = {};
-                  student.assignments.forEach((c) => { cellByAssignment[c.assignment_id] = c; });
+                  student.assignments.forEach((c) => {
+                    cellByAssignment[c.assignment_id] = c;
+                  });
                   const aggPct = parsePct(student.aggregate);
 
                   return (
                     <tr key={student.user_id}>
-                      <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>{student.user_name}</td>
+                      <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>
+                        {student.user_name}
+                      </td>
                       <td style={{ textAlign: "center" }}>{student.teammate_count}</td>
                       {assignments.map((a) => {
                         const cell = cellByAssignment[a.id];
-                        const pct  = parsePct(cell?.teammate_review ?? null);
+                        const pct = parsePct(cell?.teammate_review ?? null);
                         return (
-                          <td key={`${student.user_id}-${a.id}`} className={pct != null ? getHeatColorClass(pct, dataMin, dataMax) : ""} style={{ textAlign: "center" }}>
+                          <td
+                            key={`${student.user_id}-${a.id}`}
+                            className={pct != null ? getHeatColorClass(pct, dataMin, dataMax) : ""}
+                            style={{ textAlign: "center" }}
+                          >
                             {cell?.teammate_review ?? "—"}
                           </td>
                         );
                       })}
-                      <td className={aggPct != null ? getHeatColorClass(aggPct, dataMin, dataMax) : ""} style={{ textAlign: "center", fontWeight: "bold" }}>
+                      <td
+                        className={
+                          aggPct != null ? getHeatColorClass(aggPct, dataMin, dataMax) : ""
+                        }
+                        style={{ textAlign: "center", fontWeight: "bold" }}
+                      >
                         {student.aggregate ?? "—"}
                       </td>
                     </tr>

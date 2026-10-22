@@ -1,10 +1,19 @@
 import { IFormOption } from "../../components/Form/interfaces";
 import { getPrivilegeFromID, hasAllPrivilegesOf } from "../../utils/util";
 import axiosClient from "../../utils/axios_client";
-import { ICourseRequest, ICourseResponse, IInstitution, IInstitutionResponse,IInstructorResponse, IInstructor, IUserRequest, ROLE } from "../../utils/interfaces";
+import {
+  ICourseRequest,
+  ICourseResponse,
+  IInstitution,
+  IInstitutionResponse,
+  IInstructorResponse,
+  IInstructor,
+  IUserRequest,
+  ROLE,
+} from "../../utils/interfaces";
 
 /**
- * @author Aniket Singh Shaktawat, on March, 2024 
+ * @author Aniket Singh Shaktawat, on March, 2024
  * @author Pankhi Saini on March, 2024
  * @author Siddharth Shah on March, 2024
  */
@@ -16,7 +25,7 @@ export enum CourseVisibility {
   PRIVATE = "private",
 }
 
-type PermittedCourseVisibility = CourseVisibility.PRIVATE
+type PermittedCourseVisibility = CourseVisibility.PRIVATE;
 
 // Form options for course visibility
 export const courseVisibility: IFormOption[] = [
@@ -65,7 +74,7 @@ export const transformCourseRequest = (values: ICourseFormValues) => {
     instructor_id: values.instructor_id,
   };
   return JSON.stringify(course);
-}
+};
 
 // Transform course response into form values
 export const transformCourseResponse = (courseResponse: string) => {
@@ -79,10 +88,10 @@ export const transformCourseResponse = (courseResponse: string) => {
     info: course.info,
     institution_id: institution_id,
     instructor_id: instructor_id,
-    private: course.private ? [CourseVisibility.PRIVATE] : []
-  }
+    private: course.private ? [CourseVisibility.PRIVATE] : [],
+  };
   return courseValues;
-}
+};
 
 // Load course, instructor, and institution data
 export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
@@ -113,11 +122,13 @@ export async function loadCourseInstructorDataAndInstitutions({ params }: any) {
     transformResponse: transformInstructorResponse,
   });
   const users = await usersResponse.data;
-  console.log(users.role_id)
-  console.log(courseData)
-  const instructors = users.filter((user: IUserRequest) => !hasAllPrivilegesOf(getPrivilegeFromID(user.role_id), ROLE.INSTRUCTOR));
+  console.log(users.role_id);
+  console.log(courseData);
+  const instructors = users.filter(
+    (user: IUserRequest) => !hasAllPrivilegesOf(getPrivilegeFromID(user.role_id), ROLE.INSTRUCTOR)
+  );
 
-  return { courseData, institutions, instructors }
+  return { courseData, institutions, instructors };
 }
 
 // Input Validation for the Directory path of the course
@@ -129,32 +140,44 @@ export const noSpacesSpecialCharsQuotes = (value: string) => {
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
     hour12: true,
   };
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 };
 
 //For the course to be displayed, find the corresponding institution and instructor.
-export const mergeDataAndNamesAndInstructors = (data: ICourseResponse[], institutionNames: IInstitutionResponse[], instructorNames: IInstructorResponse[]): any => {
+export const mergeDataAndNamesAndInstructors = (
+  data: ICourseResponse[],
+  institutionNames: IInstitutionResponse[],
+  instructorNames: IInstructorResponse[]
+): any => {
   return data.map((dataObj) => {
     // Find institution data from institution id of course
-    const matchingInstitution = institutionNames.find((nameObj) => nameObj.id === dataObj.institution_id);
-    const institutionData = matchingInstitution ? { id: matchingInstitution.id, name: matchingInstitution.name } : {};
+    const matchingInstitution = institutionNames.find(
+      (nameObj) => nameObj.id === dataObj.institution_id
+    );
+    const institutionData = matchingInstitution
+      ? { id: matchingInstitution.id, name: matchingInstitution.name }
+      : {};
 
     // Find instructor data from instructor id of course
-    const matchingInstructor = instructorNames.find((instructorObj) => instructorObj.id === dataObj.instructor_id);
-    const instructorData = matchingInstructor ? { id: matchingInstructor.id, name: matchingInstructor.name } : {};
+    const matchingInstructor = instructorNames.find(
+      (instructorObj) => instructorObj.id === dataObj.instructor_id
+    );
+    const instructorData = matchingInstructor
+      ? { id: matchingInstructor.id, name: matchingInstructor.name }
+      : {};
 
     // Merge course data with institution and instructor data
     return {
       ...dataObj,
       institution: institutionData,
-      instructor: instructorData
+      instructor: instructorData,
     };
   });
 };

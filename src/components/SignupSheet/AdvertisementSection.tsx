@@ -1,19 +1,18 @@
-import React, { FC, useState } from 'react';
-import { Button, Alert, Spinner, Form } from 'react-bootstrap';
-import { AdvertisementDetails } from '../../utils/interfaces';
-import axios from 'axios';
-import styles from './AdvertisementSection.module.css';
+import React, { FC, useState } from "react";
+import { Button, Alert, Spinner, Form } from "react-bootstrap";
+import { AdvertisementDetails } from "../../utils/interfaces";
+import axios from "axios";
+import styles from "./AdvertisementSection.module.css";
 
 interface AdvertisementSectionProps {
   advertisementData: AdvertisementDetails | null;
   assignmentId: string;
   studentId: string;
   onClose: () => void;
-  onShowAlert: (message: string, type: 'success' | 'danger') => void;
+  onShowAlert: (message: string, type: "success" | "danger") => void;
 }
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002";
 
 const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   advertisementData,
@@ -25,7 +24,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   const [loading, setLoading] = useState(false);
   const [extendedTeamMembers, setExtendedTeamMembers] = useState<any[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -35,7 +34,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
   // Auto-resize textarea when comment changes
   React.useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [comment]);
@@ -45,7 +44,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
       if (!advertisementData) return;
       const { signedUpTeam, topic } = advertisementData;
       const team = signedUpTeam.team;
-      
+
       if (!team) return;
 
       // If members are already present, no need to fetch
@@ -55,21 +54,18 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
 
       setLoadingMembers(true);
       try {
-        const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-        const response = await axios.get(
-          `${API_BASE_URL}/signed_up_teams`,
-          {
-            params: { topic_id: topic.id },
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        
+        const token = localStorage.getItem("token") || localStorage.getItem("jwt");
+        const response = await axios.get(`${API_BASE_URL}/signed_up_teams`, {
+          params: { topic_id: topic.id },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         const matchingTeam = response.data.find((t: any) => t.team_id === signedUpTeam.team_id);
         if (matchingTeam && matchingTeam.team && matchingTeam.team.users) {
           setExtendedTeamMembers(matchingTeam.team.users);
         }
       } catch (err) {
-        console.error('Error fetching extended team details:', err);
+        console.error("Error fetching extended team details:", err);
       } finally {
         setLoadingMembers(false);
       }
@@ -85,10 +81,10 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+      const token = localStorage.getItem("token") || localStorage.getItem("jwt");
       const headers = {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       await axios.post(
@@ -101,17 +97,17 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         { headers }
       );
 
-      onShowAlert('Join request sent successfully!', 'success');
+      onShowAlert("Join request sent successfully!", "success");
       onClose();
     } catch (err: any) {
-      console.error('Error sending join team request:', err);
+      console.error("Error sending join team request:", err);
       const errorMessage =
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to send join team request';
-      
-      onShowAlert(errorMessage, 'danger');
+        "Failed to send join team request";
+
+      onShowAlert(errorMessage, "danger");
     } finally {
       setLoading(false);
     }
@@ -121,12 +117,13 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
 
   const { signedUpTeam, topic } = advertisementData;
   const team = signedUpTeam.team;
-  console.log('DEBUG: AdvertisementSection team:', team);
+  console.log("DEBUG: AdvertisementSection team:", team);
 
   // Calculate members to display and check membership
-  const membersToDisplay = extendedTeamMembers.length > 0 
-    ? extendedTeamMembers 
-    : (team?.users || (team as any)?.members || (team as any)?.participants || []);
+  const membersToDisplay =
+    extendedTeamMembers.length > 0
+      ? extendedTeamMembers
+      : team?.users || (team as any)?.members || (team as any)?.participants || [];
 
   const isMember = membersToDisplay.some((member: any) => {
     // Check for various possible ID fields depending on the object structure
@@ -138,15 +135,13 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.title}>
-          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>📢</span>
+          <span style={{ fontSize: "1.2rem", marginRight: "8px" }}>📢</span>
           Teammate Advertisement
         </h3>
         <Button variant="link" size="sm" onClick={onClose} className={styles.linkButton}>
           Close
         </Button>
       </div>
-
-
 
       <div className={styles.advertisementContent}>
         <div className={styles.section}>
@@ -184,10 +179,23 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                   {(() => {
                     let membersList: string[] = [];
                     if (Array.isArray(membersToDisplay)) {
-                      membersList = membersToDisplay.map((u: any) => u.name || u.user_name || u.username || u.full_name || u.user?.name || u.user?.username || u.user?.full_name);
+                      membersList = membersToDisplay.map(
+                        (u: any) =>
+                          u.name ||
+                          u.user_name ||
+                          u.username ||
+                          u.full_name ||
+                          u.user?.name ||
+                          u.user?.username ||
+                          u.user?.full_name
+                      );
                     }
 
-                    return membersList.length > 0 ? membersList.join(', ') : (loadingMembers ? 'Loading members...' : 'No members information available');
+                    return membersList.length > 0
+                      ? membersList.join(", ")
+                      : loadingMembers
+                      ? "Loading members..."
+                      : "No members information available";
                   })()}
                 </span>
               </div>
@@ -199,7 +207,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
           <div className={styles.section}>
             <h5 className={styles.sectionTitle}>Advertisement Message</h5>
             <div className={styles.advertisementMessage}>
-              {signedUpTeam.comments_for_advertisement.split(' &AND& ').join(', ')}
+              {signedUpTeam.comments_for_advertisement.split(" &AND& ").join(", ")}
             </div>
           </div>
         )}
@@ -207,7 +215,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
         {!isMember && (
           <div className={styles.section}>
             <h5 className={styles.sectionTitle}>Message to Team (Optional)</h5>
-            <Form.Group controlId="comment" style={{ width: '100%' }}>
+            <Form.Group controlId="comment" style={{ width: "100%" }}>
               <Form.Control
                 as="textarea"
                 ref={textareaRef}
@@ -215,7 +223,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                 value={comment}
                 onChange={handleCommentChange}
                 placeholder="Write a message to the team..."
-                style={{ resize: 'none', overflow: 'hidden' }}
+                style={{ resize: "none", overflow: "hidden" }}
               />
             </Form.Group>
           </div>
@@ -246,9 +254,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                 Sending...
               </>
             ) : (
-              <>
-                Request to Join Team
-              </>
+              <>Request to Join Team</>
             )}
           </Button>
         )}

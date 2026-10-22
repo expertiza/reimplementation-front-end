@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { SignUpTopic, SignedUpTeam, TopicWithTeams, IAssignmentResponse } from '../utils/interfaces';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from "react";
+import {
+  SignUpTopic,
+  SignedUpTeam,
+  TopicWithTeams,
+  IAssignmentResponse,
+} from "../utils/interfaces";
+import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002";
 
 export const useSignupSheet = (assignmentId: string) => {
   const [topics, setTopics] = useState<TopicWithTeams[]>([]);
@@ -12,7 +17,7 @@ export const useSignupSheet = (assignmentId: string) => {
 
   const fetchSignupData = useCallback(async () => {
     if (!assignmentId) {
-      setError('Assignment ID is required');
+      setError("Assignment ID is required");
       setLoading(false);
       return;
     }
@@ -21,7 +26,7 @@ export const useSignupSheet = (assignmentId: string) => {
     setError(null);
 
     try {
-      const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+      const token = localStorage.getItem("token") || localStorage.getItem("jwt");
       const headers = {
         Authorization: `Bearer ${token}`,
       };
@@ -34,13 +39,10 @@ export const useSignupSheet = (assignmentId: string) => {
       setAssignment(assignmentResponse.data);
 
       // Fetch sign up topics for the assignment
-      const topicsResponse = await axios.get<SignUpTopic[]>(
-        `${API_BASE_URL}/sign_up_topics`,
-        {
-          params: { assignment_id: assignmentId },
-          headers,
-        }
-      );
+      const topicsResponse = await axios.get<SignUpTopic[]>(`${API_BASE_URL}/sign_up_topics`, {
+        params: { assignment_id: assignmentId },
+        headers,
+      });
 
       const signUpTopics = topicsResponse.data;
 
@@ -57,9 +59,7 @@ export const useSignupSheet = (assignmentId: string) => {
 
       // Group signed up teams by topic
       const topicsWithTeams: TopicWithTeams[] = signUpTopics.map((topic) => {
-        const teamsForTopic = signedUpTeams.filter(
-          (team) => team.sign_up_topic_id === topic.id
-        );
+        const teamsForTopic = signedUpTeams.filter((team) => team.sign_up_topic_id === topic.id);
 
         const regularTeams = teamsForTopic.filter((team) => !team.is_waitlisted);
         const waitlistedTeams = teamsForTopic.filter((team) => team.is_waitlisted);
@@ -76,12 +76,8 @@ export const useSignupSheet = (assignmentId: string) => {
 
       setTopics(topicsWithTeams);
     } catch (err: any) {
-      console.error('Error fetching signup sheet data:', err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Failed to fetch signup sheet data'
-      );
+      console.error("Error fetching signup sheet data:", err);
+      setError(err.response?.data?.message || err.message || "Failed to fetch signup sheet data");
     } finally {
       setLoading(false);
     }

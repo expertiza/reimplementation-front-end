@@ -92,7 +92,6 @@ describe("AssignmentEditor rubrics tab", () => {
     const allOptions = screen.getAllByRole("option").map((opt) => opt.textContent);
     expect(allOptions).toContain("Unlinked Rubric");
   });
-
 });
 
 describe("transformAssignmentRequest", () => {

@@ -59,8 +59,8 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
 
   const onSubmit = (values: ITAFormValues, submitProps: FormikHelpers<ITAFormValues>) => {
     let method: HttpMethod = HttpMethod.GET;
-    // ToDo: Need to create API in the backend for this call. 
-    // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed. 
+    // ToDo: Need to create API in the backend for this call.
+    // Note: The current API needs the TA id to create a new TA which is incorrect and needs to be fixed.
     // Currently we send the username of the user we want to add as the TA for the course.
     let url: string = `/courses/${courseId}/add_ta/${values.name}`;
 
@@ -74,8 +74,9 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
     submitProps.setSubmitting(false);
   };
 
-  const handleClose = () => navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
-  //Validation of TA Entry 
+  const handleClose = () =>
+    navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
+  //Validation of TA Entry
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
       <Modal.Header closeButton>
@@ -98,9 +99,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
                   label="Teaching Assistant Name"
                   name="name"
                   options={taUsers}
-                  inputGroupPrepend={
-                    <InputGroup.Text id="TA-name-prep">TA</InputGroup.Text>
-                  }
+                  inputGroupPrepend={<InputGroup.Text id="TA-name-prep">TA</InputGroup.Text>}
                 />
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>

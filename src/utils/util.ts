@@ -2,7 +2,7 @@
  * @author Ankur Mundra on June, 2023
  */
 import { ROLE } from "./interfaces";
-import { IUserResponse } from './interfaces';
+import { IUserResponse } from "./interfaces";
 
 interface Privileges {
   [key: string]: number;
@@ -18,7 +18,7 @@ const privilegeID: PrivilegeID = {
   3: "Instructor",
   4: "Administrator",
   5: "Super Administrator",
-}
+};
 
 export function getPrivilegeFromID(roleId: number): string {
   return privilegeID[roleId];
@@ -58,11 +58,11 @@ export const formatDate = (dateString: string | null | undefined): string => {
 
   // Define a base set of options
   const baseOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: true,
   };
 
@@ -72,28 +72,34 @@ export const formatDate = (dateString: string | null | undefined): string => {
   // Handle new date formats
   if (dateFormat === "MMM DD, YYYY") {
     const newDateOptions: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit'
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
     };
     const newDatePart = new Intl.DateTimeFormat("en-US", newDateOptions).format(date);
-    const timePart = new Intl.DateTimeFormat("en-US", { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+    const timePart = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
     return `${newDatePart}, ${timePart}`;
-
   } else if (dateFormat === "DD MMM, YYYY") {
     const newDateOptions: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit'
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
     };
     const newDatePart = new Intl.DateTimeFormat("en-GB", newDateOptions).format(date); // Use 'en-GB' for DD MMM YYYY format
-    const timePart = new Intl.DateTimeFormat("en-US", { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+    const timePart = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
     return `${newDatePart}, ${timePart}`;
-
   } else {
     // Existing logic for old formats
-    const datePart = formattedDate.split(', ')[0];
-    const timePart = formattedDate.split(', ')[1];
+    const datePart = formattedDate.split(", ")[0];
+    const timePart = formattedDate.split(", ")[1];
     const parts = datePart.match(/(\d{2})\/(\d{2})\/(\d{4})/);
 
     if (parts) {

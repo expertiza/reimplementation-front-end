@@ -4,14 +4,15 @@ import { RootState } from "../../store/store";
 import { useSelector } from "react-redux";
 
 // Truncatable text component
-const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text, wordLimit = 10 }) => {
+const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({
+  text,
+  wordLimit = 10,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const words = text.split(" ");
   const shouldTruncate = words.length > wordLimit;
-  const displayText = isExpanded || !shouldTruncate
-    ? text
-    : words.slice(0, wordLimit).join(" ");
+  const displayText = isExpanded || !shouldTruncate ? text : words.slice(0, wordLimit).join(" ");
 
   return (
     <span>
@@ -23,7 +24,7 @@ const TruncatableText: React.FC<{ text: string; wordLimit?: number }> = ({ text,
             color: "#b00404",
             cursor: "pointer",
             fontWeight: "bold",
-            marginLeft: "4px"
+            marginLeft: "4px",
           }}
         >
           {isExpanded ? " [show less]" : "..."}
@@ -57,7 +58,7 @@ interface Review {
 interface ShowReviewsProps {
   data: Review[][];
   roundSelected: number;
-  targetReview?: {roundIndex: number, reviewIndex: number} | null;
+  targetReview?: { roundIndex: number; reviewIndex: number } | null;
   onReviewExpanded?: () => void;
 }
 
@@ -67,7 +68,7 @@ const CollapsibleRound: React.FC<{
   roundData: Review[];
   isStudent: boolean;
   expandAll: boolean;
-  targetReview?: {roundIndex: number, reviewIndex: number} | null;
+  targetReview?: { roundIndex: number; reviewIndex: number } | null;
   onReviewExpanded?: () => void;
 }> = ({ roundIndex, roundData, isStudent, expandAll, targetReview, onReviewExpanded }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -107,11 +108,13 @@ const CollapsibleRound: React.FC<{
           display: "flex",
           alignItems: "center",
           gap: "8px",
-          transition: "background-color 0.3s ease"
+          transition: "background-color 0.3s ease",
         }}
       >
         <span style={{ fontSize: "10px" }}>{isExpanded ? "▼" : "▶"}</span>
-  <span>Round {roundIndex + 1}({num_of_reviews} reviews, {num_of_questions} items)</span>
+        <span>
+          Round {roundIndex + 1}({num_of_reviews} reviews, {num_of_questions} items)
+        </span>
       </button>
 
       {isExpanded && (
@@ -140,10 +143,18 @@ const CollapsibleReview: React.FC<{
   roundData: Review[];
   isStudent: boolean;
   expandAll: boolean;
-  targetReview?: {roundIndex: number, reviewIndex: number} | null;
+  targetReview?: { roundIndex: number; reviewIndex: number } | null;
   roundIndex: number;
   onReviewExpanded?: () => void;
-}> = ({ reviewIndex, roundData, isStudent, expandAll, targetReview, roundIndex, onReviewExpanded }) => {
+}> = ({
+  reviewIndex,
+  roundData,
+  isStudent,
+  expandAll,
+  targetReview,
+  roundIndex,
+  onReviewExpanded,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -154,15 +165,17 @@ const CollapsibleReview: React.FC<{
 
   // Auto-expand and scroll if this is the target review
   React.useEffect(() => {
-    if (targetReview && 
-        targetReview.roundIndex === roundIndex && 
-        targetReview.reviewIndex === reviewIndex) {
+    if (
+      targetReview &&
+      targetReview.roundIndex === roundIndex &&
+      targetReview.reviewIndex === reviewIndex
+    ) {
       setIsExpanded(true);
-      
+
       // Scroll to this review after a delay
       setTimeout(() => {
         if (contentRef.current) {
-          contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          contentRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
         }
         // Call the callback to clear the target
         if (onReviewExpanded) {
@@ -191,18 +204,32 @@ const CollapsibleReview: React.FC<{
           display: "flex",
           alignItems: "center",
           gap: "8px",
-          transition: "background-color 0.3s ease"
+          transition: "background-color 0.3s ease",
         }}
       >
         <span style={{ fontSize: "10px" }}>{isExpanded ? "▼" : "▶"}</span>
-  <span>Review {reviewIndex + 1} ({roundData.length} items)</span>
+        <span>
+          Review {reviewIndex + 1} ({roundData.length} items)
+        </span>
       </button>
 
       {isExpanded && (
         <div style={{ padding: "15px 20px", display: "inline-block", minWidth: "100%" }}>
           {roundData.map((question, j) => (
-            <div key={`question-${j}-review-${reviewIndex}`} className="review-block" style={{ marginBottom: "15px", minWidth: "max-content" }}>
-              <div className="question" style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "14px", whiteSpace: "nowrap" }}>
+            <div
+              key={`question-${j}-review-${reviewIndex}`}
+              className="review-block"
+              style={{ marginBottom: "15px", minWidth: "max-content" }}
+            >
+              <div
+                className="question"
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {j + 1}. {question.itemText}
               </div>
               <div className="score-container" style={{ marginLeft: "15px" }}>
@@ -211,25 +238,43 @@ const CollapsibleReview: React.FC<{
                   <>
                     <span
                       style={{
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        width: 24, height: 24, borderRadius: "50%",
-                        backgroundColor: scoreToColor(question.reviews[reviewIndex].score!, question.maxScore),
-                        fontWeight: "bold", fontSize: "13px", color: "black",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        backgroundColor: scoreToColor(
+                          question.reviews[reviewIndex].score!,
+                          question.maxScore
+                        ),
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        color: "black",
                       }}
                     >
                       {question.reviews[reviewIndex].score}
                     </span>
                     {question.reviews[reviewIndex].comment && (
-                      <div className="comment" style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                      <div
+                        className="comment"
+                        style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}
+                      >
                         {/* wordLimit: comments longer than 50 words are clipped with a "more" toggle */}
-                        <TruncatableText text={question.reviews[reviewIndex].comment!} wordLimit={50} />
+                        <TruncatableText
+                          text={question.reviews[reviewIndex].comment!}
+                          wordLimit={50}
+                        />
                       </div>
                     )}
                   </>
                 ) : question.reviews[reviewIndex].textResponse ? (
                   // Text items (TextArea, TextField)
                   <div style={{ fontSize: "14px", color: "#555", fontStyle: "italic" }}>
-                    <TruncatableText text={question.reviews[reviewIndex].textResponse!} wordLimit={50} />
+                    <TruncatableText
+                      text={question.reviews[reviewIndex].textResponse!}
+                      wordLimit={50}
+                    />
                   </div>
                 ) : question.reviews[reviewIndex].selections ? (
                   // Multi-select items (Checkbox)
@@ -247,7 +292,11 @@ const CollapsibleReview: React.FC<{
                   // File upload
                   <div style={{ fontSize: "14px", color: "#b00404" }}>
                     {question.reviews[reviewIndex].fileUrl ? (
-                      <a href={question.reviews[reviewIndex].fileUrl} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={question.reviews[reviewIndex].fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         📎 {question.reviews[reviewIndex].fileName}
                       </a>
                     ) : (
@@ -267,7 +316,12 @@ const CollapsibleReview: React.FC<{
 };
 
 //function for ShowReviews
-const ShowReviews: React.FC<ShowReviewsProps> = ({ data, roundSelected, targetReview, onReviewExpanded }) => {
+const ShowReviews: React.FC<ShowReviewsProps> = ({
+  data,
+  roundSelected,
+  targetReview,
+  onReviewExpanded,
+}) => {
   console.log("round selected: ", roundSelected);
   const rounds = data.length;
   const [expandAllReviews, setExpandAllReviews] = useState(false);
@@ -321,7 +375,7 @@ const ShowReviews: React.FC<ShowReviewsProps> = ({ data, roundSelected, targetRe
                 fontSize: "14px",
                 fontFamily: "verdana, arial, helvetica, sans-serif",
                 transition: "background-color 0.3s ease, color 0.3s ease",
-                borderRadius: '0.375rem'
+                borderRadius: "0.375rem",
               }}
             >
               {expandAllReviews ? "Hide all reviews" : "Show all reviews"}

@@ -42,9 +42,27 @@ interface TableProps {
   // Optional callback to add arbitrary HTML attributes to each <tr> (e.g. onMouseEnter for hover tracking).
   getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
   // Optional callback to add extra <td> props (e.g. rowSpan). Return { skip: true } to omit the <td> entirely (used for rowspan).
-  getCellProps?: (cell: any, row: any, allRows: any[]) => (React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean });
+  getCellProps?: (
+    cell: any,
+    row: any,
+    allRows: any[]
+  ) => React.TdHTMLAttributes<HTMLTableCellElement> & { skip?: boolean };
   // Optional style applied to the <table> element itself (e.g. width: "fit-content").
   tableStyle?: React.CSSProperties;
+  // When false, disables Bootstrap's nth-child striping (useful when applying manual group-based row colors).
+  striped?: boolean;
+  // When true, adds Bootstrap's table-bordered class (column + row separators on all cells).
+  bordered?: boolean;
+  // When false, suppresses the <thead> row entirely (useful for nested sub-tables).
+  showHeader?: boolean;
+  // Optional renderer for the expander cell on rows that cannot expand (e.g. show an indicator icon).
+  getExpanderFallback?: (row: any) => React.ReactNode;
+  // Supply sub-rows from each row's data so TanStack renders them in-place with the same columns.
+  getSubRows?: (row: Record<string, any>, index: number) => Record<string, any>[] | undefined;
+  // Optional stable row identity function. Receives the raw row object and its index;
+  // return a unique string for each row. Without this, TanStack defaults to array index,
+  // which causes React to unmount/remount rows when items are inserted in the middle.
+  getRowId?: (row: Record<string, any>, index: number) => string;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -65,13 +83,22 @@ const Table: React.FC<TableProps> = ({
   getRowProps,
   getCellProps,
   tableStyle,
+  getRowId,
+  showHeader = true,
+  getSubRows,
+  striped = true,
+  bordered = false,
+  getExpanderFallback,
 }) => {
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
-  useEffect(() => { setColumnVisibilityState(columnVisibility); }, [columnVisibility]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setColumnVisibilityState(columnVisibility);
+  }, [JSON.stringify(columnVisibility)]);
   const [isGlobalFilterVisible, setIsGlobalFilterVisible] = useState(showGlobalFilter);
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
@@ -79,14 +106,15 @@ const Table: React.FC<TableProps> = ({
   const onSelectionChangeRef = useRef<any>(onSelectionChange);
 
   const colsPlusExpander = useMemo(() => {
-    if (!renderSubComponent) return columns;
+    if (!renderSubComponent && !getSubRows) return columns;
 
     const expanderColumn: ColumnDef<any, any> = {
       id: "expander",
       header: () => null,
+      meta: { width: "28px" },
       cell: ({ row }) => {
         if (getRowCanExpand ? !getRowCanExpand(row) : false) {
-          return null;
+          return getExpanderFallback ? getExpanderFallback(row) : null;
         }
         return (
           <button
@@ -134,11 +162,14 @@ const Table: React.FC<TableProps> = ({
       : [];
 
     return [...selectableColumn, expanderColumn, ...columns];
-  }, [columns, selectable, renderSubComponent, getRowCanExpand]);
+  }, [columns, selectable, renderSubComponent, getSubRows, getRowCanExpand]);
 
   const table = useReactTable({
     data: initialData,
     columns: colsPlusExpander,
+    ...(getRowId ? { getRowId } : {}),
+    ...(getSubRows ? { getSubRows } : {}),
+    ...(getSubRows ? { filterFromLeafRows: true } : {}),
     state: {
       sorting,
       globalFilter,
@@ -192,7 +223,7 @@ const Table: React.FC<TableProps> = ({
               <GlobalFilter filterValue={globalFilter} setFilterValue={setGlobalFilter} />
             )}
           </Col>
-          {showGlobalFilter && !disableGlobalFilter && (
+          {!disableGlobalFilter && (
             <Col xs="auto">
               <button
                 type="button"
@@ -211,53 +242,94 @@ const Table: React.FC<TableProps> = ({
       <Container fluid={fluid}>
         <Row>
           <Col md={tableSize}>
-            <BTable striped hover responsive size="sm" style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}>
-              <thead className="table-secondary">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      // Add info icon to Heading if comment exists.
-                      const comment = headingComments[header.column.columnDef.header as string];
-                      return (
-                        <th key={header.id} colSpan={header.colSpan} style={(header.column.columnDef.meta as any)?.minWidth ? { minWidth: (header.column.columnDef.meta as any).minWidth } : undefined}>
-                          {header.isPlaceholder ? null : (
-                            <>
-                              <div
-                                {...{
-                                  className: header.column.getCanSort()
-                                    ? "cursor-pointer select-none"
-                                    : "",
-                                  onClick: header.column.getToggleSortingHandler(),
-                                }}
-                              >
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                                {comment && <ToolTip id={header.id} info={comment} />}
-                                {{
-                                  asc: " 🔼",
-                                  desc: " 🔽",
-                                }[header.column.getIsSorted() as string] ?? null}
-                              </div>
-                              {/* Previously hidden when data fit a single page; now always driven by the showColumnFilter prop. */}
-                              {showColumnFilter && header.column.getCanFilter() ? (
-                                <ColumnFilter column={header.column} />
-                              ) : null}
-                            </>
-                          )}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </thead>
+            <BTable
+              striped={striped}
+              bordered={bordered}
+              hover
+              responsive
+              size="sm"
+              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+            >
+              {showHeader && (
+                <thead className="table-secondary">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        // Add info icon to Heading if comment exists.
+                        const comment = headingComments[header.column.columnDef.header as string];
+                        return (
+                          <th
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            style={(() => {
+                              const m = header.column.columnDef.meta as any;
+                              return m
+                                ? {
+                                    ...(m.minWidth ? { minWidth: m.minWidth } : {}),
+                                    ...(m.maxWidth ? { maxWidth: m.maxWidth } : {}),
+                                    ...(m.width ? { width: m.width } : {}),
+                                    ...(m.whiteSpace ? { whiteSpace: m.whiteSpace } : {}),
+                                  }
+                                : undefined;
+                            })()}
+                          >
+                            {header.isPlaceholder ? null : (
+                              <>
+                                <div
+                                  {...{
+                                    className: header.column.getCanSort()
+                                      ? "cursor-pointer select-none"
+                                      : "",
+                                    onClick: header.column.getToggleSortingHandler(),
+                                  }}
+                                >
+                                  {flexRender(header.column.columnDef.header, header.getContext())}
+                                  {comment && <ToolTip id={header.id} info={comment} />}
+                                  {{
+                                    asc: " 🔼",
+                                    desc: " 🔽",
+                                  }[header.column.getIsSorted() as string] ?? null}
+                                </div>
+                                {showColumnFilter && header.column.getCanFilter() ? (
+                                  <ColumnFilter column={header.column} />
+                                ) : null}
+                              </>
+                            )}
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </thead>
+              )}
               <tbody>
                 {table.getRowModel().rows.map((row) => (
                   <React.Fragment key={row.id}>
-                    <tr className={getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined} {...(getRowProps ? getRowProps(row) : {})}>
+                    <tr
+                      className={
+                        getRowClassName ? getRowClassName(row, table.getRowModel().rows) : undefined
+                      }
+                      {...(getRowProps ? getRowProps(row) : {})}
+                    >
                       {row.getVisibleCells().map((cell) => {
-                        const { skip, ...tdProps } = getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
+                        const { skip, ...tdProps } =
+                          getCellProps?.(cell, row, table.getRowModel().rows) ?? {};
                         if (skip) return null;
+                        const colMeta = cell.column.columnDef.meta as any;
+                        const colMetaStyle = colMeta
+                          ? {
+                              ...(colMeta.width ? { width: colMeta.width } : {}),
+                              ...(colMeta.minWidth ? { minWidth: colMeta.minWidth } : {}),
+                              ...(colMeta.maxWidth ? { maxWidth: colMeta.maxWidth } : {}),
+                              ...(colMeta.whiteSpace ? { whiteSpace: colMeta.whiteSpace } : {}),
+                            }
+                          : {};
                         return (
-                          <td key={cell.id} {...tdProps}>
+                          <td
+                            key={cell.id}
+                            style={{ ...colMetaStyle, ...(tdProps.style ?? {}) }}
+                            {...tdProps}
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         );

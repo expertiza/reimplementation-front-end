@@ -1,46 +1,170 @@
-# Getting Started with Create React App
+# Expertiza Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains the React and TypeScript frontend for Expertiza. The application uses
+[Vite](https://vite.dev/) for local development and production builds, [Vitest](https://vitest.dev/)
+for testing, and Node.js for the development and CI environments.
 
-## Available Scripts
+## Prerequisites
 
-In the project directory, you can run:
+- [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm)
+- Docker, if you want to build or run the production container locally
+- The Expertiza backend running on `http://localhost:3002` for features that make API requests
 
-### `npm start`
+The required Node.js version is declared in `.nvmrc` and `package.json`.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Initial setup
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+From the repository root, install and select the required Node.js version:
 
-### `npm test`
+```bash
+nvm install
+nvm use
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Install the exact dependency versions recorded in `package-lock.json`:
 
-### `npm run build`
+```bash
+npm ci
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Use `npm ci` instead of `npm install` for a clean, reproducible installation. It is also the
+installation command used by the Docker image and GitHub Actions workflow.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Run the application locally
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Start the Vite development server:
 
-### `npm run eject`
+```bash
+npm run dev
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Vite prints the local application URL in the terminal. Its default URL is
+`http://localhost:5173`.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Available commands
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+| Command                | Purpose                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `npm run dev`          | Start the Vite development server with live reloading.                          |
+| `npm run build`        | Create an optimized production build in `dist/`.                                |
+| `npm run preview`      | Serve the existing `dist/` build locally for inspection.                        |
+| `npm test`             | Run Vitest in interactive watch mode.                                           |
+| `npm run test:ci`      | Run the test suite once, collect coverage, and create `coverage/`.              |
+| `npm run lint`         | Check JavaScript and TypeScript files with ESLint.                              |
+| `npm run format:check` | Check whether files follow the configured Prettier style without changing them. |
+| `npm run format`       | Rewrite supported files using the configured Prettier style.                    |
+| `npm run typecheck`    | Check TypeScript types without generating JavaScript files.                     |
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Most validation commands only report problems. `npm run format` is the command in this table that
+rewrites source files. The build and coverage commands create generated output in `dist/` and
+`coverage/`; both directories are excluded from Git.
 
-## Learn More
+## Run the same validation used by CI
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Before submitting a pull request, run:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm ci
+npm run test:ci
+npm run lint
+npm run format:check
+npm run typecheck
+npm run build
+```
+
+These checks are intentionally separate. A formatting, lint, or type-checking failure does not
+necessarily mean that the tests or production build will also fail.
+
+The relevant configuration files are:
+
+- ESLint rules: `eslint.config.mjs`
+- Prettier rules: `.prettierrc.yml`
+- TypeScript compiler options: `tsconfig.json`
+- Vitest configuration: `vitest.config.mts`
+- Vite configuration: `vite.config.ts`
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+
+## Test coverage
+
+Generate the coverage report with:
+
+```bash
+npm run test:ci
+```
+
+Open `coverage/index.html` in a browser to view coverage by directory, file, and source line. The
+`coverage/` directory is generated locally and is not committed.
+
+GitHub Actions uploads the same directory as an artifact named `frontend-coverage`. The artifact is
+available from the workflow run for seven days, including when the test job fails after producing a
+report.
+
+## Production build
+
+Create an optimized build:
+
+```bash
+npm run build
+```
+
+The generated files are written to `dist/`. To inspect that build locally:
+
+```bash
+npm run preview
+```
+
+## Docker
+
+The Dockerfile uses a multi-stage build. Node.js and `npm ci` create the Vite production assets,
+and Nginx serves those assets with single-page-application routing support.
+
+Build the image:
+
+```bash
+docker build --tag expertiza-frontend:local .
+```
+
+Run it on port 8080:
+
+```bash
+docker run --detach --rm \
+  --name expertiza-frontend-local \
+  --publish 8080:80 \
+  expertiza-frontend:local
+```
+
+Open `http://localhost:8080`, or verify the server from the terminal:
+
+```bash
+curl -I http://localhost:8080
+```
+
+Stop the container:
+
+```bash
+docker stop expertiza-frontend-local
+```
+
+If port 8080 is already in use, publish another local port, such as `--publish 8081:80`, and open
+`http://localhost:8081` instead.
+
+You can also build and run the service defined in `docker-compose.yml`:
+
+```bash
+docker compose up --build
+```
+
+## GitHub Actions
+
+The frontend workflow runs for pull requests and pushes to `main`. It contains six independent
+jobs:
+
+1. Frontend tests with coverage
+2. ESLint
+3. Prettier formatting check
+4. TypeScript type check
+5. Vite production build
+6. Docker image build
+
+Each job uses a clean Ubuntu runner and has its own timeout. The jobs run independently so that a
+failure in one check does not prevent the remaining checks from reporting their results.

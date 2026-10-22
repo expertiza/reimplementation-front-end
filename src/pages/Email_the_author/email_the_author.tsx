@@ -10,7 +10,7 @@ const Email_the_author: React.FC = () => {
       </div>
       <div>
         <label htmlFor="description">Description:</label>
-        <textarea id="description" name="description" ></textarea>
+        <textarea id="description" name="description"></textarea>
       </div>
       <button id="b1">Send</button>
     </div>

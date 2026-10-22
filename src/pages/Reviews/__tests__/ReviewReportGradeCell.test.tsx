@@ -24,23 +24,19 @@ const GradeInput: React.FC<{
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    if (raw === "") { setGrade(""); return; }
+    if (raw === "") {
+      setGrade("");
+      return;
+    }
     const num = Number(raw);
     setGrade(limitGradeToRange(num, min, max));
   };
 
   return (
     <div>
-      <input
-        data-testid="grade-input"
-        type="number"
-        value={grade}
-        onChange={handleChange}
-      />
+      <input data-testid="grade-input" type="number" value={grade} onChange={handleChange} />
       <span data-testid="scale-label">{min < 0 ? `${min} to ${max}` : `/ ${max}`}</span>
-      <button onClick={() => onSave(grade === "" ? null : Number(grade))}>
-        Save
-      </button>
+      <button onClick={() => onSave(grade === "" ? null : Number(grade))}>Save</button>
     </div>
   );
 };

@@ -6,7 +6,6 @@ import { HttpMethod } from "../../utils/httpMethods";
 import useAPI from "../../hooks/useAPI";
 import { ICourseResponse as ICourse } from "../../utils/interfaces";
 
-
 // CopyCourse Component: Modal for copying a course.
 
 interface ICopyCourse {
@@ -24,8 +23,8 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
 
   // Function to initiate the course copy process
   const copyHandler = () => {
-    setIsCopying(true); // Set copying state to true  
-    copyCourseRequest({ url: `/courses/${courseId}/copy`, method: HttpMethod.GET });//Applying Interface Segregation principle to use only courseId instead of the whole object
+    setIsCopying(true); // Set copying state to true
+    copyCourseRequest({ url: `/courses/${courseId}/copy`, method: HttpMethod.GET }); //Applying Interface Segregation principle to use only courseId instead of the whole object
   };
 
   // Show error if any
@@ -58,7 +57,7 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
 
   // Render the CopyCourse modal
   return (
-    <Modal show={show} onHide={closeHandler}centered>
+    <Modal show={show} onHide={closeHandler} centered>
       <Modal.Header closeButton>
         <Modal.Title>Copy Course</Modal.Title>
       </Modal.Header>
@@ -67,8 +66,9 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
           Are you sure you want to copy the course <b>{courseData.name}?</b>
         </p>
         <div className="d-flex flex-column align-items-center justify-content-center">
-        {isCopying && <Spinner animation="border" variant="primary" />}
-        {courseError && <Alert variant="danger">{courseError}</Alert>} {/* Display error message */}
+          {isCopying && <Spinner animation="border" variant="primary" />}
+          {courseError && <Alert variant="danger">{courseError}</Alert>}{" "}
+          {/* Display error message */}
         </div>
       </Modal.Body>
 
@@ -76,7 +76,7 @@ const CopyCourse: React.FC<ICopyCourse> = ({ courseData, onClose }) => {
         <Button variant="outline-secondary" onClick={closeHandler}>
           Cancel
         </Button>
-        <Button variant="outline-danger" onClick={copyHandler}disabled={isCopying}>
+        <Button variant="outline-danger" onClick={copyHandler} disabled={isCopying}>
           {isCopying ? "Copying..." : "Copy"}
         </Button>
       </Modal.Footer>

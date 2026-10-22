@@ -44,7 +44,6 @@ export interface IUserResponse {
   updated_at: string;
 }
 
-
 export interface IParticipantResponse {
   id: number;
   name: string;
@@ -100,8 +99,6 @@ export interface IAssignmentRequest {
   // Team / mentor / topic configuration
   has_teams?: boolean;
   max_team_size?: number;
-  show_teammate_review?: boolean;
-  is_pair_programming?: boolean;
   has_mentors?: boolean;
   has_topics?: boolean;
   auto_assign_mentors?: boolean;
@@ -116,11 +113,14 @@ export interface IAssignmentRequest {
   has_max_review_limit?: boolean;
   set_allowed_number_of_reviews_per_reviewer?: number;
   set_required_number_of_reviews_per_reviewer?: number;
+  is_role_based?: boolean;
   is_review_anonymous?: boolean;
   is_review_done_by_teams?: boolean;
   allow_self_reviews?: boolean;
   reviews_visible_to_other_reviewers?: boolean;
   number_of_review_rounds?: number;
+  instructor_grade_min_score?: number | null;
+  instructor_grade_max_score?: number | null;
 
   // Dates / penalties
   days_between_submissions?: number;
@@ -134,39 +134,36 @@ export interface IAssignmentRequest {
   use_drop_topic_deadline?: boolean;
   use_team_formation_deadline?: boolean;
 
-  // JSON-configured deadline settings
-  weights?: number[];
-  notification_limits?: number[];
-  use_date_updater?: boolean[];
-  submission_allowed?: any[];
-  review_allowed?: any[];
-  teammate_allowed?: any[];
-  metareview_allowed?: any[];
-  reminder?: any[];
+  // Topic settings
+  allow_topic_suggestion_from_students?: boolean;
+  topics_assigned_by_bidding?: boolean;
+  can_review_same_topic?: boolean;
+  allow_reviewer_to_choose_topic_to_review?: boolean;
+  enable_bidding_for_reviews?: boolean;
 
   // Misc flags matching tabs
   allow_tag_prompts?: boolean;
-  has_quizzes?: boolean;
-  calibration_for_training?: boolean;
   available_to_students?: boolean;
-  allow_topic_suggestion_from_students?: boolean;
-  enable_bidding_for_topics?: boolean;
-  enable_bidding_for_reviews?: boolean;
-  enable_authors_to_review_other_topics?: boolean;
-  allow_reviewer_to_choose_topic_to_review?: boolean;
-  allow_participants_to_create_bookmarks?: boolean;
-  staggered_deadline_assignment?: boolean;
 
-  // Per-round rubric configuration
-  vary_by_round?: boolean;
-  rounds_of_reviews?: number;
-  assignment_questionnaires_attributes?: {
+  assignment_questionnaires_attributes?: (
+    | {
+        id?: number;
+        questionnaire_id: number;
+        used_in_round: number;
+        questionnaire_weight?: number;
+        notification_limit?: number;
+        dropdown?: boolean;
+      }
+    | { id: number; _destroy: true }
+  )[];
+  due_dates_attributes?: {
     id?: number;
-    questionnaire_id: number;
-    used_in_round: number;
-    questionnaire_weight?: number;
-    notification_limit?: number;
-    _destroy?: boolean;
+    deadline_type_id: number;
+    due_at?: string;
+    round?: number;
+    submission_allowed_id: number;
+    review_allowed_id: number;
+    teammate_review_allowed_id: number;
   }[];
 }
 
@@ -195,7 +192,7 @@ export interface ILoggedInUser {
   institution_id: number;
 }
 
-export interface ICourseResponse{
+export interface ICourseResponse {
   id: number;
   name: string;
   directory_path: string;
@@ -210,7 +207,7 @@ export interface ICourseResponse{
   date_format_pref: string;
 }
 
-export interface ICourseRequest{
+export interface ICourseRequest {
   name: string;
   directory_path: string;
   info: string;
@@ -241,17 +238,18 @@ export interface IAssignmentResponse {
   id: number;
   name: string;
   course_id: number;
-  courseName: string;
-  created_at: Date; 
-  updated_at: Date; 
+  instructor_id: number;
+  course_name: string;
+  created_at: string;
+  updated_at: string;
   directory_path: string;
-  spec_location:string;
-  private:boolean;
+  spec_location: string;
+  private: boolean;
   show_template_review: boolean;
-  require_quiz:boolean;
-  has_badge:boolean;
-  staggered_deadline:boolean;
-  is_calibrated:boolean;
+  require_quiz: boolean;
+  has_badge: boolean;
+  staggered_deadline: boolean;
+  is_calibrated: boolean;
   vary_by_round?: boolean;
   varying_rubrics_by_round?: boolean;
   rounds_of_reviews?: number;
@@ -262,10 +260,9 @@ export interface IAssignmentResponse {
     questionnaire?: { id: number; name: string };
   }[];
   num_review_rounds?: number;
-  
 }
 
-export interface StudentTeamsProps { }
+export interface StudentTeamsProps {}
 
 // Define the structure of a team member object
 export interface TeamMember {
@@ -344,7 +341,7 @@ export interface AdvertisementDetails {
 export interface JoinTeamRequest {
   id: number;
   comments: string;
-  reply_status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  reply_status: "PENDING" | "ACCEPTED" | "DECLINED";
   created_at: string;
   updated_at: string;
   participant: {

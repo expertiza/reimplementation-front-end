@@ -1,4 +1,4 @@
-import { ReviewData, SectionHeaderData } from './reviewTypes';
+import { ReviewData, SectionHeaderData } from "./reviewTypes";
 
 export type { ReviewData, SectionHeaderData };
 
@@ -14,18 +14,18 @@ export const isHeader = (row: RoundRow): row is SectionHeaderData =>
 // so the rest of the code only needs to handle one shape.
 export const normalizeReviewData = (data: any): ReviewData => {
   return {
-    itemNumber: data.itemNumber || data.questionNumber || '',
-    itemText: data.itemText || data.questionText || '',
+    itemNumber: data.itemNumber || data.questionNumber || "",
+    itemText: data.itemText || data.questionText || "",
     itemType: data.itemType || data.questionType,
     reviews: data.reviews || [],
     RowAvg: data.RowAvg || 0,
-    maxScore: data.maxScore || 5
+    maxScore: data.maxScore || 5,
   };
 };
 
 // Same shim as normalizeReviewData applied to an array; SectionHeader sentinels are passed through unchanged.
 export const normalizeReviewDataArray = (dataArray: any[]): RoundRow[] => {
-  return dataArray.map(item => {
+  return dataArray.map((item) => {
     if (item && item.type === "header") return item as SectionHeaderData;
     return normalizeReviewData(item);
   });
@@ -60,16 +60,16 @@ export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] =
 
       const reviews = (answersArray || []).map((ans: any) => {
         const review: any = {
-          name: ans.reviewer_name || ans.name || '',
+          name: ans.reviewer_name || ans.name || "",
         };
 
         if (ans.answer !== undefined) {
-          if (typeof ans.answer === 'number') {
+          if (typeof ans.answer === "number") {
             review.score = ans.answer;
-          } else if (typeof ans.answer === 'string') {
-            if (itemType === 'TextArea' || itemType === 'TextField') {
+          } else if (typeof ans.answer === "string") {
+            if (itemType === "TextArea" || itemType === "TextField") {
               review.textResponse = ans.answer;
-            } else if (itemType === 'Dropdown' || itemType === 'MultipleChoiceRadio') {
+            } else if (itemType === "Dropdown" || itemType === "MultipleChoiceRadio") {
               review.selectedOption = ans.answer;
             } else {
               review.score = Number(ans.answer) || 0;
@@ -96,7 +96,7 @@ export const convertBackendRoundArray = (backendRounds: any[][]): RoundRow[][] =
 
       return {
         itemNumber: String(scoredItemCount),
-        itemText: (answersArray && answersArray[0] && answersArray[0].txt) || '',
+        itemText: (answersArray && answersArray[0] && answersArray[0].txt) || "",
         itemType,
         reviews,
         RowAvg: rowAvg,
@@ -115,20 +115,20 @@ export const scoreToColor = (
   maxScore: number,
   minScore = 0,
   dataMin?: number,
-  dataMax?: number,
+  dataMax?: number
 ): string => {
   const lo = dataMin ?? minScore;
   const hi = dataMax ?? maxScore;
-  if (hi <= lo) return '#ffffff';
+  if (hi <= lo) return "#ffffff";
   const range = maxScore - minScore;
   const k = Math.min(Math.max(range, 1), 10);
   const clamped = Math.max(lo, Math.min(hi, score));
-  const t = (clamped - lo) / (hi - lo);          // 0 = worst, 1 = best
+  const t = (clamped - lo) / (hi - lo); // 0 = worst, 1 = best
   const level = Math.min(Math.round(t * k), k);
-  const bt = k === 0 ? 1 : level / k;            // 0 = red, 1 = green
-  const hue   = Math.round(bt * 120);
-  const sat   = Math.round(85 - bt * 20);         // 85% → 65%
-  const light = Math.round(70 - bt * 20);         // 70% → 50%
+  const bt = k === 0 ? 1 : level / k; // 0 = red, 1 = green
+  const hue = Math.round(bt * 120);
+  const sat = Math.round(85 - bt * 20); // 85% → 65%
+  const light = Math.round(70 - bt * 20); // 70% → 50%
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 };
 
@@ -141,41 +141,35 @@ const GRADE_CUTOFF_D = 60;
 // Returns a heat color class (c1–c5) based on score vs maxScore.
 // Cutoffs are GRADE_CUTOFF_A/B/C/D above (A/B/C/D/F scale: A→c5, B→c4, C→c3, D→c2, F→c1).
 export const getColorClass = (score: number, maxScore: number): string => {
-  if (maxScore <= 0) return 'cf';
+  if (maxScore <= 0) return "cf";
   const pct = (score / maxScore) * 100;
-  if (pct >= GRADE_CUTOFF_A) return 'c5';
-  if (pct >= GRADE_CUTOFF_B) return 'c4';
-  if (pct >= GRADE_CUTOFF_C) return 'c3';
-  if (pct >= GRADE_CUTOFF_D) return 'c2';
-  return 'c1';
+  if (pct >= GRADE_CUTOFF_A) return "c5";
+  if (pct >= GRADE_CUTOFF_B) return "c4";
+  if (pct >= GRADE_CUTOFF_C) return "c3";
+  if (pct >= GRADE_CUTOFF_D) return "c2";
+  return "c1";
 };
 
 // Returns a heat color class from a 0–100 percentage (e.g. a normalized score).
 // Used by course report tables where scores are already percentages.
 // Accepts optional dataMin/dataMax to spread colors across the actual data range
 // rather than the full 0–100 scale. Cutoffs match the A/B/C/D grading scale.
-export const getHeatColorClass = (
-  value: number,
-  dataMin = 0,
-  dataMax = 100
-): string => {
-  const normalized = dataMax === dataMin
-    ? 1
-    : (value - dataMin) / (dataMax - dataMin);
+export const getHeatColorClass = (value: number, dataMin = 0, dataMax = 100): string => {
+  const normalized = dataMax === dataMin ? 1 : (value - dataMin) / (dataMax - dataMin);
   const pct = normalized * 100;
-  if (pct >= 90) return 'c5';
-  if (pct >= 80) return 'c4';
-  if (pct >= 70) return 'c3';
-  if (pct >= 60) return 'c2';
-  return 'c1';
+  if (pct >= 90) return "c5";
+  if (pct >= 80) return "c4";
+  if (pct >= 70) return "c3";
+  if (pct >= 60) return "c2";
+  return "c1";
 };
 
 // Calculate row/column averages.
 export const calculateAverages = (
   currentRoundData: RoundRow[],
-  sortOrderRow: 'asc' | 'desc' | 'none'
+  sortOrderRow: "asc" | "desc" | "none"
 ) => {
-  const scoredRows = currentRoundData.filter(r => !isHeader(r)) as ReviewData[];
+  const scoredRows = currentRoundData.filter((r) => !isHeader(r)) as ReviewData[];
 
   let totalAvg = 0;
   let itemCount = 0;
@@ -190,8 +184,10 @@ export const calculateAverages = (
 
   const averagePeerReviewScore =
     itemCount > 0
-      ? (((totalAvg / totalMaxScore) * 100) > 0 ? ((totalAvg / totalMaxScore) * 100).toFixed(2) : '0.00')
-      : '0.00';
+      ? (totalAvg / totalMaxScore) * 100 > 0
+        ? ((totalAvg / totalMaxScore) * 100).toFixed(2)
+        : "0.00"
+      : "0.00";
 
   const firstScored = scoredRows[0];
   const columnAverages: number[] = firstScored
@@ -200,7 +196,7 @@ export const calculateAverages = (
 
   scoredRows.forEach((row) => {
     row.reviews.forEach((val, index) => {
-      columnAverages[index] += (val.score || 0);
+      columnAverages[index] += val.score || 0;
     });
   });
 
@@ -209,15 +205,15 @@ export const calculateAverages = (
   });
 
   let sortedData: RoundRow[];
-  if (sortOrderRow === 'none') {
+  if (sortOrderRow === "none") {
     sortedData = [...currentRoundData];
   } else {
-    const sorted = scoredRows.slice().sort((a, b) =>
-      sortOrderRow === 'asc' ? a.RowAvg - b.RowAvg : b.RowAvg - a.RowAvg
-    );
+    const sorted = scoredRows
+      .slice()
+      .sort((a, b) => (sortOrderRow === "asc" ? a.RowAvg - b.RowAvg : b.RowAvg - a.RowAvg));
     sortedData = [];
     let scoredIdx = 0;
-    currentRoundData.forEach(row => {
+    currentRoundData.forEach((row) => {
       if (isHeader(row)) {
         sortedData.push(row);
       } else {

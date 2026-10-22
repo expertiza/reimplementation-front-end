@@ -1,25 +1,15 @@
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  Container,
-  Spinner,
-  Button,
-  Form,
-  InputGroup,
-  Alert,
-} from "react-bootstrap";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { Container, Spinner, Button, Form, InputGroup, Alert } from "react-bootstrap";
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { createColumnHelper } from "@tanstack/react-table";
 import { BsCaretDownFill, BsCaretUpFill } from "react-icons/bs";
 import Table from "../../components/Table/Table";
 import ToolTip from "../../components/ToolTip";
-import { summaryResponsesToRoundRows, SummaryResponse as SharedSummaryResponse } from "./reportLayout";
+import {
+  summaryResponsesToRoundRows,
+  SummaryResponse as SharedSummaryResponse,
+} from "./reportLayout";
 import { openReviewDetail } from "../../utils/openReviewDetail";
 import axiosClient from "../../utils/axios_client";
 import "./Reviews.css";
@@ -125,7 +115,10 @@ interface FetchReportResponse {
   }[];
   reviewer_scores: Record<string, Record<string, Record<string, number>>>;
   reviewer_volumes: Record<string, Record<string, number>>;
-  team_averages: Record<string, Record<string, { min: number | null; max: number | null; avg: number | null }>>;
+  team_averages: Record<
+    string,
+    Record<string, { min: number | null; max: number | null; avg: number | null }>
+  >;
   rubric_ranges: Record<string, { min: number; max: number }>;
   reviewer_grades: Record<number, { grade: number | null; comment: string | null }>;
   instructor_grade_min_score: number | null;
@@ -214,8 +207,8 @@ function transformFetchReportResponse(data: FetchReportResponse): ReviewData[] {
       const teamReviewedStatus: ReviewData["teamReviewedStatus"] = !hasSubmitted
         ? "red"
         : submittedRounds.size >= numRounds
-          ? "blue"
-          : "purple";
+        ? "blue"
+        : "purple";
 
       const savedGrade = data.reviewer_grades?.[reviewer.id] ?? null;
       const hasSavedGrade = savedGrade?.grade != null;
@@ -255,7 +248,6 @@ function transformFetchReportResponse(data: FetchReportResponse): ReviewData[] {
   return rows;
 }
 
-
 // --------------------------------------------------------------------------
 // --- METRICS CHART ---
 // --------------------------------------------------------------------------
@@ -271,8 +263,7 @@ interface MultiRoundMetricsChartProps {
 
 // Colorblind-safe: blue (CB-safe) vs orange
 const COLOR_REVIEWER = "#0077BB";
-const COLOR_AVG      = "#EE7733";
-
+const COLOR_AVG = "#EE7733";
 
 const SPANNED_COLS = new Set(["reviewerName", "reviewsCompleted", "assignedGrade"]);
 
@@ -291,12 +282,20 @@ const MultiRoundMetricsChart: React.FC<MultiRoundMetricsChartProps> = ({
   const participatedRounds = Array.from({ length: maxRounds }, (_, i) => {
     const r = roundByNumber[i + 1];
     const yours = r && r.reviewVolume > 0 ? r.reviewVolume : null;
-    return { label: `R${i + 1}`, yours, avg: yours !== null && averageVolumeByRound[i + 1] > 0 ? averageVolumeByRound[i + 1] : null };
+    return {
+      label: `R${i + 1}`,
+      yours,
+      avg: yours !== null && averageVolumeByRound[i + 1] > 0 ? averageVolumeByRound[i + 1] : null,
+    };
   }).filter((d) => d.yours !== null);
 
   const data = [
     ...participatedRounds,
-    { label: "All", yours: totalVolume > 0 ? totalVolume : null, avg: totalAverage > 0 ? totalAverage : null },
+    {
+      label: "All",
+      yours: totalVolume > 0 ? totalVolume : null,
+      avg: totalAverage > 0 ? totalAverage : null,
+    },
   ];
 
   // Scale width to the actual number of slots so bars don't spread across unused space.
@@ -308,16 +307,46 @@ const MultiRoundMetricsChart: React.FC<MultiRoundMetricsChartProps> = ({
 
   return (
     <div style={{ display: "inline-block" }}>
-      <BarChart width={actualWidth} height={120} data={data} barGap={1} margin={{ top: 4, right: 4, left: -14, bottom: -10 }}>
+      <BarChart
+        width={actualWidth}
+        height={120}
+        data={data}
+        barGap={1}
+        margin={{ top: 4, right: 4, left: -14, bottom: -10 }}
+      >
         <XAxis dataKey="label" tick={{ fontSize: 9 }} />
         <YAxis type="number" domain={[0, yMax]} tick={{ fontSize: 9 }} width={36} />
-        <Tooltip formatter={(value: number, key: string) => [`${value} unique words`, key === "yours" ? "Yours" : "Avg"]} />
-        <Bar dataKey="yours" name="Yours" maxBarSize={12} fill={COLOR_REVIEWER} isAnimationActive={false} />
-        <Bar dataKey="avg"   name="Avg"   maxBarSize={12} fill={COLOR_AVG}      isAnimationActive={false} />
+        <Tooltip
+          formatter={(value: number, key: string) => [
+            `${value} unique words`,
+            key === "yours" ? "Yours" : "Avg",
+          ]}
+        />
+        <Bar
+          dataKey="yours"
+          name="Yours"
+          maxBarSize={12}
+          fill={COLOR_REVIEWER}
+          isAnimationActive={false}
+        />
+        <Bar dataKey="avg" name="Avg" maxBarSize={12} fill={COLOR_AVG} isAnimationActive={false} />
       </BarChart>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, fontSize: "0.65rem", marginTop: 0 }}>
-        <span><span style={{ color: COLOR_REVIEWER, fontWeight: "bold" }}>■</span> Yours</span>
-        <span><span style={{ color: COLOR_AVG,      fontWeight: "bold" }}>■</span> Avg</span>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 8,
+          fontSize: "0.65rem",
+          marginTop: 0,
+        }}
+      >
+        <span>
+          <span style={{ color: COLOR_REVIEWER, fontWeight: "bold" }}>■</span> Yours
+        </span>
+        <span>
+          <span style={{ color: COLOR_AVG, fontWeight: "bold" }}>■</span> Avg
+        </span>
         <span style={{ color: "#999" }}>{totalCommentCount} comments</span>
       </div>
     </div>
@@ -342,7 +371,10 @@ const GradeCommentCell: React.FC<{
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (val === "") { setGrade(""); return; }
+    if (val === "") {
+      setGrade("");
+      return;
+    }
     const num = Number(val);
     setGrade(num < min ? min : num > max ? max : num);
   };
@@ -371,7 +403,9 @@ const GradeCommentCell: React.FC<{
       <Button
         className="btn btn-md mt-1"
         variant="outline-secondary"
-        onClick={() => onSave(review.id, review.reviewerId, grade === "" ? null : Number(grade), comment)}
+        onClick={() =>
+          onSave(review.id, review.reviewerId, grade === "" ? null : Number(grade), comment)
+        }
       >
         Save
       </Button>
@@ -384,19 +418,19 @@ const GradeCommentCell: React.FC<{
 // --------------------------------------------------------------------------
 
 const STATUS_COLORS: Record<ReviewData["teamReviewedStatus"], string> = {
-  red:    "#dc3545",
-  blue:   "#0d6efd",
-  green:  "#198754",
+  red: "#dc3545",
+  blue: "#0d6efd",
+  green: "#198754",
   purple: "#6f42c1",
-  brown:  "#986633",
+  brown: "#986633",
 };
 
 const STATUS_LABELS: Record<ReviewData["teamReviewedStatus"], string> = {
-  red:    "Not Completed",
-  blue:   "Completed, No Grade",
-  green:  "No Submitted Work",
+  red: "Not Completed",
+  blue: "Completed, No Grade",
+  green: "No Submitted Work",
   purple: "Partially Reviewed",
-  brown:  "Grade Assigned",
+  brown: "Grade Assigned",
 };
 
 // --------------------------------------------------------------------------
@@ -437,7 +471,9 @@ function buildColumns(
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              const allForReviewer = allReviewData.filter((r) => r.reviewerId === row.original.reviewerId);
+              const allForReviewer = allReviewData.filter(
+                (r) => r.reviewerId === row.original.reviewerId
+              );
               const combined = allForReviewer.flatMap((r) => r.summaryResponses);
               openReviewDetail(
                 `Review by ${row.original.reviewerName}`,
@@ -496,11 +532,14 @@ function buildColumns(
                   ? (round.calculatedScore / round.maxScore) * 100
                   : null;
               const normalized = pct !== null ? normalize(pct) : null;
-              const rangeMin = round.teamAvgRange?.min != null ? normalize(round.teamAvgRange.min) : null;
-              const rangeMax = round.teamAvgRange?.max != null ? normalize(round.teamAvgRange.max) : null;
+              const rangeMin =
+                round.teamAvgRange?.min != null ? normalize(round.teamAvgRange.min) : null;
+              const rangeMax =
+                round.teamAvgRange?.max != null ? normalize(round.teamAvgRange.max) : null;
               return (
                 <div key={i} style={{ marginBottom: "4px", whiteSpace: "nowrap" }}>
-                  {multiRound ? `Round ${round.round}: ` : ""}{normalized !== null ? normalized : "-"}
+                  {multiRound ? `Round ${round.round}: ` : ""}
+                  {normalized !== null ? normalized : "-"}
                   {multiRound && round.teamAvgRange && (
                     <span style={{ fontSize: "0.75rem", color: "#6c757d", marginLeft: "6px" }}>
                       Max {rangeMax ?? "-"} | Min {rangeMin ?? "-"}
@@ -556,7 +595,9 @@ function buildColumns(
           <ToolTip
             id="assign-grade-info"
             placement="top"
-            info={`Grade scale (${instructorGradeMin ?? 0}–${instructorGradeMax ?? 100}) defaults to the score range of the first review questionnaire. It can be changed in the Review Strategy tab of the assignment.`}
+            info={`Grade scale (${instructorGradeMin ?? 0}–${
+              instructorGradeMax ?? 100
+            }) defaults to the score range of the first review questionnaire. It can be changed in the Review Strategy tab of the assignment.`}
           />
         </span>
       ),
@@ -564,7 +605,12 @@ function buildColumns(
       minSize: 300,
       enableSorting: false,
       cell: ({ row }) => (
-        <GradeCommentCell review={row.original} onSave={onSave} instructorGradeMin={instructorGradeMin} instructorGradeMax={instructorGradeMax} />
+        <GradeCommentCell
+          review={row.original}
+          onSave={onSave}
+          instructorGradeMin={instructorGradeMin}
+          instructorGradeMax={instructorGradeMax}
+        />
       ),
     }),
   ];
@@ -610,7 +656,8 @@ const ReviewReportPage: React.FC = () => {
     const cloneTr = document.createElement("tr");
     Array.from(thead.querySelectorAll("th")).forEach((th) => {
       const cloneTh = document.createElement("th");
-      const label = th.querySelector(".review-report-th")?.childNodes[0]?.textContent ?? th.textContent ?? "";
+      const label =
+        th.querySelector(".review-report-th")?.childNodes[0]?.textContent ?? th.textContent ?? "";
       cloneTh.textContent = label;
       cloneTr.appendChild(cloneTh);
     });
@@ -668,20 +715,29 @@ const ReviewReportPage: React.FC = () => {
 
     // Fires when thead scrolls past the navbar — zero scroll-thread cost
     const headerIO = new IntersectionObserver(
-      ([entry]) => { headerHidden = !entry.isIntersecting; updateVisibility(); },
+      ([entry]) => {
+        headerHidden = !entry.isIntersecting;
+        updateVisibility();
+      },
       { rootMargin: `-${navbarHeight}px 0px 0px 0px`, threshold: 0 }
     );
     headerIO.observe(thead);
 
     // Fires when the table itself leaves the viewport — hides clone at bottom of page
     const tableIO = new IntersectionObserver(
-      ([entry]) => { tableVisible = entry.isIntersecting; updateVisibility(); },
+      ([entry]) => {
+        tableVisible = entry.isIntersecting;
+        updateVisibility();
+      },
       { threshold: 0 }
     );
     tableIO.observe(table);
 
     // Sync widths and position only on resize, never on scroll
-    const ro = new ResizeObserver(() => { syncWidths(); syncPosition(); });
+    const ro = new ResizeObserver(() => {
+      syncWidths();
+      syncPosition();
+    });
     ro.observe(table);
 
     return () => {
@@ -711,7 +767,9 @@ const ReviewReportPage: React.FC = () => {
         transformed.forEach((r) => {
           if (!volByReviewerRound.has(r.reviewerId)) {
             const roundVols: Record<number, number> = {};
-            r.rounds.forEach((rnd) => { roundVols[rnd.round] = rnd.reviewVolume; });
+            r.rounds.forEach((rnd) => {
+              roundVols[rnd.round] = rnd.reviewVolume;
+            });
             volByReviewerRound.set(r.reviewerId, roundVols);
           }
         });
@@ -746,29 +804,43 @@ const ReviewReportPage: React.FC = () => {
     fetchData();
   }, [id]);
 
-  const handleSaveGrade = useCallback(async (reviewId: number, reviewerId: number, grade: number | null, comment: string) => {
-    try {
-      await axiosClient.patch(`/review_reports/${reviewId}`, {
-        assignedGrade: grade,
-        instructorComment: comment,
-      });
-      setNotification({ msg: "Grade updated successfully", type: "success" });
-      // Update all rows for this reviewer — ReviewGrade is per-participant, not per-map.
-      setReviewData((prev) =>
-        prev.map((r) =>
-          r.reviewerId === reviewerId
-            ? { ...r, assignedGrade: grade, instructorComment: comment, teamReviewedStatus: "brown" }
-            : r
-        )
-      );
-      setTimeout(() => setNotification(null), 3000);
-    } catch {
-      setNotification({ msg: "Failed to update grade", type: "danger" });
-    }
-  }, []);
+  const handleSaveGrade = useCallback(
+    async (reviewId: number, reviewerId: number, grade: number | null, comment: string) => {
+      try {
+        await axiosClient.patch(`/review_reports/${reviewId}`, {
+          assignedGrade: grade,
+          instructorComment: comment,
+        });
+        setNotification({ msg: "Grade updated successfully", type: "success" });
+        // Update all rows for this reviewer — ReviewGrade is per-participant, not per-map.
+        setReviewData((prev) =>
+          prev.map((r) =>
+            r.reviewerId === reviewerId
+              ? {
+                  ...r,
+                  assignedGrade: grade,
+                  instructorComment: comment,
+                  teamReviewedStatus: "brown",
+                }
+              : r
+          )
+        );
+        setTimeout(() => setNotification(null), 3000);
+      } catch {
+        setNotification({ msg: "Failed to update grade", type: "danger" });
+      }
+    },
+    []
+  );
 
   const handleExportCSV = () => {
-    const headers = ["Reviewer Name", "Team Reviewed", "Score", "Assigned Grade", "Instructor Comment"];
+    const headers = [
+      "Reviewer Name",
+      "Team Reviewed",
+      "Score",
+      "Assigned Grade",
+      "Instructor Comment",
+    ];
     const csvRows = reviewData.map((r) => [
       `"${r.reviewerName}"`,
       `"${r.teamReviewedName}"`,
@@ -778,7 +850,8 @@ const ReviewReportPage: React.FC = () => {
     ]);
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      headers.join(",") + "\n" +
+      headers.join(",") +
+      "\n" +
       csvRows.map((row) => row.join(",")).join("\n");
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
@@ -796,7 +869,9 @@ const ReviewReportPage: React.FC = () => {
 
   const handleRowMouseEntry = useCallback((reviewerId: number) => {
     hoveredCellsRef.current.forEach((el) => el.classList.remove("reviewer-spanned-hovered"));
-    const cells = Array.from(tableWrapperRef.current?.querySelectorAll(`[data-rid="${reviewerId}"]`) ?? []);
+    const cells = Array.from(
+      tableWrapperRef.current?.querySelectorAll(`[data-rid="${reviewerId}"]`) ?? []
+    );
     cells.forEach((el) => el.classList.add("reviewer-spanned-hovered"));
     hoveredCellsRef.current = cells;
   }, []);
@@ -823,9 +898,26 @@ const ReviewReportPage: React.FC = () => {
 
   const maxRounds = Object.keys(averageVolumeByRound).length || 1;
   const tableColumns = useMemo(() => {
-    const cols = buildColumns(averageVolumeByRound, averageTotalVolume, handleSaveGrade, reviewData, maxRounds, instructorGradeMin, instructorGradeMax);
+    const cols = buildColumns(
+      averageVolumeByRound,
+      averageTotalVolume,
+      handleSaveGrade,
+      reviewData,
+      maxRounds,
+      instructorGradeMin,
+      instructorGradeMax
+    );
     return showMetrics ? cols : cols.filter((c) => (c as any).id !== "metrics");
-  }, [averageVolumeByRound, averageTotalVolume, handleSaveGrade, reviewData, maxRounds, instructorGradeMin, instructorGradeMax, showMetrics]);
+  }, [
+    averageVolumeByRound,
+    averageTotalVolume,
+    handleSaveGrade,
+    reviewData,
+    maxRounds,
+    instructorGradeMin,
+    instructorGradeMax,
+    showMetrics,
+  ]);
 
   if (isLoading) {
     return (
@@ -857,9 +949,17 @@ const ReviewReportPage: React.FC = () => {
         </Alert>
       )}
 
-      <div className="review-report-selector" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <button className="btn-back-assignment" onClick={() => navigate(`/assignments/edit/${id}`)}>Back</button>
-        <select name="reports" id="report-select" defaultValue="review"
+      <div
+        className="review-report-selector"
+        style={{ display: "flex", alignItems: "center", gap: 8 }}
+      >
+        <button className="btn-back-assignment" onClick={() => navigate(`/assignments/edit/${id}`)}>
+          Back
+        </button>
+        <select
+          name="reports"
+          id="report-select"
+          defaultValue="review"
           onChange={(e) => {
             if (e.target.value === "teammate") navigate(`/assignments/${id}/teammate-review`);
           }}
@@ -869,7 +969,9 @@ const ReviewReportPage: React.FC = () => {
         </select>
       </div>
 
-      <h2 style={{ textAlign: "left" }}>Review Report{assignmentName ? ` — ${assignmentName}` : ""}</h2>
+      <h2 style={{ textAlign: "left" }}>
+        Review Report{assignmentName ? ` — ${assignmentName}` : ""}
+      </h2>
 
       <div className="review-report-search-row">
         <Form.Label className="mb-0">Reviewer's Name</Form.Label>
@@ -884,14 +986,33 @@ const ReviewReportPage: React.FC = () => {
       </div>
 
       <details className="legend mt-3">
-        <summary style={{ cursor: "pointer", fontWeight: "bold" }}>**In "Team reviewed" column text in:</summary>
+        <summary style={{ cursor: "pointer", fontWeight: "bold" }}>
+          **In "Team reviewed" column text in:
+        </summary>
         <ul>
-          <li><span className="legend-red">red</span> indicates that the review is not completed in any rounds;</li>
-          <li><span className="legend-blue">blue</span> indicates that a review is completed in every round and the review grade is not assigned;</li>
-          <li><span className="legend-green">green</span> indicates that there is no submitted work to review within the round;</li>
-          <li><span className="legend-purple">purple</span> indicates that the review is only partially completed (submitted in some rounds but not all);</li>
-          <li><span className="legend-brown">brown</span> indicates that the review grade has been assigned;</li>
-          <li>✔ Check mark indicates that the student has given consent to make the reviews public</li>
+          <li>
+            <span className="legend-red">red</span> indicates that the review is not completed in
+            any rounds;
+          </li>
+          <li>
+            <span className="legend-blue">blue</span> indicates that a review is completed in every
+            round and the review grade is not assigned;
+          </li>
+          <li>
+            <span className="legend-green">green</span> indicates that there is no submitted work to
+            review within the round;
+          </li>
+          <li>
+            <span className="legend-purple">purple</span> indicates that the review is only
+            partially completed (submitted in some rounds but not all);
+          </li>
+          <li>
+            <span className="legend-brown">brown</span> indicates that the review grade has been
+            assigned;
+          </li>
+          <li>
+            ✔ Check mark indicates that the student has given consent to make the reviews public
+          </li>
         </ul>
       </details>
 
@@ -904,7 +1025,11 @@ const ReviewReportPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="review-report-table-wrapper" ref={tableWrapperRef} onMouseLeave={handleWrapperMouseLeave}>
+      <div
+        className="review-report-table-wrapper"
+        ref={tableWrapperRef}
+        onMouseLeave={handleWrapperMouseLeave}
+      >
         <Table
           data={filteredData}
           columns={tableColumns}
@@ -913,9 +1038,11 @@ const ReviewReportPage: React.FC = () => {
           showPagination={filteredData.length >= 10}
           getRowClassName={(row, allRows) => {
             const idx = allRows.findIndex((r: any) => r.id === row.id);
-            const isFirst = idx === 0 || allRows[idx - 1].original.reviewerId !== row.original.reviewerId;
+            const isFirst =
+              idx === 0 || allRows[idx - 1].original.reviewerId !== row.original.reviewerId;
             const { groupIdx } = reviewerMeta.get(row.original.reviewerId) ?? { groupIdx: 0 };
-            const groupClass = groupIdx % 2 !== 0 ? "reviewer-group-row-odd" : "reviewer-group-row-even";
+            const groupClass =
+              groupIdx % 2 !== 0 ? "reviewer-group-row-odd" : "reviewer-group-row-even";
             return isFirst ? `${groupClass} reviewer-group-start` : groupClass;
           }}
           getRowProps={(row) => ({
@@ -924,10 +1051,15 @@ const ReviewReportPage: React.FC = () => {
           getCellProps={(cell, row, allRows) => {
             if (!SPANNED_COLS.has(cell.column.id)) return {};
             const idx = allRows.findIndex((r: any) => r.id === row.id);
-            const isFirst = idx === 0 || allRows[idx - 1].original.reviewerId !== row.original.reviewerId;
+            const isFirst =
+              idx === 0 || allRows[idx - 1].original.reviewerId !== row.original.reviewerId;
             if (!isFirst) return { skip: true };
             const { span } = reviewerMeta.get(row.original.reviewerId) ?? { span: 1 };
-            return { rowSpan: span, style: { verticalAlign: "top" }, "data-rid": String(row.original.reviewerId) } as React.TdHTMLAttributes<HTMLTableCellElement>;
+            return {
+              rowSpan: span,
+              style: { verticalAlign: "top" },
+              "data-rid": String(row.original.reviewerId),
+            } as React.TdHTMLAttributes<HTMLTableCellElement>;
           }}
           tableStyle={{ width: "fit-content", margin: 0 }}
         />

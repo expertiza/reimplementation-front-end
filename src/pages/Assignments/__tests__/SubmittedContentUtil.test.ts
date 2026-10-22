@@ -121,7 +121,9 @@ describe("SubmittedContentUtil", () => {
 
   test("surfaces the error message rendered by render_error", async () => {
     mockedClient.post.mockRejectedValueOnce({
-      response: { data: { error: "You or your teammate(s) have already submitted the same hyperlink." } },
+      response: {
+        data: { error: "You or your teammate(s) have already submitted the same hyperlink." },
+      },
     });
 
     await expect(submitHyperlink(123, "https://example.com")).rejects.toThrow(
@@ -130,7 +132,9 @@ describe("SubmittedContentUtil", () => {
   });
 
   test("validateFile rejects files over the 5MB server limit", () => {
-    expect(validateFile(new File([new ArrayBuffer(6 * 1024 * 1024)], "large.pdf")).valid).toBe(false);
+    expect(validateFile(new File([new ArrayBuffer(6 * 1024 * 1024)], "large.pdf")).valid).toBe(
+      false
+    );
   });
 
   test("validateFile rejects extensions the server does not allow", () => {

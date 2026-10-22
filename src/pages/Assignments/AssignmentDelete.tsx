@@ -13,7 +13,11 @@ interface IDeleteAssignment {
 }
 
 const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose }) => {
-  const { data: deletedAssignment, error: assignmentError, sendRequest: deleteAssignment } = useAPI();
+  const {
+    data: deletedAssignment,
+    error: assignmentError,
+    sendRequest: deleteAssignment,
+  } = useAPI();
   const [show, setShow] = useState<boolean>(true);
   const dispatch = useDispatch();
 
@@ -39,12 +43,12 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `Assignment ${assignmentData.name} deleted successfully!`, 
+          message: `Assignment ${assignmentData.name} deleted successfully!`,
         })
       );
       onClose();
     }
-  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name]); 
+  }, [deletedAssignment?.status, dispatch, onClose, assignmentData.name]);
 
   const closeHandler = () => {
     setShow(false);
@@ -58,7 +62,7 @@ const DeleteAssignment: React.FC<IDeleteAssignment> = ({ assignmentData, onClose
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete assignment <b>{assignmentData.name}?</b> 
+          Are you sure you want to delete assignment <b>{assignmentData.name}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>

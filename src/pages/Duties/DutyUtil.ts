@@ -1,7 +1,7 @@
 export type DutyFormValues = {
   id?: number;
   name: string;
-  visibility: string[];        // <-- array for FormCheckBoxGroup
+  visibility: string[]; // <-- array for FormCheckBoxGroup
   instructor_id?: number;
 };
 

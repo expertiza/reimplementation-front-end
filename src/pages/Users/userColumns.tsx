@@ -1,7 +1,7 @@
-import {createColumnHelper, Row} from "@tanstack/react-table";
-import {Button, Tooltip, OverlayTrigger } from "react-bootstrap";
-import {BsPencilFill, BsPersonXFill} from "react-icons/bs";
-import {IUserResponse as IUser} from "../../utils/interfaces";
+import { createColumnHelper, Row } from "@tanstack/react-table";
+import { Button, Tooltip, OverlayTrigger } from "react-bootstrap";
+import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
+import { IUserResponse as IUser } from "../../utils/interfaces";
 /**
  * @author Ankur Mundra on April, 2023
  */
@@ -51,7 +51,11 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         header: () => (
           <OverlayTrigger
             placement="top"
-            overlay={<Tooltip id="review-tooltip">Receives email when a new review becomes available</Tooltip>}
+            overlay={
+              <Tooltip id="review-tooltip">
+                Receives email when a new review becomes available
+              </Tooltip>
+            }
           >
             <span>Review</span>
           </OverlayTrigger>
@@ -73,7 +77,11 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         header: () => (
           <OverlayTrigger
             placement="top"
-            overlay={<Tooltip id="submission-tooltip">Receives email when a new submission is made</Tooltip>}
+            overlay={
+              <Tooltip id="submission-tooltip">
+                Receives email when a new submission is made
+              </Tooltip>
+            }
           >
             <span>Submit</span>
           </OverlayTrigger>
@@ -107,10 +115,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.display({
     id: "actions",
     header: () => (
-      <span
-        className="text-start fw-bold"
-        style={{ color: "#000000", fontSize: "1.17em" }}
-      >
+      <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Actions
       </span>
     ),

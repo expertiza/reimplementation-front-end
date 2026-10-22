@@ -23,8 +23,8 @@ interface ReviewTableProps {
   roundSelected: number;
 }
 
-const STICKY_NO_WIDTH = 68;   // px — wide enough for two-digit item numbers + weight badge on one line
-const STICKY_Q_WIDTH  = 340;  // px — the Question column
+const STICKY_NO_WIDTH = 68; // px — wide enough for two-digit item numbers + weight badge on one line
+const STICKY_Q_WIDTH = 340; // px — the Question column
 
 const cellBase: React.CSSProperties = {
   padding: "8px 10px",
@@ -73,32 +73,45 @@ const reviewerCell: React.CSSProperties = {
 };
 
 /** Color-coded score badge — circular, background relative to observed data range */
-const ScoreBubble: React.FC<{ score: number; maxScore: number; dataMin?: number; dataMax?: number }> = ({ score, maxScore, dataMin, dataMax }) => (
+const ScoreBubble: React.FC<{
+  score: number;
+  maxScore: number;
+  dataMin?: number;
+  dataMax?: number;
+}> = ({ score, maxScore, dataMin, dataMax }) => (
   <span
     style={{
-      display: "inline-flex", alignItems: "center", justifyContent: "center",
-      width: 24, height: 24, borderRadius: "50%",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 24,
+      height: 24,
+      borderRadius: "50%",
       backgroundColor: scoreToColor(score, maxScore, 0, dataMin, dataMax),
-      fontWeight: "bold", fontSize: "13px", color: "black",
+      fontWeight: "bold",
+      fontSize: "13px",
+      color: "black",
     }}
   >
     {score}
   </span>
 );
 
-const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; totalRounds: number; isStudent: boolean }> = ({
-  roundData,
-  roundIndex,
-  totalRounds,
-  isStudent,
-}) => {
+const RoundFeedbackTable: React.FC<{
+  roundData: RoundRow[];
+  roundIndex: number;
+  totalRounds: number;
+  isStudent: boolean;
+}> = ({ roundData, roundIndex, totalRounds, isStudent }) => {
   if (!roundData || roundData.length === 0) return null;
-  const firstScored = roundData.find(r => !isHeader(r)) as ReviewData | undefined;
+  const firstScored = roundData.find((r) => !isHeader(r)) as ReviewData | undefined;
   const numReviewers = firstScored?.reviews.length ?? 0;
 
   // Relative coloring: map colors to the actual observed score range in this round.
   const allScores = (roundData as any[]).flatMap((r: any) =>
-    Array.isArray(r.reviews) ? r.reviews.map((rv: any) => rv.score).filter((s: any) => typeof s === "number") : []
+    Array.isArray(r.reviews)
+      ? r.reviews.map((rv: any) => rv.score).filter((s: any) => typeof s === "number")
+      : []
   );
   const dataMin = allScores.length ? Math.min(...allScores) : undefined;
   const dataMax = allScores.length ? Math.max(...allScores) : undefined;
@@ -120,7 +133,15 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
         >
           <thead>
             <tr style={{ background: "#f0f0f0" }}>
-              <th style={{ ...stickyNo, background: "#f0f0f0", zIndex: 5, top: 0, fontWeight: "bold" }}>
+              <th
+                style={{
+                  ...stickyNo,
+                  background: "#f0f0f0",
+                  zIndex: 5,
+                  top: 0,
+                  fontWeight: "bold",
+                }}
+              >
                 #
               </th>
 
@@ -140,7 +161,15 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                 const reviewerName = (firstScored?.reviews[i] as any)?.name || `Review ${i + 1}`;
                 const displayName = isStudent ? `Review ${i + 1}` : reviewerName;
                 return (
-                  <th key={i} style={{ ...reviewerCell, background: "#f0f0f0", fontWeight: "bold", textAlign: "center" }}>
+                  <th
+                    key={i}
+                    style={{
+                      ...reviewerCell,
+                      background: "#f0f0f0",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
                     {displayName}
                   </th>
                 );
@@ -173,7 +202,10 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                       >
                         {row.txt}
                       </td>
-                      <td colSpan={numReviewers} style={{ background: "#fff", borderBottom: "1px solid #ddd" }} />
+                      <td
+                        colSpan={numReviewers}
+                        style={{ background: "#fff", borderBottom: "1px solid #ddd" }}
+                      />
                     </tr>
                   );
                 }
@@ -185,14 +217,10 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                 return (
                   <tr key={idx} style={{ background: bg }}>
                     {/* Sticky: # — explicit opaque background prevents scrolling rows bleeding through */}
-                    <td style={{ ...stickyNo, background: bg }}>
-                      {row.itemNumber}
-                    </td>
+                    <td style={{ ...stickyNo, background: bg }}>{row.itemNumber}</td>
 
                     {/* Sticky: Question text */}
-                    <td style={{ ...stickyQ, background: bg }}>
-                      {row.itemText}
-                    </td>
+                    <td style={{ ...stickyQ, background: bg }}>{row.itemText}</td>
 
                     {/* Reviewer answer columns */}
                     {row.reviews.map((review, revIdx) => (
@@ -200,7 +228,12 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                         {review.score !== undefined ? (
                           <>
                             <div>
-                              <ScoreBubble score={review.score} maxScore={row.maxScore} dataMin={dataMin} dataMax={dataMax} />
+                              <ScoreBubble
+                                score={review.score}
+                                maxScore={row.maxScore}
+                                dataMin={dataMin}
+                                dataMax={dataMax}
+                              />
                             </div>
                             {review.comment && (
                               <div style={{ marginTop: 5, color: "#444", fontSize: "12px" }}>
@@ -214,10 +247,14 @@ const RoundFeedbackTable: React.FC<{ roundData: RoundRow[]; roundIndex: number; 
                           </div>
                         ) : review.selections ? (
                           <ul style={{ margin: "4px 0", paddingLeft: 16, fontSize: "12px" }}>
-                            {review.selections.map((s, si) => <li key={si}>{s}</li>)}
+                            {review.selections.map((s, si) => (
+                              <li key={si}>{s}</li>
+                            ))}
                           </ul>
                         ) : review.selectedOption ? (
-                          <div style={{ fontSize: "12px", fontWeight: "bold" }}>{review.selectedOption}</div>
+                          <div style={{ fontSize: "12px", fontWeight: "bold" }}>
+                            {review.selectedOption}
+                          </div>
                         ) : review.fileName ? (
                           <div style={{ fontSize: "12px", color: "#b00404" }}>
                             {review.fileUrl ? (

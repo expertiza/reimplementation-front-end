@@ -1,18 +1,18 @@
 // Types for Review Tableau component
 
-export type ItemType = 
-  | 'Section_header' 
-  | 'Table_header' 
-  | 'Column_header' 
-  | 'Criterion' 
-  | 'TextField' 
-  | 'TextArea' 
-  | 'Dropdown' 
-  | 'MultipleChoice' 
-  | 'Scale' 
-  | 'Grid' 
-  | 'Checkbox' 
-  | 'UploadFile';
+export type ItemType =
+  | "Section_header"
+  | "Table_header"
+  | "Column_header"
+  | "Criterion"
+  | "TextField"
+  | "TextArea"
+  | "Dropdown"
+  | "MultipleChoice"
+  | "Scale"
+  | "Grid"
+  | "Checkbox"
+  | "UploadFile";
 
 export interface RubricItem {
   id: string;
@@ -85,6 +85,6 @@ export interface RubricItemDisplayProps {
 
 export interface ReviewCellProps {
   item: RubricItem;
-  response?: ReviewResponse['responses'][string];
+  response?: ReviewResponse["responses"][string];
   reviewerName?: string;
 }
