@@ -116,6 +116,7 @@ const Duties = () => {
               showGlobalFilter={false}
               showColumnFilter={true}
               showPagination={true}
+              // your shared Table handles sorting/filtering/pagination/selection/expanders:contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
             />
           </Row>
         </Container>
