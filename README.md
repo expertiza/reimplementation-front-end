@@ -166,14 +166,46 @@ The published image name is:
 ghcr.io/expertiza/reimplementation-front-end
 ```
 
-Successful `main` builds receive `latest` and commit-SHA tags. A version tag such as `v1.0.0` also
-publishes an image using that exact tag. For example:
+#### Images published from `main`
+
+Whenever a commit reaches `main`, including through a merged pull request, the workflow builds and
+publishes the frontend image. The image receives both the moving `latest` tag and a `sha-` tag made
+from the short Git commit SHA (the merge or squash-merge commit when applicable). Both tags identify
+the image produced by that workflow run. For example:
 
 ```text
 ghcr.io/expertiza/reimplementation-front-end:latest
 ghcr.io/expertiza/reimplementation-front-end:sha-1a2b3c4
+```
+
+The next successful `main` build moves `latest` to the newly built image, while the earlier
+commit-SHA tag remains available so that a specific build can be pulled again. Pull requests only
+validate that the Docker image builds; they do not publish it.
+
+#### Creating a versioned release
+
+Only a maintainer with permission to create tags in the official repository should perform these
+steps. First, update `main`, create an annotated version tag, and push it to the official repository:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+If the official repository is configured as a remote other than `origin`, use that remote name in
+the pull and push commands. Pushing a tag beginning with `v` triggers the publishing workflow and
+adds that exact version tag to the container image:
+
+```text
 ghcr.io/expertiza/reimplementation-front-end:v1.0.0
 ```
+
+To publish the corresponding GitHub Release, open the repository's **Releases** page, select
+**Draft a new release**, choose the existing `v1.0.0` tag, add the release title and notes, select
+**Set as the latest release** when appropriate, and publish it. GitHub's "latest release" designation
+is separate from the container image's `latest` tag.
 
 Pull and run the latest image with:
 
