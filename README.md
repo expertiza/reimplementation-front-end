@@ -154,6 +154,40 @@ You can also build and run the service defined in `docker-compose.yml`:
 docker compose up --build
 ```
 
+### Published container image
+
+The `Publish frontend container image` GitHub Actions workflow builds the existing `Dockerfile` and
+publishes the resulting image to GitHub Container Registry after a push to `main` or a version tag
+beginning with `v`.
+
+The published image name is:
+
+```text
+ghcr.io/expertiza/reimplementation-front-end
+```
+
+Successful `main` builds receive `latest` and commit-SHA tags. A version tag such as `v1.0.0` also
+publishes an image using that exact tag. For example:
+
+```text
+ghcr.io/expertiza/reimplementation-front-end:latest
+ghcr.io/expertiza/reimplementation-front-end:sha-1a2b3c4
+ghcr.io/expertiza/reimplementation-front-end:v1.0.0
+```
+
+Pull and run the latest image with:
+
+```bash
+docker pull ghcr.io/expertiza/reimplementation-front-end:latest
+docker run --detach --rm \
+  --name expertiza-frontend \
+  --publish 8080:80 \
+  ghcr.io/expertiza/reimplementation-front-end:latest
+```
+
+Package visibility is managed in the GitHub Container Registry settings. Authentication with an
+account that can read the package is required when the image is private.
+
 ## GitHub Actions
 
 The frontend workflow runs for pull requests and pushes to `main`. It contains six independent
@@ -168,3 +202,8 @@ jobs:
 
 Each job uses a clean Ubuntu runner and has its own timeout. The jobs run independently so that a
 failure in one check does not prevent the remaining checks from reporting their results.
+
+Container publishing is handled separately by `.github/workflows/publish-image.yml`. It uses the
+temporary `GITHUB_TOKEN` supplied by GitHub Actions with `packages: write` permission, so no
+long-lived registry password is stored in the repository. Pull requests continue to build the Docker
+image for validation but do not publish it.
