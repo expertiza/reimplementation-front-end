@@ -16,8 +16,8 @@ interface FormItem {
 interface FormQuestionnaire {
   id: number;
   name: string;
-  min_question_score: number;
-  max_question_score: number;
+  min_item_score: number;
+  max_item_score: number;
   items: FormItem[];
 }
 
@@ -244,7 +244,7 @@ const ResponsePage: React.FC = () => {
       return next;
     });
 
-  const renderQuestion = (item: FormItem, q: FormQuestionnaire) => {
+  const renderQuestion = (item: FormItem, q: FormQuestionnaire, displayNum: number) => {
     const local      = answers.get(item.id) || { answer: null, comments: '' };
     const scored     = isScoredType(item.question_type);
     const singleLine = isSingleLine(item.question_type);
@@ -252,7 +252,7 @@ const ResponsePage: React.FC = () => {
     return (
       <div key={item.id} className={styles.questionBlock}>
         <p className={styles.questionText}>
-          <span className={styles.questionSeq}>{item.seq + 1}.</span> {item.txt}
+          <span className={styles.questionSeq}>{displayNum}.</span> {item.txt}
           {scored && item.weight > 1 && (
             <span className={styles.questionWeight}> (weight: {item.weight})</span>
           )}
@@ -260,10 +260,9 @@ const ResponsePage: React.FC = () => {
 
         {scored && (
           <div className={styles.scoreRow}>
-            <span className={styles.scoreLabel}>{q.min_question_score}</span>
             {Array.from(
-              { length: q.max_question_score - q.min_question_score + 1 },
-              (_, i) => q.min_question_score + i
+              { length: q.max_item_score - q.min_item_score + 1 },
+              (_, i) => q.min_item_score + i
             ).map(val => (
               <label key={val} className={styles.radioLabel}>
                 <input
@@ -278,7 +277,6 @@ const ResponsePage: React.FC = () => {
                 {val}
               </label>
             ))}
-            <span className={styles.scoreLabel}>{q.max_question_score}</span>
           </div>
         )}
 
@@ -291,12 +289,13 @@ const ResponsePage: React.FC = () => {
             disabled={isSubmitted}
             placeholder="Comment (optional)"
           />
+        ) : isSubmitted ? (
+          <div className={styles.readOnlyText}>{local.comments || <em style={{ color: '#aaa' }}>No comment</em>}</div>
         ) : (
           <textarea
             className={styles.commentArea}
             value={local.comments}
-            onChange={e => !isSubmitted && setComments(item.id, e.target.value)}
-            disabled={isSubmitted}
+            onChange={e => setComments(item.id, e.target.value)}
             placeholder="Comment (optional)"
             rows={3}
           />
@@ -353,23 +352,26 @@ const ResponsePage: React.FC = () => {
           <div className={styles.rubricHeader}>
             <h2 className={styles.rubricName}>{questionnaire.name}</h2>
             <span className={styles.scoreRange}>
-              Score range: {questionnaire.min_question_score}–{questionnaire.max_question_score}
+              Score range: {questionnaire.min_item_score}–{questionnaire.max_item_score}
             </span>
           </div>
 
-          {questionnaire.items.map(item => renderQuestion(item, questionnaire))}
+          {questionnaire.items.map((item, idx) => renderQuestion(item, questionnaire, idx + 1))}
 
           {/* Additional comments */}
           <div className={styles.questionBlock}>
             <p className={styles.questionText}>Additional Comments</p>
-            <textarea
-              className={styles.commentArea}
-              value={additionalComment}
-              onChange={e => !isSubmitted && setAdditional(e.target.value)}
-              disabled={isSubmitted}
-              placeholder="Any overall comments for the author…"
-              rows={4}
-            />
+            {isSubmitted ? (
+              <div className={styles.readOnlyText}>{additionalComment || <em style={{ color: '#aaa' }}>No comment</em>}</div>
+            ) : (
+              <textarea
+                className={styles.commentArea}
+                value={additionalComment}
+                onChange={e => setAdditional(e.target.value)}
+                placeholder="Any overall comments for the author…"
+                rows={4}
+              />
+            )}
           </div>
 
           {/* Action bar */}

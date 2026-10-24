@@ -120,8 +120,8 @@ const StudentReviewList: React.FC = () => {
     axiosClient
       .post('/review_mappings/request_review', null, { params })
       .then(() => {
-        setRequestMsg({ type: 'success', text: 'Review assigned! Refreshing list…' });
         setShowPicker(false);
+        setRequestMsg(null);
         setLoading(true);
         return axiosClient.get(`/assignments/${assignmentId}/student_review/list`);
       })
@@ -165,15 +165,15 @@ const StudentReviewList: React.FC = () => {
           <div className={styles.statNum}>{num_reviews_total}</div>
           <div className={styles.statLabel}>Total</div>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} ${styles.statCardCompleted}`}>
           <div className={styles.statNum}>{num_reviews_completed}</div>
           <div className={styles.statLabel}>Completed</div>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} ${styles.statCardInProgress}`}>
           <div className={styles.statNum}>{num_reviews_in_progress}</div>
           <div className={styles.statLabel}>In Progress</div>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} ${styles.statCardNotStarted}`}>
           <div className={styles.statNum}>{num_not_started}</div>
           <div className={styles.statLabel}>Not Started</div>
         </div>
@@ -245,7 +245,7 @@ const StudentReviewList: React.FC = () => {
                   <option value="">— Select a topic —</option>
                   {eligibleTopics.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.topic_name} ({t.review_count} review{t.review_count !== 1 ? 's' : ''})
+                      {t.topic_name}
                     </option>
                   ))}
                 </select>

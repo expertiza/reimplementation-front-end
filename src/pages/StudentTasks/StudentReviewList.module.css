@@ -58,6 +58,33 @@
   letter-spacing: 0.04em;
 }
 
+.statCardCompleted {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.statCardCompleted .statNum {
+  color: #155724;
+}
+
+.statCardInProgress {
+  background: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.statCardInProgress .statNum {
+  color: #856404;
+}
+
+.statCardNotStarted {
+  background: #e2e3e5;
+  border-color: #d3d3d3;
+}
+
+.statCardNotStarted .statNum {
+  color: #41464b;
+}
+
 /* Review table — matches Bootstrap BTable striped hover size="sm" table-secondary header */
 .reviewTable {
   width: 100%;
