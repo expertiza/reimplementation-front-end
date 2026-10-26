@@ -74,7 +74,7 @@ const StudentReviewList: React.FC = () => {
   const [eligibleTopics, setEligibleTopics] = useState<EligibleTopic[]>([]);
   const [topicsLoading, setTopicsLoading]   = useState(false);
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
-  const [requestMsg, setRequestMsg]         = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [requestMsg, setRequestMsg]         = useState<string | null>(null);
   const [requesting, setRequesting]         = useState(false);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ const StudentReviewList: React.FC = () => {
     const params: Record<string, any> = { assignment_id: assignmentId };
     if (listData.can_choose_topic_to_review) {
       if (!selectedTopicId) {
-        setRequestMsg({ type: 'error', text: 'Please select a topic first.' });
+        setRequestMsg('Please select a topic first.');
         setRequesting(false);
         return;
       }
@@ -128,7 +128,7 @@ const StudentReviewList: React.FC = () => {
       .then((res) => { if (res) setListData(res.data); })
       .catch((err) => {
         const msg = err?.response?.data?.error || 'Could not assign review. Please try again.';
-        setRequestMsg({ type: 'error', text: msg });
+        setRequestMsg(msg);
       })
       .finally(() => {
         setRequesting(false);
@@ -267,9 +267,7 @@ const StudentReviewList: React.FC = () => {
           )}
 
           {requestMsg && (
-            <p className={requestMsg.type === 'error' ? styles.error : styles.success}>
-              {requestMsg.text}
-            </p>
+            <p className={styles.error}>{requestMsg}</p>
           )}
           </div>
         </div>

@@ -270,7 +270,7 @@ const ResponsePage: React.FC = () => {
                   name={`score_${item.id}`}
                   value={val}
                   checked={local.answer === val}
-                  onChange={() => !isSubmitted && setScore(item.id, val)}
+                  onChange={() => setScore(item.id, val)}
                   disabled={isSubmitted}
                   className={styles.radioInput}
                 />
@@ -285,12 +285,12 @@ const ResponsePage: React.FC = () => {
             type="text"
             className={styles.textField}
             value={local.comments}
-            onChange={e => !isSubmitted && setComments(item.id, e.target.value)}
+            onChange={e => setComments(item.id, e.target.value)}
             disabled={isSubmitted}
             placeholder="Comment (optional)"
           />
         ) : isSubmitted ? (
-          <div className={styles.readOnlyText}>{local.comments || <em style={{ color: '#aaa' }}>No comment</em>}</div>
+          <div className={styles.readOnlyText}>{local.comments || <em className={styles.noCommentPlaceholder}>No comment</em>}</div>
         ) : (
           <textarea
             className={styles.commentArea}
@@ -362,7 +362,7 @@ const ResponsePage: React.FC = () => {
           <div className={styles.questionBlock}>
             <p className={styles.questionText}>Additional Comments</p>
             {isSubmitted ? (
-              <div className={styles.readOnlyText}>{additionalComment || <em style={{ color: '#aaa' }}>No comment</em>}</div>
+              <div className={styles.readOnlyText}>{additionalComment || <em className={styles.noCommentPlaceholder}>No comment</em>}</div>
             ) : (
               <textarea
                 className={styles.commentArea}

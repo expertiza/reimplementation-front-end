@@ -109,13 +109,6 @@
   margin-bottom: 0.75rem;
 }
 
-.scoreLabel {
-  font-size: 12px;
-  color: #666;
-  min-width: 1.5rem;
-  text-align: center;
-}
-
 .radioLabel {
   display: flex;
   flex-direction: column;
@@ -153,13 +146,6 @@
   box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
 }
 
-.commentArea:disabled {
-  background: #f5f5f5;
-  color: #555;
-  cursor: default;
-  resize: none;
-}
-
 .readOnlyText {
   width: 100%;
   box-sizing: border-box;
@@ -173,6 +159,11 @@
   white-space: pre-wrap;
   word-break: break-word;
   min-height: 1.6em;
+}
+
+.noCommentPlaceholder {
+  color: #aaa;
+  font-style: italic;
 }
 
 .textField {

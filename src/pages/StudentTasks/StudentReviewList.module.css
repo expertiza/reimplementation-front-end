@@ -151,7 +151,6 @@
 /* Request a new review — no border, heading centered over the picker */
 .requestSection {
   margin-bottom: 2rem;
-  transform: translateZ(0);
 }
 
 .requestInner {
@@ -221,7 +220,6 @@
   padding: 6px 14px;
   font-size: 14px;
   cursor: pointer;
-  margin-left: 0.5rem;
 }
 
 .btnSecondary:hover {
@@ -231,12 +229,6 @@
 /* Inline messages */
 .error {
   color: #dc3545;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-}
-
-.success {
-  color: #198754;
   font-size: 0.85rem;
   margin-top: 0.5rem;
 }
