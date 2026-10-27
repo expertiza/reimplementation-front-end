@@ -95,12 +95,18 @@ const StudentTasksList: React.FC<StudentTasksListProps> = ({ revisions }) => {
           return (
             <div key={index}>
               &raquo;{" "}
-              <Link
-                to={`/student_review/list/${task.assignmentId ?? task.participantId}`}
-                className={styles.revisionLink}
-              >
-                {task.name} {task.currentStage}
-              </Link>{" "}
+              {task.assignmentId ? (
+                <Link
+                  to={`/student_review/list/${task.assignmentId}`}
+                  className={styles.revisionLink}
+                >
+                  {task.name} {task.currentStage}
+                </Link>
+              ) : (
+                <span>
+                  {task.name} {task.currentStage}
+                </span>
+              )}{" "}
               ({remainingDays} day{remainingDays !== 1 ? "s" : ""} left)
             </div>
           );

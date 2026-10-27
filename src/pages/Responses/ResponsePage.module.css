@@ -95,7 +95,7 @@
 }
 
 .questionWeight {
-  color: #888;
+  color: #666;
   font-size: 12px;
   font-weight: 400;
 }
@@ -124,7 +124,7 @@
   cursor: pointer;
   width: 16px;
   height: 16px;
-  accent-color: #A90201;
+  accent-color: #a90201;
 }
 
 /* Comment areas */
@@ -141,7 +141,8 @@
 }
 
 .commentArea:focus {
-  outline: none;
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
   border-color: #986633;
   box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
 }
@@ -162,7 +163,7 @@
 }
 
 .noCommentPlaceholder {
-  color: #aaa;
+  color: #666;
   font-style: italic;
 }
 
@@ -178,7 +179,8 @@
 }
 
 .textField:focus {
-  outline: none;
+  outline: 2px solid CanvasText;
+  outline-offset: 2px;
   border-color: #986633;
   box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
 }
@@ -218,7 +220,7 @@
 }
 
 .btnSubmit {
-  background: #A90201;
+  background: #a90201;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -253,13 +255,18 @@
   margin-bottom: 1rem;
 }
 
-/* Back link */
+/* Back link (also used on a <button>, so reset browser button styles) */
 .backLink {
   display: inline-block;
   margin-top: 1.5rem;
   color: #986633;
   text-decoration: none;
   font-size: 14px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .backLink:hover {
