@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import axiosClient from 'utils/axios_client';
-import styles from './ResponsePage.module.css';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import axiosClient from "utils/axios_client";
+import styles from "./ResponsePage.module.css";
 
 // ─── Shape of data returned by GET /assignments/:aid/student_review/:mid/form ───
 
@@ -53,16 +53,18 @@ interface LocalAnswer {
   comments: string;
 }
 
+interface ScoreAttribute {
+  item_id: number;
+  answer: number | null;
+  comments: string;
+  id?: number;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const isScoredType = (qt: string) =>
-  ['Criterion', 'Scale'].includes(qt);
+const isScoredType = (qt: string) => ["Criterion", "Scale"].includes(qt);
 
-const isTextOnly = (qt: string) =>
-  ['TextArea', 'Text area', 'TextField', 'Text field'].includes(qt);
-
-const isSingleLine = (qt: string) =>
-  ['TextField', 'Text field'].includes(qt);
+const isSingleLine = (qt: string) => ["TextField", "Text field"].includes(qt);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -70,17 +72,17 @@ const ResponsePage: React.FC = () => {
   const { assignmentId, mappingId } = useParams<{ assignmentId: string; mappingId: string }>();
   const navigate = useNavigate();
 
-  const [formData, setFormData]           = useState<FormData | null>(null);
-  const [responseId, setResponseId]       = useState<number | null>(null);
-  const [answers, setAnswers]             = useState<Map<number, LocalAnswer>>(new Map());
-  const [additionalComment, setAdditional] = useState('');
-  const [isSubmitted, setIsSubmitted]     = useState(false);
+  const [formData, setFormData] = useState<FormData | null>(null);
+  const [responseId, setResponseId] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<Map<number, LocalAnswer>>(new Map());
+  const [additionalComment, setAdditional] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const [loading, setLoading]       = useState(true);
-  const [saving, setSaving]         = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [saveMsg, setSaveMsg]       = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
-  const [error, setError]           = useState<string | null>(null);
+  const [saveMsg, setSaveMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // keep a ref to clear the save message timeout
   const saveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,17 +95,17 @@ const ResponsePage: React.FC = () => {
       .then(async (res) => {
         const data: FormData = res.data;
         setFormData(data);
-        initLocalState(data);
+        await initLocalState(data);
       })
       .catch((err) => {
         if (err?.response?.status === 403 || err?.response?.status === 404) {
-          navigate('/student_tasks');
+          navigate("/student_tasks");
         } else {
-          setError('Failed to load review form. Please try again.');
+          setError("Failed to load review form. Please try again.");
         }
       })
       .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignmentId, mappingId]);
 
   const initLocalState = useCallback(async (data: FormData) => {
@@ -112,37 +114,37 @@ const ResponsePage: React.FC = () => {
     // If no response exists yet, create one
     if (!resp) {
       try {
-        const created = await axiosClient.post('/responses', { response_map_id: data.mapping_id });
+        const created = await axiosClient.post("/responses", { response_map_id: data.mapping_id });
         resp = {
           id: created.data.response.id,
           is_submitted: false,
           additional_comment: null,
-          answers: []
+          answers: [],
         };
       } catch {
-        setError('Could not start review. Please try again.');
+        setError("Could not start review. Please try again.");
         return;
       }
     }
 
     setResponseId(resp.id);
     setIsSubmitted(resp.is_submitted);
-    setAdditional(resp.additional_comment || '');
+    setAdditional(resp.additional_comment || "");
 
     // Build answers map: item_id → LocalAnswer
     const map = new Map<number, LocalAnswer>();
     for (const ans of resp.answers) {
       map.set(ans.item_id, {
         existingId: ans.id,
-        answer:     ans.answer,
-        comments:   ans.comments || ''
+        answer: ans.answer,
+        comments: ans.comments || "",
       });
     }
     // Pre-populate entries for items without saved answers
     if (data.questionnaire) {
       for (const item of data.questionnaire.items) {
         if (!map.has(item.id)) {
-          map.set(item.id, { answer: null, comments: '' });
+          map.set(item.id, { answer: null, comments: "" });
         }
       }
     }
@@ -151,13 +153,13 @@ const ResponsePage: React.FC = () => {
 
   // ─── Save draft ───────────────────────────────────────────────────────────
 
-  const buildScoresAttributes = useCallback(() => {
-    const attrs: Record<string, any>[] = [];
+  const buildScoresAttributes = useCallback((): ScoreAttribute[] => {
+    const attrs: ScoreAttribute[] = [];
     answers.forEach((local, itemId) => {
-      const entry: Record<string, any> = {
-        item_id:  itemId,
-        answer:   local.answer,
-        comments: local.comments
+      const entry: ScoreAttribute = {
+        item_id: itemId,
+        answer: local.answer,
+        comments: local.comments,
       };
       if (local.existingId !== undefined) entry.id = local.existingId;
       attrs.push(entry);
@@ -173,26 +175,35 @@ const ResponsePage: React.FC = () => {
       const payload = {
         response: {
           additional_comment: additionalComment,
-          scores_attributes:  buildScoresAttributes()
-        }
+          scores_attributes: buildScoresAttributes(),
+        },
       };
-      await axiosClient.patch(`/responses/${responseId}`, payload);
+      const saved = await axiosClient.patch(`/responses/${responseId}`, payload);
+      // "Save failed" is scoped to the PATCH above; ID-refresh failures are silent.
+      setSaveMsg({ type: "ok", text: "Draft saved." });
 
-      // Reload answers to get DB-assigned ids for new answers
-      const refreshed = await axiosClient.get(`/responses/${responseId}`);
-      const newMap = new Map<number, LocalAnswer>();
-      for (const a of refreshed.data.answers) {
-        newMap.set(a.item_id, { existingId: a.id, answer: a.answer, comments: a.comments || '' });
+      // Recover DB-assigned answer IDs so subsequent saves update rather than duplicate.
+      // Prefer IDs embedded in the PATCH response body; fall back to a best-effort GET
+      // (the back-end show action may not be authorized, so GET failures are swallowed).
+      try {
+        const refreshedAnswers: ApiAnswer[] =
+          saved.data?.response?.answers ?? saved.data?.answers ?? null;
+        const source = refreshedAnswers
+          ? refreshedAnswers
+          : (await axiosClient.get(`/responses/${responseId}`)).data.answers;
+        const newMap = new Map<number, LocalAnswer>();
+        for (const a of source as ApiAnswer[]) {
+          newMap.set(a.item_id, { existingId: a.id, answer: a.answer, comments: a.comments || "" });
+        }
+        answers.forEach((local, itemId) => {
+          if (!newMap.has(itemId)) newMap.set(itemId, local);
+        });
+        setAnswers(newMap);
+      } catch {
+        // ID refresh failed — not user-visible; IDs are recovered on the next save.
       }
-      // keep unsaved items that didn't exist
-      answers.forEach((local, itemId) => {
-        if (!newMap.has(itemId)) newMap.set(itemId, local);
-      });
-      setAnswers(newMap);
-
-      setSaveMsg({ type: 'ok', text: 'Draft saved.' });
     } catch {
-      setSaveMsg({ type: 'err', text: 'Save failed. Please try again.' });
+      setSaveMsg({ type: "err", text: "Save failed. Please try again." });
     } finally {
       setSaving(false);
       if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current);
@@ -204,7 +215,10 @@ const ResponsePage: React.FC = () => {
 
   const submitReview = useCallback(async () => {
     if (!responseId || isSubmitted) return;
-    if (!window.confirm('Once submitted, you cannot edit this review. Proceed?')) return;
+    if (!window.confirm("Once submitted, you cannot edit this review. Proceed?")) return;
+
+    setSaveMsg(null);
+    if (saveMsgTimer.current) clearTimeout(saveMsgTimer.current);
 
     // save first
     setSubmitting(true);
@@ -212,41 +226,64 @@ const ResponsePage: React.FC = () => {
       await axiosClient.patch(`/responses/${responseId}`, {
         response: {
           additional_comment: additionalComment,
-          scores_attributes:  buildScoresAttributes()
-        }
+          scores_attributes: buildScoresAttributes(),
+        },
       });
+
+      // Refresh answer IDs from the authorised form endpoint before submitting.
+      // Without this, a retry after a failed /submit resends answers without IDs,
+      // causing Rails nested-attributes to create duplicates.
+      const refreshed = await axiosClient.get(
+        `/assignments/${assignmentId}/student_review/${mappingId}/form`
+      );
+      const newMap = new Map(answers);
+      for (const a of (refreshed.data.response?.answers || []) as ApiAnswer[]) {
+        newMap.set(a.item_id, { existingId: a.id, answer: a.answer, comments: a.comments || "" });
+      }
+      setAnswers(newMap);
+
       await axiosClient.patch(`/responses/${responseId}/submit`);
       setIsSubmitted(true);
-      setSaveMsg({ type: 'ok', text: 'Review submitted successfully.' });
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || 'Submission failed. Please try again.';
-      setSaveMsg({ type: 'err', text: msg });
+      setSaveMsg({ type: "ok", text: "Review submitted successfully." });
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        "Submission failed. Please try again.";
+      setSaveMsg({ type: "err", text: msg });
     } finally {
       setSubmitting(false);
     }
-  }, [responseId, isSubmitted, additionalComment, buildScoresAttributes]);
+  }, [
+    assignmentId,
+    mappingId,
+    responseId,
+    isSubmitted,
+    additionalComment,
+    buildScoresAttributes,
+    answers,
+  ]);
 
   // ─── Render helpers ───────────────────────────────────────────────────────
 
   const setScore = (itemId: number, score: number) =>
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const next = new Map(prev);
-      const cur  = next.get(itemId) || { answer: null, comments: '' };
+      const cur = next.get(itemId) || { answer: null, comments: "" };
       next.set(itemId, { ...cur, answer: score });
       return next;
     });
 
   const setComments = (itemId: number, text: string) =>
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const next = new Map(prev);
-      const cur  = next.get(itemId) || { answer: null, comments: '' };
+      const cur = next.get(itemId) || { answer: null, comments: "" };
       next.set(itemId, { ...cur, comments: text });
       return next;
     });
 
   const renderQuestion = (item: FormItem, q: FormQuestionnaire, displayNum: number) => {
-    const local      = answers.get(item.id) || { answer: null, comments: '' };
-    const scored     = isScoredType(item.question_type);
+    const local = answers.get(item.id) || { answer: null, comments: "" };
+    const scored = isScoredType(item.question_type);
     const singleLine = isSingleLine(item.question_type);
 
     return (
@@ -263,7 +300,7 @@ const ResponsePage: React.FC = () => {
             {Array.from(
               { length: q.max_item_score - q.min_item_score + 1 },
               (_, i) => q.min_item_score + i
-            ).map(val => (
+            ).map((val) => (
               <label key={val} className={styles.radioLabel}>
                 <input
                   type="radio"
@@ -271,7 +308,7 @@ const ResponsePage: React.FC = () => {
                   value={val}
                   checked={local.answer === val}
                   onChange={() => setScore(item.id, val)}
-                  disabled={isSubmitted}
+                  disabled={isSubmitted || saving || submitting}
                   className={styles.radioInput}
                 />
                 {val}
@@ -285,17 +322,20 @@ const ResponsePage: React.FC = () => {
             type="text"
             className={styles.textField}
             value={local.comments}
-            onChange={e => setComments(item.id, e.target.value)}
-            disabled={isSubmitted}
+            onChange={(e) => setComments(item.id, e.target.value)}
+            disabled={isSubmitted || saving || submitting}
             placeholder="Comment (optional)"
           />
         ) : isSubmitted ? (
-          <div className={styles.readOnlyText}>{local.comments || <em className={styles.noCommentPlaceholder}>No comment</em>}</div>
+          <div className={styles.readOnlyText}>
+            {local.comments || <em className={styles.noCommentPlaceholder}>No comment</em>}
+          </div>
         ) : (
           <textarea
             className={styles.commentArea}
             value={local.comments}
-            onChange={e => setComments(item.id, e.target.value)}
+            onChange={(e) => setComments(item.id, e.target.value)}
+            disabled={saving || submitting}
             placeholder="Comment (optional)"
             rows={3}
           />
@@ -314,7 +354,9 @@ const ResponsePage: React.FC = () => {
     return (
       <div className={styles.container}>
         <p className={styles.errorMsg}>{error}</p>
-        <Link to="/student_tasks" className={styles.backLink}>← Back to Assignments</Link>
+        <Link to="/student_tasks" className={styles.backLink}>
+          ← Back to Assignments
+        </Link>
       </div>
     );
   }
@@ -328,12 +370,12 @@ const ResponsePage: React.FC = () => {
       {/* Header */}
       <div className={styles.header}>
         <h1>
-          {isSubmitted ? 'View' : 'Write'} Review
-          {reviewee_team_name ? ` for ${reviewee_team_name}` : ''}
+          {isSubmitted ? "View" : "Write"} Review
+          {reviewee_team_name ? ` for ${reviewee_team_name}` : ""}
         </h1>
         <p className={styles.subhead}>
           {assignment_name}
-          {topic_name ? ` · ${topic_name}` : ''}
+          {topic_name ? ` · ${topic_name}` : ""}
         </p>
       </div>
 
@@ -362,12 +404,15 @@ const ResponsePage: React.FC = () => {
           <div className={styles.questionBlock}>
             <p className={styles.questionText}>Additional Comments</p>
             {isSubmitted ? (
-              <div className={styles.readOnlyText}>{additionalComment || <em className={styles.noCommentPlaceholder}>No comment</em>}</div>
+              <div className={styles.readOnlyText}>
+                {additionalComment || <em className={styles.noCommentPlaceholder}>No comment</em>}
+              </div>
             ) : (
               <textarea
                 className={styles.commentArea}
                 value={additionalComment}
-                onChange={e => setAdditional(e.target.value)}
+                onChange={(e) => setAdditional(e.target.value)}
+                disabled={saving || submitting}
                 placeholder="Any overall comments for the author…"
                 rows={4}
               />
@@ -382,31 +427,31 @@ const ResponsePage: React.FC = () => {
                 onClick={saveDraft}
                 disabled={saving || submitting}
               >
-                {saving ? 'Saving…' : 'Save Draft'}
+                {saving ? "Saving…" : "Save Draft"}
               </button>
               <button
                 className={styles.btnSubmit}
                 onClick={submitReview}
                 disabled={saving || submitting}
               >
-                {submitting ? 'Submitting…' : 'Submit Review'}
+                {submitting ? "Submitting…" : "Submit Review"}
               </button>
               {saveMsg && (
-                <span className={saveMsg.type === 'ok' ? styles.saveOk : styles.saveErr}>
+                <span className={saveMsg.type === "ok" ? styles.saveOk : styles.saveErr}>
                   {saveMsg.text}
                 </span>
               )}
             </div>
           )}
           {isSubmitted && saveMsg && (
-            <p className={saveMsg.type === 'ok' ? styles.saveOk : styles.saveErr}>
-              {saveMsg.text}
-            </p>
+            <p className={saveMsg.type === "ok" ? styles.saveOk : styles.saveErr}>{saveMsg.text}</p>
           )}
         </>
       )}
 
-      <Link to={-1 as any} className={styles.backLink}>← Back</Link>
+      <button type="button" onClick={() => navigate(-1)} className={styles.backLink}>
+        ← Back
+      </button>
     </div>
   );
 };

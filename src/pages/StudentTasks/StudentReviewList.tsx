@@ -11,10 +11,10 @@
  *   3. "Request a new review" panel for dynamic assignments, with topic picker
  *      when the assignment requires the student to choose a topic.
  */
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import axiosClient from 'utils/axios_client';
-import styles from './StudentReviewList.module.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import axiosClient from "utils/axios_client";
+import styles from "./StudentReviewList.module.css";
 
 interface ReviewEntry {
   mapping_id: number;
@@ -22,7 +22,7 @@ interface ReviewEntry {
   reviewee_team_name: string | null;
   topic_id: number | null;
   topic_name: string | null;
-  status: 'not_started' | 'in_progress' | 'completed';
+  status: "not_started" | "in_progress" | "completed";
   submission_updated: boolean;
   for_calibration: boolean;
 }
@@ -46,19 +46,25 @@ interface EligibleTopic {
   review_count: number;
 }
 
-const statusBadgeClass = (status: ReviewEntry['status']) => {
+const statusBadgeClass = (status: ReviewEntry["status"]) => {
   switch (status) {
-    case 'completed':  return styles.badgeCompleted;
-    case 'in_progress': return styles.badgeInProgress;
-    default:           return styles.badgeNotStarted;
+    case "completed":
+      return styles.badgeCompleted;
+    case "in_progress":
+      return styles.badgeInProgress;
+    default:
+      return styles.badgeNotStarted;
   }
 };
 
-const statusLabel = (status: ReviewEntry['status']) => {
+const statusLabel = (status: ReviewEntry["status"]) => {
   switch (status) {
-    case 'completed':   return 'Completed';
-    case 'in_progress': return 'In Progress';
-    default:            return 'Not Started';
+    case "completed":
+      return "Completed";
+    case "in_progress":
+      return "In Progress";
+    default:
+      return "Not Started";
   }
 };
 
@@ -66,24 +72,25 @@ const StudentReviewList: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
 
-  const [listData, setListData]     = useState<ReviewListData | null>(null);
-  const [loading, setLoading]       = useState(true);
+  const [listData, setListData] = useState<ReviewListData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Topic picker state
-  const [showPicker, setShowPicker]         = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const [eligibleTopics, setEligibleTopics] = useState<EligibleTopic[]>([]);
-  const [topicsLoading, setTopicsLoading]   = useState(false);
+  const [topicsLoading, setTopicsLoading] = useState(false);
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
-  const [requestMsg, setRequestMsg]         = useState<string | null>(null);
-  const [requesting, setRequesting]         = useState(false);
+  const [requestMsg, setRequestMsg] = useState<string | null>(null);
+  const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
     axiosClient
       .get(`/assignments/${assignmentId}/student_review/list`)
       .then((res) => setListData(res.data))
       .catch((err) => {
-        if (err?.response?.status === 403 || err?.response?.status === 404) navigate('/');
-        else console.error('Error loading review list:', err);
+        if (err?.response?.status === 403 || err?.response?.status === 404) navigate("/");
+        else setLoadError("Failed to load review list. Please try again.");
       })
       .finally(() => setLoading(false));
   }, [assignmentId, navigate]);
@@ -94,21 +101,26 @@ const StudentReviewList: React.FC = () => {
     setRequestMsg(null);
     setTopicsLoading(true);
     axiosClient
-      .get('/review_mappings/eligible_topics', { params: { assignment_id: assignmentId } })
+      .get("/review_mappings/eligible_topics", { params: { assignment_id: assignmentId } })
       .then((res) => setEligibleTopics(res.data.eligible_topics || []))
-      .catch(() => setEligibleTopics([]))
+      .catch(() => {
+        setEligibleTopics([]);
+        setRequestMsg("Failed to load eligible topics. Please try again.");
+      })
       .finally(() => setTopicsLoading(false));
   }, [assignmentId]);
 
-  const handleRequestReview = useCallback(() => {
+  const handleRequestReview = useCallback(async () => {
     if (!listData) return;
     setRequesting(true);
     setRequestMsg(null);
 
-    const params: Record<string, any> = { assignment_id: assignmentId };
+    const params: { assignment_id: string | undefined; topic_id?: number; i_dont_care?: true } = {
+      assignment_id: assignmentId,
+    };
     if (listData.can_choose_topic_to_review) {
       if (!selectedTopicId) {
-        setRequestMsg('Please select a topic first.');
+        setRequestMsg("Please select a topic first.");
         setRequesting(false);
         return;
       }
@@ -117,39 +129,63 @@ const StudentReviewList: React.FC = () => {
       params.i_dont_care = true;
     }
 
-    axiosClient
-      .post('/review_mappings/request_review', null, { params })
-      .then(() => {
-        setShowPicker(false);
-        setRequestMsg(null);
-        setLoading(true);
-        return axiosClient.get(`/assignments/${assignmentId}/student_review/list`);
-      })
-      .then((res) => { if (res) setListData(res.data); })
-      .catch((err) => {
-        const msg = err?.response?.data?.error || 'Could not assign review. Please try again.';
-        setRequestMsg(msg);
-      })
-      .finally(() => {
-        setRequesting(false);
+    try {
+      await axiosClient.post("/review_mappings/request_review", null, { params });
+      setShowPicker(false);
+      setRequestMsg(null);
+      setRequesting(false);
+      setLoading(true);
+      try {
+        const res = await axiosClient.get(`/assignments/${assignmentId}/student_review/list`);
+        setListData(res.data);
+      } catch {
+        setRequestMsg("Review assigned! Failed to refresh — please reload the page.");
+      } finally {
         setLoading(false);
-      });
+      }
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        "Could not assign review. Please try again.";
+      setRequestMsg(msg);
+      setRequesting(false);
+    }
   }, [assignmentId, listData, selectedTopicId]);
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '3rem' }}>Loading reviews…</div>;
+    return <div style={{ textAlign: "center", padding: "3rem" }}>Loading reviews…</div>;
+  }
+
+  if (loadError) {
+    return (
+      <div style={{ textAlign: "center", padding: "3rem" }}>
+        <p style={{ color: "#c0392b" }}>{loadError}</p>
+        <Link to="/student_tasks">← Back to Assignments</Link>
+      </div>
+    );
   }
 
   if (!listData) return null;
 
-  const { assignment_name, num_reviews_total, num_reviews_completed, num_reviews_in_progress, reviews, is_dynamic, can_choose_topic_to_review } = listData;
+  const {
+    assignment_name,
+    num_reviews_total,
+    num_reviews_completed,
+    num_reviews_in_progress,
+    reviews,
+    is_dynamic,
+    can_choose_topic_to_review,
+  } = listData;
   const num_not_started = num_reviews_total - num_reviews_completed - num_reviews_in_progress;
 
-  const actionLabel = (status: ReviewEntry['status']) => {
+  const actionLabel = (status: ReviewEntry["status"]) => {
     switch (status) {
-      case 'completed':   return 'View';
-      case 'in_progress': return 'Update';
-      default:            return 'Begin';
+      case "completed":
+        return "View";
+      case "in_progress":
+        return "Update";
+      default:
+        return "Begin";
     }
   };
 
@@ -181,7 +217,7 @@ const StudentReviewList: React.FC = () => {
 
       {/* Review list */}
       {reviews.length === 0 ? (
-        <p style={{ color: '#666' }}>No reviews assigned yet.</p>
+        <p style={{ color: "#666" }}>No reviews assigned yet.</p>
       ) : (
         <table className={styles.reviewTable}>
           <thead>
@@ -197,8 +233,8 @@ const StudentReviewList: React.FC = () => {
             {reviews.map((r, idx) => (
               <tr key={r.mapping_id}>
                 <td>{idx + 1}</td>
-                <td>{r.reviewee_team_name ?? '—'}</td>
-                <td>{r.topic_name ?? '—'}</td>
+                <td>{r.reviewee_team_name ?? "—"}</td>
+                <td>{r.topic_name ?? "—"}</td>
                 <td>
                   <span className={`${styles.badge} ${statusBadgeClass(r.status)}`}>
                     {statusLabel(r.status)}
@@ -222,53 +258,60 @@ const StudentReviewList: React.FC = () => {
       {is_dynamic && (
         <div className={styles.requestSection}>
           <div className={styles.requestInner}>
-          <h2>Request a new review</h2>
+            <h2>Request a new review</h2>
 
-          {!showPicker ? (
-            <button
-              className={styles.btnPrimary}
-              onClick={can_choose_topic_to_review ? openTopicPicker : handleRequestReview}
-              disabled={requesting}
-            >
-              {requesting ? 'Assigning…' : can_choose_topic_to_review ? 'Choose a topic to review' : 'Assign me a review'}
-            </button>
-          ) : (
-            <div className={styles.pickerRow}>
-              {topicsLoading ? (
-                <span style={{ fontSize: 14, color: '#666' }}>Loading topics…</span>
-              ) : (
-                <select
-                  className={styles.topicSelect}
-                  value={selectedTopicId ?? ''}
-                  onChange={(e) => setSelectedTopicId(e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">— Select a topic —</option>
-                  {eligibleTopics.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.topic_name}
-                    </option>
-                  ))}
-                </select>
-              )}
+            {!showPicker ? (
               <button
                 className={styles.btnPrimary}
-                onClick={handleRequestReview}
-                disabled={requesting || topicsLoading || !selectedTopicId}
+                onClick={can_choose_topic_to_review ? openTopicPicker : handleRequestReview}
+                disabled={requesting}
               >
-                {requesting ? 'Assigning…' : 'Confirm'}
+                {requesting
+                  ? "Assigning…"
+                  : can_choose_topic_to_review
+                  ? "Choose a topic to review"
+                  : "Assign me a review"}
               </button>
-              <button
-                className={styles.btnSecondary}
-                onClick={() => { setShowPicker(false); setRequestMsg(null); }}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className={styles.pickerRow}>
+                {topicsLoading ? (
+                  <span style={{ fontSize: 14, color: "#666" }}>Loading topics…</span>
+                ) : (
+                  <select
+                    className={styles.topicSelect}
+                    value={selectedTopicId ?? ""}
+                    onChange={(e) =>
+                      setSelectedTopicId(e.target.value ? Number(e.target.value) : null)
+                    }
+                  >
+                    <option value="">— Select a topic —</option>
+                    {eligibleTopics.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.topic_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  className={styles.btnPrimary}
+                  onClick={handleRequestReview}
+                  disabled={requesting || topicsLoading || !selectedTopicId}
+                >
+                  {requesting ? "Assigning…" : "Confirm"}
+                </button>
+                <button
+                  className={styles.btnSecondary}
+                  onClick={() => {
+                    setShowPicker(false);
+                    setRequestMsg(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
 
-          {requestMsg && (
-            <p className={styles.error}>{requestMsg}</p>
-          )}
+            {requestMsg && <p className={styles.error}>{requestMsg}</p>}
           </div>
         </div>
       )}
