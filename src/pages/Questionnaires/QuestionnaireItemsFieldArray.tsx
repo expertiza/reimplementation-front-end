@@ -116,7 +116,23 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const showRows         = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
         const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
         const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
-        const hasExtraColumns  = showAlternatives || showRowNames || showColNames || showMinMax || (showRows && showCols);
+
+        /* Calculate visible column count */
+        let columnCount = 4; // grip, type, prompt, del
+        if (showNumbers) columnCount += 1;
+        if (showAlternatives) columnCount += 1;
+        if (showRowNames) columnCount += 1;
+        if (showColNames) columnCount += 1;
+        if (showMinMax) columnCount += 2; // min_label, max_label
+        if (showRows) columnCount += 1;
+        if (showCols) columnCount += 1;
+        if (showWeight) columnCount += 1;
+
+        /* Only expand to full window space when needed (9+ columns from diverse items).
+           When there are fewer columns, keep the table proportionally compact. */
+        const isFullWidthNeeded = columnCount >= 9;
+        const isMediumWidth     = columnCount === 8;
+        const tableMaxWidth     = isFullWidthNeeded ? "100%" : isMediumWidth ? "1200px" : "960px";
 
         /* shared textarea style */
         const taStyle: React.CSSProperties = {
@@ -143,7 +159,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                   marginBottom: "4px",
                   width: "100%",
-                  maxWidth: hasExtraColumns ? "100%" : "1200px",
+                  maxWidth: tableMaxWidth,
                   margin: "0 auto",
                   transition: "max-width 0.2s ease-in-out",
                 }}
@@ -539,8 +555,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   borderRadius: "10px",
                   marginBottom: "12px",
                   fontSize: "14px",
-                  maxWidth: "1200px",
+                  maxWidth: tableMaxWidth,
                   margin: "0 auto 12px auto",
+                  transition: "max-width 0.2s ease-in-out",
                 }}
               >
                 No items yet — use the controls below to add some.
@@ -550,7 +567,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             {/* ── Add toolbar ── */}
             <div
               className="d-flex gap-2 align-items-center flex-wrap mt-3 pt-3"
-              style={{ borderTop: "1px solid #f3f4f6", maxWidth: "1200px", margin: "0 auto" }}
+              style={{ borderTop: "1px solid #f3f4f6", maxWidth: tableMaxWidth, margin: "0 auto", transition: "max-width 0.2s ease-in-out" }}
             >
               <select
                 className="form-control form-control-sm"
