@@ -65,8 +65,6 @@ const colFieldName = (type: string, fi: number) => {
 /* ────────────────────────────────────────────────────────────── */
 const QuestionnaireItemsFieldArray: React.FC<Props> = ({
   values,
-  errors,
-  touched,
   itemTypes,
 }) => {
   const [itemType, setItemType]   = useState("");
@@ -119,17 +117,6 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
         const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
 
-        /* dynamic minimum table width so columns never get squished below fit */
-        let minTableWidth = 32 /* grip */ + 120 /* type */ + 220 /* prompt */ + 44 /* del */;
-        if (showNumbers) minTableWidth += 36;
-        if (showAlternatives) minTableWidth += 170;
-        if (showRowNames) minTableWidth += 170;
-        if (showColNames) minTableWidth += 170;
-        if (showMinMax) minTableWidth += 200;
-        if (showRows) minTableWidth += 64;
-        if (showCols) minTableWidth += 64;
-        if (showWeight) minTableWidth += 70;
-
         /* shared textarea style */
         const taStyle: React.CSSProperties = {
           resize: "vertical",
@@ -166,49 +153,48 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                           borderCollapse: "collapse",
                           fontSize: "13px",
                           tableLayout: "auto",
-                          minWidth: `${minTableWidth}px`,
                         }}
                       >
                         {/* ── Header ── */}
                         <thead>
                           <tr>
                             {/* grip */}
-                            <th style={{ ...TH, width: "32px", padding: "8px 6px" }} />
+                            <th style={{ ...TH, width: "32px", minWidth: "32px", padding: "8px 6px" }} />
                             {/* # */}
                             {showNumbers && (
-                              <th style={{ ...TH, width: "36px", textAlign: "center" }}>#</th>
+                              <th style={{ ...TH, width: "36px", minWidth: "36px", textAlign: "center" }}>#</th>
                             )}
                             {/* type */}
-                            <th style={{ ...TH, width: "120px" }}>Type</th>
+                            <th style={{ ...TH, width: "110px", minWidth: "100px" }}>Type</th>
                             {/* prompt */}
-                            <th style={{ ...TH, width: "220px" }}>Prompt</th>
+                            <th style={{ ...TH, minWidth: "180px" }}>Prompt</th>
                             {/* optional columns */}
                             {showAlternatives && (
-                              <th style={{ ...TH, width: "170px" }}>
+                              <th style={{ ...TH, width: "14%", minWidth: "120px" }}>
                                 <div>Choices</div>
                                 <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
                             {showRowNames && (
-                              <th style={{ ...TH, width: "170px" }}>
+                              <th style={{ ...TH, width: "14%", minWidth: "120px" }}>
                                 <div>Row Names</div>
                                 <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
                             {showColNames && (
-                              <th style={{ ...TH, width: "170px" }}>
+                              <th style={{ ...TH, width: "14%", minWidth: "120px" }}>
                                 <div>Column Names</div>
                                 <div style={subTH}>(comma-separated)</div>
                               </th>
                             )}
                             {showMinMax && (
                               <>
-                                <th style={{ ...TH, width: "100px" }}>Min Label</th>
-                                <th style={{ ...TH, width: "100px" }}>Max Label</th>
+                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>Min Label</th>
+                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>Max Label</th>
                               </>
                             )}
                             {showRows && (
-                              <th style={{ ...TH, width: "64px", textAlign: "center" }}>
+                              <th style={{ ...TH, width: "54px", minWidth: "48px", textAlign: "center" }}>
                                 <OverlayTrigger
                                   overlay={
                                     <Tooltip>
@@ -221,7 +207,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               </th>
                             )}
                             {showCols && (
-                              <th style={{ ...TH, width: "64px", textAlign: "center" }}>
+                              <th style={{ ...TH, width: "54px", minWidth: "48px", textAlign: "center" }}>
                                 <OverlayTrigger
                                   overlay={
                                     <Tooltip>
@@ -234,10 +220,10 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                               </th>
                             )}
                             {showWeight && (
-                              <th style={{ ...TH, width: "70px", textAlign: "center" }}>Weight</th>
+                              <th style={{ ...TH, width: "58px", minWidth: "50px", textAlign: "center" }}>Weight</th>
                             )}
                             {/* delete */}
-                            <th style={{ ...TH, width: "44px", textAlign: "center" }}>Del</th>
+                            <th style={{ ...TH, width: "40px", minWidth: "36px", textAlign: "center" }}>Del</th>
                           </tr>
                         </thead>
 
@@ -332,7 +318,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                         placeholder="Enter prompt / statement…"
                                         className="form-control form-control-sm"
                                         maxLength={100}
-                                        style={{ ...taStyle, minHeight: "34px", maxWidth: "260px" }}
+                                        style={{ ...taStyle, minHeight: "34px" }}
                                       />
                                       <ErrorMessage
                                         name={`items[${fullIndex}].txt`}
