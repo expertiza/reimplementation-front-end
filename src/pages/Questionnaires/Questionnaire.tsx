@@ -125,7 +125,7 @@ const Questionnaires = () => {
             )}
           </Row>
 
-          {/* Type filter buttons */}
+          {/* Type-filter buttons */}
           <Row className="mb-2">
             <Col>
               <div className="d-flex flex-wrap gap-2">
@@ -160,7 +160,10 @@ const Questionnaires = () => {
                 id: false,
                 instructor_id: false,
               }}
-              onRowClick={handleRowClick}
+              getRowProps={(row: any) => ({
+                onClick: () => handleRowClick(row.original),
+                style: { cursor: "pointer" },
+              })}
             />
             {selectedQuestionnaire && !showDeleteConfirmation.visible && (
               <Modal show={true} onHide={() => setSelectedQuestionnaire(null)} size="lg" centered>

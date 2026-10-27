@@ -71,7 +71,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const type = searchParams.get("type");
 
   // Use items already returned by the loader; fall back to a separate fetch
-  // only if the loader didn't include them (older backend behaviour).
+  // only if the loader didn't include them (older backend behavior).
   const loaderItems: any[] = useMemo(
     () => (questionnaire?.items ?? []).map(mapItemToFormField),
     [questionnaire]
@@ -154,6 +154,8 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     name: questionnaire?.name ?? "",
     questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
     private: questionnaire?.private ?? false,
+    min_item_score: questionnaire?.min_item_score ?? questionnaire?.min_question_score ?? 0,
+    max_item_score: questionnaire?.max_item_score ?? questionnaire?.max_question_score ?? 10,
     min_question_score: questionnaire?.min_question_score ?? 0,
     max_question_score: questionnaire?.max_question_score ?? 10,
     items: fetchedItems,
@@ -170,7 +172,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
           </h1>
         </Col>
       </Row>
-      <Row style={{ marginLeft: "5px" }}>
+      <Row>
         <Col>
           <QuestionnaireForm initialValues={initialValues} onSubmit={onSubmit} />
         </Col>

@@ -329,16 +329,21 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                       <Field
                                         as="textarea"
                                         name={`items[${fullIndex}].txt`}
-                                        placeholder="Enter the question / statement…"
+                                        placeholder="Enter prompt / statement…"
                                         className="form-control form-control-sm"
                                         maxLength={100}
                                         style={{ ...taStyle, minHeight: "34px", maxWidth: "260px" }}
                                       />
                                       <ErrorMessage
                                         name={`items[${fullIndex}].txt`}
-                                        component="div"
-                                        className="text-danger"
-                                        style={{ fontSize: "11px", marginTop: "2px" }}
+                                        render={(msg) => (
+                                          <div
+                                            className="text-danger"
+                                            style={{ fontSize: "11px", marginTop: "2px" }}
+                                          >
+                                            {msg}
+                                          </div>
+                                        )}
                                       />
                                     </td>
 
@@ -356,9 +361,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             />
                                             <ErrorMessage
                                               name={`items[${fullIndex}].alternatives`}
-                                              component="div"
-                                              className="text-danger"
-                                              style={{ fontSize: "11px", marginTop: "2px" }}
+                                              render={(msg) => (
+                                                <div
+                                                  className="text-danger"
+                                                  style={{ fontSize: "11px", marginTop: "2px" }}
+                                                >
+                                                  {msg}
+                                                </div>
+                                              )}
                                             />
                                           </>
                                         ) : (
@@ -483,9 +493,14 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             />
                                             <ErrorMessage
                                               name={`items[${fullIndex}].weight`}
-                                              component="div"
-                                              className="text-danger"
-                                              style={{ fontSize: "11px", marginTop: "2px" }}
+                                              render={(msg) => (
+                                                <div
+                                                  className="text-danger"
+                                                  style={{ fontSize: "11px", marginTop: "2px" }}
+                                                >
+                                                  {msg}
+                                                </div>
+                                              )}
                                             />
                                           </>
                                         ) : (

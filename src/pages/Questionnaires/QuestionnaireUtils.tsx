@@ -27,7 +27,7 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
 export interface IItem {
   id?: number;
   txt: string;
-  weight?: number | string;
+  weight?: number | string | null;
   seq: number;
   question_type: string;
   size?: number | string;
@@ -56,8 +56,10 @@ export interface QuestionnaireFormValues {
   private: boolean;
   created_at?: string;
   updated_at?: string;
-  min_question_score: number;
-  max_question_score: number;
+  min_item_score: number;
+  max_item_score: number;
+  min_question_score?: number;
+  max_question_score?: number;
   instructor_id?: number;
   instructor?: IInstructor;
   items?: IItem[];
@@ -70,6 +72,8 @@ export interface QuestionnaireResponse {
   created_at: string;
   updated_at: string;
   questionnaire_type: string;
+  min_item_score?: number;
+  max_item_score?: number;
   min_question_score: number;
   max_question_score: number;
   instructor_id: number;
@@ -82,6 +86,8 @@ export interface QuestionnaireRequest {
   name: string;
   private: boolean;
   questionnaire_type: string;
+  min_item_score?: number;
+  max_item_score?: number;
   min_question_score: number;
   max_question_score: number;
   instructor_id?: number;
@@ -127,13 +133,17 @@ const mapToFrontendType = (type: string): string => {
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
+  const minScore = values.min_item_score ?? values.min_question_score ?? 0;
+  const maxScore = values.max_item_score ?? values.max_question_score ?? 10;
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
     questionnaire_type: mapToBackendType(values.questionnaire_type),
     private: values.private,
-    min_question_score: values.min_question_score,
-    max_question_score: values.max_question_score,
+    min_item_score: minScore,
+    max_item_score: maxScore,
+    min_question_score: minScore,
+    max_question_score: maxScore,
     instructor_id: values.instructor_id,
     items_attributes: values.items
       ? values.items.map((item, index) => {
@@ -181,6 +191,8 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     name: data.name,
     private: data.private,
     questionnaire_type: mapToFrontendType(data.questionnaire_type),
+    min_item_score: data.min_item_score ?? data.min_question_score ?? 0,
+    max_item_score: data.max_item_score ?? data.max_question_score ?? 10,
     min_question_score: data.min_question_score,
     max_question_score: data.max_question_score,
     instructor_id: data.instructor_id,

@@ -35,9 +35,9 @@ const extractErrors = (errors: any): string[] => {
             ? "Name"
             : key === "questionnaire_type"
             ? "Questionnaire type"
-            : key === "min_question_score"
+            : key === "min_item_score" || key === "min_question_score"
             ? "Min item score"
-            : key === "max_question_score"
+            : key === "max_item_score" || key === "max_question_score"
             ? "Max item score"
             : key === "selectedDuty"
             ? "Duty"
@@ -99,8 +99,8 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       .nullable()
       .notRequired(),
 
-    alternatives: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
-      if (!destroy && (questionType === "Dropdown" || questionType === "Multiple choice")) {
+    alternatives: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
+      if (!destroy && (itemType === "Dropdown" || itemType === "Multiple choice")) {
         return schema
           .required("Options are required")
           .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
@@ -115,14 +115,14 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       return schema.notRequired();
     }),
 
-    min_label: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
-      return !destroy && questionType === "Scale"
+    min_label: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
+      return !destroy && itemType === "Scale"
         ? schema.required("Minimum label is required")
         : schema.notRequired();
     }),
 
-    max_label: Yup.string().when(["question_type", "_destroy"], ([questionType, destroy], schema) => {
-      return !destroy && questionType === "Scale"
+    max_label: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
+      return !destroy && itemType === "Scale"
         ? schema.required("Maximum label is required")
         : schema.notRequired();
     }),
@@ -132,18 +132,18 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
     name: Yup.string().required("Name is required"),
     questionnaire_type: Yup.string().required("Questionnaire type is required"),
     private: Yup.boolean(),
-    min_question_score: Yup.number()
+    min_item_score: Yup.number()
       .typeError("Minimum item score must be a number")
       .required("Minimum item score is required"),
-    max_question_score: Yup.number()
+    max_item_score: Yup.number()
       .typeError("Maximum item score must be a number")
       .required("Maximum item score is required")
       .test(
         "max-gte-min",
         "Maximum item score must be greater than or equal to minimum score",
         function (val) {
-          const { min_question_score } = this.parent;
-          return val == null || min_question_score == null || val >= min_question_score;
+          const { min_item_score } = this.parent;
+          return val == null || min_item_score == null || val >= min_item_score;
         }
       ),
     items: Yup.array()
@@ -158,7 +158,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   return (
     <div
       className="bg-transparent shadow-none border-0"
-      style={{ maxWidth: "1200px", margin: "auto", background: "transparent" }}
+      style={{ width: "100%", background: "transparent" }}
     >
       <Formik
         initialValues={initialValues}
@@ -225,13 +225,13 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
                   <div>
                     <Field
                       type="number"
-                      name="min_question_score"
+                      name="min_item_score"
                       placeholder="0"
                       className="form-control"
                       style={{ width: "100px" }}
                     />
                     <ErrorMessage
-                      name="min_question_score"
+                      name="min_item_score"
                       component="div"
                       className="text-danger small mt-1"
                     />
@@ -243,13 +243,13 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
                   <div>
                     <Field
                       type="number"
-                      name="max_question_score"
+                      name="max_item_score"
                       placeholder="10"
                       className="form-control"
                       style={{ width: "100px" }}
                     />
                     <ErrorMessage
-                      name="max_question_score"
+                      name="max_item_score"
                       component="div"
                       className="text-danger small mt-1"
                     />
@@ -265,7 +265,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
                     className="form-check-label fw-semibold"
                     style={{ fontSize: "14px" }}
                   >
-                    Private Questionnaire
+                    Private questionnaire
                   </label>
                 </div>
 
