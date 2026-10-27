@@ -158,7 +158,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   return (
     <div
       className="bg-transparent shadow-none border-0"
-      style={{ width: "100%", background: "transparent" }}
+      style={{ maxWidth: "1200px", margin: "auto", background: "transparent" }}
     >
       <Formik
         initialValues={initialValues}
