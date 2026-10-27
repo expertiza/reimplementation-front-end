@@ -158,7 +158,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   return (
     <div
       className="bg-transparent shadow-none border-0"
-      style={{ maxWidth: "1200px", margin: "auto", background: "transparent" }}
+      style={{ width: "100%", background: "transparent" }}
     >
       <Formik
         initialValues={initialValues}
@@ -168,7 +168,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       >
         {({ values, handleChange, errors, touched, submitCount }) => (
           <Form>
-            <div className="mb-4">
+            <div className="mb-4" style={{ maxWidth: "1200px", margin: "0 auto" }}>
               <h5 className="mb-3">Questionnaire Details</h5>
               <div style={{ width: "60%", marginTop: "20px", marginBottom: "20px" }}>
                 <div
@@ -319,22 +319,22 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
               </div>
             </div>
 
-            <div className="mt-4">
-              <h5 className="mb-3">Items</h5>
-              <ErrorMessage
-                name="items"
-                component="div"
-                className="alert alert-danger py-2 mb-2"
-              />
+            <div className="mt-4" style={{ width: "100%" }}>
+              <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                <h5 className="mb-3">Items</h5>
+                <ErrorMessage
+                  name="items"
+                  component="div"
+                  className="alert alert-danger py-2 mb-2"
+                />
+              </div>
               <QuestionnaireItemsFieldArray
                 values={values}
-                errors={errors}
-                touched={touched}
                 itemTypes={finalItemTypes}
               />
             </div>
 
-            <div className="mt-4 pt-3 border-top">
+            <div className="mt-4 pt-3 border-top" style={{ maxWidth: "1200px", margin: "0 auto" }}>
               {submitCount > 0 && Object.keys(errors).length > 0 && (
                 <div className="alert alert-danger py-2 mb-3 small">
                   <strong>Please fix the following before saving:</strong>

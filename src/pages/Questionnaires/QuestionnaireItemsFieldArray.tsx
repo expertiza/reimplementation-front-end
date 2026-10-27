@@ -116,6 +116,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const showRows         = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
         const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
         const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
+        const hasExtraColumns  = showAlternatives || showRowNames || showColNames || showMinMax || (showRows && showCols);
 
         /* shared textarea style */
         const taStyle: React.CSSProperties = {
@@ -142,6 +143,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                   marginBottom: "4px",
                   width: "100%",
+                  maxWidth: hasExtraColumns ? "100%" : "1200px",
+                  margin: "0 auto",
+                  transition: "max-width 0.2s ease-in-out",
                 }}
               >
                 <DragDropContext onDragEnd={handleDragEnd}>
@@ -535,6 +539,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                   borderRadius: "10px",
                   marginBottom: "12px",
                   fontSize: "14px",
+                  maxWidth: "1200px",
+                  margin: "0 auto 12px auto",
                 }}
               >
                 No items yet — use the controls below to add some.
@@ -544,7 +550,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             {/* ── Add toolbar ── */}
             <div
               className="d-flex gap-2 align-items-center flex-wrap mt-3 pt-3"
-              style={{ borderTop: "1px solid #f3f4f6" }}
+              style={{ borderTop: "1px solid #f3f4f6", maxWidth: "1200px", margin: "0 auto" }}
             >
               <select
                 className="form-control form-control-sm"
