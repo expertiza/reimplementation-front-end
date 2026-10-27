@@ -324,8 +324,11 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
                 <h5 className="mb-3">Items</h5>
                 <ErrorMessage
                   name="items"
-                  component="div"
-                  className="alert alert-danger py-2 mb-2"
+                  render={(msg) =>
+                    typeof msg === "string" ? (
+                      <div className="alert alert-danger py-2 mb-2">{msg}</div>
+                    ) : null
+                  }
                 />
               </div>
               <QuestionnaireItemsFieldArray
