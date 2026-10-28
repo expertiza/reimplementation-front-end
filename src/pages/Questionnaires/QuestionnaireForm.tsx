@@ -21,7 +21,7 @@ const extractErrors = (errors: any): string[] => {
         const readableKey =
           key === "txt"
             ? "Prompt"
-            : key === "question_type"
+            : key === "item_type" || key === "question_type"
             ? "Type"
             : key === "min_label"
             ? "Min label"
@@ -35,9 +35,9 @@ const extractErrors = (errors: any): string[] => {
             ? "Name"
             : key === "questionnaire_type"
             ? "Questionnaire type"
-            : key === "min_item_score" || key === "min_question_score"
+            : key === "min_item_score"
             ? "Min item score"
-            : key === "max_item_score" || key === "max_question_score"
+            : key === "max_item_score"
             ? "Max item score"
             : key === "selectedDuty"
             ? "Duty"
@@ -83,11 +83,12 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       then: (schema) => schema.notRequired(),
       otherwise: (schema) => schema.required("Item text is required"),
     }),
-    question_type: Yup.string().when("_destroy", {
-      is: true,
-      then: (schema) => schema.notRequired(),
-      otherwise: (schema) => schema.required("Item type is required"),
+    item_type: Yup.string().when(["_destroy", "question_type"], ([destroy, qType], schema) => {
+      return !destroy && !qType
+        ? schema.required("Item type is required")
+        : schema.notRequired();
     }),
+    question_type: Yup.string().notRequired(),
     weight: Yup.number()
       .transform((value, originalValue) =>
         originalValue === "" || originalValue === null || originalValue === undefined
@@ -99,33 +100,45 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       .nullable()
       .notRequired(),
 
-    alternatives: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
-      if (!destroy && (itemType === "Dropdown" || itemType === "Multiple choice")) {
-        return schema
-          .required("Options are required")
-          .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
-            if (!value) return false;
-            const options = value
-              .split(",")
-              .map((opt) => opt.trim())
-              .filter((opt) => opt !== "");
-            return options.length >= 2;
-          });
+    alternatives: Yup.string().when(
+      ["item_type", "question_type", "_destroy"],
+      ([itemType, qType, destroy], schema) => {
+        const type = itemType || qType;
+        if (!destroy && (type === "Dropdown" || type === "Multiple choice")) {
+          return schema
+            .required("Options are required")
+            .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
+              if (!value) return false;
+              const options = value
+                .split(",")
+                .map((opt) => opt.trim())
+                .filter((opt) => opt !== "");
+              return options.length >= 2;
+            });
+        }
+        return schema.notRequired();
       }
-      return schema.notRequired();
-    }),
+    ),
 
-    min_label: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
-      return !destroy && itemType === "Scale"
-        ? schema.required("Minimum label is required")
-        : schema.notRequired();
-    }),
+    min_label: Yup.string().when(
+      ["item_type", "question_type", "_destroy"],
+      ([itemType, qType, destroy], schema) => {
+        const type = itemType || qType;
+        return !destroy && type === "Scale"
+          ? schema.required("Minimum label is required")
+          : schema.notRequired();
+      }
+    ),
 
-    max_label: Yup.string().when(["question_type", "_destroy"], ([itemType, destroy], schema) => {
-      return !destroy && itemType === "Scale"
-        ? schema.required("Maximum label is required")
-        : schema.notRequired();
-    }),
+    max_label: Yup.string().when(
+      ["item_type", "question_type", "_destroy"],
+      ([itemType, qType, destroy], schema) => {
+        const type = itemType || qType;
+        return !destroy && type === "Scale"
+          ? schema.required("Maximum label is required")
+          : schema.notRequired();
+      }
+    ),
   });
 
   const validationSchema = Yup.object().shape({

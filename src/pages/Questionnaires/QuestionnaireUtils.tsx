@@ -29,7 +29,8 @@ export interface IItem {
   txt: string;
   weight?: number | string | null;
   seq: number;
-  question_type: string;
+  item_type: string;
+  question_type?: string;
   size?: number | string;
   alternatives?: string;
   min_label?: string;
@@ -58,8 +59,6 @@ export interface QuestionnaireFormValues {
   updated_at?: string;
   min_item_score: number;
   max_item_score: number;
-  min_question_score?: number;
-  max_question_score?: number;
   instructor_id?: number;
   instructor?: IInstructor;
   items?: IItem[];
@@ -74,8 +73,6 @@ export interface QuestionnaireResponse {
   questionnaire_type: string;
   min_item_score?: number;
   max_item_score?: number;
-  min_question_score: number;
-  max_question_score: number;
   instructor_id: number;
   instructor: IInstructor;
   items?: IItem[];
@@ -88,8 +85,6 @@ export interface QuestionnaireRequest {
   questionnaire_type: string;
   min_item_score?: number;
   max_item_score?: number;
-  min_question_score: number;
-  max_question_score: number;
   instructor_id?: number;
   instructor?: IInstructor;
   items_attributes: IItem[];
@@ -133,8 +128,8 @@ const mapToFrontendType = (type: string): string => {
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
-  const minScore = values.min_item_score ?? values.min_question_score ?? 0;
-  const maxScore = values.max_item_score ?? values.max_question_score ?? 10;
+  const minScore = values.min_item_score ?? 0;
+  const maxScore = values.max_item_score ?? 10;
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
@@ -142,25 +137,24 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
     private: values.private,
     min_item_score: minScore,
     max_item_score: maxScore,
-    min_question_score: minScore,
-    max_question_score: maxScore,
     instructor_id: values.instructor_id,
     items_attributes: values.items
       ? values.items.map((item, index) => {
           let size: string | number | undefined = item.size;
           let alternatives: string | undefined = item.alternatives;
+          const type = item.item_type ?? item.question_type ?? "";
 
-          if (item.question_type === "Text area" || item.question_type === "Criterion") {
+          if (type === "Text area" || type === "Criterion") {
             // size = "textarea_width,textarea_height"
             size = `${item.textarea_width ?? ""},${item.textarea_height ?? ""}`;
-          } else if (item.question_type === "Grid") {
+          } else if (type === "Grid") {
             // Use ?? (not ||) so that 0 is preserved, not treated as empty
             const cols = item.columns != null && item.columns !== "" ? item.columns : "";
             const rws = item.rows != null && item.rows !== "" ? item.rows : "";
             size = `${cols},${rws}`;
             // Store label lists in alternatives as "column_names|row_names"
             alternatives = `${item.column_names ?? ""}|${item.row_names ?? ""}`;
-          } else if (item.question_type === "Text field") {
+          } else if (type === "Text field") {
             size = `${item.textbox_width ?? ""}`;
           }
 
@@ -172,6 +166,8 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
 
           return {
             ...item,
+            item_type: type,
+            question_type: type,
             weight,
             size,
             alternatives,
@@ -193,8 +189,6 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     questionnaire_type: mapToFrontendType(data.questionnaire_type),
     min_item_score: data.min_item_score ?? data.min_question_score ?? 0,
     max_item_score: data.max_item_score ?? data.max_question_score ?? 10,
-    min_question_score: data.min_question_score,
-    max_question_score: data.max_question_score,
     instructor_id: data.instructor_id,
     instructor: data.instructor,
     created_at: data.created_at,
@@ -209,18 +203,18 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
           let columns: number | string = "";
           let rows: number | string = "";
 
-          const qType = (item.question_type ?? "") as string;
+          const type = (item.item_type ?? item.question_type ?? "") as string;
           const sizeStr = item.size ? String(item.size) : "";
           const altStr = item.alternatives ? String(item.alternatives) : "";
 
-          if (qType === "Text area" || qType === "Criterion" || qType === "TextArea") {
+          if (type === "Text area" || type === "Criterion" || type === "TextArea") {
             // size = "width,height"
             const parts = sizeStr.split(",");
             textarea_width = parts[0] || "";
             textarea_height = parts[1] || "";
-          } else if (qType === "Text field" || qType === "TextField") {
+          } else if (type === "Text field" || type === "TextField") {
             textbox_width = sizeStr;
-          } else if (qType === "Grid") {
+          } else if (type === "Grid") {
             // alternatives = "column_names|row_names"
             const altParts = altStr.split("|");
             column_names = altParts[0] ?? "";
@@ -236,7 +230,8 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
 
           return {
             ...item,
-            question_type: mapToFrontendType(qType),
+            item_type: mapToFrontendType(type),
+            question_type: mapToFrontendType(type),
             textarea_width,
             textarea_height,
             textbox_width,

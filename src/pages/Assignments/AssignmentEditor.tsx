@@ -67,10 +67,10 @@ const GradeScaleSync: React.FC<{ questionnaires: any[] }> = ({ questionnaires })
     const q = questionnaires.find((x: any) => x.id === qid);
     if (!q) return;
     if (values.instructor_grade_min_score == null) {
-      setFieldValue("instructor_grade_min_score", q.min_item_score ?? q.min_question_score);
+      setFieldValue("instructor_grade_min_score", q.min_item_score ?? 0);
     }
     if (values.instructor_grade_max_score == null) {
-      setFieldValue("instructor_grade_max_score", q.max_item_score ?? q.max_question_score);
+      setFieldValue("instructor_grade_max_score", q.max_item_score ?? 10);
     }
   }, [(values as any).questionnaire_round_1]);
   return null;

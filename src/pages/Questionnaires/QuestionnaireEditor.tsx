@@ -10,7 +10,7 @@ import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 
 const mapItemToFormField = (item: any) => {
-  const qType: string = item.question_type ?? "";
+  const itemType: string = item.item_type ?? item.question_type ?? "";
   const sizeStr = item.size ? String(item.size) : "";
   const altStr = item.alternatives ? String(item.alternatives) : "";
 
@@ -22,13 +22,13 @@ const mapItemToFormField = (item: any) => {
   let columns: number | string = "";
   let rows: number | string = "";
 
-  if (qType === "Text area" || qType === "Criterion") {
+  if (itemType === "Text area" || itemType === "Criterion") {
     const parts = sizeStr.split(",");
     textarea_width = parts[0] || "";
     textarea_height = parts[1] || "";
-  } else if (qType === "Text field") {
+  } else if (itemType === "Text field") {
     textbox_width = sizeStr;
-  } else if (qType === "Grid") {
+  } else if (itemType === "Grid") {
     // Parse labels from alternatives
     const altParts = altStr.split("|");
     column_names = altParts[0] ?? "";
@@ -44,7 +44,8 @@ const mapItemToFormField = (item: any) => {
   return {
     id: item.id,
     txt: item.txt ?? "",
-    question_type: qType,
+    item_type: itemType,
+    question_type: itemType,
     weight: item.weight ?? "",
     alternatives: altStr,
     min_label: item.min_label ?? "",
@@ -154,10 +155,8 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     name: questionnaire?.name ?? "",
     questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
     private: questionnaire?.private ?? false,
-    min_item_score: questionnaire?.min_item_score ?? questionnaire?.min_question_score ?? 0,
-    max_item_score: questionnaire?.max_item_score ?? questionnaire?.max_question_score ?? 10,
-    min_question_score: questionnaire?.min_question_score ?? 0,
-    max_question_score: questionnaire?.max_question_score ?? 10,
+    min_item_score: questionnaire?.min_item_score ?? 0,
+    max_item_score: questionnaire?.max_item_score ?? 10,
     items: fetchedItems,
   };
 

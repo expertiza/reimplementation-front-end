@@ -7,8 +7,8 @@ import { IItem } from "./QuestionnaireUtils";
 
 interface Props {
   values: any;
-  errors: any;
-  touched: any;
+  errors?: any;
+  touched?: any;
   itemTypes: string[];
 }
 
@@ -107,7 +107,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         };
 
         /* ── which optional columns are needed? ─────────────── */
-        const activeTypes = new Set(visible.map(({ item }) => item.question_type ?? ""));
+        const activeTypes = new Set(visible.map(({ item }) => item.item_type ?? item.question_type ?? ""));
 
         const showAlternatives = [...activeTypes].some((t) => TYPES_WITH_ALTERNATIVES.has(t));
         const showRowNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
@@ -265,7 +265,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                   ? "#ffffff"
                                   : "#fafafa";
 
-                                const type = item.question_type ?? "";
+                                const type = item.item_type ?? item.question_type ?? "";
 
                                 return (
                                   <tr
@@ -626,6 +626,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                         ? "Please rate the following aspects of the submission:"
                         : "",
                       weight: "",
+                      item_type: itemType,
                       question_type: itemType,
                       break_before: 1,
                       alternatives: "",
