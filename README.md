@@ -185,8 +185,13 @@ validate that the Docker image builds; they do not publish it.
 
 #### Creating a versioned release
 
-Only a maintainer with permission to prepare a release should perform these steps. Begin with the
-latest `main`, create a short-lived release branch, and update the version in both `package.json` and
+Only a maintainer with permission to prepare a release should perform these steps. A short-lived
+release branch may collect approved feature changes before the release, or it may be created after
+those features have already reached `main`. The release branch name is an organizational convention;
+the workflow treats the version change in `package.json` as the release signal.
+
+Begin with the latest `main` and create the release branch. After all intended feature changes are
+present and validated on that branch, update the version in both `package.json` and
 `package-lock.json` without creating a local Git tag:
 
 ```bash
@@ -201,7 +206,7 @@ git push --set-upstream origin release/0.2.0
 
 If the official repository is configured as a remote other than `origin`, use that remote name in
 the pull command. Open a pull request from `release/0.2.0` into `main` and complete the normal review
-and validation process.
+and validation process. The release branch itself does not publish an image.
 
 When the release branch is merged, the push to `main` triggers the publishing workflow. If the
 version in `package.json` differs from the version before the merge, the workflow validates it,
@@ -215,7 +220,9 @@ ghcr.io/expertiza/reimplementation-front-end:v0.2.0
 The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
 notes. It fails rather than moving a version tag that already points to a different commit. After a
 successful release, delete the short-lived release branch. Normal `main` merges that do not change
-the package version continue to publish only `latest` and the commit-SHA tag.
+the package version continue to publish only `latest` and the commit-SHA tag. Both squash merges and
+regular merge commits are supported, provided the resulting `main` commit contains the new package
+version.
 
 Pull and run the latest image with:
 
