@@ -170,17 +170,18 @@ ghcr.io/expertiza/reimplementation-front-end
 #### Images published from `main`
 
 Whenever a commit reaches `main`, including through a merged pull request, the workflow builds and
-publishes the frontend image. The image receives both the moving `latest` tag and a `sha-` tag made
-from the short Git commit SHA (the merge or squash-merge commit when applicable). Both tags identify
-the image produced by that workflow run. For example:
+publishes the frontend image with a `sha-` tag made from the short Git commit SHA (the merge or
+squash-merge commit when applicable). If the package version did not change, a separate serialized
+job verifies that the commit is still the head of `main` before promoting that image to `latest`.
+For example:
 
 ```text
 ghcr.io/expertiza/reimplementation-front-end:latest
 ghcr.io/expertiza/reimplementation-front-end:sha-1a2b3c4
 ```
 
-The next successful `main` build moves `latest` to the newly built image, while the earlier
-commit-SHA tag remains available so that a specific build can be pulled again. Pull requests only
+This head check prevents a slower, older workflow run from moving `latest` backward. Earlier
+commit-SHA tags remain available so that a specific build can be pulled again. Pull requests only
 validate that the Docker image builds; they do not publish it.
 
 #### Creating a versioned release
@@ -210,8 +211,8 @@ and validation process. The release branch itself does not publish an image.
 
 When the release branch is merged, the push to `main` triggers the publishing workflow. If the
 version in `package.json` differs from the version before the merge, the workflow validates it,
-publishes the usual `latest` and commit-SHA tags, and also publishes a version tag derived from
-`package.json`:
+publishes the commit-SHA tag and a version tag derived from `package.json`, but does not move
+`latest`:
 
 ```text
 ghcr.io/expertiza/reimplementation-front-end:v0.2.0
@@ -231,6 +232,7 @@ the image tag, Git tag, and GitHub Release. Examples include:
 | `1.0.0-rc.1`                        | Prerelease tagged `v1.0.0-rc.1`                |
 | `v1.0.0`, `1.0`, or `release-1.0.0` | Rejected as invalid                            |
 | `1.0.0+build.1`                     | Rejected because build metadata is unsupported |
+| `1.0.0-rc.lock`                     | Rejected because it cannot form a Git tag      |
 
 Manually pushing a Git tag does not trigger this workflow. The workflow also checks that the package
 version changed, but it does not enforce that the new version is greater than the previous one;
@@ -239,9 +241,9 @@ maintainers must choose an increasing, unused version.
 The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
 notes. It fails rather than moving a version tag that already points to a different commit. After a
 successful release, delete the short-lived release branch. Normal `main` merges that do not change
-the package version continue to publish only `latest` and the commit-SHA tag. Both squash merges and
-regular merge commits are supported, provided the resulting `main` commit contains the new package
-version.
+the package version continue to publish `latest` and the commit-SHA tag. Release merges publish the
+version and commit-SHA tags without changing `latest`. Both squash merges and regular merge commits
+are supported, provided the resulting `main` commit contains the new package version.
 
 Pull and run the latest image with:
 
