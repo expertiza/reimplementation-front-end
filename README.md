@@ -222,6 +222,20 @@ Stable versions such as `0.2.0` create regular GitHub Releases. Prerelease versi
 supported because container registries normalize those characters and can produce ambiguous image
 tags.
 
+Use a SemVer value without a leading `v` in `package.json`; the workflow adds the `v` when it creates
+the image tag, Git tag, and GitHub Release. Examples include:
+
+| `package.json` version              | Result                                         |
+| ----------------------------------- | ---------------------------------------------- |
+| `1.0.0`                             | Regular release tagged `v1.0.0`                |
+| `1.0.0-rc.1`                        | Prerelease tagged `v1.0.0-rc.1`                |
+| `v1.0.0`, `1.0`, or `release-1.0.0` | Rejected as invalid                            |
+| `1.0.0+build.1`                     | Rejected because build metadata is unsupported |
+
+Manually pushing a Git tag does not trigger this workflow. The workflow also checks that the package
+version changed, but it does not enforce that the new version is greater than the previous one;
+maintainers must choose an increasing, unused version.
+
 The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
 notes. It fails rather than moving a version tag that already points to a different commit. After a
 successful release, delete the short-lived release branch. Normal `main` merges that do not change
