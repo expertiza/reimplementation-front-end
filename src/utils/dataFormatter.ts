@@ -2,7 +2,7 @@
  * Capitalizes the first letter of a sentence and converts the rest to lowercase.
  *
  * @param str - The input string to capitalize.
- * @returns A string with the first letter capitalized and the rest in lowercase.
+ * @returns A string with the first character capitalized and the remaining characters lowercase.
  */
 export const capitalizeFirstWord = (str?: string | null): string => {
   if (!str) return "";
