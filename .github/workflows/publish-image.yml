@@ -10,8 +10,8 @@ permissions:
   packages: write
 
 concurrency:
-  group: publish-frontend-image-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
+  group: publish-frontend-image-${{ github.sha }}
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
@@ -44,17 +44,25 @@ jobs:
           package_version=$(node --print "require('./package.json').version")
           release_tag="v${package_version}"
           is_release=false
+          is_prerelease=false
           tag_exists=false
 
           VERSION="$package_version" node <<'NODE'
           const version = process.env.VERSION;
-          const semver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+          const semver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
 
           if (!semver.test(version)) {
-            console.error(`package.json contains an invalid semantic version: ${version}`);
+            console.error(
+              `package.json contains an unsupported release version: ${version}. ` +
+                "Use SemVer without build metadata (+...).",
+            );
             process.exit(1);
           }
           NODE
+
+          if [[ "$package_version" == *-* ]]; then
+            is_prerelease=true
+          fi
 
           if [[ ! "$BEFORE_SHA" =~ ^0+$ ]] && git cat-file -e "${BEFORE_SHA}:package.json" 2>/dev/null; then
             previous_version=$(git show "${BEFORE_SHA}:package.json" | node -e '
@@ -82,6 +90,7 @@ jobs:
             echo "package_version=$package_version"
             echo "release_tag=$release_tag"
             echo "is_release=$is_release"
+            echo "is_prerelease=$is_prerelease"
             echo "tag_exists=$tag_exists"
           } >> "$GITHUB_OUTPUT"
 
@@ -127,20 +136,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ steps.version.outputs.release_tag }}
+          IS_PRERELEASE: ${{ steps.version.outputs.is_prerelease }}
           TAG_EXISTS: ${{ steps.version.outputs.tag_exists }}
         run: |
+          release_options=(
+            --title "Frontend $RELEASE_TAG"
+            --generate-notes
+          )
+
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            release_options+=(--prerelease)
+          fi
+
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "GitHub release $RELEASE_TAG already exists."
           elif [[ "$TAG_EXISTS" == "true" ]]; then
             gh release create "$RELEASE_TAG" \
               --verify-tag \
-              --title "Frontend $RELEASE_TAG" \
-              --generate-notes
+              "${release_options[@]}"
           else
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Frontend $RELEASE_TAG" \
-              --generate-notes
+              "${release_options[@]}"
           fi
 
       - name: Add publication summary

@@ -217,6 +217,11 @@ publishes the usual `latest` and commit-SHA tags, and also publishes a version t
 ghcr.io/expertiza/reimplementation-front-end:v0.2.0
 ```
 
+Stable versions such as `0.2.0` create regular GitHub Releases. Prerelease versions such as
+`0.2.0-rc.1` create GitHub prereleases. SemVer build metadata suffixes such as `+build.1` are not
+supported because container registries normalize those characters and can produce ambiguous image
+tags.
+
 The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
 notes. It fails rather than moving a version tag that already points to a different commit. After a
 successful release, delete the short-lived release branch. Normal `main` merges that do not change
