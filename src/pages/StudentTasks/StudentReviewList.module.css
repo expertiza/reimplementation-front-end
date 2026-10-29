@@ -1,0 +1,259 @@
+.container {
+  font-family: Arial, sans-serif;
+  padding: 1.5rem 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  text-align: left;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.25rem;
+  text-align: left;
+}
+
+.header p {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Stat cards */
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  min-width: 110px;
+}
+
+.statCard .statNum {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.statCard .statLabel {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statCardCompleted {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.statCardCompleted .statNum {
+  color: #155724;
+}
+
+.statCardInProgress {
+  background: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.statCardInProgress .statNum {
+  color: #856404;
+}
+
+.statCardNotStarted {
+  background: #e2e3e5;
+  border-color: #d3d3d3;
+}
+
+.statCardNotStarted .statNum {
+  color: #41464b;
+}
+
+/* Review table — matches Bootstrap BTable striped hover size="sm" table-secondary header */
+.reviewTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  font-size: 14px;
+}
+
+.reviewTable thead tr th {
+  background: #e2e3e5;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+  white-space: nowrap;
+}
+
+.reviewTable tbody tr:nth-child(odd) td {
+  background: #ffffff;
+}
+
+.reviewTable tbody tr:nth-child(even) td {
+  background: #f2f2f2;
+}
+
+.reviewTable td {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
+  color: #333;
+}
+
+.reviewTable tbody tr:hover td {
+  background: rgba(0, 0, 0, 0.075);
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badgeCompleted {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badgeInProgress {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badgeNotStarted {
+  background: #e2e3e5;
+  color: #41464b;
+}
+
+/* Request a new review — no border, heading centered over the picker */
+.requestSection {
+  margin-bottom: 2rem;
+}
+
+.requestInner {
+  width: 33%;
+}
+
+.requestSection h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.6rem;
+  text-align: left;
+}
+
+/* Topic picker dropdown row */
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.topicSelect {
+  flex: 1;
+  min-width: 160px;
+  padding: 5px 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+}
+
+.topicSelect:focus {
+  outline: none;
+  border-color: #986633;
+  box-shadow: 0 0 0 2px rgba(152, 102, 51, 0.15);
+}
+
+/* Buttons */
+.btnPrimary {
+  background: #a90201;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #870100;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnSecondary:hover {
+  background: #5a6268;
+}
+
+/* Inline messages */
+.error {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+/* Action links in table (Begin / Update / View) */
+.actionLink {
+  color: #986633;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.actionLink:hover {
+  color: #7a4f1f;
+  text-decoration: underline;
+}
+
+/* Back link */
+.backLink {
+  color: #986633;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.backLink:hover {
+  color: #7a4f1f;
+  text-decoration: underline;
+}
