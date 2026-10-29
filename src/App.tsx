@@ -143,6 +143,7 @@ function App() {
           path: "topics/:topicId/partner_advertisements",
           element: <ProtectedRoute element={<PartnerAdvertisements />} />,
         },
+
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
@@ -423,12 +424,28 @@ function App() {
               path: "questionnaire",
               element: <Questionnaire />,
               loader: loadQuestionnaire,
+              children: [
+                {
+                  path: "edit/:id",
+                  element: <Navigate to="/questionnaires/edit/:id" replace />,
+                },
+              ],
             },
           ],
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        {
+          path: "questionnaire",
+          element: <Questionnaire />,
+          loader: loadQuestionnaire,
+          children: [
+            {
+              path: "edit/:id",
+              element: <Navigate to="/questionnaires/edit/:id" replace />,
+            },
+          ],
+        },
 
         {
           path: "questionnaires",
