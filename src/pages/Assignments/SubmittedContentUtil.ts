@@ -142,7 +142,7 @@ export const submitHyperlink = async (
  * DELETE /submitted_content/remove_hyperlink
  *
  * `index` is a position in the team's hyperlink list, not an id, so pass the
- * index from the rendered list.
+ * index into the rendered list.
  */
 export const removeHyperlink = async (participantId: number, index: number): Promise<void> => {
   try {
