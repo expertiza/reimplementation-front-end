@@ -154,6 +154,110 @@ You can also build and run the service defined in `docker-compose.yml`:
 docker compose up --build
 ```
 
+### Published container image
+
+The `Publish frontend container image` GitHub Actions workflow builds the existing `Dockerfile` and
+publishes the resulting image to GitHub Container Registry after a push to `main`. Versioned releases
+are prepared on short-lived `release/<version>` branches, and `package.json` is the source of truth
+for the release version.
+
+The published image name is:
+
+```text
+ghcr.io/expertiza/reimplementation-front-end
+```
+
+#### Images published from `main`
+
+Whenever a commit reaches `main`, including through a merged pull request, the workflow builds and
+publishes the frontend image with a `sha-` tag made from the short Git commit SHA (the merge or
+squash-merge commit when applicable). If the package version did not change, a separate serialized
+job verifies that the commit is still the head of `main` before promoting that image to `latest`.
+For example:
+
+```text
+ghcr.io/expertiza/reimplementation-front-end:latest
+ghcr.io/expertiza/reimplementation-front-end:sha-1a2b3c4
+```
+
+This head check prevents a slower, older workflow run from moving `latest` backward. Earlier
+commit-SHA tags remain available so that a specific build can be pulled again. Pull requests only
+validate that the Docker image builds; they do not publish it.
+
+#### Creating a versioned release
+
+Only a maintainer with permission to prepare a release should perform these steps. A short-lived
+release branch may collect approved feature changes before the release, or it may be created after
+those features have already reached `main`. The release branch name is an organizational convention;
+the workflow treats the version change in `package.json` as the release signal.
+
+Begin with the latest `main` and create the release branch. After all intended feature changes are
+present and validated on that branch, update the version in both `package.json` and
+`package-lock.json` without creating a local Git tag:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git switch -c release/0.2.0
+npm version 0.2.0 --no-git-tag-version
+git add package.json package-lock.json
+git commit -m "chore: prepare frontend release 0.2.0"
+git push --set-upstream origin release/0.2.0
+```
+
+If the official repository is configured as a remote other than `origin`, use that remote name in
+the pull command. Open a pull request from `release/0.2.0` into `main` and complete the normal review
+and validation process. The release branch itself does not publish an image.
+
+When the release branch is merged, the push to `main` triggers the publishing workflow. If the
+version in `package.json` differs from the version before the merge, the workflow validates it,
+publishes the commit-SHA tag and a version tag derived from `package.json`, but does not move
+`latest`:
+
+```text
+ghcr.io/expertiza/reimplementation-front-end:v0.2.0
+```
+
+Stable versions such as `0.2.0` create regular GitHub Releases. Prerelease versions such as
+`0.2.0-rc.1` create GitHub prereleases. SemVer build metadata suffixes such as `+build.1` are not
+supported because container registries normalize those characters and can produce ambiguous image
+tags.
+
+Use a SemVer value without a leading `v` in `package.json`; the workflow adds the `v` when it creates
+the image tag, Git tag, and GitHub Release. Examples include:
+
+| `package.json` version              | Result                                         |
+| ----------------------------------- | ---------------------------------------------- |
+| `1.0.0`                             | Regular release tagged `v1.0.0`                |
+| `1.0.0-rc.1`                        | Prerelease tagged `v1.0.0-rc.1`                |
+| `v1.0.0`, `1.0`, or `release-1.0.0` | Rejected as invalid                            |
+| `1.0.0+build.1`                     | Rejected because build metadata is unsupported |
+| `1.0.0-rc.lock`                     | Rejected because it cannot form a Git tag      |
+
+Manually pushing a Git tag does not trigger this workflow. The workflow also checks that the package
+version changed, but it does not enforce that the new version is greater than the previous one;
+maintainers must choose an increasing, unused version.
+
+The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
+notes. It fails rather than moving a version tag that already points to a different commit. After a
+successful release, delete the short-lived release branch. Normal `main` merges that do not change
+the package version continue to publish `latest` and the commit-SHA tag. Release merges publish the
+version and commit-SHA tags without changing `latest`. Both squash merges and regular merge commits
+are supported, provided the resulting `main` commit contains the new package version.
+
+Pull and run the latest image with:
+
+```bash
+docker pull ghcr.io/expertiza/reimplementation-front-end:latest
+docker run --detach --rm \
+  --name expertiza-frontend \
+  --publish 8080:80 \
+  ghcr.io/expertiza/reimplementation-front-end:latest
+```
+
+Package visibility is managed in the GitHub Container Registry settings. Authentication with an
+account that can read the package is required when the image is private.
+
 ## GitHub Actions
 
 The frontend workflow runs for pull requests and pushes to `main`. It contains six independent
@@ -168,3 +272,9 @@ jobs:
 
 Each job uses a clean Ubuntu runner and has its own timeout. The jobs run independently so that a
 failure in one check does not prevent the remaining checks from reporting their results.
+
+Container publishing is handled separately by `.github/workflows/publish-image.yml`. It uses the
+temporary `GITHUB_TOKEN` supplied by GitHub Actions with `packages: write` permission to publish the
+image and `contents: write` permission to create version tags and GitHub Releases. No long-lived
+registry password is stored in the repository. Pull requests continue to build the Docker image for
+validation but do not publish it.
