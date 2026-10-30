@@ -8,6 +8,9 @@
 
 # testing
 /coverage
+/coverage-base
+/coverage-changed
+/coverage-head
 
 # production
 /build

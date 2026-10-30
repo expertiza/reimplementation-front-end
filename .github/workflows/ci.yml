@@ -45,6 +45,88 @@ jobs:
           path: coverage/
           if-no-files-found: warn
           retention-days: 7
+
+  pr-coverage:
+    name: Pull request coverage analysis
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: coverage-head-source
+
+      - name: Check out target branch commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: coverage-base-source
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: coverage-head-source/.nvmrc
+          cache: npm
+          cache-dependency-path: coverage-head-source/package-lock.json
+
+      - name: Install pull request dependencies
+        working-directory: coverage-head-source
+        run: npm ci
+
+      - name: Install target branch dependencies
+        working-directory: coverage-base-source
+        run: npm ci
+
+      - name: Collect target branch coverage
+        id: base-coverage
+        working-directory: coverage-base-source
+        run: >-
+          npx vitest run --reporter=default --coverage --coverage.reportOnFailure
+          --coverage.reporter=json-summary
+          --coverage.reportsDirectory=../frontend-pr-coverage/raw/base
+
+      - name: Collect pull request coverage
+        id: head-coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: >-
+          npm run test:coverage:summary --
+          --reporter=default
+          --coverage.reportsDirectory=../frontend-pr-coverage/raw/pull-request
+
+      - name: Collect coverage for changed files
+        id: changed-coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: >-
+          npx vitest run --reporter=default --coverage --coverage.reportOnFailure
+          --coverage.changed=${{ github.event.pull_request.base.sha }}
+          --coverage.reporter=html
+          --coverage.reporter=json-summary
+          --coverage.reportsDirectory=../frontend-pr-coverage/changed-files
+
+      - name: Compare target and pull request coverage
+        if: always()
+        working-directory: coverage-head-source
+        run: >-
+          npm run coverage:compare --
+          ../frontend-pr-coverage/raw/base/coverage-summary.json
+          ../frontend-pr-coverage/raw/pull-request/coverage-summary.json
+          ../frontend-pr-coverage/comparison.md
+          ../frontend-pr-coverage/changed-files/coverage-summary.json
+
+      - name: Upload pull request coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-pr-coverage
+          path: frontend-pr-coverage/
+          if-no-files-found: warn
+          retention-days: 7
+
   lint:
     name: ESLint
     if: ${{ github.event_name == 'push' || github.event.pull_request.draft == false }}

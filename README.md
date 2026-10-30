@@ -43,17 +43,20 @@ Vite prints the local application URL in the terminal. Its default URL is
 
 ## Available commands
 
-| Command                | Purpose                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `npm run dev`          | Start the Vite development server with live reloading.                          |
-| `npm run build`        | Create an optimized production build in `dist/`.                                |
-| `npm run preview`      | Serve the existing `dist/` build locally for inspection.                        |
-| `npm test`             | Run Vitest in interactive watch mode.                                           |
-| `npm run test:ci`      | Run the test suite once, collect coverage, and create `coverage/`.              |
-| `npm run lint`         | Check JavaScript and TypeScript files with ESLint.                              |
-| `npm run format:check` | Check whether files follow the configured Prettier style without changing them. |
-| `npm run format`       | Rewrite supported files using the configured Prettier style.                    |
-| `npm run typecheck`    | Check TypeScript types without generating JavaScript files.                     |
+| Command                         | Purpose                                                                         |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| `npm run dev`                   | Start the Vite development server with live reloading.                          |
+| `npm run build`                 | Create an optimized production build in `dist/`.                                |
+| `npm run preview`               | Serve the existing `dist/` build locally for inspection.                        |
+| `npm test`                      | Run Vitest in interactive watch mode.                                           |
+| `npm run test:ci`               | Run the test suite once, collect coverage, and create `coverage/`.              |
+| `npm run test:coverage:changed` | Create a coverage report using a caller-supplied comparison branch or commit.   |
+| `npm run test:coverage:summary` | Generate a machine-readable overall coverage summary.                           |
+| `npm run coverage:compare`      | Compare target-branch and pull-request coverage summary files.                  |
+| `npm run lint`                  | Check JavaScript and TypeScript files with ESLint.                              |
+| `npm run format:check`          | Check whether files follow the configured Prettier style without changing them. |
+| `npm run format`                | Rewrite supported files using the configured Prettier style.                    |
+| `npm run typecheck`             | Check TypeScript types without generating JavaScript files.                     |
 
 Most validation commands only report problems. `npm run format` is the command in this table that
 rewrites source files. The build and coverage commands create generated output in `dist/` and
@@ -98,6 +101,102 @@ Open `coverage/index.html` in a browser to view coverage by directory, file, and
 GitHub Actions uploads the same directory as an artifact named `frontend-coverage`. The artifact is
 available from the workflow run for seven days, including when the test job fails after producing a
 report.
+
+### Changed-file coverage
+
+To report coverage only for files changed relative to the latest target branch, update its remote
+reference and pass that branch to Vitest. For example, contributors working from a fork can compare
+against the upstream repository's `main` branch with:
+
+```bash
+git fetch upstream main
+npm run test:coverage:changed -- --coverage.changed=upstream/main
+```
+
+This command still runs the full test suite, but limits the coverage report to changed files. Its
+HTML report is written to `coverage-changed/`. Replace `upstream/main` with the appropriate remote
+branch or commit when another target is required. The report is generated even when tests fail, but
+the command still returns a failure and does not hide the test result. It does not enforce a coverage
+threshold.
+
+For non-draft pull requests, GitHub Actions includes this HTML report in the unified
+`frontend-pr-coverage` artifact under `changed-files/`. Open `changed-files/index.html` after
+downloading and extracting the artifact. The artifact is retained for seven days. Pull requests
+that do not change measurable source files may report `0/0` coverage.
+
+### Overall coverage comparison
+
+Pull requests also receive an overall coverage comparison. CI checks out the exact target-branch
+commit, runs the full coverage suite against both versions, and displays their line, statement,
+branch, and function coverage in the workflow summary. The difference is reported in percentage
+points. A negative value means the pull request reduced that metric. This comparison is
+informational and does not enforce a minimum coverage percentage.
+
+If any metric decreases, the comparison produces a visible warning in the GitHub Check and workflow
+summary naming the affected metrics and their percentage-point reductions. The warning does not fail
+the comparison by itself and has no tolerance: any decrease is reported. Test failures remain
+unchanged and are never hidden by the comparison.
+
+GitHub Actions uploads one `frontend-pr-coverage` artifact containing a human-readable
+`comparison.md`, the changed-file HTML report, and the machine-readable target-branch and
+pull-request JSON summaries under `raw/`. The artifact is retained for seven days.
+
+To run the same comparison locally without switching away from work in progress, create a temporary
+Git worktree for the target branch. Run the following commands from the root of the feature-branch
+checkout. This example uses `upstream/main`; use `origin/main` or another ref when appropriate.
+
+1. Fetch the target branch and define locations for the two checkouts:
+
+```bash
+git fetch upstream main
+COVERAGE_REPO_ROOT="$(pwd)"
+COVERAGE_BASE_REF="upstream/main"
+COVERAGE_BASE_WORKTREE="$(dirname "$COVERAGE_REPO_ROOT")/reimplementation-front-end-coverage-base"
+```
+
+2. Create the temporary target-branch checkout and install its locked dependencies:
+
+```bash
+git worktree add "$COVERAGE_BASE_WORKTREE" "$COVERAGE_BASE_REF"
+cd "$COVERAGE_BASE_WORKTREE"
+npm ci
+```
+
+3. Generate the target-branch JSON summary:
+
+```bash
+npx vitest run \
+  --coverage \
+  --coverage.reportOnFailure \
+  --coverage.reporter=json-summary \
+  --coverage.reportsDirectory="$COVERAGE_REPO_ROOT/coverage-base"
+```
+
+4. Return to the feature branch and generate its JSON summary:
+
+```bash
+cd "$COVERAGE_REPO_ROOT"
+npm run test:coverage:summary -- --coverage.reportsDirectory=coverage-head
+```
+
+5. Compare the two summaries:
+
+```bash
+npm run coverage:compare -- \
+  coverage-base/coverage-summary.json \
+  coverage-head/coverage-summary.json
+```
+
+The output contains the target-branch percentage, feature-branch percentage, and percentage-point
+difference for lines, statements, branches, and functions. When finished, remove the temporary
+worktree:
+
+```bash
+git worktree remove "$COVERAGE_BASE_WORKTREE"
+```
+
+The existing test suite currently contains known failures. Coverage reports are still generated,
+but the commands and CI job continue to report those test failures.
 
 ## Production build
 
@@ -156,15 +255,16 @@ docker compose up --build
 
 ## GitHub Actions
 
-The frontend workflow runs for pull requests and pushes to `main`. It contains six independent
+The frontend workflow runs for pull requests and pushes to `main`. It contains seven independent
 jobs:
 
 1. Frontend tests with coverage
-2. ESLint
-3. Prettier formatting check
-4. TypeScript type check
-5. Vite production build
-6. Docker image build
+2. Pull request coverage analysis, combining changed-file coverage and overall comparison
+3. ESLint
+4. Prettier formatting check
+5. TypeScript type check
+6. Vite production build
+7. Docker image build
 
 Each job uses a clean Ubuntu runner and has its own timeout. The jobs run independently so that a
 failure in one check does not prevent the remaining checks from reporting their results.
