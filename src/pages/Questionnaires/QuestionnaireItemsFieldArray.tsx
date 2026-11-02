@@ -6,9 +6,7 @@ import { FaPlus, FaGripVertical } from "react-icons/fa";
 import { IItem } from "./QuestionnaireUtils";
 
 interface Props {
-  values: any;
-  errors?: any;
-  touched?: any;
+  values: { items?: IItem[] };
   itemTypes: string[];
 }
 
@@ -77,7 +75,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const { setFieldValue } = form;
 
         const handleRemove = (fullIndex: number) => {
-          const item = values.items[fullIndex];
+          const item = (values.items ?? [])[fullIndex];
           if (item.id) {
             setFieldValue(`items[${fullIndex}]._destroy`, true);
           } else {
@@ -87,7 +85,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
 
         /* visible slice: maps visible position → full-array index */
         const visible: Array<{ item: IItem; fullIndex: number }> = (
-          values.items as IItem[]
+          (values.items ?? [])
         )
           .map((item, fullIndex) => ({ item, fullIndex }))
           .filter(({ item }) => !item._destroy);
@@ -640,7 +638,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                       rows: isGrid ? "4" : "",
                       min_label: "",
                       max_label: "",
-                      seq: values.items.length + i + 1,
+                      seq: (values.items ?? []).length + i + 1,
                     });
                   }
                   setItemType("");

@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
-import { QuestionnaireTypes } from "./QuestionnaireUtils";
+import { QuestionnaireFormValues, QuestionnaireTypes } from "./QuestionnaireUtils";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
 
-const extractErrors = (errors: any): string[] => {
+const extractErrors = (errors: unknown): string[] => {
   const result: string[] = [];
-  const recurse = (err: any, prefix = "") => {
+  const recurse = (err: unknown, prefix = "") => {
     if (!err) return;
     if (typeof err === "string") {
       result.push(prefix ? `${prefix}: ${err}` : err);
@@ -54,7 +54,10 @@ const extractErrors = (errors: any): string[] => {
   return result;
 };
 
-const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
+const QuestionnaireForm = ({ initialValues, onSubmit }: {
+  initialValues: QuestionnaireFormValues;
+  onSubmit: (values: QuestionnaireFormValues) => void | Promise<void>;
+}) => {
   const { data: itemTypes, sendRequest: fetchItemTypes } = useAPI();
 
   useEffect(() => {
@@ -73,7 +76,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
 
   const finalItemTypes =
     Array.isArray(itemTypes?.data) && itemTypes.data.length > 0
-      ? itemTypes.data.map((t: any) => (typeof t === "object" ? t.name || t.label || String(t) : t))
+      ? itemTypes.data.map((t: string | { name?: string; label?: string }) => (typeof t === "object" ? t.name || t.label || String(t) : t))
       : fallbackItemTypes;
 
   const itemFields = Yup.object().shape({
@@ -164,7 +167,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       .test(
         "at-least-one-item",
         "At least one item is required",
-        (items) => !items || items.filter((item: any) => !item?._destroy).length >= 1
+        (items) => !items || items.filter((item) => !item?._destroy).length >= 1
       ),
   });
 
@@ -179,7 +182,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
         enableReinitialize={true}
         onSubmit={onSubmit}
       >
-        {({ values, handleChange, errors, touched, submitCount }) => (
+        {({ values, handleChange, errors, submitCount }) => (
           <Form>
             <div className="mb-4" style={{ maxWidth: "1200px", margin: "0 auto" }}>
               <h5 className="mb-3">Questionnaire Details</h5>

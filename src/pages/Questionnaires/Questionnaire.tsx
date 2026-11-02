@@ -3,7 +3,7 @@ import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-do
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
 import { RiHealthBookLine } from "react-icons/ri";
-import { QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
+import { IItem, QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import QuestionnaireTypeTable from "./QuestionnaireTypes";
@@ -20,7 +20,7 @@ const Questionnaires = () => {
   const [selectedType, setSelectedType] = useState<string>("All");
 
   // loader option
-  const questionnaireData: any = useLoaderData();
+  const questionnaireData = useLoaderData() as QuestionnaireResponse[];
 
   useEffect(() => {
     setShowTypeModal(false);
@@ -43,11 +43,6 @@ const Questionnaires = () => {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
   }, [error, dispatch]);
-
-  const onDeleteQuestionnaireHandler = useCallback(
-    () => setShowDeleteConfirmation({ visible: false }),
-    []
-  );
 
   const onEditHandle = useCallback(
     (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
@@ -160,7 +155,7 @@ const Questionnaires = () => {
                 id: false,
                 instructor_id: false,
               }}
-              getRowProps={(row: any) => ({
+              getRowProps={(row: TRow<QuestionnaireResponse>) => ({
                 onClick: () => handleRowClick(row.original),
                 style: { cursor: "pointer" },
               })}
@@ -197,7 +192,7 @@ const Questionnaires = () => {
                     <p>Loading items...</p>
                   ) : itemsResponse?.data?.length ? (
                     <ol>
-                      {itemsResponse.data.map((item: any, i: number) => (
+                      {itemsResponse.data.map((item: IItem, i: number) => (
                         <li key={i} style={{ marginBottom: "8px" }}>
                           <strong>{item.txt}</strong> ({item.item_type ?? item.question_type})
                           {item.alternatives && (

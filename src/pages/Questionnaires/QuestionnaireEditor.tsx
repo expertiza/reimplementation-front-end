@@ -1,6 +1,7 @@
+import axios from "axios";
 import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
-import { QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
+import { IItem, mapItemToFormField, QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import { Col, Container, Row } from "react-bootstrap";
@@ -9,63 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 
-const mapItemToFormField = (item: any) => {
-  const itemType: string = item.item_type ?? item.question_type ?? "";
-  const sizeStr = item.size ? String(item.size) : "";
-  const altStr = item.alternatives ? String(item.alternatives) : "";
-
-  let textarea_width: number | string = "";
-  let textarea_height: number | string = "";
-  let textbox_width: number | string = "";
-  let column_names = "";
-  let row_names = "";
-  let columns: number | string = "";
-  let rows: number | string = "";
-
-  if (itemType === "Text area" || itemType === "Criterion") {
-    const parts = sizeStr.split(",");
-    textarea_width = parts[0] || "";
-    textarea_height = parts[1] || "";
-  } else if (itemType === "Text field") {
-    textbox_width = sizeStr;
-  } else if (itemType === "Grid") {
-    // Parse labels from alternatives
-    const altParts = altStr.split("|");
-    column_names = altParts[0] ?? "";
-    row_names = altParts[1] ?? "";
-    // Parse numeric grid dimensions from size
-    const sizeParts = sizeStr.split(",");
-    const parsedCols = parseInt(sizeParts[0], 10);
-    const parsedRows = parseInt(sizeParts[1], 10);
-    columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
-    rows = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
-  }
-
-  return {
-    id: item.id,
-    txt: item.txt ?? "",
-    item_type: itemType,
-    question_type: itemType,
-    weight: item.weight ?? "",
-    alternatives: altStr,
-    min_label: item.min_label ?? "",
-    max_label: item.max_label ?? "",
-    textarea_width,
-    textarea_height,
-    textbox_width,
-    column_names,
-    row_names,
-    columns,
-    rows,
-    seq: item.seq,
-    break_before: item.break_before,
-    _destroy: item._destroy || false,
-  };
-};
-
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
-  const token = localStorage.getItem("token");
-  const questionnaire: any = useLoaderData();
+  const questionnaire = useLoaderData() as QuestionnaireFormValues | undefined;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -73,12 +19,12 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Use items already returned by the loader; fall back to a separate fetch
   // only if the loader didn't include them (older backend behavior).
-  const loaderItems: any[] = useMemo(
+  const loaderItems: IItem[] = useMemo(
     () => (questionnaire?.items ?? []).map(mapItemToFormField),
     [questionnaire]
   );
 
-  const [fetchedItems, setFetchedItems] = useState<any[] | null>(null);
+  const [fetchedItems, setFetchedItems] = useState<IItem[] | null>(null);
 
   useEffect(() => {
     // Only fetch separately when the loader returned no items for an existing questionnaire
@@ -119,15 +65,18 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
         })
       );
       navigate("/questionnaires");
-    } catch (error: any) {
-      console.error("Error submitting form:", error);
+    } catch (caughtError: unknown) {
+      const error = axios.isAxiosError<string[] | { errors?: string[]; error?: string }>(caughtError)
+        ? caughtError
+        : undefined;
+      console.error("Error submitting form:", caughtError);
       let message = "Failed to save questionnaire.";
 
       if (Array.isArray(error?.response?.data)) {
         message = error.response.data.join(", ");
-      } else if (error?.response?.data?.errors) {
+      } else if (error?.response?.data && typeof error.response.data === "object" && "errors" in error.response.data && error.response.data.errors) {
         message = error.response.data.errors.join(", ");
-      } else if (error?.response?.data?.error) {
+      } else if (error?.response?.data && typeof error.response.data === "object" && "error" in error.response.data && error.response.data.error) {
         message = error.response.data.error;
       } else if (error?.message) {
         message = error.message;
@@ -166,7 +115,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
         <Col>
           <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>
             {mode === "update"
-              ? `Editing Questionnaire: ${questionnaire.name}`
+              ? `Editing Questionnaire: ${questionnaire?.name ?? ""}`
               : `Creating ${type} Questionnaire`}
           </h1>
         </Col>

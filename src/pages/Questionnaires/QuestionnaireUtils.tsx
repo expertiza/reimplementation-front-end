@@ -40,6 +40,7 @@ export interface IItem {
   textbox_width?: number | string;
   // Grid label lists (stored in `alternatives` as "column_names|row_names")
   column_names?: string;
+  col_names?: string;
   row_names?: string;
   // Grid / textarea dimensions (stored in `size` as "columns,rows")
   columns?: number | string;
@@ -62,6 +63,8 @@ export interface QuestionnaireFormValues {
   instructor_id?: number;
   instructor?: IInstructor;
   items?: IItem[];
+  relatesToRole?: boolean;
+  selectedDuty?: string;
 }
 
 export interface QuestionnaireResponse {
@@ -126,6 +129,68 @@ const mapToFrontendType = (type: string): string => {
   return map[type] || type;
 };
 
+export type BackendItem = Omit<Partial<IItem>, "item_type"> & { item_type?: string };
+
+export const mapItemTypeToFrontend = (type: string): string => {
+  const aliases: Record<string, string> = { TextArea: "Text area", TextField: "Text field" };
+  return aliases[type] ?? type;
+};
+
+export const mapItemToFormField = (item: BackendItem): IItem => {
+  const itemType = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
+  const sizeStr = item.size ? String(item.size) : "";
+  const altStr = item.alternatives ? String(item.alternatives) : "";
+
+  let textarea_width: number | string = "";
+  let textarea_height: number | string = "";
+  let textbox_width: number | string = "";
+  let column_names = "";
+  let row_names = "";
+  let columns: number | string = "";
+  let rows: number | string = "";
+
+  if (itemType === "Text area" || itemType === "Criterion") {
+    const parts = sizeStr.split(",");
+    textarea_width = parts[0] || "";
+    textarea_height = parts[1] || "";
+  } else if (itemType === "Text field") {
+    textbox_width = sizeStr;
+  } else if (itemType === "Grid") {
+    // Parse labels from alternatives
+    const altParts = altStr.split("|");
+    column_names = altParts[0] ?? "";
+    row_names = altParts[1] ?? "";
+    // Parse numeric grid dimensions from size
+    const sizeParts = sizeStr.split(",");
+    const parsedCols = parseInt(sizeParts[0], 10);
+    const parsedRows = parseInt(sizeParts[1], 10);
+    columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
+    rows = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
+  }
+
+  return {
+    ...item,
+    id: item.id,
+    txt: item.txt ?? "",
+    item_type: itemType,
+    question_type: itemType,
+    weight: item.weight ?? "",
+    alternatives: altStr,
+    min_label: item.min_label ?? "",
+    max_label: item.max_label ?? "",
+    textarea_width,
+    textarea_height,
+    textbox_width,
+    column_names,
+    row_names,
+    columns,
+    rows,
+    seq: item.seq ?? 1,
+    break_before: item.break_before,
+    _destroy: item._destroy || false,
+  };
+};
+
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
   const minScore = values.min_item_score ?? 0;
@@ -142,7 +207,7 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
       ? values.items.map((item, index) => {
           let size: string | number | undefined = item.size;
           let alternatives: string | undefined = item.alternatives;
-          const type = item.item_type ?? item.question_type ?? "";
+          const type = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
 
           if (type === "Text area" || type === "Criterion") {
             // size = "textarea_width,textarea_height"
@@ -181,7 +246,13 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
   return { questionnaire };
 };
 
-export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValues => {
+export type BackendQuestionnaire = Omit<QuestionnaireFormValues, "items"> & {
+  items?: BackendItem[];
+  min_question_score?: number;
+  max_question_score?: number;
+};
+
+export const transformQuestionnaireResponse = (data: BackendQuestionnaire): QuestionnaireFormValues => {
   return {
     id: data.id,
     name: data.name,
@@ -193,64 +264,16 @@ export const transformQuestionnaireResponse = (data: any): QuestionnaireFormValu
     instructor: data.instructor,
     created_at: data.created_at,
     updated_at: data.updated_at,
-    items: data.items
-      ? data.items.map((item: any) => {
-          let textarea_width: number | string = "";
-          let textarea_height: number | string = "";
-          let textbox_width: number | string = "";
-          let column_names: string = "";
-          let row_names: string = "";
-          let columns: number | string = "";
-          let rows: number | string = "";
-
-          const type = (item.item_type ?? item.question_type ?? "") as string;
-          const sizeStr = item.size ? String(item.size) : "";
-          const altStr = item.alternatives ? String(item.alternatives) : "";
-
-          if (type === "Text area" || type === "Criterion" || type === "TextArea") {
-            // size = "width,height"
-            const parts = sizeStr.split(",");
-            textarea_width = parts[0] || "";
-            textarea_height = parts[1] || "";
-          } else if (type === "Text field" || type === "TextField") {
-            textbox_width = sizeStr;
-          } else if (type === "Grid") {
-            // alternatives = "column_names|row_names"
-            const altParts = altStr.split("|");
-            column_names = altParts[0] ?? "";
-            row_names = altParts[1] ?? "";
-
-            // size = "columns,rows" (numeric)
-            const sizeParts = sizeStr.split(",");
-            const parsedCols = parseInt(sizeParts[0], 10);
-            const parsedRows = parseInt(sizeParts[1], 10);
-            columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
-            rows = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
-          }
-
-          return {
-            ...item,
-            item_type: mapToFrontendType(type),
-            question_type: mapToFrontendType(type),
-            textarea_width,
-            textarea_height,
-            textbox_width,
-            column_names,
-            row_names,
-            columns,
-            rows,
-          };
-        })
-      : [],
+    items: (data.items ?? []).map(mapItemToFormField),
   };
 };
 
-export async function loadQuestionnaire({ params }: any) {
+export async function loadQuestionnaire({ params }: { params: { id?: string } }) {
   if (params.id) {
-    const response = await axiosClient.get(`/questionnaires/${params.id}`);
+    const response = await axiosClient.get<BackendQuestionnaire>(`/questionnaires/${params.id}`);
     return transformQuestionnaireResponse(response.data);
   } else {
-    const response = await axiosClient.get(`/questionnaires`);
-    return response.data.map((q: any) => transformQuestionnaireResponse(q));
+    const response = await axiosClient.get<BackendQuestionnaire[]>(`/questionnaires`);
+    return response.data.map(transformQuestionnaireResponse);
   }
 }
