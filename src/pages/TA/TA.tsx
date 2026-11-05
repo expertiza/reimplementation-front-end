@@ -93,7 +93,7 @@ const TAs = () => {
                   tooltip="Add TA to this course"
                   icon={
                     <img
-                      src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+                      src="/assets/images/add-ta-24.png"
                       alt="Assign TA"
                       style={{ width: "20px", height: "20px" }}
                     />

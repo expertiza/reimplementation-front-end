@@ -48,7 +48,7 @@ export const TAColumns = (handleDelete: Fn) => [
           tooltip="Delete TA"
           icon={
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              src="/assets/images/delete-icon-24.png"
               alt="Delete"
               style={{ width: "20px", height: "20px" }}
             />
