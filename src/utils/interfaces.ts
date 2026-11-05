@@ -221,9 +221,12 @@ export interface IInstitutionResponse {
   name: string;
 }
 
+// Shape of a user from GET /users (backend UserSerializer)
 export interface IInstructorResponse {
   id: number;
-  name: string;
+  username?: string;
+  fullName?: string;
+  name?: string;
 }
 
 export enum ROLE {

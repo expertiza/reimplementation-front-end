@@ -7,7 +7,6 @@ import {
   IInstitution,
   IInstitutionResponse,
   IInstructorResponse,
-  IInstructor,
   IUserRequest,
   ROLE,
 } from "../../utils/interfaces";
@@ -53,12 +52,16 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   return institutionsData;
 };
 
+// /users returns username and fullName (no name); prefer the full name for display
+export const getInstructorDisplayName = (instructor: IInstructorResponse): string =>
+  instructor.fullName || instructor.username || instructor.name || "";
+
 // Transform instructor response into form options
 export const transformInstructorResponse = (instructorList: string) => {
   let instructorData: IFormOption[] = [{ label: "Select an Instructor", value: "" }];
-  let instructor: IInstructor[] = JSON.parse(instructorList);
+  let instructor: IInstructorResponse[] = JSON.parse(instructorList);
   instructor.forEach((instructor) =>
-    instructorData.push({ label: instructor.name, value: instructor.id! })
+    instructorData.push({ label: getInstructorDisplayName(instructor), value: instructor.id })
   );
   return instructorData;
 };
@@ -170,7 +173,7 @@ export const mergeDataAndNamesAndInstructors = (
       (instructorObj) => instructorObj.id === dataObj.instructor_id
     );
     const instructorData = matchingInstructor
-      ? { id: matchingInstructor.id, name: matchingInstructor.name }
+      ? { id: matchingInstructor.id, name: getInstructorDisplayName(matchingInstructor) }
       : {};
 
     // Merge course data with institution and instructor data
