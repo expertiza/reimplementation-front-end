@@ -33,6 +33,9 @@ export interface IUserResponse {
   name: string;
   email: string;
   full_name: string;
+  // UserSerializer sends these instead of name/full_name
+  username?: string;
+  fullName?: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;

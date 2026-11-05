@@ -15,12 +15,12 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
+  columnHelper.accessor("username", {
     header: "Username",
     enableSorting: true,
   }),
 
-  columnHelper.accessor("full_name", {
+  columnHelper.accessor("fullName", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,
