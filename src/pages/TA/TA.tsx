@@ -74,6 +74,9 @@ const TAs = () => {
       </Modal.Header>
       <Modal.Body>
         <Outlet />
+        {showDeleteConfirmation.visible && (
+          <DeleteTA TAData={showDeleteConfirmation.data!} onClose={onDeleteTAHandler} />
+        )}
         <main>
           <Container fluid className="px-md-4">
             <Row className="mt-md-2 mb-md-2">
