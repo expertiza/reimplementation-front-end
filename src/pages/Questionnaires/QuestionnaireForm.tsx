@@ -9,7 +9,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
   const { data: itemTypes, sendRequest: fetchItemTypes } = useAPI();
 
   useEffect(() => {
-    fetchItemTypes({ url: "/item_types" });
+    fetchItemTypes({ url: "/items/types" });
     console.log(itemTypes?.data);
   }, [fetchItemTypes]);
 
@@ -167,7 +167,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
               values={values}
               errors={errors}
               touched={touched}
-              itemTypes={(itemTypes?.data?.map((t: any) => t.name) as string[]) ?? []}
+              itemTypes={(itemTypes?.data?.map((t: any) => t.name ?? t) as string[]) ?? []}
             />
 
             <br />
