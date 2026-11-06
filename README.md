@@ -85,7 +85,8 @@ The relevant configuration files are:
 - TypeScript compiler options: `tsconfig.json`
 - Vitest configuration: `vitest.config.mts`
 - Vite configuration: `vite.config.ts`
-- GitHub Actions workflow: `.github/workflows/ci.yml`
+- GitHub Actions workflows: `.github/workflows/ci.yml` and
+  `.github/workflows/coverage-comment.yml`
 
 ## Test coverage
 
@@ -127,10 +128,11 @@ that do not change measurable source files may report `0/0` coverage.
 ### Overall coverage comparison
 
 Pull requests also receive an overall coverage comparison. CI checks out the exact target-branch
-commit, runs the full coverage suite against both versions, and displays their line, statement,
-branch, and function coverage in the workflow summary. The difference is reported in percentage
-points. A negative value means the pull request reduced that metric. This comparison is
-informational and does not enforce a minimum coverage percentage.
+commit, runs the full coverage suite against both versions, and reports their line, statement,
+branch, and function coverage in one automatically updated pull-request comment and in the workflow
+summary. The difference is reported in percentage points. A negative value means the pull request
+reduced that metric. This comparison is informational and does not enforce a minimum coverage
+percentage.
 
 If any metric decreases, the comparison produces a visible warning in the GitHub Check and workflow
 summary naming the affected metrics and their percentage-point reductions. The warning does not fail
@@ -139,7 +141,9 @@ unchanged and are never hidden by the comparison.
 
 GitHub Actions uploads one `frontend-pr-coverage` artifact containing a human-readable
 `comparison.md`, the changed-file HTML report, and the machine-readable target-branch and
-pull-request JSON summaries under `raw/`. The artifact is retained for seven days.
+pull-request JSON summaries under `raw/`. The artifact is retained for seven days. A follow-up
+workflow reads only `comparison.md` and creates or updates a single coverage comment on the pull
+request, so later commits replace the previous report instead of adding duplicate comments.
 
 To run the same comparison locally without switching away from work in progress, create a temporary
 Git worktree for the target branch. Run the following commands from the root of the feature-branch
