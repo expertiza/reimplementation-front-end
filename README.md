@@ -190,6 +190,17 @@ use the `release/**` naming pattern and remain available for maintenance release
 feature development continue on `main` without forcing unreleased features into a patch for an
 older version.
 
+```mermaid
+flowchart LR
+  F["feature/*"] -->|"Merge approved work"| M["main"]
+  M -->|"Every update"| ML["sha-* and latest"]
+  M -->|"Cut approved commit"| R["release/0.2.0"]
+  R -->|"Version 0.2.0"| V0["sha-* and v0.2.0"]
+  X["fix/*"] -->|"Merge fix"| M
+  M -->|"Cherry-pick fix"| R
+  R -->|"Version 0.2.1"| V1["sha-* and v0.2.1"]
+```
+
 Begin with the approved commit on `main`, create the release branch, and push it to the official
 repository:
 
@@ -248,25 +259,37 @@ notes. It fails rather than moving a version tag that already points to a differ
 
 #### Creating a patch for an existing release
 
-Create the fix from the maintained release branch rather than from `main`. Include the corrected
-code, its tests, and the next patch version in the pull request targeting that release branch:
+Implement and test the fix on a branch from `main`, then merge it through the normal pull-request
+process. This ensures that future releases retain the correction:
 
 ```bash
-git switch release/0.2.0
-git pull --ff-only origin release/0.2.0
+git switch main
+git pull --ff-only origin main
 git switch -c fix/auth-token
 # Make and test the fix.
-npm version 0.2.1 --no-git-tag-version
-git add package.json package-lock.json
+git add <fixed-files> <test-files>
 git commit -m "fix: correct auth token expiration"
 git push --set-upstream origin fix/auth-token
 ```
 
-Merging this pull request into `release/0.2.0` publishes `sha-*` and `v0.2.1` without including newer
-features from `main` and without changing `latest`. Backport the code fix to `main` in a separate
-pull request so future releases retain it. Do not copy the maintenance-only version change when
-`main` already contains a newer package version. Because versioned releases are created only from
-`release/**`, the backport to `main` cannot recreate `v0.2.1`.
+After that pull request reaches `main`, create a backport branch from the maintained release branch
+and cherry-pick the merged fix commit. Update the package version on the backport branch, then open a
+pull request into `release/0.2.0`:
+
+```bash
+git switch release/0.2.0
+git pull --ff-only origin release/0.2.0
+git switch -c backport/auth-token-0.2.1
+git cherry-pick <merged-fix-commit-sha>
+npm version 0.2.1 --no-git-tag-version
+git add package.json package-lock.json
+git commit -m "chore: prepare frontend release 0.2.1"
+git push --set-upstream origin backport/auth-token-0.2.1
+```
+
+Merging the backport into `release/0.2.0` publishes `sha-*` and `v0.2.1` without including newer
+features from `main` and without changing `latest`. The earlier merge into `main` publishes its own
+`sha-*` image and updates `latest`, but it does not create a versioned release.
 
 Pull and run the latest image with:
 
