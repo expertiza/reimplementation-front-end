@@ -32,6 +32,7 @@ interface ApiResponse {
   id: number;
   is_submitted: boolean;
   additional_comment: string | null;
+  updated_at?: string;
   answers: ApiAnswer[];
 }
 
@@ -81,6 +82,7 @@ const ResponsePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -119,6 +121,7 @@ const ResponsePage: React.FC = () => {
           id: created.data.response.id,
           is_submitted: false,
           additional_comment: null,
+          updated_at: created.data.response.updated_at,
           answers: [],
         };
       } catch {
@@ -129,6 +132,7 @@ const ResponsePage: React.FC = () => {
 
     setResponseId(resp.id);
     setIsSubmitted(resp.is_submitted);
+    setLastSavedAt(resp.updated_at ?? null);
     setAdditional(resp.additional_comment || "");
 
     // Build answers map: item_id → LocalAnswer
@@ -181,6 +185,8 @@ const ResponsePage: React.FC = () => {
       const saved = await axiosClient.patch(`/responses/${responseId}`, payload);
       // "Save failed" is scoped to the PATCH above; ID-refresh failures are silent.
       setSaveMsg({ type: "ok", text: "Draft saved." });
+      const savedAt = saved.data?.response?.updated_at ?? null;
+      if (savedAt) setLastSavedAt(savedAt);
 
       // Recover DB-assigned answer IDs so subsequent saves update rather than duplicate.
       // Prefer IDs embedded in the PATCH response body; fall back to a best-effort GET
@@ -230,7 +236,7 @@ const ResponsePage: React.FC = () => {
         },
       });
 
-      // Refresh answer IDs from the authorised form endpoint before submitting.
+      // Refresh answer IDs from the authorized form endpoint before submitting.
       // Without this, a retry after a failed /submit resends answers without IDs,
       // causing Rails nested-attributes to create duplicates.
       const refreshed = await axiosClient.get(
@@ -242,7 +248,8 @@ const ResponsePage: React.FC = () => {
       }
       setAnswers(newMap);
 
-      await axiosClient.patch(`/responses/${responseId}/submit`);
+      await axiosClient.patch(`/responses/${responseId}/submit`,
+        lastSavedAt ? { updated_at: lastSavedAt } : {});
       setIsSubmitted(true);
       setSaveMsg({ type: "ok", text: "Review submitted successfully." });
     } catch (err) {
@@ -258,6 +265,7 @@ const ResponsePage: React.FC = () => {
     mappingId,
     responseId,
     isSubmitted,
+    lastSavedAt,
     additionalComment,
     buildScoresAttributes,
     answers,
