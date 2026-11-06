@@ -255,8 +255,8 @@ docker compose up --build
 
 ## GitHub Actions
 
-The frontend workflow runs for pull requests and pushes to `main`. It contains seven independent
-jobs:
+The frontend workflow runs for pull requests and pushes to `main`. It contains independent jobs
+for:
 
 1. Frontend tests with coverage
 2. Pull request coverage analysis, combining changed-file coverage and overall comparison
