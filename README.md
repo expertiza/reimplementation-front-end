@@ -171,9 +171,8 @@ ghcr.io/expertiza/reimplementation-front-end
 
 Whenever a commit reaches `main`, including through a merged pull request, the workflow builds and
 publishes the frontend image with a `sha-` tag made from the short Git commit SHA (the merge or
-squash-merge commit when applicable). If the package version did not change, a separate serialized
-job verifies that the commit is still the head of `main` before promoting that image to `latest`.
-For example:
+squash-merge commit when applicable). A separate serialized job verifies that the commit is still
+the head of `main` before promoting that image to `latest`. For example:
 
 ```text
 ghcr.io/expertiza/reimplementation-front-end:latest
@@ -186,33 +185,39 @@ validate that the Docker image builds; they do not publish it.
 
 #### Creating a versioned release
 
-Only a maintainer with permission to prepare a release should perform these steps. A short-lived
-release branch may collect approved feature changes before the release, or it may be created after
-those features have already reached `main`. The release branch name is an organizational convention;
-the workflow treats the version change in `package.json` as the release signal.
+Only a maintainer with permission to prepare a release should perform these steps. Release branches
+use the `release/**` naming pattern and remain available for maintenance releases. This lets future
+feature development continue on `main` without forcing unreleased features into a patch for an
+older version.
 
-Begin with the latest `main` and create the release branch. After all intended feature changes are
-present and validated on that branch, update the version in both `package.json` and
-`package-lock.json` without creating a local Git tag:
+Begin with the approved commit on `main`, create the release branch, and push it to the official
+repository:
 
 ```bash
 git switch main
 git pull --ff-only origin main
 git switch -c release/0.2.0
-npm version 0.2.0 --no-git-tag-version
-git add package.json package-lock.json
-git commit -m "chore: prepare frontend release 0.2.0"
 git push --set-upstream origin release/0.2.0
 ```
 
 If the official repository is configured as a remote other than `origin`, use that remote name in
-the pull command. Open a pull request from `release/0.2.0` into `main` and complete the normal review
-and validation process. The release branch itself does not publish an image.
+the pull and push commands. Prepare the release on a branch based on `release/0.2.0`. Update the
+version in both `package.json` and `package-lock.json` without creating a local Git tag, then open a
+pull request back into `release/0.2.0`:
 
-When the release branch is merged, the push to `main` triggers the publishing workflow. If the
-version in `package.json` differs from the version before the merge, the workflow validates it,
-publishes the commit-SHA tag and a version tag derived from `package.json`, but does not move
-`latest`:
+```bash
+git switch release/0.2.0
+git pull --ff-only origin release/0.2.0
+git switch -c chore/prepare-0.2.0
+npm version 0.2.0 --no-git-tag-version
+git add package.json package-lock.json
+git commit -m "chore: prepare frontend release 0.2.0"
+git push --set-upstream origin chore/prepare-0.2.0
+```
+
+When that pull request is merged into `release/0.2.0`, the workflow sees the package-version change,
+validates it, and publishes the commit-SHA tag and a version tag derived from `package.json`. Release
+branches never move `latest`:
 
 ```text
 ghcr.io/expertiza/reimplementation-front-end:v0.2.0
@@ -239,11 +244,29 @@ version changed, but it does not enforce that the new version is greater than th
 maintainers must choose an increasing, unused version.
 
 The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
-notes. It fails rather than moving a version tag that already points to a different commit. After a
-successful release, delete the short-lived release branch. Normal `main` merges that do not change
-the package version continue to publish `latest` and the commit-SHA tag. Release merges publish the
-version and commit-SHA tags without changing `latest`. Both squash merges and regular merge commits
-are supported, provided the resulting `main` commit contains the new package version.
+notes. It fails rather than moving a version tag that already points to a different commit.
+
+#### Creating a patch for an existing release
+
+Create the fix from the maintained release branch rather than from `main`. Include the corrected
+code, its tests, and the next patch version in the pull request targeting that release branch:
+
+```bash
+git switch release/0.2.0
+git pull --ff-only origin release/0.2.0
+git switch -c fix/auth-token
+# Make and test the fix.
+npm version 0.2.1 --no-git-tag-version
+git add package.json package-lock.json
+git commit -m "fix: correct auth token expiration"
+git push --set-upstream origin fix/auth-token
+```
+
+Merging this pull request into `release/0.2.0` publishes `sha-*` and `v0.2.1` without including newer
+features from `main` and without changing `latest`. Backport the code fix to `main` in a separate
+pull request so future releases retain it. Do not copy the maintenance-only version change when
+`main` already contains a newer package version. Because versioned releases are created only from
+`release/**`, the backport to `main` cannot recreate `v0.2.1`.
 
 Pull and run the latest image with:
 
