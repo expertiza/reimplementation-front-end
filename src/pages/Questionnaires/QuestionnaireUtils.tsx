@@ -136,42 +136,95 @@ export const mapItemTypeToFrontend = (type: string): string => {
   return aliases[type] ?? type;
 };
 
-// Item types whose size is stored as "width,height" and edited with a text-area UI.
-const TEXT_AREA_ITEM_TYPES = new Set(["Text area", "Criterion"]);
+// Each item type knows how its dimensions are stored on the backend and how
+// they appear in the form. Types without a handler use defaultItemTypeHandler.
+interface ItemTypeHandler {
+  // True when the form shows text-area width/height inputs for this type.
+  textAreaNeededOnUI: boolean;
+  // Backend `size` / `alternatives` -> form fields.
+  fromBackend(size: string, alternatives: string): Partial<IItem>;
+  // Form fields -> backend `size` / `alternatives`.
+  toBackend(item: IItem): Pick<IItem, "size" | "alternatives">;
+}
 
-export const textAreaNeededOnUI = (itemType: string): boolean => TEXT_AREA_ITEM_TYPES.has(itemType);
+const defaultItemTypeHandler: ItemTypeHandler = {
+  textAreaNeededOnUI: false,
+  fromBackend: () => ({}),
+  toBackend: (item) => ({ size: item.size, alternatives: item.alternatives }),
+};
+
+// size = "textarea_width,textarea_height"
+const textAreaHandler: ItemTypeHandler = {
+  ...defaultItemTypeHandler,
+  textAreaNeededOnUI: true,
+  fromBackend: (size) => {
+    const [width, height] = size.split(",");
+    return { textarea_width: width || "", textarea_height: height || "" };
+  },
+  toBackend: (item) => ({
+    size: `${item.textarea_width ?? ""},${item.textarea_height ?? ""}`,
+    alternatives: item.alternatives,
+  }),
+};
+
+const textFieldHandler: ItemTypeHandler = {
+  ...defaultItemTypeHandler,
+  fromBackend: (size) => ({ textbox_width: size }),
+  toBackend: (item) => ({ size: `${item.textbox_width ?? ""}`, alternatives: item.alternatives }),
+};
+
+// size = "columns,rows"; alternatives = "column_names|row_names"
+const gridHandler: ItemTypeHandler = {
+  ...defaultItemTypeHandler,
+  fromBackend: (size, alternatives) => {
+    const [columnNames, rowNames] = alternatives.split("|");
+    const [cols, rows] = size.split(",").map((n) => parseInt(n, 10));
+    return {
+      column_names: columnNames ?? "",
+      row_names: rowNames ?? "",
+      columns: !isNaN(cols) && cols > 0 ? cols : "",
+      rows: !isNaN(rows) && rows > 0 ? rows : "",
+    };
+  },
+  toBackend: (item) => {
+    // Keep 0 as a value; only null/undefined/"" count as empty.
+    const cols = item.columns != null && item.columns !== "" ? item.columns : "";
+    const rows = item.rows != null && item.rows !== "" ? item.rows : "";
+    return {
+      size: `${cols},${rows}`,
+      alternatives: `${item.column_names ?? ""}|${item.row_names ?? ""}`,
+    };
+  },
+};
+
+const ITEM_TYPE_HANDLERS: Record<string, ItemTypeHandler> = {
+  "Text area": textAreaHandler,
+  Criterion: textAreaHandler,
+  "Text field": textFieldHandler,
+  Grid: gridHandler,
+};
+
+export const getItemTypeHandler = (itemType: string): ItemTypeHandler =>
+  ITEM_TYPE_HANDLERS[itemType] ?? defaultItemTypeHandler;
+
+export const textAreaNeededOnUI = (itemType: string): boolean =>
+  getItemTypeHandler(itemType).textAreaNeededOnUI;
 
 export const mapItemToFormField = (item: BackendItem): IItem => {
   const itemType = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
   const sizeStr = item.size ? String(item.size) : "";
   const altStr = item.alternatives ? String(item.alternatives) : "";
 
-  let textarea_width: number | string = "";
-  let textarea_height: number | string = "";
-  let textbox_width: number | string = "";
-  let column_names = "";
-  let row_names = "";
-  let columns: number | string = "";
-  let rows: number | string = "";
-
-  if (textAreaNeededOnUI(itemType)) {
-    const parts = sizeStr.split(",");
-    textarea_width = parts[0] || "";
-    textarea_height = parts[1] || "";
-  } else if (itemType === "Text field") {
-    textbox_width = sizeStr;
-  } else if (itemType === "Grid") {
-    // Parse labels from alternatives
-    const altParts = altStr.split("|");
-    column_names = altParts[0] ?? "";
-    row_names = altParts[1] ?? "";
-    // Parse numeric grid dimensions from size
-    const sizeParts = sizeStr.split(",");
-    const parsedCols = parseInt(sizeParts[0], 10);
-    const parsedRows = parseInt(sizeParts[1], 10);
-    columns = !isNaN(parsedCols) && parsedCols > 0 ? parsedCols : "";
-    rows = !isNaN(parsedRows) && parsedRows > 0 ? parsedRows : "";
-  }
+  const dimensions: Partial<IItem> = {
+    textarea_width: "",
+    textarea_height: "",
+    textbox_width: "",
+    column_names: "",
+    row_names: "",
+    columns: "",
+    rows: "",
+    ...getItemTypeHandler(itemType).fromBackend(sizeStr, altStr),
+  };
 
   return {
     ...item,
@@ -183,13 +236,7 @@ export const mapItemToFormField = (item: BackendItem): IItem => {
     alternatives: altStr,
     min_label: item.min_label ?? "",
     max_label: item.max_label ?? "",
-    textarea_width,
-    textarea_height,
-    textbox_width,
-    column_names,
-    row_names,
-    columns,
-    rows,
+    ...dimensions,
     seq: item.seq ?? 1,
     break_before: item.break_before,
     _destroy: item._destroy || false,
@@ -210,23 +257,8 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
     instructor_id: values.instructor_id,
     items_attributes: values.items
       ? values.items.map((item, index) => {
-          let size: string | number | undefined = item.size;
-          let alternatives: string | undefined = item.alternatives;
           const type = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
-
-          if (textAreaNeededOnUI(type)) {
-            // size = "textarea_width,textarea_height"
-            size = `${item.textarea_width ?? ""},${item.textarea_height ?? ""}`;
-          } else if (type === "Grid") {
-            // Use ?? (not ||) so that 0 is preserved, not treated as empty
-            const cols = item.columns != null && item.columns !== "" ? item.columns : "";
-            const rws = item.rows != null && item.rows !== "" ? item.rows : "";
-            size = `${cols},${rws}`;
-            // Store label lists in alternatives as "column_names|row_names"
-            alternatives = `${item.column_names ?? ""}|${item.row_names ?? ""}`;
-          } else if (type === "Text field") {
-            size = `${item.textbox_width ?? ""}`;
-          }
+          const { size, alternatives } = getItemTypeHandler(type).toBackend(item);
 
           const rawWeight = item.weight;
           const weight =

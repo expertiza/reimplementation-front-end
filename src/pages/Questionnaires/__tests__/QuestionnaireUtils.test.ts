@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   BackendItem,
+  getItemTypeHandler,
+  textAreaNeededOnUI,
   mapItemToFormField,
   transformQuestionnaireRequest,
   transformQuestionnaireResponse,
@@ -39,5 +41,39 @@ describe("item dimensions across load and save", () => {
     });
     expect(mapItemToFormField({ item_type: "TextField", question_type: "TextArea", size: "45" }))
       .toMatchObject({ item_type: "Text field", textbox_width: "45" });
+  });
+});
+
+describe("item type handlers", () => {
+  it("flags only Text area and Criterion as needing the text-area UI", () => {
+    expect(textAreaNeededOnUI("Text area")).toBe(true);
+    expect(textAreaNeededOnUI("Criterion")).toBe(true);
+    for (const type of ["Text field", "Grid", "Dropdown", "Section header", ""]) {
+      expect(textAreaNeededOnUI(type)).toBe(false);
+    }
+  });
+
+  it("round-trips Grid labels and dimensions", () => {
+    const handler = getItemTypeHandler("Grid");
+    const form = handler.fromBackend("3,2", "A,B,C|First,Second");
+    expect(form).toEqual({ column_names: "A,B,C", row_names: "First,Second", columns: 3, rows: 2 });
+    expect(handler.toBackend({ txt: "", seq: 1, item_type: "Grid", ...form })).toEqual({
+      size: "3,2",
+      alternatives: "A,B,C|First,Second",
+    });
+  });
+
+  it("treats invalid Grid dimensions as empty and keeps size blank on save", () => {
+    const handler = getItemTypeHandler("Grid");
+    const form = handler.fromBackend("x,0", "");
+    expect(form).toMatchObject({ columns: "", rows: "" });
+    expect(handler.toBackend({ txt: "", seq: 1, item_type: "Grid", ...form }).size).toBe(",");
+  });
+
+  it("leaves types without a handler untouched", () => {
+    const handler = getItemTypeHandler("Dropdown");
+    expect(handler.fromBackend("5", "a,b")).toEqual({});
+    expect(handler.toBackend({ txt: "", seq: 1, item_type: "Dropdown", size: "5", alternatives: "a,b" }))
+      .toEqual({ size: "5", alternatives: "a,b" });
   });
 });
