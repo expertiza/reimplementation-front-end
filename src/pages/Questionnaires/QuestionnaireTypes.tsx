@@ -1,6 +1,10 @@
 import React from "react";
 import Table from "components/Table/Table";
-import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
+import {
+  QuestionnaireTypes,
+  QuestionnaireTypeOption,
+  getQuestionnaireTypeLabel,
+} from "./QuestionnaireUtils";
 import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { IoIosAddCircle } from "react-icons/io";
@@ -9,7 +13,7 @@ import { useEffect } from "react";
 import { useMemo } from "react";
 
 interface TableRow {
-  type: QuestionnaireType;
+  type: QuestionnaireTypeOption;
 }
 
 interface QuestionnaireTypeTableProps {
@@ -24,29 +28,30 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
 
   const data: TableRow[] = useMemo(() => {
     if (questionnaireTypes?.data?.length) {
-      return questionnaireTypes.data.map((t: any) => ({
-        type: t.name ?? t, // handle case where backend returns object or string
-      }));
+      return questionnaireTypes.data.map((t: any) => {
+        const value = t.name ?? t; // handle case where backend returns object or string
+        return { type: { label: getQuestionnaireTypeLabel(value), value } };
+      });
     }
     return QuestionnaireTypes.map((t) => ({ type: t }));
   }, [questionnaireTypes]);
 
   const navigate = useNavigate();
 
-  const onCreate = (type: QuestionnaireType) => {
+  const onCreate = (type: QuestionnaireTypeOption) => {
     if (onCloseModal) {
       console.log("Closing modal");
       onCloseModal(); // close the modal
     }
     // Navigate to the Questionnaire's new form
-    navigate(`/questionnaires/new?type=${encodeURIComponent(type)}`);
+    navigate(`/questionnaires/new?type=${encodeURIComponent(type.value)}`);
   };
 
   const columns: ColumnDef<TableRow>[] = [
     {
       header: "Questionnaire Type",
       accessorKey: "type",
-      cell: (info) => info.getValue(),
+      cell: ({ row }) => row.original.type.label,
       size: 500,
       minSize: 80,
       maxSize: 600,

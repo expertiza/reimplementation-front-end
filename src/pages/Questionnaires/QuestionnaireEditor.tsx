@@ -1,6 +1,10 @@
 import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
-import { QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
+import {
+  QuestionnaireFormValues,
+  getQuestionnaireTypeLabel,
+  transformQuestionnaireRequest,
+} from "./QuestionnaireUtils";
 import React, { useEffect, useState } from "react";
 import { useLoaderData, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Col, Container, Modal, Row } from "react-bootstrap";
@@ -100,7 +104,7 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
           <h1>
             {mode === "update"
               ? `Update Questionnaire: ${questionnaire.name}`
-              : `Create ${type} Questionnaire`}
+              : `Create ${getQuestionnaireTypeLabel(type)} Questionnaire`}
           </h1>
         </Col>
         <hr />

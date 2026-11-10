@@ -70,7 +70,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: any) => {
       >
         {({ values, handleChange, errors, touched }) => (
           <Form>
-            {values.questionnaire_type === "Teammate Review" && (
+            {values.questionnaire_type === "TeammateReviewQuestionnaire" && (
               <div className="mb-3">
                 <div className="form-check mb-2">
                   <Field
