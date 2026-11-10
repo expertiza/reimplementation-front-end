@@ -111,6 +111,7 @@ const StudentTasks: React.FC = () => {
       started: task.started,
       currentStage: task.currentStage,
       participantId: task.id,
+      assignmentId: task.assignmentId,
     }));
   }
 
