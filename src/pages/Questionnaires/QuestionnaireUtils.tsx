@@ -30,7 +30,6 @@ export interface IItem {
   weight?: number | string | null;
   seq: number;
   item_type: string;
-  question_type?: string;
   size?: number | string;
   alternatives?: string;
   min_label?: string;
@@ -211,7 +210,7 @@ export const textAreaNeededOnUI = (itemType: string): boolean =>
   getItemTypeHandler(itemType).textAreaNeededOnUI;
 
 export const mapItemToFormField = (item: BackendItem): IItem => {
-  const itemType = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
+  const itemType = mapItemTypeToFrontend(item.item_type ?? "");
   const sizeStr = item.size ? String(item.size) : "";
   const altStr = item.alternatives ? String(item.alternatives) : "";
 
@@ -231,7 +230,6 @@ export const mapItemToFormField = (item: BackendItem): IItem => {
     id: item.id,
     txt: item.txt ?? "",
     item_type: itemType,
-    question_type: itemType,
     weight: item.weight ?? "",
     alternatives: altStr,
     min_label: item.min_label ?? "",
@@ -257,7 +255,7 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
     instructor_id: values.instructor_id,
     items_attributes: values.items
       ? values.items.map((item, index) => {
-          const type = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
+          const type = mapItemTypeToFrontend(item.item_type ?? "");
           const { size, alternatives } = getItemTypeHandler(type).toBackend(item);
 
           const rawWeight = item.weight;
@@ -269,7 +267,6 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
           return {
             ...item,
             item_type: type,
-            question_type: type,
             weight,
             size,
             alternatives,
@@ -285,8 +282,6 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
 
 export type BackendQuestionnaire = Omit<QuestionnaireFormValues, "items"> & {
   items?: BackendItem[];
-  min_question_score?: number;
-  max_question_score?: number;
 };
 
 export const transformQuestionnaireResponse = (data: BackendQuestionnaire): QuestionnaireFormValues => {
@@ -295,8 +290,8 @@ export const transformQuestionnaireResponse = (data: BackendQuestionnaire): Ques
     name: data.name,
     private: data.private,
     questionnaire_type: mapToFrontendType(data.questionnaire_type),
-    min_item_score: data.min_item_score ?? data.min_question_score ?? 0,
-    max_item_score: data.max_item_score ?? data.max_question_score ?? 10,
+    min_item_score: data.min_item_score ?? 0,
+    max_item_score: data.max_item_score ?? 10,
     instructor_id: data.instructor_id,
     instructor: data.instructor,
     created_at: data.created_at,

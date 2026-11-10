@@ -22,7 +22,7 @@ const extractErrors = (errors: unknown): string[] => {
         const readableKey =
           key === "txt"
             ? "Prompt"
-            : key === "item_type" || key === "question_type"
+            : key === "item_type"
             ? "Type"
             : key === "min_label"
             ? "Min label"
@@ -87,12 +87,11 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
       then: (schema) => schema.notRequired(),
       otherwise: (schema) => schema.required("Item text is required"),
     }),
-    item_type: Yup.string().when(["_destroy", "question_type"], ([destroy, qType], schema) => {
-      return !destroy && !qType
-        ? schema.required("Item type is required")
-        : schema.notRequired();
+    item_type: Yup.string().when("_destroy", {
+      is: true,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required("Item type is required"),
     }),
-    question_type: Yup.string().notRequired(),
     weight: Yup.number()
       .transform((value, originalValue) =>
         originalValue === "" || originalValue === null || originalValue === undefined
@@ -105,9 +104,8 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
       .notRequired(),
 
     alternatives: Yup.string().when(
-      ["item_type", "question_type", "_destroy"],
-      ([itemType, qType, destroy], schema) => {
-        const type = itemType || qType;
+      ["item_type", "_destroy"],
+      ([type, destroy], schema) => {
         if (!destroy && (type === "Dropdown" || type === "Multiple choice")) {
           return schema
             .required("Options are required")
@@ -125,9 +123,8 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
     ),
 
     min_label: Yup.string().when(
-      ["item_type", "question_type", "_destroy"],
-      ([itemType, qType, destroy], schema) => {
-        const type = itemType || qType;
+      ["item_type", "_destroy"],
+      ([type, destroy], schema) => {
         return !destroy && type === "Scale"
           ? schema.required("Minimum label is required")
           : schema.notRequired();
@@ -135,9 +132,8 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
     ),
 
     max_label: Yup.string().when(
-      ["item_type", "question_type", "_destroy"],
-      ([itemType, qType, destroy], schema) => {
-        const type = itemType || qType;
+      ["item_type", "_destroy"],
+      ([type, destroy], schema) => {
         return !destroy && type === "Scale"
           ? schema.required("Maximum label is required")
           : schema.notRequired();

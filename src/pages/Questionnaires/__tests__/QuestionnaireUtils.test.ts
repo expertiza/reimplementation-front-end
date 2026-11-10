@@ -17,7 +17,7 @@ describe("item dimensions across load and save", () => {
   ])("preserves %s dimensions through both loading paths", (alias, label, size) => {
     const item: BackendItem = {
       id: 7, txt: "Prompt", seq: 1, item_type: alias,
-      question_type: "Other", size, alternatives: "A,B,C|First,Second",
+      size, alternatives: "A,B,C|First,Second",
     };
     const response = transformQuestionnaireResponse({
       name: "Dimensions", private: false, questionnaire_type: "ReviewQuestionnaire",
@@ -35,11 +35,11 @@ describe("item dimensions across load and save", () => {
     }
   });
 
-  it("supports legacy-only types and prefers item_type when both are supplied", () => {
-    expect(mapItemToFormField({ question_type: "TextArea", size: "45,6" })).toMatchObject({
+  it("maps backend type aliases to form labels", () => {
+    expect(mapItemToFormField({ item_type: "TextArea", size: "45,6" })).toMatchObject({
       item_type: "Text area", textarea_width: "45", textarea_height: "6",
     });
-    expect(mapItemToFormField({ item_type: "TextField", question_type: "TextArea", size: "45" }))
+    expect(mapItemToFormField({ item_type: "TextField", size: "45" }))
       .toMatchObject({ item_type: "Text field", textbox_width: "45" });
   });
 });

@@ -194,7 +194,7 @@ const Questionnaires = () => {
                     <ol>
                       {itemsResponse.data.map((item: IItem, i: number) => (
                         <li key={i} style={{ marginBottom: "8px" }}>
-                          <strong>{item.txt}</strong> ({item.item_type ?? item.question_type})
+                          <strong>{item.txt}</strong> ({item.item_type})
                           {item.alternatives && (
                             <>
                               &nbsp;&nbsp;<span>Choices: {item.alternatives}</span>
@@ -226,7 +226,7 @@ const Questionnaires = () => {
                               &nbsp;&nbsp;<span>Weight: {item.weight}</span>
                             </>
                           )}
-                          {(item.item_type === "Criterion" || item.question_type === "Criterion") && <span> | </span>}
+                          {item.item_type === "Criterion" && <span> | </span>}
                           {item.textarea_width && (
                             <>
                               &nbsp;<span>Text Area Width: {item.textarea_width}</span>
