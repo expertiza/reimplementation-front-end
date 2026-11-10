@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
+import TeammateReviewOptions from "./TeammateReviewOptions";
 import { QuestionnaireFormValues, QuestionnaireTypes } from "./QuestionnaireUtils";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
@@ -285,53 +286,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   </label>
                 </div>
 
-                {values.questionnaire_type === "Teammate Review" && (
-                  <div className="mb-3">
-                    <div className="form-check mb-2">
-                      <Field
-                        type="checkbox"
-                        name="relatesToRole"
-                        className="form-check-input"
-                        id="relatesToRole"
-                      />
-                      <label
-                        htmlFor="relatesToRole"
-                        className="form-check-label fw-semibold"
-                        style={{ fontSize: "14px" }}
-                      >
-                        This rubric relates to a particular role.
-                      </label>
-                    </div>
-
-                    {values.relatesToRole && (
-                      <div style={{ paddingLeft: "25px" }}>
-                        <span style={{ fontSize: "14px" }} className="fw-semibold">
-                          Select duty
-                        </span>
-                        <Field
-                          as="select"
-                          name="selectedDuty"
-                          className="form-control mt-1"
-                          style={{ maxWidth: "300px" }}
-                        >
-                          <option value="">- Select a duty -</option>
-                          {["Project Management", "Code Review", "Testing", "Documentation"].map(
-                            (duty) => (
-                              <option key={duty} value={duty}>
-                                {duty}
-                              </option>
-                            )
-                          )}
-                        </Field>
-                        <ErrorMessage
-                          name="selectedDuty"
-                          component="div"
-                          className="text-danger small mt-1"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+                <TeammateReviewOptions />
               </div>
             </div>
 
