@@ -20,7 +20,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: true,
   }),
 
-  columnHelper.accessor("fullName", {
+  columnHelper.accessor("name", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,

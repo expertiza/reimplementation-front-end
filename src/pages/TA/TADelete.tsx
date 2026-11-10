@@ -24,7 +24,7 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
   const dispatch = useDispatch();
   const params = useParams();
 
-  const taName = TAData.fullName || TAData.username || TAData.name;
+  const taName = TAData.name || TAData.username;
 
   // Delete TA
   const deleteHandler = () => {

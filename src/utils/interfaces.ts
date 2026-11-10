@@ -26,18 +26,15 @@ export interface IInstructor {
 export interface ITA {
   id?: number;
   name: string;
-  fullName?: string;
-  username?: string;
+  username: string;
 }
 
 export interface IUserResponse {
   id: number;
+  // UserSerializer: username is the login, name is the full name
+  username: string;
   name: string;
   email: string;
-  full_name: string;
-  // UserSerializer sends these instead of name/full_name
-  username?: string;
-  fullName?: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;
@@ -174,12 +171,10 @@ export interface IAssignmentRequest {
 
 export interface ITAResponse {
   id: number;
+  // UserSerializer: username is the login, name is the full name
+  username: string;
   name: string;
   email: string;
-  full_name: string;
-  // UserSerializer sends these instead of name/full_name
-  username?: string;
-  fullName?: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;
@@ -232,9 +227,8 @@ export interface IInstitutionResponse {
 // Shape of a user from GET /users (backend UserSerializer)
 export interface IInstructorResponse {
   id: number;
-  username?: string;
-  fullName?: string;
-  name?: string;
+  username: string;
+  name: string;
 }
 
 export enum ROLE {

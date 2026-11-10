@@ -418,7 +418,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                   team.data.team.members.map((participant: any) => (
                     <tr key={participant.id}>
                       <td className={styles.studentTeamTableCell}>{participant.user.username}</td>
-                      <td className={styles.studentTeamTableCell}>{participant.user.fullName}</td>
+                      <td className={styles.studentTeamTableCell}>{participant.user.name}</td>
                       <td className={styles.studentTeamTableCell}>{participant.user.email}</td>
                       <td className={styles.studentTeamTableCell}>
                         {participant.id !== Number(studentId) && (

@@ -52,9 +52,9 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   return institutionsData;
 };
 
-// /users returns username and fullName (no name); prefer the full name for display
+// /users returns username (login) and name (full name); prefer the full name for display
 export const getInstructorDisplayName = (instructor: IInstructorResponse): string =>
-  instructor.fullName || instructor.username || instructor.name || "";
+  instructor.name || instructor.username;
 
 // Transform instructor response into form options
 export const transformInstructorResponse = (instructorList: string) => {

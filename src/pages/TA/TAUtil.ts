@@ -19,7 +19,7 @@ export interface ITAFormValues {
 export const transformTAResponse = (taList: string) => {
   let taData: IFormOption[] = [{ label: "Select a TA", value: "" }];
   let tas: ITA[] = JSON.parse(taList);
-  tas.forEach((ta) => taData.push({ label: ta.fullName || ta.username || ta.name, value: ta.id! }));
+  tas.forEach((ta) => taData.push({ label: ta.name || ta.username, value: ta.id! }));
   return taData;
 };
 
