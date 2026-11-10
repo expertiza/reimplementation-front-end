@@ -314,7 +314,7 @@ const Questionnaire = () => {
               style={{ backgroundColor: "#4d8ac0", borderColor: "#4d8ac0", marginBottom: "20px" }}
               className="btn btn-primary"
             >
-              Add Item
+              Add item
             </button>
           </div>
         </div>

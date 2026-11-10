@@ -236,7 +236,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   </div>
 
                   <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>
-                    Min Item Score
+                    Min item score
                   </label>
                   <div>
                     <Field
@@ -254,7 +254,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   </div>
 
                   <label className="form-label mb-0 fw-semibold" style={{ fontSize: "14px" }}>
-                    Max Item Score
+                    Max item score
                   </label>
                   <div>
                     <Field
@@ -306,7 +306,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                     {values.relatesToRole && (
                       <div style={{ paddingLeft: "25px" }}>
                         <span style={{ fontSize: "14px" }} className="fw-semibold">
-                          Select Duty
+                          Select duty
                         </span>
                         <Field
                           as="select"

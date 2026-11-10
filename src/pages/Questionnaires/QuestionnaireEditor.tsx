@@ -10,6 +10,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { alertActions } from "store/slices/alertSlice";
 
+// Explain why a save failed and what the user can do about it.
+const describeSaveFailure = (status?: number, detail?: string, fallback?: string): string => {
+  let advice: string;
+  if (status === undefined) {
+    advice = "The server could not be reached. Check your connection and try again.";
+  } else if (status === 401) {
+    advice = "Your session has expired. Please log in again and retry.";
+  } else if (status === 403) {
+    advice = "You do not have permission to save this questionnaire. Contact an instructor or administrator.";
+  } else if (status === 404) {
+    advice = "This questionnaire no longer exists. Return to the questionnaire list and refresh.";
+  } else if (status === 422) {
+    advice = "Correct the problems listed above and save again.";
+  } else if (status >= 500) {
+    advice = "The server had a problem. Wait a moment and try again; if it persists, contact an administrator.";
+  } else {
+    advice = "Review your changes and try again.";
+  }
+  const reason = detail ?? fallback ?? "Failed to save questionnaire.";
+  return `Could not save questionnaire: ${reason}. ${advice}`;
+};
+
 const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const questionnaire = useLoaderData() as QuestionnaireFormValues | undefined;
   const [searchParams] = useSearchParams();
@@ -17,8 +39,8 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   const dispatch = useDispatch();
   const type = searchParams.get("type");
 
-  // Use items already returned by the loader; fall back to a separate fetch
-  // only if the loader didn't include them (older backend behavior).
+  // The questionnaire loader normally includes the items. If an existing
+  // questionnaire arrives without any, request them separately below.
   const loaderItems: IItem[] = useMemo(
     () => (questionnaire?.items ?? []).map(mapItemToFormField),
     [questionnaire]
@@ -70,17 +92,16 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
         ? caughtError
         : undefined;
       console.error("Error submitting form:", caughtError);
-      let message = "Failed to save questionnaire.";
-
-      if (Array.isArray(error?.response?.data)) {
-        message = error.response.data.join(", ");
-      } else if (error?.response?.data && typeof error.response.data === "object" && "errors" in error.response.data && error.response.data.errors) {
-        message = error.response.data.errors.join(", ");
-      } else if (error?.response?.data && typeof error.response.data === "object" && "error" in error.response.data && error.response.data.error) {
-        message = error.response.data.error;
-      } else if (error?.message) {
-        message = error.message;
+      const data = error?.response?.data;
+      let detail: string | undefined;
+      if (Array.isArray(data)) {
+        detail = data.join(", ");
+      } else if (data && typeof data === "object" && data.errors?.length) {
+        detail = data.errors.join(", ");
+      } else if (data && typeof data === "object" && data.error) {
+        detail = data.error;
       }
+      const message = describeSaveFailure(error?.response?.status, detail, error?.message);
 
       dispatch(alertActions.showAlert({ variant: "danger", message }));
     }

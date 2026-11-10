@@ -136,6 +136,11 @@ export const mapItemTypeToFrontend = (type: string): string => {
   return aliases[type] ?? type;
 };
 
+// Item types whose size is stored as "width,height" and edited with a text-area UI.
+const TEXT_AREA_ITEM_TYPES = new Set(["Text area", "Criterion"]);
+
+export const textAreaNeededOnUI = (itemType: string): boolean => TEXT_AREA_ITEM_TYPES.has(itemType);
+
 export const mapItemToFormField = (item: BackendItem): IItem => {
   const itemType = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
   const sizeStr = item.size ? String(item.size) : "";
@@ -149,7 +154,7 @@ export const mapItemToFormField = (item: BackendItem): IItem => {
   let columns: number | string = "";
   let rows: number | string = "";
 
-  if (itemType === "Text area" || itemType === "Criterion") {
+  if (textAreaNeededOnUI(itemType)) {
     const parts = sizeStr.split(",");
     textarea_width = parts[0] || "";
     textarea_height = parts[1] || "";
@@ -209,7 +214,7 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
           let alternatives: string | undefined = item.alternatives;
           const type = mapItemTypeToFrontend(item.item_type ?? item.question_type ?? "");
 
-          if (type === "Text area" || type === "Criterion") {
+          if (textAreaNeededOnUI(type)) {
             // size = "textarea_width,textarea_height"
             size = `${item.textarea_width ?? ""},${item.textarea_height ?? ""}`;
           } else if (type === "Grid") {
