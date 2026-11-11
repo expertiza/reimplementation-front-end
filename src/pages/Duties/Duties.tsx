@@ -43,7 +43,7 @@ const Duties = () => {
   // map duties with creator name
   const usersById = useMemo(() => {
     const arr = usersRes?.data || [];
-    return new Map(arr.map((u: any) => [u.id, u.full_name || u.name || `User #${u.id}`]));
+    return new Map(arr.map((u: any) => [u.id, u.name || u.username || `User #${u.id}`]));
   }, [usersRes?.data]);
 
   const allDuties: IDuty[] = useMemo(() => dutiesRes?.data || [], [dutiesRes?.data]);

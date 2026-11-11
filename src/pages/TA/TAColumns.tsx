@@ -19,12 +19,12 @@ export const TAColumns = (handleDelete: Fn) => [
     enableSorting: false,
   }),
   //create TA Name column Header
-  columnHelper.accessor("name", {
+  columnHelper.accessor("username", {
     header: "TA Name",
     enableSorting: true,
   }),
   //create Full TA Name column Header
-  columnHelper.accessor("full_name", {
+  columnHelper.accessor("name", {
     header: "Full Name",
     enableSorting: true,
     enableMultiSort: true,
@@ -48,7 +48,7 @@ export const TAColumns = (handleDelete: Fn) => [
           tooltip="Delete TA"
           icon={
             <img
-              src={process.env.PUBLIC_URL + "/assets/images/delete-icon-24.png"}
+              src="/assets/images/delete-icon-24.png"
               alt="Delete"
               style={{ width: "20px", height: "20px" }}
             />

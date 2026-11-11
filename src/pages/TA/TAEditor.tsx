@@ -48,7 +48,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
           message: `TA ${TAData.name} ${mode}d successfully!`,
         })
       );
-      navigate(location.state?.from ? location.state.from : "/TAs");
+      navigate(location.state?.from ? location.state.from : `/courses/${courseId}/tas`);
     }
   }, [dispatch, mode, navigate, TAData.name, TAResponse, location.state?.from]);
 
@@ -111,7 +111,7 @@ const TAEditor: React.FC<IEditor> = ({ mode }) => {
                     type="submit"
                     disabled={!(formik.isValid && formik.dirty) || formik.isSubmitting}
                   >
-                    "Add TA"
+                    Add TA
                   </Button>
                 </Modal.Footer>
               </Form>

@@ -24,10 +24,12 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
   const dispatch = useDispatch();
   const params = useParams();
 
+  const taName = TAData.name || TAData.username;
+
   // Delete TA
   const deleteHandler = () => {
     const { courseId } = params;
-    deleteTA({ url: `/courses/${courseId}/TAs/${TAData.id}`, method: HttpMethod.DELETE });
+    deleteTA({ url: `/courses/${courseId}/remove_ta/${TAData.id}`, method: HttpMethod.GET });
   };
 
   // Show error if any
@@ -42,12 +44,12 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
       dispatch(
         alertActions.showAlert({
           variant: "success",
-          message: `TA ${TAData.name} deleted successfully!`,
+          message: `TA ${taName} deleted successfully!`,
         })
       );
       onClose();
     }
-  }, [deletedTA?.status, dispatch, onClose, TAData.name]);
+  }, [deletedTA?.status, dispatch, onClose, taName]);
 
   const closeHandler = () => {
     setShow(false);
@@ -62,7 +64,7 @@ const DeleteTA: React.FC<IDeleteTA> = ({ TAData, onClose }) => {
       </Modal.Header>
       <Modal.Body>
         <p>
-          Are you sure you want to delete TA <b>{TAData.name}?</b>
+          Are you sure you want to delete TA <b>{taName}?</b>
         </p>
       </Modal.Body>
       <Modal.Footer>

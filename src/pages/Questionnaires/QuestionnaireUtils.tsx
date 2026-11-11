@@ -1,26 +1,26 @@
 import axiosClient from "../../utils/axios_client";
 import { IInstructor } from "../../utils/interfaces";
 
-export type QuestionnaireType =
-  | "Author feedback"
-  | "Teammate Review"
-  | "Survey"
-  | "Assignment survey"
-  | "Global survey"
-  | "Course survey"
-  | "Bookmark rating"
-  | "Quiz";
+export interface QuestionnaireTypeOption {
+  label: string;
+  // Backend Questionnaire subclass name, sent as questionnaire_type
+  value: string;
+}
 
-export const QuestionnaireTypes: QuestionnaireType[] = [
-  "Author feedback",
-  "Teammate Review",
-  "Survey",
-  "Assignment survey",
-  "Global survey",
-  "Course survey",
-  "Bookmark rating",
-  "Quiz",
+export const QuestionnaireTypes: QuestionnaireTypeOption[] = [
+  { label: "Review", value: "ReviewQuestionnaire" },
+  { label: "Author feedback", value: "AuthorFeedbackQuestionnaire" },
+  { label: "Teammate Review", value: "TeammateReviewQuestionnaire" },
+  { label: "Survey", value: "SurveyQuestionnaire" },
+  { label: "Assignment survey", value: "AssignmentSurveyQuestionnaire" },
+  { label: "Global survey", value: "GlobalSurveyQuestionnaire" },
+  { label: "Course survey", value: "CourseSurveyQuestionnaire" },
+  { label: "Bookmark rating", value: "BookmarkRatingQuestionnaire" },
+  { label: "Quiz", value: "QuizQuestionnaire" },
 ];
+
+export const getQuestionnaireTypeLabel = (value?: string | null): string =>
+  QuestionnaireTypes.find((t) => t.value === value)?.label ?? value ?? "";
 
 export interface IItem {
   id?: number;

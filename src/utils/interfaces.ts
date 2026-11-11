@@ -26,13 +26,15 @@ export interface IInstructor {
 export interface ITA {
   id?: number;
   name: string;
+  username: string;
 }
 
 export interface IUserResponse {
   id: number;
+  // UserSerializer: username is the login, name is the full name
+  username: string;
   name: string;
   email: string;
-  full_name: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;
@@ -169,9 +171,10 @@ export interface IAssignmentRequest {
 
 export interface ITAResponse {
   id: number;
+  // UserSerializer: username is the login, name is the full name
+  username: string;
   name: string;
   email: string;
-  full_name: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;
@@ -221,8 +224,10 @@ export interface IInstitutionResponse {
   name: string;
 }
 
+// Shape of a user from GET /users (backend UserSerializer)
 export interface IInstructorResponse {
   id: number;
+  username: string;
   name: string;
 }
 
