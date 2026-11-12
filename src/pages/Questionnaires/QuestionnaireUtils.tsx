@@ -24,6 +24,10 @@ export const QuestionnaireTypes: QuestionnaireType[] = [
   "Quiz",
 ];
 
+// Score range used when a questionnaire does not specify one.
+export const DEFAULT_MIN_ITEM_SCORE = 1;
+export const DEFAULT_MAX_ITEM_SCORE = 5;
+
 export interface IItem {
   id?: number;
   txt: string;
@@ -62,7 +66,7 @@ export interface QuestionnaireFormValues {
   instructor_id?: number;
   instructor?: IInstructor;
   items?: IItem[];
-  relatesToRole?: boolean;
+  relatesToDuty?: boolean;
   selectedDuty?: string;
 }
 
@@ -243,8 +247,8 @@ export const mapItemToFormField = (item: BackendItem): IItem => {
 
 export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) => {
   console.log("Original Form Values:", values);
-  const minScore = values.min_item_score ?? 0;
-  const maxScore = values.max_item_score ?? 10;
+  const minScore = values.min_item_score ?? DEFAULT_MIN_ITEM_SCORE;
+  const maxScore = values.max_item_score ?? DEFAULT_MAX_ITEM_SCORE;
   const questionnaire: QuestionnaireRequest = {
     id: values.id,
     name: values.name,
@@ -290,8 +294,8 @@ export const transformQuestionnaireResponse = (data: BackendQuestionnaire): Ques
     name: data.name,
     private: data.private,
     questionnaire_type: mapToFrontendType(data.questionnaire_type),
-    min_item_score: data.min_item_score ?? 0,
-    max_item_score: data.max_item_score ?? 10,
+    min_item_score: data.min_item_score ?? DEFAULT_MIN_ITEM_SCORE,
+    max_item_score: data.max_item_score ?? DEFAULT_MAX_ITEM_SCORE,
     instructor_id: data.instructor_id,
     instructor: data.instructor,
     created_at: data.created_at,

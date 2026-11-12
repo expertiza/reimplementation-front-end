@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
-import { IItem, mapItemToFormField, QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
+import { DEFAULT_MAX_ITEM_SCORE, DEFAULT_MIN_ITEM_SCORE, IItem, mapItemToFormField, QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import { Col, Container, Row } from "react-bootstrap";
@@ -125,8 +125,8 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
     name: questionnaire?.name ?? "",
     questionnaire_type: questionnaire?.questionnaire_type ?? type ?? "",
     private: questionnaire?.private ?? false,
-    min_item_score: questionnaire?.min_item_score ?? 0,
-    max_item_score: questionnaire?.max_item_score ?? 10,
+    min_item_score: questionnaire?.min_item_score ?? DEFAULT_MIN_ITEM_SCORE,
+    max_item_score: questionnaire?.max_item_score ?? DEFAULT_MAX_ITEM_SCORE,
     items: fetchedItems,
   };
 

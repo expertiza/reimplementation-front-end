@@ -3,7 +3,12 @@ import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
 import TeammateReviewOptions from "./TeammateReviewOptions";
-import { QuestionnaireFormValues, QuestionnaireTypes } from "./QuestionnaireUtils";
+import {
+  DEFAULT_MAX_ITEM_SCORE,
+  DEFAULT_MIN_ITEM_SCORE,
+  QuestionnaireFormValues,
+  QuestionnaireTypes,
+} from "./QuestionnaireUtils";
 import * as Yup from "yup";
 import useAPI from "hooks/useAPI";
 
@@ -239,7 +244,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                     <Field
                       type="number"
                       name="min_item_score"
-                      placeholder="0"
+                      placeholder={String(DEFAULT_MIN_ITEM_SCORE)}
                       className="form-control"
                       style={{ width: "100px" }}
                     />
@@ -257,7 +262,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                     <Field
                       type="number"
                       name="max_item_score"
-                      placeholder="10"
+                      placeholder={String(DEFAULT_MAX_ITEM_SCORE)}
                       className="form-control"
                       style={{ width: "100px" }}
                     />

@@ -618,6 +618,12 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                     typeof numItems === "number" && numItems > 0 ? numItems : 1;
                   for (let i = 0; i < count; i++) {
                     const isGrid = itemType === "Grid";
+                    // A new Grid item starts with the default prompt, column headings
+                    // (scale labels) and row headings below, so it is usable right away.
+                    // These are only starting values. The user can change the prompt,
+                    // column names and row names in this items table, in the
+                    // `items[i].txt`, `.column_names` and `.row_names` fields (rendered
+                    // above, near the Grid cells). The edited values are saved with the item.
                     push({
                       id: undefined,
                       txt: isGrid
