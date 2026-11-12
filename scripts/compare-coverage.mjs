@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 
 const metrics = ["lines", "statements", "branches", "functions"];
 
+/** Read and validate the total section of a Vitest JSON coverage summary. */
 async function readSummary(reportPath) {
   const report = JSON.parse(await readFile(reportPath, "utf8"));
 
@@ -14,18 +15,22 @@ async function readSummary(reportPath) {
   return report.total;
 }
 
+/** Read a complete JSON coverage report from disk. */
 async function readReport(reportPath) {
   return JSON.parse(await readFile(reportPath, "utf8"));
 }
 
+/** Convert an internal metric key to a display label. */
 function formatMetric(metric) {
   return `${metric[0].toUpperCase()}${metric.slice(1)}`;
 }
 
+/** Format a finite coverage value as a percentage or return a safe fallback. */
 function formatPercentage(value) {
   return Number.isFinite(value) ? `${value.toFixed(2)}%` : "Unknown";
 }
 
+/** Format a coverage delta in percentage points. */
 function formatDifference(value) {
   if (!Number.isFinite(value)) {
     return "Unknown";
@@ -35,11 +40,13 @@ function formatDifference(value) {
   return `${sign}${value.toFixed(2)} percentage points`;
 }
 
+/** Reduce an absolute coverage path to a repository-relative display path. */
 function formatCoveragePath(filePath) {
   const projectPath = filePath.match(/(?:^|\/)((?:src|scripts)\/.*)$/);
   return projectPath ? projectPath[1] : filePath.split("/").at(-1);
 }
 
+/** Build the Markdown table containing coverage for changed application files. */
 export function buildChangedFileCoverage(report) {
   const files = Object.entries(report).filter(([filePath]) => filePath !== "total");
 
@@ -71,6 +78,7 @@ export function buildChangedFileCoverage(report) {
   ].join("\n");
 }
 
+/** Compare target and pull-request coverage and build the Markdown summary. */
 export function buildCoverageComparison(base, head) {
   const comparisons = metrics.map((metric) => {
     const basePercentage = Number(base[metric].pct);
@@ -114,6 +122,7 @@ export function buildCoverageComparison(base, head) {
   return { output, reductions };
 }
 
+/** Read coverage reports, write the combined report, and emit GitHub Actions output. */
 export async function compareCoverage(
   [baseReportPath, headReportPath, outputPath, changedReportPath],
   environment = process.env

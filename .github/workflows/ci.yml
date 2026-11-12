@@ -57,12 +57,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
           path: coverage-head-source
 
       - name: Check out target branch commit
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
           path: coverage-base-source
 
       - name: Set up Node.js
@@ -104,6 +107,7 @@ jobs:
         run: >-
           npx vitest run --reporter=default --coverage --coverage.reportOnFailure
           --coverage.changed=${{ github.event.pull_request.base.sha }}
+          --coverage.include='src/**/*.{js,jsx,ts,tsx}'
           --coverage.reporter=html
           --coverage.reporter=json-summary
           --coverage.reportsDirectory=../frontend-pr-coverage/changed-files
@@ -118,12 +122,23 @@ jobs:
           ../frontend-pr-coverage/comparison.md
           ../frontend-pr-coverage/changed-files/coverage-summary.json
 
-      - name: Upload pull request coverage report
+      - name: Upload changed-file coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-pr-coverage
-          path: frontend-pr-coverage/
+          name: frontend-changed-coverage
+          path: frontend-pr-coverage/changed-files/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload overall coverage comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-comparison
+          path: |
+            frontend-pr-coverage/comparison.md
+            frontend-pr-coverage/raw/
           if-no-files-found: warn
           retention-days: 7
 
