@@ -20,6 +20,7 @@ import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseU
 import CourseGradeSummaryPage from "./pages/Courses/CourseGradeSummaryPage";
 import CourseAllReviewsPage from "./pages/Courses/CourseAllReviewsPage";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
+import LegacyQuestionnaireRedirect from "./pages/Questionnaires/LegacyQuestionnaireRedirect";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
 import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
@@ -151,6 +152,7 @@ function App() {
           path: "topics/:topicId/partner_advertisements",
           element: <ProtectedRoute element={<PartnerAdvertisements />} />,
         },
+
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
@@ -432,6 +434,10 @@ function App() {
               ],
             },
             {
+              path: "questionnaire/edit/:id",
+              element: <LegacyQuestionnaireRedirect />,
+            },
+            {
               path: "questionnaire",
               element: <Questionnaire />,
               loader: loadQuestionnaire,
@@ -440,7 +446,15 @@ function App() {
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        {
+          path: "questionnaire/edit/:id",
+          element: <LegacyQuestionnaireRedirect />,
+        },
+        {
+          path: "questionnaire",
+          element: <Questionnaire />,
+          loader: loadQuestionnaire,
+        },
 
         {
           path: "questionnaires",

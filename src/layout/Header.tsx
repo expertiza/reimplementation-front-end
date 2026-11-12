@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState } from "react";
 import { Button, Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -124,9 +124,11 @@ const Header: React.FC = () => {
                     <NavDropdown.Item as={Link} to="/courses">
                       Courses/Assignments
                     </NavDropdown.Item>
-                    <NavDropdown.Item as={Link} to="/questionnaire">
-                      Questionnaire
-                    </NavDropdown.Item>
+                    {hasAllPrivilegesOf(auth.user.role, ROLE.INSTRUCTOR) && (
+                      <NavDropdown.Item as={Link} to="/questionnaires">
+                        Questionnaires
+                      </NavDropdown.Item>
+                    )}
                     <NavDropdown.Item as={Link} to="/duties">
                       Roles (Duties)
                     </NavDropdown.Item>
