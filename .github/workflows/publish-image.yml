@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
+      image_name: ${{ steps.version.outputs.image_name }}
       is_release: ${{ steps.version.outputs.is_release }}
       sha_tag: ${{ steps.version.outputs.sha_tag }}
 
@@ -42,6 +43,7 @@ jobs:
           set -euo pipefail
 
           package_version=$(node --print "require('./package.json').version")
+          image_name=$(printf '%s' "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
           release_tag="v${package_version}"
           sha_tag="sha-${GITHUB_SHA::7}"
           is_release=false
@@ -98,6 +100,7 @@ jobs:
           fi
 
           {
+            echo "image_name=$image_name"
             echo "package_version=$package_version"
             echo "release_tag=$release_tag"
             echo "sha_tag=$sha_tag"
@@ -124,7 +127,7 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.version.outputs.image_name }}
           flavor: latest=false
           tags: |
             type=raw,value=${{ steps.version.outputs.sha_tag }}
@@ -218,6 +221,7 @@ jobs:
       - name: Promote current main image to latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED_IMAGE_NAME: ${{ needs.publish.outputs.image_name }}
           SHA_TAG: ${{ needs.publish.outputs.sha_tag }}
         run: |
           set -euo pipefail
@@ -235,8 +239,8 @@ jobs:
             exit 0
           fi
 
-          source_image="${REGISTRY}/${IMAGE_NAME}:${SHA_TAG}"
-          latest_image="${REGISTRY}/${IMAGE_NAME}:latest"
+          source_image="${REGISTRY}/${PUBLISHED_IMAGE_NAME}:${SHA_TAG}"
+          latest_image="${REGISTRY}/${PUBLISHED_IMAGE_NAME}:latest"
 
           docker buildx imagetools create \
             --tag "$latest_image" \

@@ -270,6 +270,10 @@ The published image name is:
 ghcr.io/expertiza/reimplementation-front-end
 ```
 
+The workflow normalizes the GitHub owner and repository name to lowercase, as required by Docker
+image references. This also allows the publishing flow to work in forks whose owner name contains
+uppercase characters.
+
 #### Images published from `main`
 
 Whenever a commit reaches `main`, including through a merged pull request, the workflow builds and
