@@ -120,10 +120,10 @@ branch or commit when another target is required. The report is generated even w
 the command still returns a failure and does not hide the test result. It does not enforce a coverage
 threshold.
 
-For non-draft pull requests, GitHub Actions includes this HTML report in the unified
-`frontend-pr-coverage` artifact under `changed-files/`. Open `changed-files/index.html` after
-downloading and extracting the artifact. The artifact is retained for seven days. Pull requests
-that do not change measurable source files may report `0/0` coverage.
+For non-draft pull requests, GitHub Actions uploads this HTML report in the
+`frontend-changed-coverage` artifact. Open `index.html` after downloading and extracting the
+artifact. The artifact is retained for seven days. Pull requests that do not change measurable
+source files may report `0/0` coverage.
 
 ### Overall coverage comparison
 
@@ -139,11 +139,11 @@ summary naming the affected metrics and their percentage-point reductions. The w
 the comparison by itself and has no tolerance: any decrease is reported. Test failures remain
 unchanged and are never hidden by the comparison.
 
-GitHub Actions uploads one `frontend-pr-coverage` artifact containing a human-readable
-`comparison.md`, the changed-file HTML report, and the machine-readable target-branch and
-pull-request JSON summaries under `raw/`. The artifact is retained for seven days. A follow-up
-workflow reads only `comparison.md` and creates or updates a single coverage comment on the pull
-request, so later commits replace the previous report instead of adding duplicate comments.
+GitHub Actions uploads a `frontend-coverage-comparison` artifact containing a human-readable
+`comparison.md` and the machine-readable target-branch and pull-request JSON summaries under
+`raw/`. Both coverage artifacts are retained for seven days. A follow-up workflow reads only
+`comparison.md` and creates or updates a single coverage comment on the pull request, so later
+commits replace the previous report instead of adding duplicate comments.
 
 To run the same comparison locally without switching away from work in progress, create a temporary
 Git worktree for the target branch. Run the following commands from the root of the feature-branch
