@@ -158,7 +158,7 @@ docker compose up --build
 
 The `Publish frontend container image` GitHub Actions workflow builds the existing `Dockerfile` and
 publishes the resulting image to GitHub Container Registry after a push to `main`. Versioned releases
-are prepared on short-lived `release/<version>` branches, and `package.json` is the source of truth
+are prepared on maintained `release/<version>` branches, and `package.json` is the source of truth
 for the release version.
 
 The published image name is:
