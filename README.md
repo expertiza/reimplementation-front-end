@@ -258,8 +258,11 @@ Manually pushing a Git tag does not trigger this workflow. The workflow also che
 version changed, but it does not enforce that the new version is greater than the previous one;
 maintainers must choose an increasing, unused version.
 
-The workflow also creates the matching `v0.2.0` Git tag and GitHub Release with generated release
-notes. It fails rather than moving a version tag that already points to a different commit.
+The workflow serializes publication separately for each release version. Before publishing the
+versioned image, it reserves the matching remote Git tag for the current commit. A retry for the
+same commit is allowed, but the workflow fails before publishing if that version is already reserved
+by a different commit. After the image is published, the workflow creates the matching GitHub
+Release with generated release notes.
 
 #### Creating a patch for an existing release
 
