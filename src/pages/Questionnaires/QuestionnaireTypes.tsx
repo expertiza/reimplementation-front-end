@@ -1,19 +1,15 @@
 import React from "react";
 import Table from "components/Table/Table";
-import {
-  QuestionnaireTypes,
-  QuestionnaireTypeOption,
-  getQuestionnaireTypeLabel,
-} from "./QuestionnaireUtils";
+import { QuestionnaireTypes, QuestionnaireType } from "./QuestionnaireUtils";
 import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
-import { IoIosAddCircle } from "react-icons/io";
+import { FaPlus } from "react-icons/fa";
 import useAPI from "hooks/useAPI";
 import { useEffect } from "react";
 import { useMemo } from "react";
 
 interface TableRow {
-  type: QuestionnaireTypeOption;
+  type: QuestionnaireType;
 }
 
 interface QuestionnaireTypeTableProps {
@@ -28,30 +24,29 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
 
   const data: TableRow[] = useMemo(() => {
     if (questionnaireTypes?.data?.length) {
-      return questionnaireTypes.data.map((t: any) => {
-        const value = t.name ?? t; // handle case where backend returns object or string
-        return { type: { label: getQuestionnaireTypeLabel(value), value } };
-      });
+      return questionnaireTypes.data.map((t: any) => ({
+        type: t.name ?? t, // handle case where backend returns object or string
+      }));
     }
     return QuestionnaireTypes.map((t) => ({ type: t }));
   }, [questionnaireTypes]);
 
   const navigate = useNavigate();
 
-  const onCreate = (type: QuestionnaireTypeOption) => {
+  const onCreate = (type: QuestionnaireType) => {
     if (onCloseModal) {
       console.log("Closing modal");
       onCloseModal(); // close the modal
     }
     // Navigate to the Questionnaire's new form
-    navigate(`/questionnaires/new?type=${encodeURIComponent(type.value)}`);
+    navigate(`/questionnaires/new?type=${encodeURIComponent(type)}`);
   };
 
   const columns: ColumnDef<TableRow>[] = [
     {
       header: "Questionnaire Type",
       accessorKey: "type",
-      cell: ({ row }) => row.original.type.label,
+      cell: (info) => info.getValue(),
       size: 500,
       minSize: 80,
       maxSize: 600,
@@ -62,20 +57,20 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
       cell: ({ row }) => {
         const type = row.original.type;
         return (
-          <IoIosAddCircle
+          <FaPlus
             onClick={() => onCreate(type)}
             style={{
               cursor: "pointer",
               transition: "all 0.2s",
-              color: "#3b82f6",
+              color: "#0d6efd",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#2563eb";
+              e.currentTarget.style.color = "#0a58ca";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#3b82f6";
+              e.currentTarget.style.color = "#0d6efd";
             }}
-            size={24}
+            size={16}
           />
         );
       },

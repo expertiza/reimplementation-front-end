@@ -3,7 +3,7 @@ import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-do
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
 import { RiHealthBookLine } from "react-icons/ri";
-import { QuestionnaireResponse } from "./QuestionnaireUtils";
+import { IItem, QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
 import QuestionnaireTypeTable from "./QuestionnaireTypes";
@@ -17,9 +17,10 @@ const Questionnaires = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showTypeModal, setShowTypeModal] = useState(false);
+  const [selectedType, setSelectedType] = useState<string>("All");
 
   // loader option
-  const questionnaireData: any = useLoaderData();
+  const questionnaireData = useLoaderData() as QuestionnaireResponse[];
 
   useEffect(() => {
     setShowTypeModal(false);
@@ -42,11 +43,6 @@ const Questionnaires = () => {
       dispatch(alertActions.showAlert({ variant: "danger", message: error }));
     }
   }, [error, dispatch]);
-
-  const onDeleteQuestionnaireHandler = useCallback(
-    () => setShowDeleteConfirmation({ visible: false }),
-    []
-  );
 
   const onEditHandle = useCallback(
     (row: TRow<QuestionnaireResponse>) => navigate(`edit/${row.original.id}`),
@@ -72,6 +68,16 @@ const Questionnaires = () => {
     [onDeleteHandle, onEditHandle]
   );
 
+  const availableTypes = useMemo(() => getQuestionnaireTypes(tableData), [tableData]);
+
+  const filteredData = useMemo(
+    () =>
+      selectedType === "All"
+        ? tableData
+        : tableData.filter((q) => q.questionnaire_type === selectedType),
+    [tableData, selectedType]
+  );
+
   const handleClose = () => setShowTypeModal(false);
 
   const handleRowClick = async (questionnaire: QuestionnaireResponse) => {
@@ -86,28 +92,17 @@ const Questionnaires = () => {
       <Outlet />
       <main>
         <Container fluid className="px-md-4">
-          <Row className="mt-md-2 mb-md-2">
+          <Row className="mt-4 mb-4">
             <Col className="text-center">
-              <h1>Manage Questionnaires</h1>
+              <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>
+                Manage Questionnaires
+              </h1>
             </Col>
-            <hr />
           </Row>
-          <Row className="mb-2">
-            <Col
-              className="d-flex justify-content-end"
-              style={{ maxWidth: "1400px", margin: "0 auto" }}
-            >
-              <Button
-                variant="success"
-                onClick={() => setShowTypeModal(true)}
-                className="d-flex align-items-center shadow-sm"
-                style={{
-                  borderRadius: "8px",
-                  width: "48px",
-                  height: "48px",
-                }}
-              >
-                <RiHealthBookLine size={24} />
+          <Row className="mb-3">
+            <Col md={{ span: 1, offset: 11 }}>
+              <Button variant="outline-primary" onClick={() => setShowTypeModal(true)}>
+                <RiHealthBookLine />
               </Button>
             </Col>
           </Row>
@@ -124,16 +119,46 @@ const Questionnaires = () => {
               </Modal>
             )}
           </Row>
+
+          {/* Type-filter buttons */}
+          <Row className="mb-2">
+            <Col>
+              <div className="d-flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant={selectedType === "All" ? "primary" : "outline-primary"}
+                  onClick={() => setSelectedType("All")}
+                >
+                  All
+                </Button>
+                {availableTypes.map((type) => (
+                  <Button
+                    key={type}
+                    size="sm"
+                    variant={selectedType === type ? "primary" : "outline-primary"}
+                    onClick={() => setSelectedType(type)}
+                  >
+                    {type}
+                  </Button>
+                ))}
+              </div>
+            </Col>
+          </Row>
+
           <Row>
             <Table
-              data={tableData}
+              showGlobalFilter={false}
+              data={filteredData}
               columns={tableColumns}
               showColumnFilter={false}
               columnVisibility={{
                 id: false,
                 instructor_id: false,
               }}
-              onRowClick={handleRowClick}
+              getRowProps={(row: TRow<QuestionnaireResponse>) => ({
+                onClick: () => handleRowClick(row.original),
+                style: { cursor: "pointer" },
+              })}
             />
             {selectedQuestionnaire && !showDeleteConfirmation.visible && (
               <Modal show={true} onHide={() => setSelectedQuestionnaire(null)} size="lg" centered>
@@ -167,9 +192,9 @@ const Questionnaires = () => {
                     <p>Loading items...</p>
                   ) : itemsResponse?.data?.length ? (
                     <ol>
-                      {itemsResponse.data.map((item: any, i: number) => (
+                      {itemsResponse.data.map((item: IItem, i: number) => (
                         <li key={i} style={{ marginBottom: "8px" }}>
-                          <strong>{item.txt}</strong> ({item.question_type})
+                          <strong>{item.txt}</strong> ({item.item_type})
                           {item.alternatives && (
                             <>
                               &nbsp;&nbsp;<span>Choices: {item.alternatives}</span>
@@ -201,7 +226,7 @@ const Questionnaires = () => {
                               &nbsp;&nbsp;<span>Weight: {item.weight}</span>
                             </>
                           )}
-                          {item.question_type === "Criterion" && <span> | </span>}
+                          {item.item_type === "Criterion" && <span> | </span>}
                           {item.textarea_width && (
                             <>
                               &nbsp;<span>Text Area Width: {item.textarea_width}</span>
