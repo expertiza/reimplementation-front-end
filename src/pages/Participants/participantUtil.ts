@@ -137,6 +137,33 @@ export const transformAssignmentParticipant = (participant: any): IParticipantRe
   };
 };
 
+// Authorizations accepted by PATCH /participants/:id/:authorization
+export const authorizationOptions: IFormOption[] = [
+  { label: "Select an Authorization", value: "" },
+  { label: "Reader", value: "reader" },
+  { label: "Reviewer", value: "reviewer" },
+  { label: "Submitter", value: "submitter" },
+  { label: "Mentor", value: "mentor" },
+];
+
+export interface IParticipantAuthorization {
+  id: number;
+  username: string;
+  name: string;
+  authorization: string;
+}
+
+export async function loadParticipantAuthorization({ params }: any) {
+  const { data } = await axiosClient.get(`/participants/${params.id}`);
+  const participant: IParticipantAuthorization = {
+    id: data.id,
+    username: data.user?.username ?? "",
+    name: data.user?.name ?? "",
+    authorization: data.authorization ?? "",
+  };
+  return participant;
+}
+
 export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
   let participantData = {};
   // if params contains id, then we are editing a participant, so we need to load the participant data

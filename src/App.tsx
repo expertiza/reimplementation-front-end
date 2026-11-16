@@ -29,9 +29,13 @@ import InstitutionEditor, { loadInstitution } from "./pages/Institutions/Institu
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import Participants from "./pages/Participants/Participant";
 import ParticipantEditor from "./pages/Participants/ParticipantEditor";
+import ParticipantAuthorizationEditor from "./pages/Participants/ParticipantAuthorizationEditor";
 import ParticipantsAPI from "./pages/Participants/ParticipantsAPI";
 import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
-import { loadParticipantDataRolesAndInstitutions } from "./pages/Participants/participantUtil";
+import {
+  loadParticipantAuthorization,
+  loadParticipantDataRolesAndInstitutions,
+} from "./pages/Participants/participantUtil";
 import EditProfile from "./pages/Profile/Edit";
 import Reviews from "./pages/Reviews/reviews";
 import ReviewTableau from "./pages/ReviewTableau/ReviewTableau";
@@ -216,8 +220,8 @@ function App() {
             },
             {
               path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="student_tasks" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAuthorizationEditor />,
+              loader: loadParticipantAuthorization,
             },
           ],
         },
@@ -238,8 +242,8 @@ function App() {
             },
             {
               path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAuthorizationEditor />,
+              loader: loadParticipantAuthorization,
             },
           ],
         },
@@ -255,8 +259,8 @@ function App() {
             },
             {
               path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="student_tasks" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAuthorizationEditor />,
+              loader: loadParticipantAuthorization,
             },
           ],
         },
@@ -272,8 +276,8 @@ function App() {
             },
             {
               path: "edit/:id",
-              element: <ParticipantEditor mode="update" type="courses" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAuthorizationEditor />,
+              loader: loadParticipantAuthorization,
             },
           ],
         },
