@@ -80,16 +80,28 @@ export const transformParticipantRequest = (values: IParticipantFormValues) => {
   return JSON.stringify(participant);
 };
 
+// Full names are either "Last, First" or "First Last"
+const splitFullName = (fullName: string) => {
+  if (fullName.includes(",")) {
+    const [lastName, firstName = ""] = fullName.split(",");
+    return { firstName: firstName.trim(), lastName: lastName.trim() };
+  }
+  const [firstName = "", ...rest] = fullName.trim().split(/\s+/);
+  return { firstName, lastName: rest.join(" ") };
+};
+
 export const transformParticipantResponse = (participantResponse: string) => {
-  const participant: IParticipantResponse = JSON.parse(participantResponse);
+  // GET /participants/:id nests the user under the participant, like the list endpoint
+  const participant = transformAssignmentParticipant(JSON.parse(participantResponse));
   const parent_id = participant.parent.id ? participant.parent.id : null;
   const institution_id = participant.institution.id ? participant.institution.id : -1;
+  const { firstName, lastName } = splitFullName(participant.full_name);
   const participantValues: IParticipantFormValues = {
     id: participant.id,
     name: participant.name,
     email: participant.email,
-    firstName: participant.full_name.split(",")[1].trim(),
-    lastName: participant.full_name.split(",")[0].trim(),
+    firstName,
+    lastName,
     role_id: participant.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
@@ -107,8 +119,8 @@ export const transformParticipantResponse = (participantResponse: string) => {
   return participantValues;
 };
 
-// GET /participants/assignment/:assignment_id nests the user under each participant;
-// flatten it into the row shape the participants table reads
+// GET /participants/assignment/:assignment_id and GET /participants/:id nest the user
+// under each participant; flatten it into the shape the table and editor read
 export const transformAssignmentParticipant = (participant: any): IParticipantResponse => {
   const user = participant.user ?? {};
   return {
@@ -121,7 +133,7 @@ export const transformAssignmentParticipant = (participant: any): IParticipantRe
     email_on_review_of_review: !!user.email_on_review_of_review,
     role: { id: user.role?.id, name: user.role?.name },
     parent: { id: user.parent?.id ?? null, name: user.parent?.username ?? null },
-    institution: { id: null, name: null },
+    institution: { id: user.institution?.id ?? null, name: user.institution?.name ?? null },
   };
 };
 
