@@ -20,6 +20,7 @@ import { loadCourseInstructorDataAndInstitutions } from "./pages/Courses/CourseU
 import CourseGradeSummaryPage from "./pages/Courses/CourseGradeSummaryPage";
 import CourseAllReviewsPage from "./pages/Courses/CourseAllReviewsPage";
 import Questionnaire from "./pages/Questionnaires/Questionnaire";
+import LegacyQuestionnaireRedirect from "./pages/Questionnaires/LegacyQuestionnaireRedirect";
 import QuestionnaireEditor from "./pages/Questionnaires/QuestionnaireEditor";
 import { loadQuestionnaire } from "./pages/Questionnaires/QuestionnaireUtils";
 import Email_the_author from "./pages/Email_the_author/email_the_author";
@@ -50,6 +51,7 @@ import { ROLE } from "./utils/interfaces";
 import AssignReviewer from "./pages/Assignments/AssignReviewer";
 import StudentTasks from "./pages/StudentTasks/StudentTasks";
 import StudentTaskDetail from "pages/StudentTasks/StudentTaskDetail";
+import StudentReviewList from "pages/StudentTasks/StudentReviewList";
 import StudentTeams from "./pages/Student Teams/StudentTeamView";
 import StudentTeamView from "./pages/Student Teams/StudentTeamView";
 import NewTeammateAdvertisement from "./pages/Student Teams/NewTeammateAdvertisement";
@@ -61,6 +63,7 @@ import DutyEditor from "./pages/Duties/DutyEditor";
 import ReviewReportPage from "./pages/Reviews/ReviewReportPage";
 import TeammateReviewReportPage from "./pages/Reviews/TeammateReviewReportPage";
 import ReviewDetailPage from "./pages/Reviews/ReviewDetailPage";
+import ResponsePage from "./pages/Responses/ResponsePage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -84,6 +87,12 @@ function App() {
           path: "student_task_detail/:id",
           element: (
             <ProtectedRoute element={<StudentTaskDetail />} leastPrivilegeRole={ROLE.STUDENT} />
+          ),
+        },
+        {
+          path: "student_review/list/:assignmentId",
+          element: (
+            <ProtectedRoute element={<StudentReviewList />} leastPrivilegeRole={ROLE.STUDENT} />
           ),
         },
         {
@@ -143,6 +152,7 @@ function App() {
           path: "topics/:topicId/partner_advertisements",
           element: <ProtectedRoute element={<PartnerAdvertisements />} />,
         },
+
         {
           path: "student_teams/view",
           element: <ProtectedRoute element={<StudentTeamView />} />,
@@ -321,6 +331,10 @@ function App() {
           path: "review-detail",
           element: <ReviewDetailPage />,
         },
+        {
+          path: "assignments/:assignmentId/responses/:mappingId",
+          element: <ProtectedRoute element={<ResponsePage />} />,
+        },
         // Fixed the missing comma and added an opening curly brace
         {
           path: "courses",
@@ -420,6 +434,10 @@ function App() {
               ],
             },
             {
+              path: "questionnaire/edit/:id",
+              element: <LegacyQuestionnaireRedirect />,
+            },
+            {
               path: "questionnaire",
               element: <Questionnaire />,
               loader: loadQuestionnaire,
@@ -428,7 +446,15 @@ function App() {
         },
 
         { path: "*", element: <NotFound /> },
-        { path: "questionnaire", element: <Questionnaire />, loader: loadQuestionnaire },
+        {
+          path: "questionnaire/edit/:id",
+          element: <LegacyQuestionnaireRedirect />,
+        },
+        {
+          path: "questionnaire",
+          element: <Questionnaire />,
+          loader: loadQuestionnaire,
+        },
 
         {
           path: "questionnaires",
