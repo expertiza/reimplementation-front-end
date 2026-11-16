@@ -29,6 +29,7 @@ import InstitutionEditor, { loadInstitution } from "./pages/Institutions/Institu
 import Institutions, { loadInstitutions } from "./pages/Institutions/Institutions";
 import Participants from "./pages/Participants/Participant";
 import ParticipantEditor from "./pages/Participants/ParticipantEditor";
+import ParticipantAddEditor from "./pages/Participants/ParticipantAddEditor";
 import ParticipantAuthorizationEditor from "./pages/Participants/ParticipantAuthorizationEditor";
 import ParticipantsAPI from "./pages/Participants/ParticipantsAPI";
 import ParticipantsDemo from "./pages/Participants/ParticipantsDemo";
@@ -237,8 +238,7 @@ function App() {
           children: [
             {
               path: "new",
-              element: <ParticipantEditor mode="create" type="assignments" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAddEditor />,
             },
             {
               path: "edit/:id",
@@ -254,8 +254,7 @@ function App() {
           children: [
             {
               path: "new",
-              element: <ParticipantEditor mode="create" type="student_tasks" />,
-              loader: loadParticipantDataRolesAndInstitutions,
+              element: <ParticipantAddEditor />,
             },
             {
               path: "edit/:id",
