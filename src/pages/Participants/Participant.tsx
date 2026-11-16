@@ -22,7 +22,7 @@ interface IModel {
   id: Number;
 }
 
-const Participants: React.FC<IModel> = ({ type }) => {
+const Participants: React.FC<IModel> = () => {
   const { assignmentId } = useParams();
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
@@ -56,8 +56,9 @@ const Participants: React.FC<IModel> = ({ type }) => {
   );
 
   const onEditHandle = useCallback(
-    (row: TRow<IParticipantResponse>) => navigate(`/${type}/participant/edit/${row.original.id}`),
-    [navigate, type]
+    // Relative, so it lands on this page's own edit/:id child route
+    (row: TRow<IParticipantResponse>) => navigate(`edit/${row.original.id}`),
+    [navigate]
   );
 
   const onDeleteHandle = useCallback(
