@@ -5,11 +5,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
 import { IParticipantResponse, ROLE } from "../../utils/interfaces";
 import DeleteParticipant from "./ParticipantDelete";
+import { transformAssignmentParticipant } from "./participantUtil";
 import { participantColumns as PARPTICIPANT_COLUMNS } from "./participantColumns";
 
 /**
@@ -21,7 +22,8 @@ interface IModel {
   id: Number;
 }
 
-const Participants: React.FC<IModel> = ({ type, id }) => {
+const Participants: React.FC<IModel> = ({ type }) => {
+  const { assignmentId } = useParams();
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
     (state: RootState) => state.authentication,
@@ -37,8 +39,9 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   }>({ visible: false });
 
   useEffect(() => {
-    if (!showDeleteConfirmation.visible) fetchParticipants({ url: `/participants/${type}/${id}` });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id]);
+    if (!showDeleteConfirmation.visible && assignmentId)
+      fetchParticipants({ url: `/participants/assignment/${assignmentId}` });
+  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, assignmentId]);
 
   // Error alert
   useEffect(() => {
@@ -69,7 +72,10 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   );
 
   const tableData = useMemo(
-    () => (isLoading || !participantResponse?.data ? [] : participantResponse.data),
+    () =>
+      isLoading || !Array.isArray(participantResponse?.data)
+        ? []
+        : participantResponse!.data.map(transformAssignmentParticipant),
     [participantResponse?.data, isLoading]
   );
 

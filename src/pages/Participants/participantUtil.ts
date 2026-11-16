@@ -107,6 +107,24 @@ export const transformParticipantResponse = (participantResponse: string) => {
   return participantValues;
 };
 
+// GET /participants/assignment/:assignment_id nests the user under each participant;
+// flatten it into the row shape the participants table reads
+export const transformAssignmentParticipant = (participant: any): IParticipantResponse => {
+  const user = participant.user ?? {};
+  return {
+    id: participant.id,
+    name: user.username ?? "",
+    full_name: user.name ?? "",
+    email: user.email ?? "",
+    email_on_review: !!user.email_on_review,
+    email_on_submission: !!user.email_on_submission,
+    email_on_review_of_review: !!user.email_on_review_of_review,
+    role: { id: user.role?.id, name: user.role?.name },
+    parent: { id: user.parent?.id ?? null, name: user.parent?.username ?? null },
+    institution: { id: null, name: null },
+  };
+};
+
 export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
   let participantData = {};
   // if params contains id, then we are editing a participant, so we need to load the participant data
