@@ -63,7 +63,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src="/assets/icons/Check-icon.png"
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />
@@ -89,7 +89,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src="/assets/icons/Check-icon.png"
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />
