@@ -74,6 +74,9 @@ const TAs = () => {
       </Modal.Header>
       <Modal.Body>
         <Outlet />
+        {showDeleteConfirmation.visible && (
+          <DeleteTA TAData={showDeleteConfirmation.data!} onClose={onDeleteTAHandler} />
+        )}
         <main>
           <Container fluid className="px-md-4">
             <Row className="mt-md-2 mb-md-2">
@@ -93,7 +96,7 @@ const TAs = () => {
                   tooltip="Add TA to this course"
                   icon={
                     <img
-                      src={process.env.PUBLIC_URL + "/assets/images/add-ta-24.png"}
+                      src="/assets/images/add-ta-24.png"
                       alt="Assign TA"
                       style={{ width: "20px", height: "20px" }}
                     />

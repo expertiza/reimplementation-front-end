@@ -79,10 +79,10 @@ export const transformUserResponse = (userResponse: string) => {
   const institution_id = user.institution.id ? user.institution.id : -1;
   const userValues: IUserFormValues = {
     id: user.id,
-    name: user.name,
+    name: user.username,
     email: user.email,
-    firstName: user.full_name.split(",")[1].trim(),
-    lastName: user.full_name.split(",")[0].trim(),
+    firstName: user.name.split(",")[1].trim(),
+    lastName: user.name.split(",")[0].trim(),
     role_id: user.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
