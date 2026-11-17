@@ -183,7 +183,7 @@ const Questionnaires = () => {
                     )}
                   </p>
                   <p>
-                    <strong>Instructor:</strong> {selectedQuestionnaire.instructor?.name} (
+                    <strong>Instructor:</strong> {selectedQuestionnaire.instructor?.username} (
                     {selectedQuestionnaire.instructor?.email})
                   </p>
 

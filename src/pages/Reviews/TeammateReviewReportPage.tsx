@@ -66,8 +66,8 @@ interface ReviewRow {
 interface ApiReview {
   id: number;
   team_name: string | null;
-  reviewer: { id: number; user: { id: number; name: string } };
-  reviewee: { id: number; user: { id: number; name: string } };
+  reviewer: { id: number; user: { id: number; username: string } };
+  reviewee: { id: number; user: { id: number; username: string } };
   submitted: boolean;
   last_reviewed_at: string | null;
   responses: {
@@ -97,7 +97,7 @@ function transformResponse(data: FetchReportResponse): ReviewRow[] {
     if (!reviewerMap.has(rid)) {
       reviewerMap.set(rid, {
         reviewerId: rid,
-        reviewerName: r.reviewer.user.name,
+        reviewerName: r.reviewer.user.username,
         teamName: r.team_name ?? "—",
         reviewsDone: 0,
         reviewsTotal: 0,
@@ -110,7 +110,7 @@ function transformResponse(data: FetchReportResponse): ReviewRow[] {
     row.reviewsTotal += 1;
     if (r.submitted) row.reviewsDone += 1;
     row.reviewees.push({
-      revieweeName: r.reviewee.user.name,
+      revieweeName: r.reviewee.user.username,
       submitted: r.submitted,
       lastReviewedAt: r.last_reviewed_at,
       scores: submittedResp?.scores ?? [],

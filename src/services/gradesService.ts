@@ -30,8 +30,8 @@ export interface ReviewTableauApiResponse {
   participant: {
     id: number;
     user_id: number;
-    user_name: string;
-    full_name: string;
+    username: string;
+    name: string;
     handle: string;
   };
   assignment: {
@@ -135,8 +135,8 @@ export const transformReviewTableauData = (
   return {
     studentId:
       reviewerId ||
-      apiData.participant.user_name ||
-      apiData.participant.full_name ||
+      apiData.participant.username ||
+      apiData.participant.name ||
       `Reviewer ${apiData.participant.id}`,
     course: "Course Information", // This might need to be fetched separately
     assignment: apiData.assignment.name || "Assignment Information",

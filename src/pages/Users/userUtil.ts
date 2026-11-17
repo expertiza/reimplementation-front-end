@@ -57,12 +57,12 @@ export const transformRolesResponse = (rolesList: string) => {
 export const transformUserRequest = (values: IUserFormValues) => {
   // const parent_id = values.parent_id ? values.parent_id : null;
   const user: IUserRequest = {
-    name: values.name,
+    username: values.name,
+    name: values.lastName + ", " + values.firstName,
     email: values.email,
     role_id: values.role_id,
     parent_id: values.parent_id,
     institution_id: values.institution_id,
-    full_name: values.lastName + ", " + values.firstName,
     email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
     email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
     email_on_review_of_review: values.emailPreferences.includes(

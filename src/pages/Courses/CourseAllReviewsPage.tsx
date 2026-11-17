@@ -19,7 +19,7 @@ interface AssignmentCell {
 
 interface StudentRow {
   user_id: number;
-  user_name: string;
+  username: string;
   teammate_count: number;
   assignments: AssignmentCell[];
   aggregate: string | null;
@@ -144,7 +144,7 @@ const CourseAllReviewsPage = () => {
                   return (
                     <tr key={student.user_id}>
                       <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>
-                        {student.user_name}
+                        {student.username}
                       </td>
                       <td style={{ textAlign: "center" }}>{student.teammate_count}</td>
                       {assignments.map((a) => {

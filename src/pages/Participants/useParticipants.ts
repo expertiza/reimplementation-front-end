@@ -34,13 +34,13 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
 
         return {
           id: p.id,
-          name: user.name || p.name || "",
-          full_name: user.full_name || p.full_name || "",
+          name: user.username || p.name || "",
+          full_name: user.name || p.full_name || "",
           email: user.email || p.email || "",
           role: user.role || p.role || ALL_ROLES[0],
           parent: {
             id: parentUser.id || null,
-            name: parentUser.name || null,
+            name: parentUser.username || null,
           },
           handle: p.handle || null,
           can_submit: p.can_submit || false,

@@ -104,7 +104,7 @@ const PartnerAdvertisements: React.FC = () => {
 
               const members =
                 team.users && team.users.length > 0
-                  ? team.users.map((u) => u.name).join(", ")
+                  ? team.users.map((u) => u.username).join(", ")
                   : "No members yet";
 
               const qualifications = (signedUpTeam.comments_for_advertisement || "I want a person")

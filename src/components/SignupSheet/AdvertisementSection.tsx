@@ -180,14 +180,7 @@ const AdvertisementSection: FC<AdvertisementSectionProps> = ({
                     let membersList: string[] = [];
                     if (Array.isArray(membersToDisplay)) {
                       membersList = membersToDisplay.map(
-                        (u: any) =>
-                          u.name ||
-                          u.user_name ||
-                          u.username ||
-                          u.full_name ||
-                          u.user?.name ||
-                          u.user?.username ||
-                          u.user?.full_name
+                        (u: any) => u.username || u.name || u.user?.username || u.user?.name
                       );
                     }
 

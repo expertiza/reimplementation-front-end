@@ -14,7 +14,7 @@ const initialAuthenticationState: {
 } = {
   isAuthenticated: false,
   authToken: "",
-  user: { id: 0, name: "", full_name: "", role: "", institution_id: 0 },
+  user: { id: 0, username: "", name: "", role: "", institution_id: 0 },
 };
 
 const authenticationSlice = createSlice({

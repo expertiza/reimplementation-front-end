@@ -540,10 +540,10 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                 {sentInvitations.data.map((invite: any) => (
                   <tr key={invite.id}>
                     <td className={styles.studentTeamTableCell}>
-                      {invite.to_participant?.user?.name}
+                      {invite.to_participant?.user?.username}
                     </td>
                     <td className={styles.studentTeamTableCell}>
-                      {invite.to_participant?.user?.full_name}
+                      {invite.to_participant?.user?.name}
                     </td>
                     <td className={styles.studentTeamTableCell}>
                       {invite.to_participant?.user?.email}
@@ -557,7 +557,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                           onClick={() => {
                             if (
                               window.confirm(
-                                `You are retracting invite to ${invite.to_participant?.user?.name}. Are you sure?`
+                                `You are retracting invite to ${invite.to_participant?.user?.username}. Are you sure?`
                               )
                             ) {
                               updateInvite(invite.id, "R");
@@ -596,7 +596,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                       {invite.from_participant?.team?.name}
                     </td>
                     <td className={styles.studentTeamTableCell}>
-                      {invite.from_participant?.user?.name}
+                      {invite.from_participant?.user?.username}
                     </td>
                     <td className={styles.studentTeamTableCell}>
                       {invite.reply_status === "W" ? (
@@ -670,7 +670,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
 
                 return (
                   <tr key={request.id}>
-                    <td className={styles.studentTeamTableCell}>{request.participant.user_name}</td>
+                    <td className={styles.studentTeamTableCell}>{request.participant.username}</td>
                     <td className={styles.studentTeamTableCell}>{request.comments}</td>
                     <td className={styles.studentTeamTableCell}>
                       {request.reply_status === "PENDING" ? (
@@ -683,7 +683,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             onClick={() => {
                               if (
                                 window.confirm(
-                                  `Accept ${request.participant.user_name}'s request to join team?`
+                                  `Accept ${request.participant.username}'s request to join team?`
                                 )
                               ) {
                                 handleAcceptJoinRequest(request.id);
@@ -703,7 +703,7 @@ const StudentTeamView: FC<StudentTeamsProps> = () => {
                             onClick={() => {
                               if (
                                 window.confirm(
-                                  `Decline join request from ${request.participant.user_name}?`
+                                  `Decline join request from ${request.participant.username}?`
                                 )
                               ) {
                                 handleDeclineJoinRequest(request.id);

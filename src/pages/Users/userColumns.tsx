@@ -37,7 +37,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableColumnFilter: false,
   }),
 
-  columnHelper.accessor("parent.name", {
+  columnHelper.accessor("parent.username", {
     id: "parent",
     header: "Parent",
     enableColumnFilter: false,

@@ -21,7 +21,7 @@ interface AssignmentCell {
 
 interface StudentRow {
   user_id: number;
-  user_name: string;
+  username: string;
   assignments: AssignmentCell[];
   final_grade: number | null;
 }
@@ -152,7 +152,7 @@ const CourseGradeSummaryPage = () => {
                   return (
                     <tr key={student.user_id}>
                       <td className="course-report-sticky-col" style={{ fontWeight: 500 }}>
-                        {student.user_name}
+                        {student.username}
                       </td>
                       {assignments.flatMap((a) => {
                         const cell = cellByAssignment[a.id];

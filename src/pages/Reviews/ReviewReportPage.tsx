@@ -98,7 +98,7 @@ interface FetchReportResponse {
   assignment_name: string;
   reviews: {
     id: number;
-    reviewer: { id: number; user: { id: number; name: string } };
+    reviewer: { id: number; user: { id: number; username: string } };
     reviewee: { id: number };
     responses: {
       id: number;
@@ -215,7 +215,7 @@ function transformFetchReportResponse(data: FetchReportResponse): ReviewData[] {
 
       rows.push({
         id: review.id,
-        reviewerName: reviewer.user.name,
+        reviewerName: reviewer.user.username,
         reviewerId: reviewer.id,
         reviewsCompleted,
         reviewsSelected,
