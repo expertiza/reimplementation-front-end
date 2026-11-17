@@ -46,6 +46,18 @@ interface TaskData {
 }
 
 /** Shape of location.state passed by StudentTasks when navigating to this page. */
+/** The subset of `/student_tasks/show/:id` this page actually reads. */
+interface TaskDetailResponse {
+  assignment?: string;
+  current_stage?: string;
+  participant?: {
+    can_submit?: boolean;
+    can_review?: boolean;
+    can_take_quiz?: boolean;
+    parent_id?: number | null;
+  };
+}
+
 interface StateData {
   task: TaskData;
   assignmentId?: number; // participant.parent_id — used to build the "Your feedback" link
@@ -61,7 +73,7 @@ const StudentTaskDetail: React.FC = () => {
   const today = useMemo(() => new Date(), []);
 
   // 2. Fetch task details and timeline events independently
-  const [apiData, setApiData] = useState<any | null>(null);
+  const [apiData, setApiData] = useState<TaskDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [timelineData, setTimelineData] = useState<DueDates[]>([]);
@@ -73,8 +85,9 @@ const StudentTaskDetail: React.FC = () => {
         setIsLoading(true);
         const response = await axiosClient.get(`/student_tasks/show/${id}`);
         setApiData(response.data);
-      } catch (error: any) {
-        if (error?.response?.status === 403 || error?.response?.status === 404) {
+      } catch (error) {
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 403 || status === 404) {
           navigate("/");
           return;
         }
@@ -89,7 +102,7 @@ const StudentTaskDetail: React.FC = () => {
         setIsTimelineLoading(true);
         const response = await axiosClient.get(`/participants/${id}/timeline`);
         setTimelineData(response.data);
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching timeline:", error);
       } finally {
         setIsTimelineLoading(false);
@@ -98,7 +111,7 @@ const StudentTaskDetail: React.FC = () => {
 
     fetchTaskDetails();
     fetchTimeline();
-  }, [id]);
+  }, [id, navigate]);
 
   // Permissions from the participant object in the API response
   const canSubmit = apiData?.participant?.can_submit !== false;
@@ -113,7 +126,7 @@ const StudentTaskDetail: React.FC = () => {
   // The backend may return dates in ISO 8601 (YYYY-MM-DDTHH:MM:SSZ) or legacy dd-mm-yyyy HH:MM:SS format.
   // Only the legacy format is reformatted — ISO strings already parse correctly in all browsers.
   const due_dates: DueDates[] = useMemo(() => {
-    const normalized = timelineData.map((due: any) => {
+    const normalized = timelineData.map((due) => {
       let safeDateString = due.date;
 
       // Only reformat dd-mm-yyyy strings; skip ISO dates (which already start YYYY-)
@@ -210,7 +223,11 @@ const StudentTaskDetail: React.FC = () => {
           </li>
           {canSubmit && (
             <li className={styles.taskItem}>
-              <Link to={`/student_tasks/${id}`} className={styles.clickableLink}>
+              <Link
+                to={`/student_tasks/${id}/submit`}
+                state={{ assignmentName: assignment }}
+                className={styles.clickableLink}
+              >
                 Your work
               </Link>
               <span className={styles.taskDescription}> (View your work)</span>

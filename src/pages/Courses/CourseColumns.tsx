@@ -101,9 +101,7 @@ export const courseColumns = (
     id: "instructor",
     header: "Instructor",
     cell: ({ row }) => (
-      <div className="text-start py-1 px-3">
-        {row.original.rowType === "course" ? row.original.instructor?.name || "–" : "–"}
-      </div>
+      <div className="text-start py-1 px-3">{row.original.instructor?.name || "–"}</div>
     ),
   }),
 

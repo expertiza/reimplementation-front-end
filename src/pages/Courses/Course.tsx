@@ -8,13 +8,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { alertActions } from "../../store/slices/alertSlice";
 import { RootState } from "../../store/store";
-import { ICourseResponse, IAssignmentResponse, ROLE } from "../../utils/interfaces";
+import {
+  ICourseResponse,
+  IAssignmentResponse,
+  IInstructorResponse,
+  ROLE,
+} from "../../utils/interfaces";
 import { hasAllPrivilegesOf } from "../../utils/util";
 import { courseColumns as COURSE_COLUMNS } from "./CourseColumns";
 import CopyCourse from "./CourseCopy";
 import DeleteCourse from "./CourseDelete";
 import AssignmentDelete from "../Assignments/AssignmentDelete";
-import { mergeDataAndNamesAndInstructors } from "./CourseUtil";
+import { getInstructorDisplayName, mergeDataAndNamesAndInstructors } from "./CourseUtil";
 import { formatDate } from "../../utils/util";
 
 type UnifiedRow = Record<string, any>;
@@ -232,12 +237,22 @@ const Courses = () => {
   );
 
   const unifiedData = useMemo(() => {
-    const toAssignmentRow = (a: IAssignmentResponse) => ({
-      ...a,
-      created_at: a.created_at ? formatDate(a.created_at) : "–",
-      updated_at: a.updated_at ? formatDate(a.updated_at) : "–",
-      rowType: "assignment" as const,
-    });
+    // Resolve assignment instructor_id against the /users list, same as courses
+    const instructorById = new Map<number, IInstructorResponse>(
+      instructorData.map((u: IInstructorResponse) => [u.id, u])
+    );
+    const toAssignmentRow = (a: IAssignmentResponse) => {
+      const instructor = instructorById.get(a.instructor_id);
+      return {
+        ...a,
+        instructor: instructor
+          ? { id: instructor.id, name: getInstructorDisplayName(instructor) }
+          : {},
+        created_at: a.created_at ? formatDate(a.created_at) : "–",
+        updated_at: a.updated_at ? formatDate(a.updated_at) : "–",
+        rowType: "assignment" as const,
+      };
+    };
 
     // Index assignments by course_id once — O(n+m) instead of O(n×m)
     const byCourseId = new Map<number, IAssignmentResponse[]>();
@@ -267,7 +282,7 @@ const Courses = () => {
       .map(toAssignmentRow);
 
     return [...courseRows, ...standaloneRows];
-  }, [mergedTableData, loggedInUserRole, auth.user.id, allAssignments]);
+  }, [mergedTableData, loggedInUserRole, auth.user.id, allAssignments, instructorData]);
 
   return (
     <>

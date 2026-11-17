@@ -3,11 +3,11 @@ import FormInput from "components/Form/FormInput";
 import FormSelect from "components/Form/FormSelect";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import useAPI from "../../hooks/useAPI";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, InputGroup, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoaderData, useLocation, useNavigate } from "react-router-dom";
-import { alertActions } from "../../store/slices/alertSlice"; // Success message utility
+import { alertActions } from "../../store/slices/alertSlice";
 import { HttpMethod } from "utils/httpMethods";
 import * as Yup from "yup";
 import { RootState } from "../../store/store";
@@ -94,6 +94,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
   useEffect(() => {
     fetchusers({ url: "/users" });
   }, [auth.user, fetchusers]);
+
   // Success handler for course editing and creating
   const handleCourseSuccess = () => {
     if (courseResponse && courseResponse.status >= 200 && courseResponse.status < 300) {
@@ -146,6 +147,7 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
 
   // Function to close the modal
   const handleClose = () => navigate(location.state?.from ? location.state.from : "/courses");
+
   // Render the CourseEditor modal
   return (
     <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
@@ -154,25 +156,30 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
       </Modal.Header>
       <Modal.Body>
         {courseError && <p className="text-danger">{courseError}</p>}
-
-        <Formik
-          initialValues={{
-            ...initialValues,
-            ...courseData,
-            private: courseData.private || [],
-            institution_id:
-              courseData.institution_id ??
-              auth.user?.institution_id ??
-              initialValues.institution_id,
-            instructor_id: courseData.instructor_id ?? auth.user?.id ?? initialValues.instructor_id,
-          }}
-          onSubmit={onSubmit}
-          validationSchema={validationSchema}
-          validateOnChange={true}
-          enableReinitialize={true}
-        >
-          {(formik) => {
-            return (
+        {mode === "update" &&
+        (auth.user?.role === ROLE.ADMIN || auth.user?.role === ROLE.SUPER_ADMIN) ? (
+          <p className="text-primary">
+            Please impersonate the instructor for whom you are creating a course.
+          </p>
+        ) : (
+          <Formik
+            initialValues={{
+              ...initialValues,
+              ...courseData,
+              private: courseData.private || [],
+              institution_id:
+                courseData.institution_id ??
+                auth.user?.institution_id ??
+                initialValues.institution_id,
+              instructor_id:
+                courseData.instructor_id ?? auth.user?.id ?? initialValues.instructor_id,
+            }}
+            onSubmit={onSubmit}
+            validationSchema={validationSchema}
+            validateOnChange={true}
+            enableReinitialize={true}
+          >
+            {(formik) => (
               <Form>
                 <AutoFillDirectoryName mode={mode} />
                 <FormSelect
@@ -193,15 +200,15 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   disabled={true}
                   options={
                     users?.data?.map((user: any) => ({
-                      label: user.name,
+                      label: user.fullName,
                       value: String(user.id),
                     })) || []
                   }
                   inputGroupPrepend={
-                    <InputGroup.Text id="course-inst-prep">Instructors</InputGroup.Text>
+                    <InputGroup.Text id="course-inst-prep">Instructor</InputGroup.Text>
                   }
                 />
-                <FormInput controlId="name" label="Name" name="name" disabled={mode === "update"} />
+                <FormInput controlId="name" label="Name" name="name" />
                 <FormInput
                   controlId="directory"
                   label="Course Directory (Mandatory field. Allowed: letters, digits, underscores, hyphens, slashes)"
@@ -214,12 +221,10 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   name="private"
                   options={courseVisibility}
                 />
-
                 <Modal.Footer>
                   <Button variant="outline-secondary" onClick={handleClose}>
                     Close
                   </Button>
-
                   <Button
                     variant="outline-success"
                     type="submit"
@@ -229,9 +234,9 @@ const CourseEditor: React.FC<IEditor> = ({ mode }) => {
                   </Button>
                 </Modal.Footer>
               </Form>
-            );
-          }}
-        </Formik>
+            )}
+          </Formik>
+        )}
       </Modal.Body>
     </Modal>
   );
