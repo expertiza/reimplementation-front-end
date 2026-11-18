@@ -115,6 +115,11 @@ jobs:
       - name: Compare target and pull request coverage
         if: always()
         working-directory: coverage-head-source
+        env:
+          COVERAGE_TARGET_BRANCH: >-
+            ${{ github.event.pull_request.base.repo.full_name }}:${{ github.event.pull_request.base.ref }}
+          COVERAGE_PULL_REQUEST_BRANCH: >-
+            ${{ github.event.pull_request.head.repo.full_name }}:${{ github.event.pull_request.head.ref }}
         run: >-
           npm run coverage:compare --
           ../frontend-pr-coverage/raw/base/coverage-summary.json

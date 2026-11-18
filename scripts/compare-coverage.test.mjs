@@ -27,6 +27,7 @@ describe("buildCoverageComparison", () => {
     const result = buildCoverageComparison(base, head);
 
     expect(result.reductions).toEqual([]);
+    expect(result.output).toContain("> [!IMPORTANT]");
     expect(result.output).toContain("No coverage metrics decreased.");
     expect(result.output).toContain("| Lines | 50.00% | 51.00% | +1.00 percentage points |");
   });
@@ -39,14 +40,30 @@ describe("buildCoverageComparison", () => {
     expect(result.output).toContain("> [!WARNING]");
     expect(result.output).toContain("Lines (-0.50 percentage points)");
     expect(result.output).toContain("Branches (-0.25 percentage points)");
+    expect(result.output).toContain("Consider adding or improving tests");
   });
 
   test("reports unchanged coverage without a warning", () => {
     const result = buildCoverageComparison(base, base);
 
     expect(result.reductions).toEqual([]);
-    expect(result.output).toContain("No coverage metrics decreased.");
+    expect(result.output).toContain("does not change the frontend's overall test coverage");
     expect(result.output).toContain("| Functions | 35.00% | 35.00% | 0.00 percentage points |");
+  });
+
+  test("includes the dynamic branch context when provided", () => {
+    const result = buildCoverageComparison(base, base, {
+      targetBranch: "expertiza/reimplementation-front-end:main",
+      pullRequestBranch: "Kaizenick/reimplementation-front-end:feature/example",
+    });
+
+    expect(result.output).toContain(
+      "**Target branch:** `expertiza/reimplementation-front-end:main`"
+    );
+    expect(result.output).toContain(
+      "**Pull-request branch:** `Kaizenick/reimplementation-front-end:feature/example`"
+    );
+    expect(result.output).toContain("| Metric | Target branch | Proposed merge | Difference |");
   });
 
   test("emits a GitHub warning and writes the workflow summary", async () => {
@@ -97,7 +114,8 @@ describe("buildChangedFileCoverage", () => {
 
     const output = buildChangedFileCoverage(report);
 
-    expect(output).toContain("## Coverage of changed files");
+    expect(output).toContain("## Coverage of Changed Files");
+    expect(output).toContain("this is not a before-and-after comparison");
     expect(output).toContain("`scripts/example.mjs`");
     expect(output).toContain("| 80.00% | 75.00% | 60.00% | 90.00% |");
   });
