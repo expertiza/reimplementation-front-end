@@ -138,7 +138,7 @@ export function buildCoverageComparison(base, head, context = {}) {
     "## Coverage Report",
     "",
     "> [!NOTE]",
-    "> This report compares the target branch with the proposed merge of the pull-request branch. GitHub Actions ran the same frontend test suite on both versions and used the generated results to populate the tables below.",
+    "> This report compares the target branch with the proposed merge of the pull-request branch. GitHub Actions ran the frontend test suite available in each revision and used the generated results to populate the tables below.",
     ">",
     "> The first table helps reviewers identify changes to the project's overall coverage. The second table shows the current coverage of the complete source files modified by the pull request.",
     "",

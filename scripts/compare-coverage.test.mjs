@@ -28,6 +28,7 @@ describe("buildCoverageComparison", () => {
 
     expect(result.reductions).toEqual([]);
     expect(result.output).toContain("> [!IMPORTANT]");
+    expect(result.output).toContain("the frontend test suite available in each revision");
     expect(result.output).toContain("No coverage metrics decreased.");
     expect(result.output).toContain("| Lines | 50.00% | 51.00% | +1.00 percentage points |");
   });
