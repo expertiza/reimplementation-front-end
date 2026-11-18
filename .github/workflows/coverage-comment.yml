@@ -146,6 +146,12 @@ jobs:
               marker,
               report,
               "",
+              "### Detailed Coverage Report",
+              "",
+              "To inspect the exact covered and uncovered lines, download the `frontend-changed-coverage` artifact, extract it, and open `index.html`.",
+              "",
+              `[View and download the coverage artifacts from Frontend CI](${runUrl}#artifacts)`,
+              "",
               `<sub>Updated from [Frontend CI](${runUrl}).</sub>`,
             ].join("\n");
             const issueNumber = Number(process.env.PR_NUMBER);

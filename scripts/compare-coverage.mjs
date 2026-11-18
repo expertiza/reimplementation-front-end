@@ -52,7 +52,7 @@ export function buildChangedFileCoverage(report) {
 
   if (files.length === 0) {
     return [
-      "## Coverage of changed files",
+      "## Coverage of Changed Files",
       "",
       "No measurable application files changed in this pull request.",
     ].join("\n");
@@ -68,9 +68,13 @@ export function buildChangedFileCoverage(report) {
   );
 
   return [
-    "## Coverage of changed files",
+    "## Coverage of Changed Files",
     "",
-    "This table shows the current coverage of complete files changed by the pull request.",
+    "This table shows the current test coverage of the complete source files modified by the pull request.",
+    "",
+    "Unlike the overall comparison above, this is not a before-and-after comparison. Each percentage indicates how much of the complete file was exercised when the test suite ran against the proposed merge.",
+    "",
+    "Reviewers can use this table to identify modified files with low coverage that may require additional tests.",
     "",
     "| File | Lines | Statements | Branches | Functions |",
     "| --- | ---: | ---: | ---: | ---: |",
@@ -79,7 +83,7 @@ export function buildChangedFileCoverage(report) {
 }
 
 /** Compare target and pull-request coverage and build the Markdown summary. */
-export function buildCoverageComparison(base, head) {
+export function buildCoverageComparison(base, head, context = {}) {
   const comparisons = metrics.map((metric) => {
     const basePercentage = Number(base[metric].pct);
     const headPercentage = Number(head[metric].pct);
@@ -92,6 +96,7 @@ export function buildCoverageComparison(base, head) {
     };
   });
   const reductions = comparisons.filter(({ difference }) => difference < 0);
+  const improvements = comparisons.filter(({ difference }) => difference > 0);
   const rows = comparisons.map(
     ({ metric, basePercentage, headPercentage, difference }) =>
       `| ${formatMetric(metric)} | ${formatPercentage(basePercentage)} | ${formatPercentage(
@@ -101,20 +106,57 @@ export function buildCoverageComparison(base, head) {
   const result = reductions.length
     ? [
         "> [!WARNING]",
+        "> The proposed merge reduces the frontend's overall test coverage compared with the target branch.",
+        ">",
         `> Coverage decreased for ${reductions
           .map(
             ({ metric, difference }) => `${formatMetric(metric)} (${formatDifference(difference)})`
           )
           .join(", ")}.`,
-        "> This warning is informational and does not fail the comparison by itself.",
+        ">",
+        "> Consider adding or improving tests for the feature being merged before approving this pull request.",
+        ">",
+        "> This warning is informational and does not automatically fail the pull request.",
       ]
-    : ["No coverage metrics decreased."];
+    : improvements.length
+    ? [
+        "> [!IMPORTANT]",
+        "> The proposed merge increases the frontend's overall test coverage compared with the target branch.",
+        ">",
+        "> No coverage metrics decreased. The additional tests improve coverage for the code being merged.",
+      ]
+    : ["> [!NOTE]", "> The proposed merge does not change the frontend's overall test coverage."];
+  const branchContext =
+    context.targetBranch && context.pullRequestBranch
+      ? [
+          `- **Target branch:** \`${context.targetBranch}\``,
+          `- **Pull-request branch:** \`${context.pullRequestBranch}\``,
+          "",
+        ]
+      : [];
   const output = [
-    "## Frontend coverage comparison",
+    "## Coverage Report",
     "",
-    "| Metric | Target branch | Pull request | Difference |",
+    "> [!NOTE]",
+    "> This report compares the target branch with the proposed merge of the pull-request branch. GitHub Actions ran the same frontend test suite on both versions and used the generated results to populate the tables below.",
+    ">",
+    "> The first table helps reviewers identify changes to the project's overall coverage. The second table shows the current coverage of the complete source files modified by the pull request.",
+    "",
+    "## Coverage Comparison",
+    "",
+    ...branchContext,
+    "The **Proposed merge** column represents the pull-request changes after GitHub applies them to the target branch.",
+    "",
+    "| Metric | Target branch | Proposed merge | Difference |",
     "| --- | ---: | ---: | ---: |",
     ...rows,
+    "",
+    "### What do these metrics mean?",
+    "",
+    "- **Lines:** Percentage of executable source-code lines run by tests.",
+    "- **Statements:** Percentage of individual code instructions run by tests.",
+    "- **Branches:** Percentage of possible decision paths tested, such as `if/else`, `switch`, and conditional expressions.",
+    "- **Functions:** Percentage of declared functions called by tests.",
     "",
     ...result,
   ].join("\n");
@@ -135,7 +177,10 @@ export async function compareCoverage(
 
   const base = await readSummary(baseReportPath);
   const head = await readSummary(headReportPath);
-  const comparison = buildCoverageComparison(base, head);
+  const comparison = buildCoverageComparison(base, head, {
+    targetBranch: environment.COVERAGE_TARGET_BRANCH,
+    pullRequestBranch: environment.COVERAGE_PULL_REQUEST_BRANCH,
+  });
   const changedFileCoverage = changedReportPath
     ? buildChangedFileCoverage(await readReport(changedReportPath))
     : null;
