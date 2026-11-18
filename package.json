@@ -48,7 +48,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test:ci": "vitest run --coverage"
+    "test:ci": "vitest run --coverage",
+    "test:coverage:changed": "vitest run --coverage --coverage.reportOnFailure --coverage.reportsDirectory=coverage-changed",
+    "test:coverage:summary": "vitest run --coverage --coverage.reportOnFailure --coverage.reporter=json-summary",
+    "coverage:compare": "node scripts/compare-coverage.mjs"
   },
   "browserslist": {
     "production": [
