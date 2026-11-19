@@ -107,6 +107,51 @@ export const transformParticipantResponse = (participantResponse: string) => {
   return participantValues;
 };
 
+// GET /participants/assignment/:assignment_id nests the user under each participant;
+// flatten it into the row shape the participants table reads
+export const transformAssignmentParticipant = (participant: any): IParticipantResponse => {
+  const user = participant.user ?? {};
+  return {
+    id: participant.id,
+    name: user.username ?? "",
+    full_name: user.name ?? "",
+    email: user.email ?? "",
+    email_on_review: !!user.email_on_review,
+    email_on_submission: !!user.email_on_submission,
+    email_on_review_of_review: !!user.email_on_review_of_review,
+    role: { id: user.role?.id, name: user.role?.name },
+    parent: { id: user.parent?.id ?? null, name: user.parent?.username ?? null },
+    institution: { id: null, name: null },
+  };
+};
+
+// Authorizations accepted by PATCH /participants/:id/:authorization
+export const authorizationOptions: IFormOption[] = [
+  { label: "Select an Authorization", value: "" },
+  { label: "Reader", value: "reader" },
+  { label: "Reviewer", value: "reviewer" },
+  { label: "Submitter", value: "submitter" },
+  { label: "Mentor", value: "mentor" },
+];
+
+export interface IParticipantAuthorization {
+  id: number;
+  username: string;
+  name: string;
+  authorization: string;
+}
+
+export async function loadParticipantAuthorization({ params }: any) {
+  const { data } = await axiosClient.get(`/participants/${params.id}`);
+  const participant: IParticipantAuthorization = {
+    id: data.id,
+    username: data.user?.username ?? "",
+    name: data.user?.name ?? "",
+    authorization: data.authorization ?? "",
+  };
+  return participant;
+}
+
 export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
   let participantData = {};
   // if params contains id, then we are editing a participant, so we need to load the participant data
