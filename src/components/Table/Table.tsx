@@ -69,7 +69,7 @@ const Table: React.FC<TableProps> = ({
   data: initialData,
   columns,
   showGlobalFilter = false,
-  showColumnFilter = true,
+  showColumnFilter = false,
   showPagination = true,
   onSelectionChange,
   columnVisibility = {},
@@ -214,6 +214,12 @@ const Table: React.FC<TableProps> = ({
 
   const firstRenderRef = useRef(true);
 
+  // Show column filters when there are multiple pages OR "Show All" is selected.
+  // pageSize === totalRows covers the Show All case; pageSize < totalRows covers multi-page.
+  const totalRows = table.getPrePaginationRowModel().rows.length;
+  const { pageSize } = table.getState().pagination;
+  const columnFilterVisible = showColumnFilter && totalRows >= pageSize;
+
   return (
     <>
       <Container fluid={fluid}>
@@ -248,7 +254,10 @@ const Table: React.FC<TableProps> = ({
               hover
               responsive
               size="sm"
-              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+              style={{
+                margin: tableStyle ? "0 auto" : undefined,
+                ...tableStyle,
+              }}
             >
               {showHeader && (
                 <thead className="table-secondary">
@@ -290,7 +299,7 @@ const Table: React.FC<TableProps> = ({
                                     desc: " 🔽",
                                   }[header.column.getIsSorted() as string] ?? null}
                                 </div>
-                                {showColumnFilter && header.column.getCanFilter() ? (
+                                {columnFilterVisible && header.column.getCanFilter() ? (
                                   <ColumnFilter column={header.column} />
                                 ) : null}
                               </>

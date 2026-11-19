@@ -229,7 +229,6 @@ const CourseAssignments: React.FC<CourseAssignmentsProps> = ({ courseId, courseN
         data={assignments}
         columns={columns}
         showGlobalFilter={false}
-        showColumnFilter={false}
         showPagination={false}
         showHeader={false}
         tableSize={{ span: 12, offset: 0 }}

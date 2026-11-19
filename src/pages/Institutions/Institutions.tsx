@@ -72,7 +72,6 @@ const Institutions = () => {
             <Table
               data={tableData}
               columns={tableColumns}
-              showColumnFilter={false}
               columnVisibility={{ id: false }}
               tableSize={{ span: 6, offset: 3 }}
             />

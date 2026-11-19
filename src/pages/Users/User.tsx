@@ -132,6 +132,7 @@ const Users = () => {
             <Table
               data={tableData}
               columns={tableColumns}
+              showColumnFilter={true}
               columnVisibility={{
                 id: false,
                 institution: auth.user.role === ROLE.SUPER_ADMIN.valueOf(),

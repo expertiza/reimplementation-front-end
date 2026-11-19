@@ -6,6 +6,7 @@ export interface IDuty {
   name: string;
   instructor_id: number;
   private: boolean;
+  max_members_for_duty: number | null;
 }
 
 type Fn = (row: Row<IDuty>) => void;
@@ -17,13 +18,26 @@ export const dutyColumns = (handleEdit: Fn, handleDelete: Fn) => [
     id: "name",
     header: () => (
       <span className="text-start fw-bold" style={{ color: "#000", fontSize: "1.17em" }}>
-        Name
+        Role Name
       </span>
     ),
+    meta: { width: "300px" },
     cell: (info) => <div className="text-start py-2">{info.getValue()}</div>,
     enableSorting: true,
     enableColumnFilter: true,
     enableGlobalFilter: true,
+  }),
+  ch.accessor("max_members_for_duty", {
+    id: "max_members_for_duty",
+    header: () => (
+      <span className="text-start fw-bold" style={{ color: "#000", fontSize: "1.17em" }}>
+        Max Members
+      </span>
+    ),
+    meta: { width: "140px" },
+    cell: (info) => <div className="text-start py-2">{info.getValue() ?? "—"}</div>,
+    enableSorting: true,
+    enableColumnFilter: false,
   }),
   ch.display({
     id: "actions",
@@ -32,6 +46,7 @@ export const dutyColumns = (handleEdit: Fn, handleDelete: Fn) => [
         Actions
       </span>
     ),
+    meta: { width: "90px" },
     cell: ({ row }) => (
       <div className="d-flex justify-content-start gap-2 py-2">
         <OverlayTrigger overlay={<Tooltip>Edit Duty</Tooltip>}>

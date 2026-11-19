@@ -894,7 +894,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
                   <div className="mt-3" style={{ width: "75%" }}>
                     <DataTable
-                      showColumnFilter={false}
                       showGlobalFilter={false}
                       showPagination={false}
                       getRowId={(row) => String(row.id)}

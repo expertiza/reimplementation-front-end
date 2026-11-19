@@ -150,7 +150,7 @@ const Questionnaires = () => {
               showGlobalFilter={false}
               data={filteredData}
               columns={tableColumns}
-              showColumnFilter={false}
+              tableStyle={{ tableLayout: "fixed", minWidth: "75%", margin: "0 auto" }}
               columnVisibility={{
                 id: false,
                 instructor_id: false,

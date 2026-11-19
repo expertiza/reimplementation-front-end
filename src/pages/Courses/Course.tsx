@@ -325,10 +325,10 @@ const Courses = () => {
 
         <Table
           showGlobalFilter={false}
-          showColumnFilter={false}
+          showPagination={false}
           data={unifiedData}
           columns={tableColumns}
-          tableStyle={{ width: "fit-content", minWidth: "75%", margin: "0 auto" }}
+          tableStyle={{ width: "fit-content", minWidth: "75%", margin: "0 auto", tableLayout: "fixed" }}
           columnVisibility={{
             id: false,
             instructor:
@@ -339,11 +339,6 @@ const Courses = () => {
           bordered={true}
           getSubRows={(row) => row.subRows}
           getRowCanExpand={(row) => row.original?.rowType === "course"}
-          getExpanderFallback={(row) =>
-            row.original?.rowType === "assignment" && row.depth === 1 ? (
-              <span style={{ color: "#0d6efd", fontSize: "1rem", paddingLeft: 4 }}>–</span>
-            ) : null
-          }
           getCellProps={(cell, row) => {
             // Group-based striping: course + its assignments share the same background
             const groupIdx = row.depth === 0 ? row.index : row.getParentRow()?.index ?? 0;

@@ -19,10 +19,13 @@ vi.mock("../../hooks/useAPI", () => {
 });
 
 // Provide minimal redux wiring
+type AuthFixture = { isAuthenticated: boolean; user: { role: string } | null };
 const dispatchMock = vi.fn();
+let authState: AuthFixture = { isAuthenticated: true, user: null };
 vi.mock("react-redux", () => ({
   useDispatch: () => dispatchMock,
-  useSelector: (selector: any) => selector({ authentication: { isAuthenticated: true } }),
+  useSelector: (selector: (s: { authentication: AuthFixture }) => unknown) =>
+    selector({ authentication: authState }),
 }));
 
 // Provide router context hooks
@@ -59,6 +62,7 @@ describe("AssignmentEditor rubrics tab", () => {
     loaderData = { ...baseAssignment };
     sendRequestMock.mockClear();
     dispatchMock.mockClear();
+    authState = { isAuthenticated: true, user: null };
   });
 
   it("shows one row per review round when rubrics vary by round", () => {
@@ -91,6 +95,44 @@ describe("AssignmentEditor rubrics tab", () => {
 
     const allOptions = screen.getAllByRole("option").map((opt) => opt.textContent);
     expect(allOptions).toContain("Unlinked Rubric");
+  });
+});
+
+describe("AssignmentEditor impersonation gate", () => {
+  beforeEach(() => {
+    loaderData = { ...baseAssignment };
+    sendRequestMock.mockClear();
+    dispatchMock.mockClear();
+    authState = { isAuthenticated: true, user: null };
+  });
+
+  it("shows the form for an instructor (no gate)", () => {
+    authState = { isAuthenticated: true, user: { role: "Instructor" } };
+    render(<AssignmentEditor mode="update" />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText("Review round 1:")).toBeInTheDocument();
+  });
+
+  it("shows impersonation message for Admin in update mode", () => {
+    authState = { isAuthenticated: true, user: { role: "Administrator" } };
+    render(<AssignmentEditor mode="update" />);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/impersonate the instructor/i)).toBeInTheDocument();
+    expect(screen.queryByText("Review round 1:")).not.toBeInTheDocument();
+  });
+
+  it("shows impersonation message for Super Admin in update mode", () => {
+    authState = { isAuthenticated: true, user: { role: "Super Administrator" } };
+    render(<AssignmentEditor mode="update" />);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/impersonate the instructor/i)).toBeInTheDocument();
+    expect(screen.queryByText("Review round 1:")).not.toBeInTheDocument();
+  });
+
+  it("does NOT show gate for Admin in create mode", () => {
+    authState = { isAuthenticated: true, user: { role: "Administrator" } };
+    render(<AssignmentEditor mode="create" />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 

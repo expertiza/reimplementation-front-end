@@ -114,6 +114,7 @@ const TAs = () => {
               <Row>
                 <Table
                   showGlobalFilter={false}
+                  showColumnFilter={true}
                   data={tableData}
                   columns={tableColumns}
                   columnVisibility={{

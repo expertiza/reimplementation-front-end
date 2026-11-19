@@ -78,21 +78,11 @@ export const courseColumns = (
     id: "name",
     header: "Name",
     meta: { width: "220px" },
-    cell: (info) => {
-      return (
-        <div
-          className="text-start py-1 px-3"
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: "220px",
-          }}
-        >
-          {info.getValue()}
-        </div>
-      );
-    },
+    cell: ({ row, getValue }) => (
+      <div className="text-start py-1" style={{ paddingLeft: `${row.depth * 1.5 + 0.75}rem`, maxWidth: "220px", boxSizing: "border-box" }}>
+        {getValue()}
+      </div>
+    ),
     enableSorting: true,
     enableGlobalFilter: true,
   }),
@@ -100,8 +90,11 @@ export const courseColumns = (
   columnHelper.display({
     id: "instructor",
     header: "Instructor",
+    meta: { width: "150px" },
     cell: ({ row }) => (
-      <div className="text-start py-1 px-3">{row.original.instructor?.name || "–"}</div>
+      <div className="text-start py-1 px-3">
+        {row.original.rowType === "course" ? row.original.instructor?.name || "–" : ""}
+      </div>
     ),
   }),
 
