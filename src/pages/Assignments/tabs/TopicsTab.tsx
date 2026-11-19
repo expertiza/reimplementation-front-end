@@ -6,6 +6,77 @@ import TopicsTable from "pages/Assignments/components/TopicsTable";
 import DeleteTopics from "../TopicDelete";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
+// project_topics.topic_identifier is a 10-character column with no server-side
+// length check, so anything longer used to reach MySQL and come back as a 500.
+const MAX_IDENTIFIER_LENGTH = 10;
+
+// One parsed CSV row, in the shape the create endpoint expects.
+interface TopicImportInput {
+  topic_name: string;
+  topic_identifier: string;
+  category: string;
+  max_choosers: number;
+  description: string;
+  link: string;
+}
+
+// Minimal CSV field splitter: honours double quotes so a comma inside a quoted
+// field (a topic name, typically) does not start a new column, and unwraps the
+// quotes rather than leaving them in the value. "" is an escaped quote.
+export const parseCsvLine = (line: string): string[] => {
+  const fields: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        field += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      fields.push(field);
+      field = "";
+    } else {
+      field += ch;
+    }
+  }
+  fields.push(field);
+
+  return fields.map((f) => f.trim());
+};
+
+// A header row is only a header when the first TWO fields name header columns. A
+// real topic called "Topic Name" carries an identifier in field two and must survive.
+export const looksLikeHeaderRow = (fields: string[]): boolean =>
+  /^"?topic[ _]?name"?$/i.test(fields[0] ?? "") &&
+  /^"?topic[ _]?identifier"?$/i.test(fields[1] ?? "");
+
+// Rails answers a rejected create with either a plain string or a field => messages
+// map; flatten both into one sentence rather than showing the raw JSON.
+const describeServerError = (err: unknown): string => {
+  const body = (err as { response?: { data?: { message?: unknown; error?: unknown } } })?.response
+    ?.data;
+  const message = body?.message;
+
+  if (typeof message === "string") return message;
+  if (message && typeof message === "object") {
+    return Object.entries(message as Record<string, unknown>)
+      .map(([field, msgs]) => `${field} ${(Array.isArray(msgs) ? msgs : [msgs]).join(", ")}`)
+      .join("; ");
+  }
+  if (typeof body?.error === "string") return body.error;
+  if (err instanceof Error) return err.message;
+  return "the server rejected this topic";
+};
+
 // --- Interface Modifications ---
 // Assuming these interfaces are defined elsewhere and imported
 // They are redefined here for clarity based on requirements
@@ -79,7 +150,10 @@ interface TopicsTabProps {
   onDropTeam: (topicId: string, teamId: string) => void;
   onDeleteTopic: (topicId: string) => void;
   onEditTopic: (topicId: string, updatedData?: any) => void;
-  onCreateTopic?: (topicData: any) => void;
+  // May return a promise, so the importer can await each row and report failures.
+  onCreateTopic?: (
+    topicData: TopicImportInput | Record<string, unknown>
+  ) => void | Promise<unknown>;
   // Handler for partner ad application submission
   onApplyPartnerAd: (topicId: string, applicationText: string) => void;
   onTopicsChanged?: () => void;
@@ -124,6 +198,8 @@ const TopicsTab = ({
   // Import topics modal state
   const [showImportModal, setShowImportModal] = useState(false);
   const [importData, setImportData] = useState("");
+  const [importProblems, setImportProblems] = useState<string[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Delete modal state (repo-standard)
   const [deleteState, setDeleteState] = useState<{
@@ -261,6 +337,7 @@ const TopicsTab = ({
   // --- Import Topics Handlers ---
   const handleShowImport = () => {
     setImportData("");
+    setImportProblems([]);
     setShowImportModal(true);
   };
 
@@ -268,34 +345,96 @@ const TopicsTab = ({
     setShowImportModal(false);
   };
 
-  const handleImportTopics = () => {
+  const handleImportTopics = async () => {
+    if (isImporting) return; // the button is disabled too; this guards a double submit
+    setImportProblems([]);
+
+    // Blank lines are skipped rather than turned into "Imported Topic N" filler.
+    // The original line number travels with each row so the report points at the
+    // pasted text rather than at a position in the filtered list.
+    const rows = importData
+      .split("\n")
+      .map((raw, i) => ({ raw: raw.trim(), lineNo: i + 1 }))
+      .filter(({ raw }) => raw.length > 0);
+
+    const problems: string[] = [];
+    const pending: Array<{ raw: string; topic: TopicImportInput }> = [];
+    // Lines to leave in the textarea: anything not successfully created, so a retry
+    // does not resubmit topics the server already accepted.
+    const unresolved: string[] = [];
+    const seen = new Set<string>();
+    let considered = 0;
+
+    rows.forEach(({ raw, lineNo }, index) => {
+      const fields = parseCsvLine(raw);
+      if (index === 0 && looksLikeHeaderRow(fields)) return;
+
+      considered += 1;
+      const [topic_name, topic_identifier, category, max_choosers, description, link] = fields;
+      const reject = (reason: string) => {
+        problems.push(`Line ${lineNo}: ${reason}`);
+        unresolved.push(raw);
+      };
+
+      if (!topic_name) return reject("topic name is required.");
+      if (!topic_identifier) return reject("topic identifier is required.");
+      if (topic_identifier.length > MAX_IDENTIFIER_LENGTH) {
+        return reject(
+          `identifier "${topic_identifier}" is ${topic_identifier.length} characters; the limit is ${MAX_IDENTIFIER_LENGTH}.`
+        );
+      }
+      if (seen.has(topic_identifier)) {
+        return reject(`identifier "${topic_identifier}" is used more than once.`);
+      }
+
+      const slots = max_choosers ? Number(max_choosers) : 1;
+      if (!Number.isInteger(slots) || slots < 0) {
+        return reject(`"${max_choosers}" is not a valid number of slots.`);
+      }
+
+      seen.add(topic_identifier);
+      pending.push({
+        raw,
+        topic: {
+          topic_name,
+          topic_identifier,
+          category: category ?? "",
+          max_choosers: slots,
+          description: description ?? "",
+          link: link ?? "",
+        },
+      });
+    });
+
+    // Sequential, so a failure can be attributed to the row that caused it.
+    let imported = 0;
+    setIsImporting(true);
     try {
-      // Parse CSV or JSON data
-      const lines = importData.trim().split("\n");
-      const topics = lines.map((line, index) => {
-        const [topic_name, topic_identifier, category, max_choosers, description, link] =
-          line.split(",");
-        return {
-          topic_name: topic_name?.trim() || `Imported Topic ${index + 1}`,
-          topic_identifier: topic_identifier?.trim() || `IMP${index + 1}`,
-          category: category?.trim() || "",
-          max_choosers: parseInt(max_choosers?.trim()) || 1,
-          description: description?.trim() || "",
-          link: link?.trim() || "",
-        };
-      });
-
-      // Create each topic
-      topics.forEach((topic) => {
-        if (onCreateTopic) {
-          onCreateTopic(topic);
+      for (const { raw, topic } of pending) {
+        try {
+          await onCreateTopic?.(topic);
+          imported += 1;
+        } catch (err: unknown) {
+          problems.push(`"${topic.topic_identifier}": ${describeServerError(err)}.`);
+          unresolved.push(raw);
         }
-      });
-
-      handleCloseImport();
-    } catch (error) {
-      console.error("Error importing topics:", error);
+      }
+    } finally {
+      setIsImporting(false);
     }
+
+    if (imported > 0) onTopicsChanged?.();
+
+    // Keep the dialog open when anything went wrong, so the report is readable.
+    if (problems.length > 0) {
+      setImportData(unresolved.join("\n"));
+      setImportProblems([
+        `${imported} of ${considered} row(s) imported. The rows below remain in the box.`,
+        ...problems.map((p) => `• ${p}`),
+      ]);
+      return;
+    }
+    handleCloseImport();
   };
 
   // --- Delete Handlers ---
@@ -304,12 +443,6 @@ const TopicsTab = ({
     const ids = Array.from(selectedTopics);
     const names = ids.map((id) => topicsData.find((t) => t.id === id)?.name || id);
     setDeleteState({ visible: true, ids, names });
-  };
-
-  // --- Back Handler ---
-  const handleBack = () => {
-    // Navigate back to assignments list
-    window.history.back();
   };
 
   // Check if questionnaire varies across topics
@@ -420,6 +553,7 @@ const TopicsTab = ({
             {
               id: "numSlots",
               header: "Num. of Slots",
+              meta: { width: "13.6%" },
               cell: ({ row }: any) => (
                 <span className="d-block text-center">
                   {topicsData.find((t) => t.id === row.original.id)?.numSlots ?? 0}
@@ -429,6 +563,7 @@ const TopicsTab = ({
             {
               id: "availableSlots",
               header: "Available Slots",
+              meta: { width: "14.3%" },
               cell: ({ row }: any) => (
                 <span className="d-block text-center">{row.original.availableSlots ?? 0}</span>
               ),
@@ -436,6 +571,7 @@ const TopicsTab = ({
             {
               id: "waitlisted",
               header: "Waitlisted",
+              meta: { width: "10.4%" },
               cell: ({ row }: any) => (
                 <span className="d-block text-center">
                   {row.original.waitlistedTeams?.length ?? 0}
@@ -547,21 +683,20 @@ const TopicsTab = ({
 
         {/* Action Buttons */}
         <div className="d-flex flex-wrap gap-2 justify-content-start mb-3 mt-3">
-          <Button variant="success" onClick={handleShowNewTopic}>
+          {/* Outline variants: the house style for action buttons across Expertiza.
+              No Back here — the assignment form's own "Save | Back" footer owns that. */}
+          <Button variant="outline-success" onClick={handleShowNewTopic}>
             New topic
           </Button>
-          <Button variant="secondary" onClick={handleShowImport}>
+          <Button variant="outline-secondary" onClick={handleShowImport}>
             Import topics
           </Button>
           <Button
-            variant="danger"
+            variant="outline-danger"
             onClick={handleDeleteSelected}
             disabled={selectedTopics.size === 0}
           >
             Delete selected topics ({selectedTopics.size})
-          </Button>
-          <Button variant="primary" onClick={handleBack}>
-            Back
           </Button>
         </div>
       </Col>
@@ -728,13 +863,26 @@ const TopicsTab = ({
               onChange={(e) => setImportData(e.target.value)}
             />
           </FloatingLabel>
+          {importProblems.length > 0 && (
+            <div className="alert alert-warning mt-3 mb-0" role="alert">
+              {importProblems.map((problem, i) => (
+                <div key={i} className={i === 0 ? "fw-semibold" : "small"}>
+                  {problem}
+                </div>
+              ))}
+            </div>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseImport}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleImportTopics} disabled={!importData.trim()}>
-            Import Topics
+          <Button
+            variant="primary"
+            onClick={handleImportTopics}
+            disabled={!importData.trim() || isImporting}
+          >
+            {isImporting ? "Importing…" : "Import Topics"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -745,7 +893,13 @@ const TopicsTab = ({
           topicIds={deleteState.ids}
           topicNames={deleteState.names}
           onClose={() => setDeleteState({ visible: false, ids: [], names: [] })}
-          onDeleted={onTopicsChanged}
+          onDeleted={() => {
+            // Drop the selection: it holds identifiers that no longer exist, and a
+            // later delete would post them back and the counter would be wrong.
+            setSelectedTopics(new Set());
+            setSelectAll(false);
+            onTopicsChanged?.();
+          }}
         />
       )}
 

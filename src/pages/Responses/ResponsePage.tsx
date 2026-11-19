@@ -248,8 +248,10 @@ const ResponsePage: React.FC = () => {
       }
       setAnswers(newMap);
 
-      await axiosClient.patch(`/responses/${responseId}/submit`,
-        lastSavedAt ? { updated_at: lastSavedAt } : {});
+      await axiosClient.patch(
+        `/responses/${responseId}/submit`,
+        lastSavedAt ? { updated_at: lastSavedAt } : {}
+      );
       setIsSubmitted(true);
       setSaveMsg({ type: "ok", text: "Review submitted successfully." });
     } catch (err) {

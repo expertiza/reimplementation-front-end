@@ -77,9 +77,18 @@ export const courseColumns = (
   columnHelper.accessor("name", {
     id: "name",
     header: "Name",
-    meta: { width: "220px" },
+    // Width is injected by Course.tsx, which measures every name in the dataset —
+    // collapsed sub-rows included — so the table is the same width expanded or not.
+    // Do not set a width here, and do not clamp the cell: that would reintroduce
+    // content sizing, which only sees the rows currently on screen.
+    // borderLeftStyle "hidden" wins the collapsed-border conflict with the expander
+    // column, which drew the vertical line down the left of the nested names.
+    meta: { style: { borderLeftStyle: "hidden" } },
     cell: ({ row, getValue }) => (
-      <div className="text-start py-1" style={{ paddingLeft: `${row.depth * 1.5 + 0.75}rem`, maxWidth: "220px", boxSizing: "border-box" }}>
+      <div
+        className="text-start py-1"
+        style={{ paddingLeft: `${row.depth * 1.5 + 0.75}rem`, boxSizing: "border-box" }}
+      >
         {getValue()}
       </div>
     ),
@@ -91,9 +100,12 @@ export const courseColumns = (
     id: "instructor",
     header: "Instructor",
     meta: { width: "150px" },
+    // Keyed on depth, not rowType: nested assignments are left blank because they
+    // would just repeat their course's instructor, but a standalone assignment is
+    // a top-level row with an instructor of its own and must still show it.
     cell: ({ row }) => (
       <div className="text-start py-1 px-3">
-        {row.original.rowType === "course" ? row.original.instructor?.name || "–" : ""}
+        {row.depth === 0 ? row.original.instructor?.name || "–" : ""}
       </div>
     ),
   }),

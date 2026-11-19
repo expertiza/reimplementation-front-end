@@ -528,7 +528,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const handleCreateTopic = useCallback(
     (topicData: any) => {
       if (id) {
-        createTopic({
+        // Returned, not fired and forgotten: the CSV importer awaits each row so
+        // it can tell the user which ones the server rejected.
+        return createTopic({
           url: `/project_topics`,
           method: "POST",
           data: {
@@ -1589,13 +1591,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 className="mt-3 d-flex justify-content-start gap-2"
                 style={{ alignItems: "center" }}
               >
+                {/* The only Back on this page. A Button, not a hand-coloured anchor,
+                    so it matches the house outline style like every other action. */}
                 <Button type="submit" variant="success">
                   Save
-                </Button>{" "}
-                |
-                <a href="/courses" style={{ color: "#a4a366", textDecoration: "none" }}>
+                </Button>
+                <Button variant="outline-secondary" href="/courses">
                   Back
-                </a>
+                </Button>
               </div>
               {showDutyEditor && (
                 <DutyEditor

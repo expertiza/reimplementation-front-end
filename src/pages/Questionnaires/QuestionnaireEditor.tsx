@@ -1,7 +1,14 @@
 import axios from "axios";
 import axiosClient from "../../utils/axios_client";
 import { IEditor } from "../../utils/interfaces";
-import { DEFAULT_MAX_ITEM_SCORE, DEFAULT_MIN_ITEM_SCORE, IItem, mapItemToFormField, QuestionnaireFormValues, transformQuestionnaireRequest } from "./QuestionnaireUtils";
+import {
+  DEFAULT_MAX_ITEM_SCORE,
+  DEFAULT_MIN_ITEM_SCORE,
+  IItem,
+  mapItemToFormField,
+  QuestionnaireFormValues,
+  transformQuestionnaireRequest,
+} from "./QuestionnaireUtils";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom";
 import { Col, Container, Row } from "react-bootstrap";
@@ -18,13 +25,15 @@ const describeSaveFailure = (status?: number, detail?: string, fallback?: string
   } else if (status === 401) {
     advice = "Your session has expired. Please log in again and retry.";
   } else if (status === 403) {
-    advice = "You do not have permission to save this questionnaire. Contact an instructor or administrator.";
+    advice =
+      "You do not have permission to save this questionnaire. Contact an instructor or administrator.";
   } else if (status === 404) {
     advice = "This questionnaire no longer exists. Return to the questionnaire list and refresh.";
   } else if (status === 422) {
     advice = "Correct the problems listed above and save again.";
   } else if (status >= 500) {
-    advice = "The server had a problem. Wait a moment and try again; if it persists, contact an administrator.";
+    advice =
+      "The server had a problem. Wait a moment and try again; if it persists, contact an administrator.";
   } else {
     advice = "Review your changes and try again.";
   }
@@ -88,7 +97,9 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
       );
       navigate("/questionnaires");
     } catch (caughtError: unknown) {
-      const error = axios.isAxiosError<string[] | { errors?: string[]; error?: string }>(caughtError)
+      const error = axios.isAxiosError<string[] | { errors?: string[]; error?: string }>(
+        caughtError
+      )
         ? caughtError
         : undefined;
       console.error("Error submitting form:", caughtError);

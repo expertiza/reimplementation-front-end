@@ -8,6 +8,9 @@ import Select from "../Select";
  * @author Ankur Mundra on May, 2023
  */
 
+// The fixed page sizes offered, smallest first; "Show All" is appended at render.
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
+
 interface PaginationProps {
   nextPage: () => void;
   previousPage: () => void;
@@ -34,6 +37,14 @@ const Pagination: React.FC<PaginationProps> = (props) => {
   } = props;
   const pageSize = getState().pagination.pageSize;
   const multiPage = totalItems > pageSize;
+  // The chooser appears once there are MORE rows than the smallest page size —
+  // strictly greater, so exactly 10 rows still means no chooser. Above that every
+  // size stays on offer, including ones larger than the row count: picking "Show 50"
+  // over 26 rows is how you put them all on one page. A footer with neither the
+  // chooser nor page controls has nothing to show, so it is not rendered.
+  const showPageSizeChooser = totalItems > Math.min(...PAGE_SIZE_OPTIONS);
+  if (!multiPage && !showPageSizeChooser) return null;
+
   return (
     <Row className="justify-content-center">
       {multiPage && (
@@ -70,22 +81,22 @@ const Pagination: React.FC<PaginationProps> = (props) => {
           />
         </Col>
       )}
-      <Col xs="auto">
-        <Select
-          id="pageSize"
-          options={[
-            { label: "Show 10", value: "10" },
-            { label: "Show 25", value: "25" },
-            { label: "Show 50", value: "50" },
-            { label: "Show All", value: String(totalItems) },
-          ]}
-          input={{
-            value: getState().pagination.pageSize,
-            onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPageSize(Number(e.target.value)),
-          }}
-        />
-      </Col>
+      {showPageSizeChooser && (
+        <Col xs="auto">
+          <Select
+            id="pageSize"
+            options={[
+              ...PAGE_SIZE_OPTIONS.map((n) => ({ label: `Show ${n}`, value: String(n) })),
+              { label: "Show All", value: String(totalItems) },
+            ]}
+            input={{
+              value: getState().pagination.pageSize,
+              onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+                setPageSize(Number(e.target.value)),
+            }}
+          />
+        </Col>
+      )}
     </Row>
   );
 };

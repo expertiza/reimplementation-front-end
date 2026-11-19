@@ -40,20 +40,30 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+// RubricsContent groups its dropdowns by questionnaire_type, and AssignmentUtil
+// classifies each assignment_questionnaire by its nested questionnaire's type, so
+// both have to carry one or every rubric row comes back empty.
+const reviewQuestionnaires = [
+  { id: 101, name: "Round 1 Rubric", questionnaire_type: "ReviewQuestionnaire" },
+  { id: 102, name: "Round 2 Rubric", questionnaire_type: "ReviewQuestionnaire" },
+  { id: 200, name: "Unlinked Rubric", questionnaire_type: "ReviewQuestionnaire" },
+];
+
+// AssignmentEditor merges useLoaderData() straight into the form values — it does
+// not run AssignmentUtil's transform — so this fixture stands in for that
+// transform's OUTPUT, with the per-round fields already flattened.
 const baseAssignment = {
   id: 1,
   name: "Test Assignment",
   review_rubric_varies_by_round: true,
   number_of_review_rounds: 2,
+  questionnaire_round_1: 101,
+  questionnaire_round_2: 102,
   assignment_questionnaires: [
-    { id: 10, used_in_round: 1, questionnaire: { id: 101, name: "Round 1 Rubric" } },
-    { id: 11, used_in_round: 2, questionnaire: { id: 102, name: "Round 2 Rubric" } },
+    { id: 10, used_in_round: 1, questionnaire_id: 101, questionnaire: reviewQuestionnaires[0] },
+    { id: 11, used_in_round: 2, questionnaire_id: 102, questionnaire: reviewQuestionnaires[1] },
   ],
-  questionnaires: [
-    { id: 101, name: "Round 1 Rubric" },
-    { id: 102, name: "Round 2 Rubric" },
-    { id: 200, name: "Unlinked Rubric" },
-  ],
+  questionnaires: reviewQuestionnaires,
   weights: [],
 };
 
@@ -68,26 +78,33 @@ describe("AssignmentEditor rubrics tab", () => {
   it("shows one row per review round when rubrics vary by round", () => {
     render(<AssignmentEditor mode="update" />);
 
-    expect(screen.getByText("Review round 1:")).toBeInTheDocument();
-    expect(screen.getByText("Review round 2:")).toBeInTheDocument();
+    expect(screen.getByText("Review Round 1")).toBeInTheDocument();
+    expect(screen.getByText("Review Round 2")).toBeInTheDocument();
   });
 
   it("shows a single rubric row when rubrics do not vary by round", () => {
-    loaderData = { ...baseAssignment, review_rubric_varies_by_round: false };
+    loaderData = {
+      ...baseAssignment,
+      review_rubric_varies_by_round: false,
+      number_of_review_rounds: 1,
+      review_questionnaire_id: 101,
+    };
 
     render(<AssignmentEditor mode="update" />);
 
-    expect(screen.getByText("Review rubric:")).toBeInTheDocument();
-    expect(screen.queryByText("Review round 2:")).not.toBeInTheDocument();
+    // Scoped to the label cell: "Review" on its own is the un-rounded row.
+    expect(screen.getByText("Review", { selector: "td" })).toBeInTheDocument();
+    expect(screen.queryByText("Review Round 2")).not.toBeInTheDocument();
   });
 
   it("prefills the selected questionnaire per round from loader data", () => {
     render(<AssignmentEditor mode="update" />);
 
-    const round1Row = screen.getByText("Review round 1:").closest("tr");
+    const round1Row = screen.getByText("Review Round 1").closest("tr");
     expect(round1Row).not.toBeNull();
-    const select = within(round1Row as HTMLElement).getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("101");
+    // The row also holds the display-style select, so take the first one.
+    const [select] = within(round1Row as HTMLElement).getAllByRole("combobox");
+    expect((select as HTMLSelectElement).value).toBe("101");
   });
 
   it("lists all available questionnaires, including unlinked ones", () => {
@@ -110,7 +127,7 @@ describe("AssignmentEditor impersonation gate", () => {
     authState = { isAuthenticated: true, user: { role: "Instructor" } };
     render(<AssignmentEditor mode="update" />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByText("Review round 1:")).toBeInTheDocument();
+    expect(screen.getByText("Review Round 1")).toBeInTheDocument();
   });
 
   it("shows impersonation message for Admin in update mode", () => {
@@ -166,12 +183,29 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
+    // Each rubric row also carries its weight, notification limit and display style.
     expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 10, questionnaire_id: 101, used_in_round: 1 },
-      { questionnaire_id: 102, used_in_round: 2 },
+      {
+        id: 10,
+        questionnaire_id: 101,
+        used_in_round: 1,
+        questionnaire_weight: 0,
+        notification_limit: 0,
+        dropdown: false,
+      },
+      {
+        questionnaire_id: 102,
+        used_in_round: 2,
+        questionnaire_weight: 0,
+        notification_limit: 0,
+        dropdown: false,
+      },
     ]);
-    expect(payload.assignment.vary_by_round).toBe(true);
-    expect(payload.assignment.rounds_of_reviews).toBe(2);
+    // The payload uses the Rails alias_attribute names, not the raw columns:
+    // review_rubric_varies_by_round → vary_by_round, number_of_review_rounds →
+    // rounds_of_reviews (see Assignment model and assignment_params).
+    expect(payload.assignment.review_rubric_varies_by_round).toBe(true);
+    expect(payload.assignment.number_of_review_rounds).toBe(2);
   });
 
   it("includes existing id when present and skips rounds without selection", () => {
@@ -203,7 +237,14 @@ describe("transformAssignmentRequest", () => {
     const payload = JSON.parse(transformAssignmentRequest(values));
 
     expect(payload.assignment.assignment_questionnaires_attributes).toEqual([
-      { id: 99, questionnaire_id: 201, used_in_round: 1 },
+      {
+        id: 99,
+        questionnaire_id: 201,
+        used_in_round: 1,
+        questionnaire_weight: 0,
+        notification_limit: 0,
+        dropdown: false,
+      },
     ]);
   });
 
@@ -233,7 +274,7 @@ describe("transformAssignmentRequest", () => {
 
     const payload = JSON.parse(transformAssignmentRequest(values));
 
-    expect(payload.assignment.vary_by_round).toBe(false);
+    expect(payload.assignment.review_rubric_varies_by_round).toBe(false);
   });
 
   it("includes instructor_grade_min_score in the request payload", () => {

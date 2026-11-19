@@ -17,29 +17,35 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
 
   columnHelper.accessor("username", {
     header: "Username",
+    meta: { width: "12%" },
     enableSorting: true,
   }),
 
   columnHelper.accessor("name", {
     header: "Full Name",
+    meta: { width: "15%" },
     enableSorting: true,
     enableMultiSort: true,
   }),
 
   columnHelper.accessor("email", {
     header: "Email",
+    // Widest of the text columns: addresses are unbreakable strings.
+    meta: { width: "20%" },
     size: 200,
   }),
 
   columnHelper.accessor("role.name", {
     id: "role",
     header: "Role",
+    meta: { width: "11%" },
     enableColumnFilter: false,
   }),
 
   columnHelper.accessor("parent.username", {
     id: "parent",
     header: "Parent",
+    meta: { width: "11%" },
     enableColumnFilter: false,
   }),
 
@@ -68,6 +74,10 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
               style={{ width: "20px", height: "20px" }}
             />
           ) : null,
+        // Fixed px, not a percentage: these hold a 20px icon, and as the two children
+        // of the grouped header they otherwise soak up (or donate) all the slack when
+        // the conditional Institution column appears and disappears.
+        meta: { width: "90px" },
         size: 70,
         enableSorting: false,
         enableColumnFilter: false,
@@ -94,6 +104,10 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
               style={{ width: "20px", height: "20px" }}
             />
           ) : null,
+        // Fixed px, not a percentage: these hold a 20px icon, and as the two children
+        // of the grouped header they otherwise soak up (or donate) all the slack when
+        // the conditional Institution column appears and disappears.
+        meta: { width: "90px" },
         size: 70,
         enableSorting: false,
         enableColumnFilter: false,
@@ -110,10 +124,12 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   columnHelper.accessor("institution.name", {
     id: "institution",
     header: "Institution",
+    meta: { width: "11%" },
     enableColumnFilter: false,
   }),
   columnHelper.display({
     id: "actions",
+    meta: { width: "8%" },
     header: () => (
       <span className="text-start fw-bold" style={{ color: "#000000", fontSize: "1.17em" }}>
         Actions

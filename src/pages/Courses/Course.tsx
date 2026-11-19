@@ -24,6 +24,10 @@ import { formatDate } from "../../utils/util";
 
 type UnifiedRow = Record<string, any>;
 
+// Bounds for the Name column; see the nameColumnWidth comment below.
+const NAME_MIN_PX = 220;
+const NAME_MAX_PX = 330;
+
 const Courses = () => {
   const { error, isLoading, data: CourseResponse, sendRequest: fetchCourses } = useAPI();
   const { data: InstitutionResponse, sendRequest: fetchInstitutions } = useAPI();
@@ -284,6 +288,59 @@ const Courses = () => {
     return [...courseRows, ...standaloneRows];
   }, [mergedTableData, loggedInUserRole, auth.user.id, allAssignments, instructorData]);
 
+  // THE TABLE WIDTH MUST BE CALCULATED ONCE AND STAY FIXED FOR BOTH THE EXPANDED
+  // AND THE COLLAPSED STATE. Expanding a course must never resize the table.
+  //
+  // That rules out CSS content sizing (table-layout: auto): the browser only measures
+  // the rows it is currently rendering, so a course holding a long assignment name was
+  // narrow while collapsed and jumped wider once expanded. Instead measure every name
+  // in the dataset — courses AND the assignments nested under them, on screen or not —
+  // and pin the Name column to that, clamped to [NAME_MIN_PX, NAME_MAX_PX]. Names too
+  // long for the cap wrap. Any future column that sizes to content needs the same
+  // treatment, for the same reason.
+  const nameColumnWidth = useMemo(() => {
+    // Read the cell font once from a detached probe, then measure every name on a
+    // canvas. Writing text into a live element and reading its box back forces a
+    // layout flush per name; canvas measureText touches no DOM at all.
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;";
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const font = cs.font || `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    probe.remove();
+
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (ctx) ctx.font = font;
+
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    // Mirrors the indent the Name cell applies: depth * 1.5rem + 0.75rem.
+    const widthOf = (text: string, depth: number) => {
+      const label = text ?? "";
+      // Without a canvas context (jsdom) fall back to a rough per-character estimate.
+      const textWidth = ctx ? ctx.measureText(label).width : label.length * 7;
+      return textWidth + (depth * 1.5 + 0.75) * rem;
+    };
+
+    let widest = 0;
+    for (const row of unifiedData) {
+      widest = Math.max(widest, widthOf(row.name, 0));
+      for (const sub of row.subRows ?? []) widest = Math.max(widest, widthOf(sub.name, 1));
+    }
+
+    // + the cell's own horizontal padding, before clamping.
+    return Math.min(NAME_MAX_PX, Math.max(NAME_MIN_PX, Math.ceil(widest) + 16));
+  }, [unifiedData]);
+
+  const sizedColumns = useMemo(
+    () =>
+      tableColumns.map((col) =>
+        col.id === "name"
+          ? { ...col, meta: { ...(col.meta as object), width: `${nameColumnWidth}px` } }
+          : col
+      ),
+    [tableColumns, nameColumnWidth]
+  );
+
   return (
     <>
       <Outlet />
@@ -327,8 +384,10 @@ const Courses = () => {
           showGlobalFilter={false}
           showPagination={false}
           data={unifiedData}
-          columns={tableColumns}
-          tableStyle={{ width: "fit-content", minWidth: "75%", margin: "0 auto", tableLayout: "fixed" }}
+          columns={sizedColumns}
+          // fixed, so the declared widths above are the final widths and the table is
+          // exactly their sum — the same whether rows are expanded or collapsed.
+          tableStyle={{ width: "fit-content", margin: "0 auto", tableLayout: "fixed" }}
           columnVisibility={{
             id: false,
             instructor:
