@@ -23,7 +23,6 @@ export const TAColumns = (handleDelete: Fn) => [
     header: "TA Name",
     enableSorting: true,
   }),
-  //create Full TA Name column Header
   columnHelper.accessor("name", {
     header: "Full Name",
     enableSorting: true,

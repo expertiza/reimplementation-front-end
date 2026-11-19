@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 
-import { Button, Dropdown, Tab, Tabs } from "react-bootstrap";
+import { Button, Dropdown, Modal, Tab, Tabs } from "react-bootstrap";
 import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import {
   IAssignmentFormValues,
@@ -11,7 +11,9 @@ import {
 import RubricsContent, { QuestionnaireOption } from "./RubricsContent";
 import { IEditor } from "../../utils/interfaces";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { ROLE } from "../../utils/interfaces";
 import { useLoaderData, useLocation, useNavigate, useParams } from "react-router-dom";
 import FormInput from "../../components/Form/FormInput";
 import FormSelect from "../../components/Form/FormSelect";
@@ -176,6 +178,7 @@ const validationSchema = Yup.object({
 });
 
 const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
+  const auth = useSelector((state: RootState) => state.authentication);
   const { data: assignmentResponse, error: assignmentError, sendRequest } = useAPI();
   const { data: coursesResponse, error: coursesError, sendRequest: sendCoursesRequest } = useAPI();
   const {
@@ -525,7 +528,9 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const handleCreateTopic = useCallback(
     (topicData: any) => {
       if (id) {
-        createTopic({
+        // Returned, not fired and forgotten: the CSV importer awaits each row so
+        // it can tell the user which ones the server rejected.
+        return createTopic({
           url: `/project_topics`,
           method: "POST",
           data: {
@@ -665,6 +670,25 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
   const formInitialValues: IAssignmentFormValues & Record<string, any> = {
     ...getInitialValues(),
   };
+
+  const isAdminViewing =
+    mode === "update" &&
+    (auth.user?.role === ROLE.ADMIN.valueOf() || auth.user?.role === ROLE.SUPER_ADMIN.valueOf());
+
+  if (isAdminViewing) {
+    return (
+      <Modal size="lg" centered show={true} onHide={handleClose} backdrop="static">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Assignment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-primary">
+            Please impersonate the instructor for whom you are editing an assignment.
+          </p>
+        </Modal.Body>
+      </Modal>
+    );
+  }
 
   return (
     <div style={{ padding: "30px", paddingTop: "1.5rem" }}>
@@ -1187,7 +1211,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <div>
                     <div style={{ marginTop: "30px", width: "75%" }}>
                       <Table
-                        showColumnFilter={false}
                         showGlobalFilter={false}
                         showPagination={false}
                         getRowId={(row) => String(row.id)}
@@ -1332,7 +1355,6 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                   <div>
                     <div style={{ display: "ruby", marginTop: "30px" }}>
                       <Table
-                        showColumnFilter={false}
                         showGlobalFilter={false}
                         showPagination={false}
                         data={[
@@ -1569,13 +1591,14 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
                 className="mt-3 d-flex justify-content-start gap-2"
                 style={{ alignItems: "center" }}
               >
-                <Button type="submit" variant="outline-secondary">
+                {/* The only Back on this page. A Button, not a hand-coloured anchor,
+                    so it matches the house outline style like every other action. */}
+                <Button type="submit" variant="success">
                   Save
-                </Button>{" "}
-                |
-                <a href="/courses" style={{ color: "#a4a366", textDecoration: "none" }}>
+                </Button>
+                <Button variant="outline-secondary" href="/courses">
                   Back
-                </a>
+                </Button>
               </div>
               {showDutyEditor && (
                 <DutyEditor

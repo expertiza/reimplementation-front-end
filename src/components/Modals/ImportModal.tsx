@@ -585,7 +585,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
               columns={previewColumns}
               showPagination={true}
               showGlobalFilter={false}
-              showColumnFilter={false}
               disableGlobalFilter={true}
             />
           </div>

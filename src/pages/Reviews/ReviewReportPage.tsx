@@ -1034,7 +1034,6 @@ const ReviewReportPage: React.FC = () => {
           data={filteredData}
           columns={tableColumns}
           showGlobalFilter={true}
-          showColumnFilter={false}
           showPagination={filteredData.length >= 10}
           getRowClassName={(row, allRows) => {
             const idx = allRows.findIndex((r: any) => r.id === row.id);

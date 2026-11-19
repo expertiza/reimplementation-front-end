@@ -69,7 +69,7 @@ const Table: React.FC<TableProps> = ({
   data: initialData,
   columns,
   showGlobalFilter = false,
-  showColumnFilter = true,
+  showColumnFilter = false,
   showPagination = true,
   onSelectionChange,
   columnVisibility = {},
@@ -214,6 +214,17 @@ const Table: React.FC<TableProps> = ({
 
   const firstRenderRef = useRef(true);
 
+  // Filter inputs show when the data spans more than one page (rows > pageSize) or
+  // when "Show All" is picked (pageSize === rows) — the two cases ">=" covers. A page
+  // size larger than the data is neither, so they stay hidden.
+  //
+  // Counted on getCoreRowModel (the UNFILTERED rows) on purpose: getPrePaginationRowModel
+  // counts rows after filtering, so narrowing a table below one page used to unmount
+  // the inputs and strand the filter with no way to clear it.
+  const unfilteredRows = table.getCoreRowModel().rows.length;
+  const { pageSize } = table.getState().pagination;
+  const columnFilterVisible = showColumnFilter && unfilteredRows >= pageSize;
+
   return (
     <>
       <Container fluid={fluid}>
@@ -248,7 +259,15 @@ const Table: React.FC<TableProps> = ({
               hover
               responsive
               size="sm"
-              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+              style={{
+                margin: tableStyle ? "0 auto" : undefined,
+                // A filter input changes a column's natural width, so lock widths whenever
+                // filters are enabled. Keyed off the prop rather than columnFilterVisible so
+                // the layout does not flip as the row count crosses pageSize.
+                // Callers opt out with tableStyle={{ tableLayout: "auto" }}.
+                ...(showColumnFilter ? { tableLayout: "fixed" as const } : {}),
+                ...tableStyle,
+              }}
             >
               {showHeader && (
                 <thead className="table-secondary">
@@ -269,6 +288,9 @@ const Table: React.FC<TableProps> = ({
                                     ...(m.maxWidth ? { maxWidth: m.maxWidth } : {}),
                                     ...(m.width ? { width: m.width } : {}),
                                     ...(m.whiteSpace ? { whiteSpace: m.whiteSpace } : {}),
+                                    // Free-form escape hatch, applied to header and body
+                                    // cells alike so a column can style its whole strip.
+                                    ...(m.style ?? {}),
                                   }
                                 : undefined;
                             })()}
@@ -290,7 +312,7 @@ const Table: React.FC<TableProps> = ({
                                     desc: " 🔽",
                                   }[header.column.getIsSorted() as string] ?? null}
                                 </div>
-                                {showColumnFilter && header.column.getCanFilter() ? (
+                                {columnFilterVisible && header.column.getCanFilter() ? (
                                   <ColumnFilter column={header.column} />
                                 ) : null}
                               </>
@@ -322,13 +344,25 @@ const Table: React.FC<TableProps> = ({
                               ...(colMeta.minWidth ? { minWidth: colMeta.minWidth } : {}),
                               ...(colMeta.maxWidth ? { maxWidth: colMeta.maxWidth } : {}),
                               ...(colMeta.whiteSpace ? { whiteSpace: colMeta.whiteSpace } : {}),
+                              ...(colMeta.style ?? {}),
                             }
                           : {};
                         return (
+                          // tdProps is spread BEFORE style: it carries its own style key,
+                          // so spreading it afterwards threw away every meta style.
                           <td
                             key={cell.id}
-                            style={{ ...colMetaStyle, ...(tdProps.style ?? {}) }}
                             {...tdProps}
+                            // overflowWrap break-word first, so a column can override it:
+                            // under table-layout:fixed a value with no space in it (an email
+                            // address, a URL) cannot wrap and spills over the next column.
+                            // break-word, not anywhere, so it does not shrink min-content
+                            // widths on the auto-layout tables.
+                            style={{
+                              overflowWrap: "break-word",
+                              ...colMetaStyle,
+                              ...(tdProps.style ?? {}),
+                            }}
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>

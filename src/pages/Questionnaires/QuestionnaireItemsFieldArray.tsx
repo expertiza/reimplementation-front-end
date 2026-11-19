@@ -12,11 +12,11 @@ interface Props {
 
 /* ── which types use each optional field ─────────────────────── */
 const TYPES_WITH_ALTERNATIVES = new Set(["Multiple choice", "Dropdown"]);
-const TYPES_WITH_GRID         = new Set(["Grid"]);
-const TYPES_WITH_MIN_MAX      = new Set(["Scale", "Criterion"]);
-const TYPES_WITH_ROWS         = new Set(["Criterion", "Text area", "Grid"]);
-const TYPES_WITH_COLS         = new Set(["Criterion", "Text area", "Text field", "Grid"]);
-const TYPES_WITH_WEIGHT       = new Set(["Multiple choice", "Dropdown", "Scale", "Criterion"]);
+const TYPES_WITH_GRID = new Set(["Grid"]);
+const TYPES_WITH_MIN_MAX = new Set(["Scale", "Criterion"]);
+const TYPES_WITH_ROWS = new Set(["Criterion", "Text area", "Grid"]);
+const TYPES_WITH_COLS = new Set(["Criterion", "Text area", "Text field", "Grid"]);
+const TYPES_WITH_WEIGHT = new Set(["Multiple choice", "Dropdown", "Scale", "Criterion"]);
 
 /* ── style constants ─────────────────────────────────────────── */
 const TH: React.CSSProperties = {
@@ -55,18 +55,15 @@ const rowFieldName = (type: string, fi: number) =>
   type === "Grid" ? `items[${fi}].rows` : `items[${fi}].textarea_height`;
 
 const colFieldName = (type: string, fi: number) => {
-  if (type === "Grid")       return `items[${fi}].columns`;
+  if (type === "Grid") return `items[${fi}].columns`;
   if (type === "Text field") return `items[${fi}].textbox_width`;
   return `items[${fi}].textarea_width`;
 };
 
 /* ────────────────────────────────────────────────────────────── */
-const QuestionnaireItemsFieldArray: React.FC<Props> = ({
-  values,
-  itemTypes,
-}) => {
-  const [itemType, setItemType]   = useState("");
-  const [numItems, setNumItems]   = useState<number | "">(1);
+const QuestionnaireItemsFieldArray: React.FC<Props> = ({ values, itemTypes }) => {
+  const [itemType, setItemType] = useState("");
+  const [numItems, setNumItems] = useState<number | "">(1);
   const [showNumbers, setShowNumbers] = useState(false);
 
   return (
@@ -84,9 +81,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         };
 
         /* visible slice: maps visible position → full-array index */
-        const visible: Array<{ item: IItem; fullIndex: number }> = (
-          (values.items ?? [])
-        )
+        const visible: Array<{ item: IItem; fullIndex: number }> = (values.items ?? [])
           .map((item, fullIndex) => ({ item, fullIndex }))
           .filter(({ item }) => !item._destroy);
 
@@ -108,12 +103,12 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const activeTypes = new Set(visible.map(({ item }) => item.item_type ?? ""));
 
         const showAlternatives = [...activeTypes].some((t) => TYPES_WITH_ALTERNATIVES.has(t));
-        const showRowNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
-        const showColNames     = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
-        const showMinMax       = [...activeTypes].some((t) => TYPES_WITH_MIN_MAX.has(t));
-        const showRows         = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
-        const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
-        const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
+        const showRowNames = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
+        const showColNames = [...activeTypes].some((t) => TYPES_WITH_GRID.has(t));
+        const showMinMax = [...activeTypes].some((t) => TYPES_WITH_MIN_MAX.has(t));
+        const showRows = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
+        const showCols = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
+        const showWeight = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
 
         /* Calculate visible column count */
         let columnCount = 4; // grip, type, prompt, del
@@ -129,8 +124,8 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         /* Only expand to full window space when needed (9+ columns from diverse items).
            When there are fewer columns, keep the table proportionally compact. */
         const isFullWidthNeeded = columnCount >= 9;
-        const isMediumWidth     = columnCount === 8;
-        const tableMaxWidth     = isFullWidthNeeded ? "100%" : isMediumWidth ? "1200px" : "960px";
+        const isMediumWidth = columnCount === 8;
+        const tableMaxWidth = isFullWidthNeeded ? "100%" : isMediumWidth ? "1200px" : "960px";
 
         /* shared textarea style */
         const taStyle: React.CSSProperties = {
@@ -177,10 +172,21 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                         <thead>
                           <tr>
                             {/* grip */}
-                            <th style={{ ...TH, width: "32px", minWidth: "32px", padding: "8px 6px" }} />
+                            <th
+                              style={{ ...TH, width: "32px", minWidth: "32px", padding: "8px 6px" }}
+                            />
                             {/* # */}
                             {showNumbers && (
-                              <th style={{ ...TH, width: "36px", minWidth: "36px", textAlign: "center" }}>#</th>
+                              <th
+                                style={{
+                                  ...TH,
+                                  width: "36px",
+                                  minWidth: "36px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                #
+                              </th>
                             )}
                             {/* type */}
                             <th style={{ ...TH, width: "110px", minWidth: "100px" }}>Type</th>
@@ -207,25 +213,45 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                             )}
                             {showMinMax && (
                               <>
-                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>Min Label</th>
-                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>Max Label</th>
+                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>
+                                  Min Label
+                                </th>
+                                <th style={{ ...TH, width: "90px", minWidth: "80px" }}>
+                                  Max Label
+                                </th>
                               </>
                             )}
                             {showRows && (
-                              <th style={{ ...TH, width: "54px", minWidth: "48px", textAlign: "center" }}>
+                              <th
+                                style={{
+                                  ...TH,
+                                  width: "54px",
+                                  minWidth: "48px",
+                                  textAlign: "center",
+                                }}
+                              >
                                 <OverlayTrigger
                                   overlay={
-                                    <Tooltip>
-                                      Height (rows) — Criterion, Text area, Grid
-                                    </Tooltip>
+                                    <Tooltip>Height (rows) — Criterion, Text area, Grid</Tooltip>
                                   }
                                 >
-                                  <span style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}>Rows</span>
+                                  <span
+                                    style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}
+                                  >
+                                    Rows
+                                  </span>
                                 </OverlayTrigger>
                               </th>
                             )}
                             {showCols && (
-                              <th style={{ ...TH, width: "54px", minWidth: "48px", textAlign: "center" }}>
+                              <th
+                                style={{
+                                  ...TH,
+                                  width: "54px",
+                                  minWidth: "48px",
+                                  textAlign: "center",
+                                }}
+                              >
                                 <OverlayTrigger
                                   overlay={
                                     <Tooltip>
@@ -233,15 +259,37 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                     </Tooltip>
                                   }
                                 >
-                                  <span style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}>Cols</span>
+                                  <span
+                                    style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}
+                                  >
+                                    Cols
+                                  </span>
                                 </OverlayTrigger>
                               </th>
                             )}
                             {showWeight && (
-                              <th style={{ ...TH, width: "58px", minWidth: "50px", textAlign: "center" }}>Weight</th>
+                              <th
+                                style={{
+                                  ...TH,
+                                  width: "58px",
+                                  minWidth: "50px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Weight
+                              </th>
                             )}
                             {/* delete */}
-                            <th style={{ ...TH, width: "40px", minWidth: "36px", textAlign: "center" }}>Del</th>
+                            <th
+                              style={{
+                                ...TH,
+                                width: "40px",
+                                minWidth: "36px",
+                                textAlign: "center",
+                              }}
+                            >
+                              Del
+                            </th>
                           </tr>
                         </thead>
 
@@ -275,9 +323,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                       boxShadow: snap.isDragging
                                         ? "0 6px 20px rgba(13,110,253,0.14)"
                                         : undefined,
-                                      outline: snap.isDragging
-                                        ? "1.5px solid #0d6efd"
-                                        : undefined,
+                                      outline: snap.isDragging ? "1.5px solid #0d6efd" : undefined,
                                       borderRadius: snap.isDragging ? "6px" : undefined,
                                       transition: snap.isDragging ? undefined : "background 0.1s",
                                     }}
@@ -376,7 +422,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             />
                                           </>
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
@@ -393,13 +441,15 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             style={taStyle}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
 
                                     {/* Column Names (Grid) or merged column */}
-                                    {(showColNames) && (
+                                    {showColNames && (
                                       <td style={TD}>
                                         {TYPES_WITH_GRID.has(type) ? (
                                           <Field
@@ -410,7 +460,9 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             style={taStyle}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
@@ -424,10 +476,17 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             name={`items[${fullIndex}].min_label`}
                                             placeholder="e.g. Poor"
                                             className="form-control form-control-sm"
-                                            style={{ color: "#212529", width: "100%", resize: "vertical", minHeight: "52px" }}
+                                            style={{
+                                              color: "#212529",
+                                              width: "100%",
+                                              resize: "vertical",
+                                              minHeight: "52px",
+                                            }}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
@@ -441,51 +500,88 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             name={`items[${fullIndex}].max_label`}
                                             placeholder="e.g. Excellent"
                                             className="form-control form-control-sm"
-                                            style={{ color: "#212529", width: "100%", resize: "vertical", minHeight: "52px" }}
+                                            style={{
+                                              color: "#212529",
+                                              width: "100%",
+                                              resize: "vertical",
+                                              minHeight: "52px",
+                                            }}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
 
                                     {/* Rows */}
                                     {showRows && (
-                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
+                                      <td
+                                        style={{
+                                          ...TD,
+                                          textAlign: "center",
+                                          verticalAlign: "middle",
+                                        }}
+                                      >
                                         {TYPES_WITH_ROWS.has(type) ? (
                                           <Field
                                             name={rowFieldName(type, fullIndex)}
                                             type="number"
                                             placeholder="—"
                                             className="form-control form-control-sm text-center"
-                                            style={{ width: "56px", display: "block", margin: "0 auto" }}
+                                            style={{
+                                              width: "56px",
+                                              display: "block",
+                                              margin: "0 auto",
+                                            }}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
 
                                     {/* Cols */}
                                     {showCols && (
-                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
+                                      <td
+                                        style={{
+                                          ...TD,
+                                          textAlign: "center",
+                                          verticalAlign: "middle",
+                                        }}
+                                      >
                                         {TYPES_WITH_COLS.has(type) ? (
                                           <Field
                                             name={colFieldName(type, fullIndex)}
                                             type="number"
                                             placeholder="—"
                                             className="form-control form-control-sm text-center"
-                                            style={{ width: "56px", display: "block", margin: "0 auto" }}
+                                            style={{
+                                              width: "56px",
+                                              display: "block",
+                                              margin: "0 auto",
+                                            }}
                                           />
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
 
                                     {/* Weight */}
                                     {showWeight && (
-                                      <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
+                                      <td
+                                        style={{
+                                          ...TD,
+                                          textAlign: "center",
+                                          verticalAlign: "middle",
+                                        }}
+                                      >
                                         {TYPES_WITH_WEIGHT.has(type) ? (
                                           <>
                                             <Field
@@ -493,7 +589,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                               type="number"
                                               placeholder="—"
                                               className="form-control form-control-sm text-center"
-                                              style={{ width: "60px", display: "block", margin: "0 auto" }}
+                                              style={{
+                                                width: "60px",
+                                                display: "block",
+                                                margin: "0 auto",
+                                              }}
                                             />
                                             <ErrorMessage
                                               name={`items[${fullIndex}].weight`}
@@ -508,13 +608,21 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                             />
                                           </>
                                         ) : (
-                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>—</span>
+                                          <span style={{ color: "#d1d5db", fontSize: "13px" }}>
+                                            —
+                                          </span>
                                         )}
                                       </td>
                                     )}
 
                                     {/* Delete */}
-                                    <td style={{ ...TD, textAlign: "center", verticalAlign: "middle" }}>
+                                    <td
+                                      style={{
+                                        ...TD,
+                                        textAlign: "center",
+                                        verticalAlign: "middle",
+                                      }}
+                                    >
                                       <OverlayTrigger overlay={<Tooltip>Remove item</Tooltip>}>
                                         <Button
                                           variant="link"
@@ -565,7 +673,12 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
             {/* ── Add toolbar ── */}
             <div
               className="d-flex gap-2 align-items-center flex-wrap mt-3 pt-3"
-              style={{ borderTop: "1px solid #f3f4f6", maxWidth: tableMaxWidth, margin: "0 auto", transition: "max-width 0.2s ease-in-out" }}
+              style={{
+                borderTop: "1px solid #f3f4f6",
+                maxWidth: tableMaxWidth,
+                margin: "0 auto",
+                transition: "max-width 0.2s ease-in-out",
+              }}
             >
               <select
                 className="form-control form-control-sm"
@@ -614,8 +727,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                 className="btn btn-outline-primary btn-sm fw-semibold px-3"
                 disabled={!itemType}
                 onClick={() => {
-                  const count =
-                    typeof numItems === "number" && numItems > 0 ? numItems : 1;
+                  const count = typeof numItems === "number" && numItems > 0 ? numItems : 1;
                   for (let i = 0; i < count; i++) {
                     const isGrid = itemType === "Grid";
                     // A new Grid item starts with the default prompt, column headings
@@ -626,9 +738,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                     // above, near the Grid cells). The edited values are saved with the item.
                     push({
                       id: undefined,
-                      txt: isGrid
-                        ? "Please rate the following aspects of the submission:"
-                        : "",
+                      txt: isGrid ? "Please rate the following aspects of the submission:" : "",
                       weight: "",
                       item_type: itemType,
                       break_before: 1,
@@ -636,9 +746,7 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                       column_names: isGrid
                         ? "Strongly Disagree,Disagree,Neutral,Agree,Strongly Agree"
                         : "",
-                      row_names: isGrid
-                        ? "Clarity,Completeness,Correctness,Creativity"
-                        : "",
+                      row_names: isGrid ? "Clarity,Completeness,Correctness,Creativity" : "",
                       columns: isGrid ? "5" : "",
                       rows: isGrid ? "4" : "",
                       min_label: "",

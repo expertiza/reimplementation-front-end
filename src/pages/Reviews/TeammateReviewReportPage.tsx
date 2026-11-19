@@ -373,7 +373,6 @@ const TeammateReviewReportPage: React.FC = () => {
             data={rows}
             columns={columns}
             showGlobalFilter={true}
-            showColumnFilter={false}
             showPagination={rows.length >= 10}
             tableStyle={{ width: "fit-content", margin: 0 }}
             getCellProps={(cell, row) => {

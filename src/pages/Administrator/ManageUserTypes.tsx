@@ -55,6 +55,7 @@ const ManageUserTypes: React.FC = () => {
         <Table
           data={data}
           columns={tableColumns}
+          showColumnFilter={true}
           columnVisibility={{
             id: false,
             role: false,
