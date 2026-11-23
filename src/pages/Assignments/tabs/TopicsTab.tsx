@@ -259,7 +259,11 @@ const TopicsTab = ({
 
   const handleSubmitNewTopic = () => {
     if (onCreateTopic) {
-      onCreateTopic(newTopicData);
+      // onCreateTopic may reject (server error, or missing assignment id) — the
+      // CSV importer awaits and handles that itself, but this single-topic path
+      // doesn't await, so swallow it here to avoid an unhandled rejection. The
+      // real failure is still surfaced through the shared API-error alert banner.
+      Promise.resolve(onCreateTopic(newTopicData)).catch(() => {});
       handleCloseNewTopic();
     }
   };
@@ -861,6 +865,7 @@ const TopicsTab = ({
               style={{ height: "200px" }}
               value={importData}
               onChange={(e) => setImportData(e.target.value)}
+              disabled={isImporting}
             />
           </FloatingLabel>
           {importProblems.length > 0 && (

@@ -527,26 +527,29 @@ const AssignmentEditor: React.FC<IEditor> = ({ mode }) => {
 
   const handleCreateTopic = useCallback(
     (topicData: any) => {
-      if (id) {
-        // Returned, not fired and forgotten: the CSV importer awaits each row so
-        // it can tell the user which ones the server rejected.
-        return createTopic({
-          url: `/project_topics`,
-          method: "POST",
-          data: {
-            project_topic: {
-              topic_identifier: topicData.topic_identifier || topicData.id,
-              topic_name: topicData.topic_name || topicData.name,
-              category: topicData.category,
-              max_choosers: topicData.max_choosers ?? topicData.numSlots,
-              assignment_id: id,
-              description: topicData.description,
-              link: topicData.link,
-            },
-            micropayment: topicData.micropayment ?? 0,
-          },
-        });
+      if (!id) {
+        // Reject rather than resolve undefined: the CSV importer awaits this and
+        // would otherwise count the row as imported without a request ever firing.
+        return Promise.reject(new Error("Assignment ID is required to create a topic."));
       }
+      // Returned, not fired and forgotten: the CSV importer awaits each row so
+      // it can tell the user which ones the server rejected.
+      return createTopic({
+        url: `/project_topics`,
+        method: "POST",
+        data: {
+          project_topic: {
+            topic_identifier: topicData.topic_identifier || topicData.id,
+            topic_name: topicData.topic_name || topicData.name,
+            category: topicData.category,
+            max_choosers: topicData.max_choosers ?? topicData.numSlots,
+            assignment_id: id,
+            description: topicData.description,
+            link: topicData.link,
+          },
+          micropayment: topicData.micropayment ?? 0,
+        },
+      });
     },
     [id, createTopic]
   );

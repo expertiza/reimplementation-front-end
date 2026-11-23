@@ -287,8 +287,14 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   const handleCreateTopic = useCallback(
     (topicData: any) => {
-      if (!effectiveId) return;
-      createTopic({
+      if (!effectiveId) {
+        // Reject rather than resolve undefined: the CSV importer awaits this and
+        // would otherwise count the row as imported without a request ever firing.
+        return Promise.reject(new Error("Assignment ID is required to create a topic."));
+      }
+      // Returned, not fired and forgotten: the CSV importer awaits each row so
+      // it can tell the user which ones the server rejected.
+      return createTopic({
         url: `/project_topics`,
         method: "POST",
         data: {
