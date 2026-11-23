@@ -113,6 +113,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
         const showMinMax       = [...activeTypes].some((t) => TYPES_WITH_MIN_MAX.has(t));
         const showRows         = [...activeTypes].some((t) => TYPES_WITH_ROWS.has(t));
         const showCols         = [...activeTypes].some((t) => TYPES_WITH_COLS.has(t));
+        // Text field items size by width, not columns; label the column to match.
+        const colsTypes        = [...activeTypes].filter((t) => TYPES_WITH_COLS.has(t));
+        const colsLabel        = colsTypes.length > 0 && colsTypes.every((t) => t === "Text field")
+          ? "Width"
+          : colsTypes.includes("Text field") ? "Cols / Width" : "Cols";
         const showWeight       = [...activeTypes].some((t) => TYPES_WITH_WEIGHT.has(t));
 
         /* Calculate visible column count */
@@ -229,11 +234,11 @@ const QuestionnaireItemsFieldArray: React.FC<Props> = ({
                                 <OverlayTrigger
                                   overlay={
                                     <Tooltip>
-                                      Width (cols) — Criterion, Text area, Text field, Grid
+                                      Width (cols) — Criterion, Text area, Grid; width — Text field
                                     </Tooltip>
                                   }
                                 >
-                                  <span style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}>Cols</span>
+                                  <span style={{ cursor: "help", borderBottom: "1px dotted #9ca3af" }}>{colsLabel}</span>
                                 </OverlayTrigger>
                               </th>
                             )}

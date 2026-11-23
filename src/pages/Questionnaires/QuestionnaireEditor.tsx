@@ -69,7 +69,10 @@ const QuestionnaireEditor: React.FC<IEditor> = ({ mode }) => {
   );
 
   const onSubmit = async (values: QuestionnaireFormValues) => {
-    values.instructor_id = auth.user.id;
+    // Only assign ownership on create; editing must not reassign the instructor.
+    if (mode === "create" || values.instructor_id == null) {
+      values.instructor_id = auth.user.id;
+    }
     console.log("Submit:", values);
     const payload = transformQuestionnaireRequest(values);
     const endpoint = mode === "create" ? "/questionnaires" : `/questionnaires/${values.id}`;
