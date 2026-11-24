@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
 import TeammateReviewOptions from "./TeammateReviewOptions";
 import {
@@ -320,9 +321,15 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   </ul>
                 </div>
               )}
-              <Button type="submit" variant="primary" className="px-4">
-                Save
-              </Button>
+              <div className="d-flex justify-content-start gap-2" style={{ alignItems: "center" }}>
+                <Button type="submit" variant="outline-secondary">
+                  Save
+                </Button>{" "}
+                |
+                <Link to="/questionnaires" style={{ color: "#a4a366", textDecoration: "none" }}>
+                  Back
+                </Link>
+              </div>
             </div>
           </Form>
         )}
