@@ -1,6 +1,5 @@
 import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button, Tooltip, OverlayTrigger } from "react-bootstrap";
-import { BsPencilFill, BsPersonXFill } from "react-icons/bs";
 import { IUserResponse as IUser } from "../../utils/interfaces";
 /**
  * @author Ankur Mundra on April, 2023

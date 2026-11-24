@@ -1,7 +1,5 @@
 // Importing necessary interfaces and modules
 import { createColumnHelper, Row } from "@tanstack/react-table";
-import { Button } from "react-bootstrap";
-import { BsPersonXFill } from "react-icons/bs";
 import { ITAResponse as ITA } from "../../utils/interfaces";
 import ColumnButton from "../../components/ColumnButton";
 
