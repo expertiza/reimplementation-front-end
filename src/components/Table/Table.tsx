@@ -133,7 +133,7 @@ const Table: React.FC<TableProps> = ({
       enableColumnFilter: false,
     };
 
-    const selectableColumn = selectable
+    const selectableColumn: ColumnDef<any, any>[] = selectable
       ? [
           {
             id: "select",
@@ -157,7 +157,7 @@ const Table: React.FC<TableProps> = ({
               />
             ),
             enableSorting: false,
-            enableFilter: false,
+            enableColumnFilter: false,
           },
         ]
       : [];
@@ -182,7 +182,12 @@ const Table: React.FC<TableProps> = ({
 
   const table = useReactTable({
     data: initialData,
-    columns: colsPlusExpander,
+    // ColumnDef<any, any> doesn't structurally satisfy ColumnDef<Record<string, any>, any>
+    // (TanStack constrains accessorKey to `keyof TData & string`, which `any` can't match
+    // exactly) even though they're compatible at runtime — callers pass columns typed
+    // against their own row shape, not Record<string, any>. Cast at the boundary rather
+    // than loosening TableProps.columns for every caller.
+    columns: colsPlusExpander as ColumnDef<Record<string, any>, any>[],
     ...(getRowId ? { getRowId } : {}),
     ...(getSubRows ? { getSubRows } : {}),
     ...(getSubRows ? { filterFromLeafRows: true } : {}),

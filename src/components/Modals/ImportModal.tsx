@@ -197,10 +197,10 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   /* ---------------------------------------------------------
    * CSV upload handler — extract headers + all content rows
    * --------------------------------------------------------- */
-  const on_file_changed = async (incomingFile: File) => {
+  const on_file_changed = async (incomingFile: File | null) => {
     setFile(incomingFile);
 
-    if (availableFields.length === 0) return;
+    if (!incomingFile || availableFields.length === 0) return;
 
     const text = await incomingFile.text();
     const lines = text.split("\n").filter(Boolean);
@@ -323,30 +323,33 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
   );
 
   const previewColumns = useMemo<ColumnDef<any, any>[]>(() => {
-    return previewHeaders.map((header, idx) => ({
+    return previewHeaders.map((header, idx): ColumnDef<any, any> => ({
       id: `col_${idx}`,
-      header: !useHeader ? (
-        <Form.Select
-          aria-label="Select Column Header"
-          value={selectedFields[idx] || ""}
-          onChange={(e) => handleSelectField(e, idx)}
-          size="sm"
-          style={{
-            width: "100%",
-            fontSize: "12px",
-            padding: "4px 6px",
-          }}
-        >
-          <option value="">-- Select Field --</option>
-          {getAvailableOptions(idx).map((field, fieldIdx) => (
-            <option key={fieldIdx} value={field}>
-              {transformField(field)}
-            </option>
-          ))}
-        </Form.Select>
-      ) : (
-        transformField(header)
-      ),
+      // ColumnDef's header accepts a string or a render function, not a raw
+      // JSX element — wrap the existing JSX/string branches in one.
+      header: () =>
+        !useHeader ? (
+          <Form.Select
+            aria-label="Select Column Header"
+            value={selectedFields[idx] || ""}
+            onChange={(e) => handleSelectField(e, idx)}
+            size="sm"
+            style={{
+              width: "100%",
+              fontSize: "12px",
+              padding: "4px 6px",
+            }}
+          >
+            <option value="">-- Select Field --</option>
+            {getAvailableOptions(idx).map((field, fieldIdx) => (
+              <option key={fieldIdx} value={field}>
+                {transformField(field)}
+              </option>
+            ))}
+          </Form.Select>
+        ) : (
+          transformField(header)
+        ),
       accessorKey: header || `col_${idx}`,
       cell: (info: any) => info.getValue() ?? "—",
     }));
@@ -448,7 +451,9 @@ const ImportModal: React.FC<ImportModalProps> = ({ show, onHide, modelClass }) =
                     <Form.Control
                       type="file"
                       accept=".csv,text/csv"
-                      onChange={(e) => on_file_changed(e.target.files?.[0] ?? null)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        on_file_changed(e.target.files?.[0] ?? null)
+                      }
                     />
                   </Form.Group>
                 </Col>
