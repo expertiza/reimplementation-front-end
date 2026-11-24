@@ -81,6 +81,7 @@ const QuestionnaireTypeTable: React.FC<QuestionnaireTypeTableProps> = ({ onClose
     <Table
       data={data}
       columns={columns}
+      showColumnFilter={false}
       showGlobalFilter={false}
       showPagination={data.length >= 10}
     />

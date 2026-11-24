@@ -150,7 +150,7 @@ const Questionnaires = () => {
               showGlobalFilter={false}
               data={filteredData}
               columns={tableColumns}
-              tableStyle={{ tableLayout: "fixed", minWidth: "75%", margin: "0 auto" }}
+              showColumnFilter={false}
               columnVisibility={{
                 id: false,
                 instructor_id: false,
@@ -183,7 +183,7 @@ const Questionnaires = () => {
                     )}
                   </p>
                   <p>
-                    <strong>Instructor:</strong> {selectedQuestionnaire.instructor?.username} (
+                    <strong>Instructor:</strong> {selectedQuestionnaire.instructor?.name} (
                     {selectedQuestionnaire.instructor?.email})
                   </p>
 

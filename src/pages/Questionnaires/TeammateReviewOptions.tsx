@@ -22,12 +22,7 @@ const TeammateReviewOptions: React.FC = () => {
   return (
     <div className="mb-3">
       <div className="form-check mb-2">
-        <Field
-          type="checkbox"
-          name="relatesToDuty"
-          className="form-check-input"
-          id="relatesToDuty"
-        />
+        <Field type="checkbox" name="relatesToDuty" className="form-check-input" id="relatesToDuty" />
         <label
           htmlFor="relatesToDuty"
           className="form-check-label fw-semibold"

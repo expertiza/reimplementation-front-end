@@ -10,28 +10,16 @@ import { ROLE } from "../../../utils/interfaces";
 
 describe("questionnaire navigation permissions", () => {
   it.each([ROLE.TA, ROLE.INSTRUCTOR, ROLE.ADMIN, ROLE.SUPER_ADMIN])(
-    "matches route permissions for %s",
-    async (role) => {
-      const store = configureStore({
-        reducer: {
-          authentication: () => ({ isAuthenticated: true, user: { role } }),
-        },
-      });
-      render(
-        <Provider store={store}>
-          <MemoryRouter>
-            <Header />
-          </MemoryRouter>
-        </Provider>
-      );
+    "matches route permissions for %s", async (role) => {
+      const store = configureStore({ reducer: {
+        authentication: () => ({ isAuthenticated: true, user: { role } }),
+      } });
+      render(<Provider store={store}><MemoryRouter><Header /></MemoryRouter></Provider>);
       await userEvent.click(screen.getByRole("button", { name: "Manage" }));
       if (role === ROLE.TA) {
         expect(screen.queryByRole("link", { name: "Questionnaires" })).not.toBeInTheDocument();
       } else {
-        expect(screen.getByRole("link", { name: "Questionnaires" })).toHaveAttribute(
-          "href",
-          "/questionnaires"
-        );
+        expect(screen.getByRole("link", { name: "Questionnaires" })).toHaveAttribute("href", "/questionnaires");
       }
     }
   );
