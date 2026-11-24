@@ -94,6 +94,7 @@ const Table: React.FC<TableProps> = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [paginationState, setPaginationState] = useState({ pageIndex: 0, pageSize: 10 });
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -164,6 +165,21 @@ const Table: React.FC<TableProps> = ({
     return [...selectableColumn, expanderColumn, ...columns];
   }, [columns, selectable, renderSubComponent, getSubRows, getRowCanExpand]);
 
+  // When pagination controls are hidden, the table must not silently page the data:
+  // getPaginationRowModel always slices by pageSize regardless of showPagination, so
+  // without this override any list past the first page would just vanish with no way
+  // to reach it. The pagination row model slices the EXPANDED tree (top-level rows plus
+  // any expanded getSubRows children), not just initialData — deriving pageSize from
+  // initialData.length (top-level row count only) truncated away expanded sub-rows
+  // whenever a parent had more children than there were top-level rows (observed with
+  // a single expanded course and several assignment sub-rows, but the mismatch can go
+  // either way for any number of parents/children). A fixed, generously large page size
+  // avoids ever needing to count rows (nested or not) to disable pagination.
+  const UNPAGINATED_PAGE_SIZE = Number.MAX_SAFE_INTEGER;
+  const effectivePagination = showPagination
+    ? paginationState
+    : { pageIndex: 0, pageSize: UNPAGINATED_PAGE_SIZE };
+
   const table = useReactTable({
     data: initialData,
     columns: colsPlusExpander,
@@ -177,6 +193,7 @@ const Table: React.FC<TableProps> = ({
       rowSelection,
       columnVisibility: columnVisibilityState,
       expanded,
+      pagination: effectivePagination,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
@@ -184,6 +201,7 @@ const Table: React.FC<TableProps> = ({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibilityState,
     onExpandedChange: setExpanded,
+    onPaginationChange: setPaginationState,
     getRowCanExpand,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -224,6 +242,16 @@ const Table: React.FC<TableProps> = ({
   const unfilteredRows = table.getCoreRowModel().rows.length;
   const { pageSize } = table.getState().pagination;
   const columnFilterVisible = showColumnFilter && unfilteredRows >= pageSize;
+
+  // Hiding the filter inputs must not leave an active filter applied invisibly.
+  // Without this, picking a larger page size after typing into a filter dropped the
+  // input (unfilteredRows < pageSize) while columnFilters stayed set, so rows stayed
+  // silently narrowed with no control left to clear them.
+  useEffect(() => {
+    if (!columnFilterVisible) {
+      setColumnFilters((prev) => (prev.length > 0 ? [] : prev));
+    }
+  }, [columnFilterVisible]);
 
   return (
     <>

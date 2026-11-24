@@ -2,12 +2,17 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ColumnDef } from "@tanstack/react-table";
 import Table from "./Table";
 
-const columns: ColumnDef<any, any>[] = [
+interface Person {
+  name: string;
+  email: string;
+}
+
+const columns: ColumnDef<Person, string>[] = [
   { accessorKey: "name", header: "Name" },
   { accessorKey: "email", header: "Email" },
 ];
 
-const rows = (n: number) =>
+const rows = (n: number): Person[] =>
   Array.from({ length: n }, (_, i) => ({
     name: `Person ${i}`,
     email: `person${i}@example.com`,
@@ -140,11 +145,73 @@ describe("Table pagination and filter visibility", () => {
   });
 });
 
+describe("Table showPagination={false}", () => {
+  // Regression: getPaginationRowModel always slices by pageSize regardless of
+  // showPagination, so hiding the footer used to silently truncate the table to
+  // the default page size (10) with no control left to reach the rest.
+  it("renders every row even past the default page size when pagination is hidden", () => {
+    const { container } = render(<Table data={TWENTY_FOUR} columns={columns} showPagination={false} />);
+
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(TWENTY_FOUR.length);
+    expect(pageTurning()).not.toBeInTheDocument();
+  });
+
+  // Regression: pageSize was derived from initialData.length (TOP-level rows only), but
+  // getPaginationRowModel slices the EXPANDED tree. A single parent row with pageSize=1
+  // truncated away every one of its getSubRows children the moment it was expanded.
+  it("keeps expanded sub-rows visible when the parent row count is smaller than its children", () => {
+    const parent = [{ name: "Parent", email: "" }];
+    const subRows = rows(4);
+
+    const { container } = render(
+      <Table
+        data={parent}
+        columns={columns}
+        showPagination={false}
+        getSubRows={(row) => (row === parent[0] ? subRows : undefined)}
+        getRowCanExpand={(row) => row.original === parent[0]}
+      />
+    );
+
+    fireEvent.click(container.querySelector("tbody tr button.btn-link")!);
+
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(1 + subRows.length);
+  });
+});
+
+describe("Table column filter clearing", () => {
+  // Regression: raising the page size past the (now filtered) row count hid the
+  // filter inputs via columnFilterVisible, but left columnFilters set, so the table
+  // stayed silently narrowed with no visible control to clear the filter.
+  it("clears an active filter once the filter input is hidden by a page-size change", async () => {
+    const { container } = render(
+      <Table data={TWENTY_FOUR} columns={columns} showColumnFilter={true} />
+    );
+
+    // Matches "Person 1" and "Person 10"-"Person 19": 11 rows, still above the
+    // page-size-chooser threshold, so the dropdown stays available.
+    fireEvent.change(searchBoxes()[0], { target: { value: "Person 1" } });
+    // 11 rows match, but the default page size (10) still caps what is on screen.
+    await waitFor(() => expect(container.querySelectorAll("tbody tr")).toHaveLength(10), {
+      timeout: 2000,
+    });
+
+    // Show 50 raises pageSize past the 24 UNFILTERED rows, hiding the inputs.
+    choosePageSize(container, "50");
+    expect(searchBoxes()).toHaveLength(0);
+
+    // The filter must have been cleared, not just hidden — all 24 rows come back.
+    await waitFor(() => expect(container.querySelectorAll("tbody tr")).toHaveLength(24), {
+      timeout: 2000,
+    });
+  });
+});
+
 describe("Table meta.style", () => {
   // Regression: tdProps was spread after the style prop, so any column meta style
   // was silently dropped on body cells whenever getCellProps returned a style.
   it("applies a column's meta.style to header and body cells, alongside getCellProps", () => {
-    const styled: ColumnDef<any, any>[] = [
+    const styled: ColumnDef<Person, string>[] = [
       { accessorKey: "name", header: "Name", meta: { style: { borderLeftStyle: "hidden" } } },
     ];
 
