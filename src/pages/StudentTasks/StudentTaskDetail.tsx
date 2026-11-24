@@ -216,7 +216,7 @@ const StudentTaskDetail: React.FC = () => {
         </Link>
         <ul className={styles.taskList}>
           <li className={styles.taskItem}>
-            <Link to="/student_teams/view" className={styles.clickableLink}>
+            <Link to={`/student_teams/view?student_id=${id}`} className={styles.clickableLink}>
               Your team
             </Link>
             <span className={styles.taskDescription}> (View and manage your team)</span>
