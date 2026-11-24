@@ -87,10 +87,18 @@ const Pagination: React.FC<PaginationProps> = (props) => {
             id="pageSize"
             options={[
               ...PAGE_SIZE_OPTIONS.map((n) => ({ label: `Show ${n}`, value: String(n) })),
+              // "Show All" was chosen while totalItems was larger, a later filter can
+              // drop totalItems below the stored pageSize. That value then matches
+              // none of the fixed options or the new "Show All", so keep it selectable
+              // under its own label — otherwise the controlled <select> falls back to
+              // displaying the first option while the table still pages at the old size.
+              ...(new Set([...PAGE_SIZE_OPTIONS, totalItems]).has(pageSize)
+                ? []
+                : [{ label: `Show ${pageSize}`, value: String(pageSize) }]),
               { label: "Show All", value: String(totalItems) },
             ]}
             input={{
-              value: getState().pagination.pageSize,
+              value: pageSize,
               onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
                 setPageSize(Number(e.target.value)),
             }}

@@ -94,6 +94,34 @@ describe("Table pagination and filter visibility", () => {
     expect(searchBoxes()).toHaveLength(0);
   });
 
+  // Regression: the stored pageSize (24, from "Show All") used to match none of
+  // the chooser's options once a filter dropped totalItems below it — the fixed
+  // sizes stay 10/25/50 and "Show All" now carries the new, smaller totalItems.
+  // The controlled <select> then silently fell back to its first option ("Show
+  // 10") while the table kept paging at 24, so the dropdown lied about the
+  // table's actual page size.
+  it("keeps the selected page size selectable after a filter shrinks the row count", async () => {
+    const { container } = render(
+      <Table data={TWENTY_FOUR} columns={columns} showColumnFilter={true} />
+    );
+
+    // "Show All" carries the row count (24) as its value.
+    choosePageSize(container, "24");
+
+    // Matches "Person 1" and "Person 10".."Person 19" — 11 rows, which keeps the
+    // chooser visible (totalItems > 10) while being neither a fixed size nor
+    // the new totalItems "Show All" would offer.
+    fireEvent.change(searchBoxes()[0], { target: { value: "Person 1" } });
+
+    await waitFor(() => expect(container.querySelectorAll("tbody tr")).toHaveLength(11), {
+      timeout: 2000,
+    });
+
+    const select = pageSizeDropdown(container)!;
+    expect(select).toHaveValue("24");
+    expect([...select.options].map((o) => o.text)).toContain("Show 24");
+  });
+
   // Regression: visibility used to be keyed off the POST-filter row count, so
   // narrowing a table below one page unmounted the inputs mid-search and left
   // the filter stuck with no way to clear it.
