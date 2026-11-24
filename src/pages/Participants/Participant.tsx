@@ -44,7 +44,15 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
       ? `/participants/assignment/${assignmentId}`
       : `/participants/${type}/${id}`;
     fetchParticipants({ url });
-  }, [fetchParticipants, location, showDeleteConfirmation.visible, auth.user.id, type, id, assignmentId]);
+  }, [
+    fetchParticipants,
+    location,
+    showDeleteConfirmation.visible,
+    auth.user.id,
+    type,
+    id,
+    assignmentId,
+  ]);
 
   // Error alert
   useEffect(() => {
