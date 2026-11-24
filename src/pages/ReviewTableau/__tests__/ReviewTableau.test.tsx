@@ -43,8 +43,8 @@ const mockApiResponse = {
   participant: {
     id: 1,
     user_id: 3,
-    user_name: "student1",
-    full_name: "Student One",
+    username: "student1",
+    name: "Student One",
     handle: "student1",
   },
   assignment: { id: 1, name: "Test Assignment" },

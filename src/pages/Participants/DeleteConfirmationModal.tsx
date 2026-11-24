@@ -49,7 +49,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
       <Modal.Body style={{ padding: "1.5rem", backgroundColor: "#fff5f5" }}>
         <p style={{ fontSize: "0.9375rem", color: "#2d3748", marginBottom: "0.5rem" }}>
           Are you sure you want to remove{" "}
-          <strong style={{ color: "#1a202c" }}>{participant?.name}</strong>?
+          <strong style={{ color: "#1a202c" }}>{participant?.username}</strong>?
         </p>
         <p style={{ fontSize: "0.875rem", color: "#718096", marginBottom: 0 }}>
           This action cannot be undone.

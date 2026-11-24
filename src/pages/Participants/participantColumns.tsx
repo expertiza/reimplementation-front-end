@@ -11,13 +11,13 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
+  columnHelper.accessor("username", {
     header: "Participant Name",
     enableSorting: true,
   }),
 
-  columnHelper.accessor("full_name", {
-    header: "Full Name",
+  columnHelper.accessor("name", {
+    header: "Name",
     enableSorting: true,
     enableMultiSort: true,
   }),
@@ -50,12 +50,6 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
       }),
       columnHelper.accessor("email_on_submission", {
         header: "Submission",
-        enableSorting: false,
-        enableColumnFilter: false,
-        enableGlobalFilter: false,
-      }),
-      columnHelper.accessor("email_on_review_of_review", {
-        header: "Meta Review",
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,

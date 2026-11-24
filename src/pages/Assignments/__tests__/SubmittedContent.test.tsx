@@ -34,7 +34,7 @@ const store = configureStore({
     authentication: () => ({
       isAuthenticated: true,
       authToken: "token",
-      user: { id: 7, name: "student", full_name: "Student", role: "Student", institution_id: 1 },
+      user: { id: 7, username: "student", name: "Student", role: "Student", institution_id: 1 },
     }),
   },
 });

@@ -24,19 +24,19 @@ const participantColumns = (
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
+  columnHelper.accessor("username", {
     header: "UserName",
     enableColumnFilter: false,
     enableSorting: true,
   }),
 
   columnHelper.display({
-    id: "full_name_handle",
+    id: "name_handle",
     header: "Name",
     cell: ({ row: { original } }) => (
       <td style={{ verticalAlign: "middle" }}>
         <div>
-          <div>{prettyName(original.full_name ?? "")}</div>
+          <div>{prettyName(original.name ?? "")}</div>
           {original.handle && (
             <div
               style={{

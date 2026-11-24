@@ -6,17 +6,17 @@
     "teamMembers": [
       {
         "username": "smandav",
-        "fullName": "Sreenitya Mandava",
+        "name": "Sreenitya Mandava",
         "email": "smandav@ncsu.edu"
       },
       {
         "username": "ssheva",
-        "fullName": "Sree Tulasi Sheva",
+        "name": "Sree Tulasi Sheva",
         "email": "ssheva@ncsu.edu"
       },
       {
         "username": "yseela",
-        "fullName": "Yogitha Seela",
+        "name": "Yogitha Seela",
         "email": "yseela@ncsu.edu"
       }
     ]
@@ -28,12 +28,12 @@
     "teamMembers": [
       {
         "username": "jdoe",
-        "fullName": "John Doe",
+        "name": "John Doe",
         "email": "jdoe@ncsu.edu"
       },
       {
         "username": "asmith",
-        "fullName": "Alice Smith",
+        "name": "Alice Smith",
         "email": "asmith@ncsu.edu"
       }
     ]

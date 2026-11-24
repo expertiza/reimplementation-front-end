@@ -32,7 +32,7 @@ const initialValues: IUserFormValues = {
 const validationSchema = Yup.object({
   name: Yup.string()
     .required("Required")
-    .matches(/^[a-z]+$/, "Username must be in lowercase")
+    .matches(/^[a-z0-9]+$/, "Username must be lowercase letters and numbers")
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be at most 20 characters"),
   email: Yup.string().required("Required").email("Invalid email format"),

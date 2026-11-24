@@ -52,7 +52,7 @@ export const transformInstitutionsResponse = (institutionsList: string) => {
   return institutionsData;
 };
 
-// /users returns username (login) and name (full name); prefer the full name for display
+// /users returns username (login) and name; prefer name for display
 export const getInstructorDisplayName = (instructor: IInstructorResponse): string =>
   instructor.name || instructor.username;
 

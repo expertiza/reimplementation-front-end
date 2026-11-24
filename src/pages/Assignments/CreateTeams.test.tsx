@@ -18,29 +18,29 @@ const teamData: Team[] = [
   {
     id: 10917,
     name: "Team 10917",
-    mentor: { id: 10186, username: "ta10186", fullName: "Teaching Assistant 10186" },
+    mentor: { id: 10186, username: "ta10186", name: "Teaching Assistant 10186" },
     members: [
-      { id: 10917, username: "student10917", fullName: "Student 10917" },
-      { id: 10916, username: "student10916", fullName: "Student 10916" },
-      { id: 10928, username: "student10928", fullName: "Student 10928" },
+      { id: 10917, username: "student10917", name: "Student 10917" },
+      { id: 10916, username: "student10916", name: "Student 10916" },
+      { id: 10928, username: "student10928", name: "Student 10928" },
     ],
   },
   {
     id: 10925,
     name: "Team 10925",
-    mentor: { id: 10624, username: "ta10624", fullName: "Teaching Assistant 10624" },
+    mentor: { id: 10624, username: "ta10624", name: "Teaching Assistant 10624" },
     members: [
-      { id: 10925, username: "student10925", fullName: "Student 10925" },
-      { id: 10914, username: "student10914", fullName: "Student 10914" },
-      { id: 10904, username: "student10904", fullName: "Student 10904" },
+      { id: 10925, username: "student10925", name: "Student 10925" },
+      { id: 10914, username: "student10914", name: "Student 10914" },
+      { id: 10904, username: "student10904", name: "Student 10904" },
     ],
   },
 ];
 
 const participantData: Participant[] = [
-  { id: 20000, username: "student20000", fullName: "Student 20000" },
-  { id: 20001, username: "student20001", fullName: "Student 20001" },
-  { id: 20002, username: "student20002", fullName: "Student 20002" },
+  { id: 20000, username: "student20000", name: "Student 20000" },
+  { id: 20001, username: "student20001", name: "Student 20001" },
+  { id: 20002, username: "student20002", name: "Student 20002" },
 ];
 
 const assignmentContext = {
@@ -301,7 +301,7 @@ describe.skip("Test Create Teams Functions Correctly", () => {
     const studentButton = screen.getByText(teamData[0].members[0].username || "");
     expect(studentButton).toBeInTheDocument();
 
-    // Click Delete ButtonfullName
+    // Click Delete Button
     act(() => {
       const deleteButton = within(studentButton).getByRole("button");
       deleteButton.click();
@@ -349,7 +349,7 @@ describe.skip("Test Create Teams Functions Correctly", () => {
           participant.username
         )
       ).toBeInTheDocument();
-      // expect(within(screen.getByTestId("student-list")).getByText(participant.fullName?.replace(" ", "") || "", {exact: false})).toBeInTheDocument()
+      // expect(within(screen.getByTestId("student-list")).getByText(participant.name?.replace(" ", "") || "", {exact: false})).toBeInTheDocument()
     });
   });
 });

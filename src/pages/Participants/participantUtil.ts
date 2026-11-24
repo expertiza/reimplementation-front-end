@@ -65,12 +65,12 @@ export const transformRolesResponse = (rolesList: string) => {
 export const transformParticipantRequest = (values: IParticipantFormValues) => {
   // const parent_id = values.parent_id ? values.parent_id : null;
   const participant: IParticipantRequest = {
-    name: values.name,
+    username: values.name,
+    name: values.lastName + ", " + values.firstName,
     email: values.email,
     role_id: values.role_id,
     parent_id: values.parent_id,
     institution_id: values.institution_id,
-    full_name: values.lastName + ", " + values.firstName,
     email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
     email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
     email_on_review_of_review: values.emailPreferences.includes(
@@ -86,10 +86,10 @@ export const transformParticipantResponse = (participantResponse: string) => {
   const institution_id = participant.institution.id ? participant.institution.id : -1;
   const participantValues: IParticipantFormValues = {
     id: participant.id,
-    name: participant.name,
+    name: participant.username,
     email: participant.email,
-    firstName: participant.full_name.split(",")[1].trim(),
-    lastName: participant.full_name.split(",")[0].trim(),
+    firstName: participant.name.split(",")[1].trim(),
+    lastName: participant.name.split(",")[0].trim(),
     role_id: participant.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
@@ -101,11 +101,52 @@ export const transformParticipantResponse = (participantResponse: string) => {
   if (participant.email_on_submission) {
     participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
   }
-  if (participant.email_on_review_of_review) {
-    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
-  }
   return participantValues;
 };
+
+// GET /participants/assignment/:assignment_id nests the user under each participant;
+// flatten it into the row shape the participants table reads
+export const transformAssignmentParticipant = (participant: any): IParticipantResponse => {
+  const user = participant.user ?? {};
+  return {
+    id: participant.id,
+    username: user.username ?? "",
+    name: user.name ?? "",
+    email: user.email ?? "",
+    email_on_review: !!user.email_on_review,
+    email_on_submission: !!user.email_on_submission,
+    role: { id: user.role?.id, name: user.role?.name },
+    parent: { id: user.parent?.id ?? null, name: user.parent?.username ?? null },
+    institution: { id: null, name: null },
+  };
+};
+
+// Authorizations accepted by PATCH /participants/:id/:authorization
+export const authorizationOptions: IFormOption[] = [
+  { label: "Select an Authorization", value: "" },
+  { label: "Reader", value: "reader" },
+  { label: "Reviewer", value: "reviewer" },
+  { label: "Submitter", value: "submitter" },
+  { label: "Mentor", value: "mentor" },
+];
+
+export interface IParticipantAuthorization {
+  id: number;
+  username: string;
+  name: string;
+  authorization: string;
+}
+
+export async function loadParticipantAuthorization({ params }: any) {
+  const { data } = await axiosClient.get(`/participants/${params.id}`);
+  const participant: IParticipantAuthorization = {
+    id: data.id,
+    username: data.user?.username ?? "",
+    name: data.user?.name ?? "",
+    authorization: data.authorization ?? "",
+  };
+  return participant;
+}
 
 export async function loadParticipantDataRolesAndInstitutions({ params }: any) {
   let participantData = {};

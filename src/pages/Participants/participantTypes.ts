@@ -2,8 +2,8 @@ export type Role = { id: number; name: string };
 
 export type Participant = {
   id: number;
+  username: string;
   name: string;
-  full_name: string;
   email: string;
   role: Role;
   parent: { id: number | null; name: string | null };

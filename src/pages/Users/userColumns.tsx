@@ -21,7 +21,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor("name", {
-    header: "Full Name",
+    header: "Name",
     enableSorting: true,
     enableMultiSort: true,
   }),
@@ -63,7 +63,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src="/assets/icons/Check-icon.png"
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />
@@ -89,7 +89,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
         cell: (info) =>
           info.getValue() ? (
             <img
-              src={process.env.PUBLIC_URL + "/assets/icons/Check-icon.png"}
+              src="/assets/icons/Check-icon.png"
               alt="Checked"
               style={{ width: "20px", height: "20px" }}
             />

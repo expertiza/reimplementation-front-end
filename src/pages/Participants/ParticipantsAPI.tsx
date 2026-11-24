@@ -87,7 +87,7 @@ const ParticipantsAPI: React.FC = () => {
 
   const onConfirmDelete = useCallback(() => {
     if (deleteModal.participant) {
-      const participantName = deleteModal.participant.name;
+      const participantName = deleteModal.participant.username;
       removeParticipant(deleteModal.participant.id);
       showSuccess(`${participantName} removed successfully`);
     }
