@@ -65,12 +65,12 @@ export const transformRolesResponse = (rolesList: string) => {
 export const transformParticipantRequest = (values: IParticipantFormValues) => {
   // const parent_id = values.parent_id ? values.parent_id : null;
   const participant: IParticipantRequest = {
-    name: values.name,
+    username: values.name,
+    name: values.lastName + ", " + values.firstName,
     email: values.email,
     role_id: values.role_id,
     parent_id: values.parent_id,
     institution_id: values.institution_id,
-    full_name: values.lastName + ", " + values.firstName,
     email_on_review: values.emailPreferences.includes(EmailPreference.EMAIL_ON_REVIEW),
     email_on_submission: values.emailPreferences.includes(EmailPreference.EMAIL_ON_SUBMISSION),
     email_on_review_of_review: values.emailPreferences.includes(
@@ -86,10 +86,10 @@ export const transformParticipantResponse = (participantResponse: string) => {
   const institution_id = participant.institution.id ? participant.institution.id : -1;
   const participantValues: IParticipantFormValues = {
     id: participant.id,
-    name: participant.name,
+    name: participant.username,
     email: participant.email,
-    firstName: participant.full_name.split(",")[1].trim(),
-    lastName: participant.full_name.split(",")[0].trim(),
+    firstName: participant.name.split(",")[1].trim(),
+    lastName: participant.name.split(",")[0].trim(),
     role_id: participant.role.id,
     parent_id: parent_id,
     institution_id: institution_id,
@@ -113,8 +113,8 @@ export const transformAssignmentParticipant = (participant: any): IParticipantRe
   const user = participant.user ?? {};
   return {
     id: participant.id,
-    name: user.username ?? "",
-    full_name: user.name ?? "",
+    username: user.username ?? "",
+    name: user.name ?? "",
     email: user.email ?? "",
     email_on_review: !!user.email_on_review,
     email_on_submission: !!user.email_on_submission,

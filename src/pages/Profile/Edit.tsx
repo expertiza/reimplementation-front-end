@@ -7,7 +7,7 @@ import { Button } from "react-bootstrap"; // Importing Button component from rea
 // Define initial form values and validation schema using Yup
 const Edit: React.FC = () => {
   const initialValues = {
-    fullName: "Admin",
+    name: "Admin",
     password: "",
     confirmPassword: "",
     email: "",
@@ -24,7 +24,7 @@ const Edit: React.FC = () => {
   };
 
   const validationSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
+    name: Yup.string().required("Name is required"),
     password: Yup.string().required("Password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password")], "Passwords must match")
@@ -59,11 +59,11 @@ const Edit: React.FC = () => {
             {/* Form component */}
             {/* Form fields with labels, inputs, and error messages */}
             <div className="form-field">
-              <label htmlFor="fullName" style={{ fontWeight: 800 }}>
-                Full name (last, first[middle]):
+              <label htmlFor="name" style={{ fontWeight: 800 }}>
+                Name (last, first[middle]):
               </label>
-              <Field type="text" name="fullName" />
-              <ErrorMessage name="fullName" component="div" className="error-message" />
+              <Field type="text" name="name" />
+              <ErrorMessage name="name" component="div" className="error-message" />
             </div>
             {/* Password and Confirm Password fields with validation */}
             <div className="form-field">

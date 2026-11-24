@@ -8,7 +8,7 @@
  *    entry links to /student_review/list/:assignmentId so the student can act on feedback.
  *
  * 3. "Students who have teamed with you" — fetched independently via GET /participants/teammates,
- *    which returns { course_name: [full_name, ...] }. Grouped by course with a count badge.
+ *    which returns { course_name: [name, ...] }. Grouped by course with a count badge.
  *    This mirrors the old Expertiza "teamed_students" sidebar panel.
  *
  * The Revision[] prop is derived from the parent's Task[] via extractAssignments() so this

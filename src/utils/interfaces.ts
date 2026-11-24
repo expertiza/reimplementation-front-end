@@ -32,7 +32,7 @@ export interface ITA {
 
 export interface IUserResponse {
   id: number;
-  // UserSerializer: username is the login, name is the full name
+  // UserSerializer: username is the login, name is the person's name
   username: string;
   name: string;
   email: string;
@@ -49,9 +49,9 @@ export interface IUserResponse {
 
 export interface IParticipantResponse {
   id: number;
+  username: string;
   name: string;
   email: string;
-  full_name: string;
   email_on_review: boolean;
   email_on_submission: boolean;
   email_on_review_of_review: boolean;
@@ -74,9 +74,9 @@ export interface IUserRequest {
 }
 
 export interface IParticipantRequest {
+  username: string;
   name: string;
   email: string;
-  full_name: string;
   role_id: number;
   parent_id?: number | null;
   institution_id: number;
@@ -172,7 +172,7 @@ export interface IAssignmentRequest {
 
 export interface ITAResponse {
   id: number;
-  // UserSerializer: username is the login, name is the full name
+  // UserSerializer: username is the login, name is the person's name
   username: string;
   name: string;
   email: string;
@@ -273,7 +273,7 @@ export interface StudentTeamsProps {}
 // Define the structure of a team member object
 export interface TeamMember {
   username: string;
-  fullName: string;
+  name: string;
   email: string;
 }
 
@@ -288,7 +288,7 @@ export interface TeamDetails {
 export interface Invitation {
   assignment_id: number;
   username: string;
-  fullName?: string;
+  name?: string;
   status?: string;
 }
 

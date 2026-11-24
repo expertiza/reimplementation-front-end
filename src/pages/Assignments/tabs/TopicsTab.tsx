@@ -12,7 +12,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 interface TeamMember {
   id: string; // User ID
-  name: string; // User's full name
+  name: string; // User's name
 }
 
 interface AssignedTeam {

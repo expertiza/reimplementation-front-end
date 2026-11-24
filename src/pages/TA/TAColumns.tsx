@@ -25,7 +25,7 @@ export const TAColumns = (handleDelete: Fn) => [
   }),
   //create Full TA Name column Header
   columnHelper.accessor("name", {
-    header: "Full Name",
+    header: "Name",
     enableSorting: true,
     enableMultiSort: true,
   }),

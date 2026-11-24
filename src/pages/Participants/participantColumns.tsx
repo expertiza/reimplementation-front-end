@@ -11,13 +11,13 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     enableSorting: false,
   }),
 
-  columnHelper.accessor("name", {
+  columnHelper.accessor("username", {
     header: "Participant Name",
     enableSorting: true,
   }),
 
-  columnHelper.accessor("full_name", {
-    header: "Full Name",
+  columnHelper.accessor("name", {
+    header: "Name",
     enableSorting: true,
     enableMultiSort: true,
   }),

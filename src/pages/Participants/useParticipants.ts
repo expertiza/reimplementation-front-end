@@ -34,8 +34,8 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
 
         return {
           id: p.id,
-          name: user.username || p.name || "",
-          full_name: user.name || p.full_name || "",
+          username: user.username || p.username || "",
+          name: user.name || p.name || "",
           email: user.email || p.email || "",
           role: user.role || p.role || ALL_ROLES[0],
           parent: {
@@ -84,7 +84,7 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
       rows.forEach((cols, i) => {
         const [
           username = "",
-          fullName = "",
+          name = "",
           email = "",
           parentName = "",
           handle = "",
@@ -96,8 +96,8 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
 
         added.push({
           id: 0,
-          name: username || `user${i}`,
-          full_name: fullName || "Last, First",
+          username: username || `user${i}`,
+          name: name || "Last, First",
           email: email || `user${i}@example.edu`,
           role,
           parent: { id: null, name: parentName || null },
@@ -119,8 +119,8 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
 
   const exportToCSV = useCallback(() => {
     return participants.map((r) => [
-      r.name ?? "",
-      prettyName(r.full_name ?? ""),
+      r.username ?? "",
+      prettyName(r.name ?? ""),
       r.email ?? "",
       r.parent?.name ?? "",
       r.handle ?? "",
@@ -133,8 +133,8 @@ export const useParticipants = ({ assignmentId = 1 }: UseParticipantsProps = {})
     const search = searchValue.toLowerCase();
     return participants.filter(
       (p) =>
+        p.username.toLowerCase().includes(search) ||
         p.name.toLowerCase().includes(search) ||
-        p.full_name.toLowerCase().includes(search) ||
         p.email.toLowerCase().includes(search) ||
         (p.handle && p.handle.toLowerCase().includes(search)) ||
         (p.parent?.name && p.parent.name.toLowerCase().includes(search))

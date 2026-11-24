@@ -30,21 +30,21 @@ const APITeamData = [
   {
     id: 10917,
     name: "Team 10917",
-    mentor: { id: 10186, username: "ta10186", fullName: "Teaching Assistant 10186" },
+    mentor: { id: 10186, username: "ta10186", name: "Teaching Assistant 10186" },
     members: [
-      { id: 10917, username: "student10917", fullName: "Student 10917" },
-      { id: 10916, username: "student10916", fullName: "Student 10916" },
-      { id: 10928, username: "student10928", fullName: "Student 10928" },
+      { id: 10917, username: "student10917", name: "Student 10917" },
+      { id: 10916, username: "student10916", name: "Student 10916" },
+      { id: 10928, username: "student10928", name: "Student 10928" },
     ],
     reviewers: [
       {
         id: 1,
-        reviewer: { id: 10925, username: "student10925", fullName: "Student 10925" },
+        reviewer: { id: 10925, username: "student10925", name: "Student 10925" },
         status: "Saved",
       },
       {
         id: 2,
-        reviewer: { id: 10927, username: "student10927", fullName: "Student 10927" },
+        reviewer: { id: 10927, username: "student10927", name: "Student 10927" },
         status: "Saved",
       },
     ],
@@ -52,26 +52,26 @@ const APITeamData = [
   {
     id: 10925,
     name: "Team 10925",
-    mentor: { id: 10624, username: "ta10624", fullName: "Teaching Assistant 10624" },
+    mentor: { id: 10624, username: "ta10624", name: "Teaching Assistant 10624" },
     members: [
-      { id: 10925, username: "student10925", fullName: "Student 10925" },
-      { id: 10914, username: "student10914", fullName: "Student 10914" },
-      { id: 10904, username: "student10904", fullName: "Student 10904" },
+      { id: 10925, username: "student10925", name: "Student 10925" },
+      { id: 10914, username: "student10914", name: "Student 10914" },
+      { id: 10904, username: "student10904", name: "Student 10904" },
     ],
     reviewers: [
       {
         id: 3,
-        reviewer: { id: 10934, username: "student10934", fullName: "Student 10934" },
+        reviewer: { id: 10934, username: "student10934", name: "Student 10934" },
         status: "Submitted",
       },
       {
         id: 4,
-        reviewer: { id: 10928, username: "student10928", fullName: "Student 10928" },
+        reviewer: { id: 10928, username: "student10928", name: "Student 10928" },
         status: "Submitted",
       },
       {
         id: 5,
-        reviewer: { id: 10909, username: "student10909", fullName: "Student 10909" },
+        reviewer: { id: 10909, username: "student10909", name: "Student 10909" },
         status: "Submitted",
       },
     ],
@@ -166,7 +166,7 @@ describe("Test Response Mappings Displays Correctly", () => {
         const reviewedByCol = cols[1];
 
         var team = sortedTeams[idx];
-        var mentorName = data.users.find((user: User) => user.id === team.mentor_id)?.full_name;
+        var mentorName = data.users.find((user: User) => user.id === team.mentor_id)?.name;
         var members = data.teams_users.filter((user: TeamUser) => user.team_id === team.id);
 
         // Team Name
@@ -177,7 +177,7 @@ describe("Test Response Mappings Displays Correctly", () => {
 
         // Members
         members.forEach((member: TeamUser) => {
-          var memberName = data.users.find((user: User) => user.id === member.user_id)?.full_name;
+          var memberName = data.users.find((user: User) => user.id === member.user_id)?.name;
           expect(memberName).toBeTruthy();
           expect(contributerCol).toHaveTextContent(memberName || "");
         });
@@ -222,7 +222,7 @@ describe("Test Response Mappings Displays Correctly", () => {
         );
 
         // Name
-        expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.full_name || "");
+        expect(reviewerRow).toHaveTextContent(teamReviewers[reviewerIdx]?.name || "");
 
         // Status
         // If the review is submitted
@@ -263,7 +263,7 @@ describe("Test Response Mappings Functions Correctly", () => {
     const data = demo(APIAssignmentData.id);
 
     // Finds the first "Add Reviewer" button on the screen
-    var user_name = data.users.find((user: User) => user.id === 1005)?.full_name || "";
+    var user_name = data.users.find((user: User) => user.id === 1005)?.name || "";
     var firstRow = screen.getAllByRole("row")[1];
     var firstRowContributorCell = within(firstRow).getAllByRole("cell")[1];
 

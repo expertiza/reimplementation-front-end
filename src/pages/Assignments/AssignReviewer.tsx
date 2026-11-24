@@ -18,8 +18,8 @@ interface Team {
 }
 interface User {
   id: Id;
+  username: string | null;
   name: string | null;
-  full_name: string | null;
 }
 interface TeamUser {
   team_id: Id;
@@ -50,7 +50,7 @@ interface ResponseRow {
 interface IUserView {
   id: Id;
   username: string;
-  fullName: string;
+  name: string;
 }
 interface IReviewerAssignment {
   id: Id;
@@ -113,11 +113,11 @@ function toView(u?: User | null, fallbackId?: Id): IUserView | undefined {
   if (u)
     return {
       id: u.id,
-      username: u.name ?? `user_${u.id}`,
-      fullName: u.full_name ?? u.name ?? `user_${u.id}`,
+      username: u.username ?? `user_${u.id}`,
+      name: u.name ?? u.username ?? `user_${u.id}`,
     };
   if (fallbackId !== undefined)
-    return { id: fallbackId, username: `user_${fallbackId}`, fullName: `user_${fallbackId}` };
+    return { id: fallbackId, username: `user_${fallbackId}`, name: `user_${fallbackId}` };
   return undefined;
 }
 
@@ -187,10 +187,10 @@ export function demo(asgId: Id): Persist {
 
   // Create mentors
   const mentors = [
-    { id: uid++, name: `mentor_${asgId}_1`, full_name: `Mentor ${asgId}-1` },
-    { id: uid++, name: `mentor_${asgId}_2`, full_name: `Mentor ${asgId}-2` },
-    { id: uid++, name: `mentor_${asgId}_3`, full_name: `Mentor ${asgId}-3` },
-    { id: uid++, name: `mentor_${asgId}_4`, full_name: `Mentor ${asgId}-4` },
+    { id: uid++, username: `mentor_${asgId}_1`, name: `Mentor ${asgId}-1` },
+    { id: uid++, username: `mentor_${asgId}_2`, name: `Mentor ${asgId}-2` },
+    { id: uid++, username: `mentor_${asgId}_3`, name: `Mentor ${asgId}-3` },
+    { id: uid++, username: `mentor_${asgId}_4`, name: `Mentor ${asgId}-4` },
   ] as User[];
 
   // 3 members per team (12 total)
@@ -198,8 +198,8 @@ export function demo(asgId: Id): Persist {
   for (let i = 0; i < 12; i++) {
     memberUsers.push({
       id: uid++,
-      name: `user_${asgId}_${i + 1}`,
-      full_name: `User ${asgId}-${i + 1}`,
+      username: `user_${asgId}_${i + 1}`,
+      name: `User ${asgId}-${i + 1}`,
     });
   }
 
@@ -416,7 +416,7 @@ const AssignReviewer: React.FC = () => {
   const { assignment, teams, users, teams_users, participants, response_maps, responses } =
     persisted;
 
-  const fmt = (u?: IUserView) => (!u ? "" : showNames ? u.fullName : u.username);
+  const fmt = (u?: IUserView) => (!u ? "" : showNames ? u.name : u.username);
 
   const usersById = useMemo(() => new Map<Id, User>(users.map((u) => [u.id, u])), [users, tick]);
   const teamsById = useMemo(() => new Map<Id, Team>(teams.map((t) => [t.id, t])), [teams, tick]);
@@ -540,8 +540,8 @@ const AssignReviewer: React.FC = () => {
         if (!p.users.find((u) => u.id === reviewerUserId)) {
           p.users.push({
             id: reviewerUserId,
+            username: `user_${reviewerUserId}`,
             name: `user_${reviewerUserId}`,
-            full_name: `user_${reviewerUserId}`,
           });
         }
       }

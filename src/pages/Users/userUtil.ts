@@ -73,13 +73,13 @@ export const transformUserRequest = (values: IUserFormValues) => {
   return JSON.stringify(user);
 };
 
-// Full names are stored either as "Last, First" or as "First Last"
-const splitFullName = (fullName: string) => {
-  if (fullName.includes(",")) {
-    const [lastName, firstName = ""] = fullName.split(",");
+// Names are stored either as "Last, First" or as "First Last"
+const splitName = (name: string) => {
+  if (name.includes(",")) {
+    const [lastName, firstName = ""] = name.split(",");
     return { firstName: firstName.trim(), lastName: lastName.trim() };
   }
-  const [firstName = "", ...rest] = fullName.trim().split(/\s+/);
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
   return { firstName, lastName: rest.join(" ") };
 };
 
@@ -87,7 +87,7 @@ export const transformUserResponse = (userResponse: string) => {
   const user: IUserResponse = JSON.parse(userResponse);
   const parent_id = user.parent.id ? user.parent.id : null;
   const institution_id = user.institution.id ? user.institution.id : -1;
-  const { firstName, lastName } = splitFullName(user.name ?? "");
+  const { firstName, lastName } = splitName(user.name ?? "");
   const userValues: IUserFormValues = {
     id: user.id,
     name: user.username,

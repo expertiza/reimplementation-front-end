@@ -23,7 +23,7 @@
 // interface Participant {
 //   id: string | number;
 //   username: string;
-//   fullName?: string;
+//   name?: string;
 //   teamName?: string;
 // }
 
@@ -104,10 +104,10 @@
 // ============================================================================= */
 
 // const sampleUnassigned: Participant[] = [
-//   { id: 2001, username: 'Student 10933', fullName: 'Kai Moore' },
-//   { id: 2002, username: 'Student 10934', fullName: 'Rowan Diaz' },
-//   { id: 2003, username: 'Student 10935', fullName: 'Parker Lee' },
-//   { id: 2004, username: 'Student 10936', fullName: 'Jamie Rivera' },
+//   { id: 2001, username: 'Student 10933', name: 'Kai Moore' },
+//   { id: 2002, username: 'Student 10934', name: 'Rowan Diaz' },
+//   { id: 2003, username: 'Student 10935', name: 'Parker Lee' },
+//   { id: 2004, username: 'Student 10936', name: 'Jamie Rivera' },
 // ];
 
 // const sampleTeams: Team[] = [
@@ -117,31 +117,31 @@
 //     mentor: {
 //       id: 'm1',
 //       username: 'Teaching Assistant 10816',
-//       fullName: 'Teaching Assistant 10816',
+//       name: 'Teaching Assistant 10816',
 //     },
 //     members: [
 //       {
 //         id: 1001,
 //         username: 'Student 10917',
-//         fullName: 'Avery Chen',
+//         name: 'Avery Chen',
 //         teamName: 'sshivas MentoredTeam',
 //       },
 //       {
 //         id: 1002,
 //         username: 'Student 10916',
-//         fullName: 'Jordan Park',
+//         name: 'Jordan Park',
 //         teamName: 'sshivas MentoredTeam',
 //       },
 //       {
 //         id: 1003,
 //         username: 'Teaching Assistant 10816 (Mentor)',
-//         fullName: 'Teaching Assistant 10816 (Mentor)',
+//         name: 'Teaching Assistant 10816 (Mentor)',
 //         teamName: 'sshivas MentoredTeam',
 //       },
 //       {
 //         id: 1004,
 //         username: 'Student 10928',
-//         fullName: 'Sam Patel',
+//         name: 'Sam Patel',
 //         teamName: 'sshivas MentoredTeam',
 //       },
 //     ],
@@ -152,13 +152,13 @@
 //     mentor: {
 //       id: 'm2',
 //       username: 'Teaching Assistant 10624',
-//       fullName: 'Teaching Assistant 10624',
+//       name: 'Teaching Assistant 10624',
 //     },
 //     members: [
 //       {
 //         id: 1005,
 //         username: 'Student 10925',
-//         fullName: 'Riley Gomez',
+//         name: 'Riley Gomez',
 //         teamName: 'agaudan MentoredTeam',
 //       },
 //     ],
@@ -169,25 +169,25 @@
 //     mentor: {
 //       id: 'm3',
 //       username: 'Teaching Assistant 10199',
-//       fullName: 'Teaching Assistant 10199',
+//       name: 'Teaching Assistant 10199',
 //     },
 //     members: [
 //       {
 //         id: 1006,
 //         username: 'Student 10909',
-//         fullName: 'Taylor Nguyen',
+//         name: 'Taylor Nguyen',
 //         teamName: 'tjbrown8 MentoredTeam',
 //       },
 //       {
 //         id: 1007,
 //         username: 'Student 10921',
-//         fullName: 'Casey Morgan',
+//         name: 'Casey Morgan',
 //         teamName: 'tjbrown8 MentoredTeam',
 //       },
 //       {
 //         id: 1008,
 //         username: 'Teaching Assistant 10199 (Mentor)',
-//         fullName: 'Teaching Assistant 10199 (Mentor)',
+//         name: 'Teaching Assistant 10199 (Mentor)',
 //         teamName: 'tjbrown8 MentoredTeam',
 //       },
 //     ],
@@ -198,19 +198,19 @@
 //     mentor: {
 //       id: 'm4',
 //       username: 'Teaching Assistant 10234',
-//       fullName: 'Teaching Assistant 10234',
+//       name: 'Teaching Assistant 10234',
 //     },
 //     members: [
 //       {
 //         id: 1009,
 //         username: 'Student 10931',
-//         fullName: 'Aria Brooks',
+//         name: 'Aria Brooks',
 //         teamName: 'IronMan2 MentoredTeam',
 //       },
 //       {
 //         id: 1010,
 //         username: 'Student 10932',
-//         fullName: 'Noah Shah',
+//         name: 'Noah Shah',
 //         teamName: 'IronMan2 MentoredTeam',
 //       },
 //     ],
@@ -421,7 +421,7 @@
 
 //   const displayName = useCallback(
 //     (p?: Participant) =>
-//       p ? (showUsernames ? p.username : p.fullName || p.username) : '',
+//       p ? (showUsernames ? p.username : p.name || p.username) : '',
 //     [showUsernames],
 //   );
 
@@ -438,9 +438,9 @@
 //     const idMatch = String(m.id) === String(team.mentor.id);
 //     const usernameMatch = normalize(m.username) === normalize(team.mentor.username);
 //     const nameMatch =
-//       !!m.fullName &&
-//       !!team.mentor.fullName &&
-//       normalize(m.fullName) === normalize(team.mentor.fullName);
+//       !!m.name &&
+//       !!team.mentor.name &&
+//       normalize(m.name) === normalize(team.mentor.name);
 //     return idMatch || usernameMatch || nameMatch;
 //   }, []);
 
@@ -966,7 +966,7 @@ type ContextType = "assignment" | "course";
 interface Participant {
   id: string | number;
   username: string;
-  fullName?: string;
+  name?: string;
   teamName?: string;
 }
 
@@ -1037,10 +1037,10 @@ Icon.displayName = "Icon";
 ============================================================================= */
 
 const sampleUnassigned: Participant[] = [
-  { id: 2001, username: "Student 10933", fullName: "Kai Moore" },
-  { id: 2002, username: "Student 10934", fullName: "Rowan Diaz" },
-  { id: 2003, username: "Student 10935", fullName: "Parker Lee" },
-  { id: 2004, username: "Student 10936", fullName: "Jamie Rivera" },
+  { id: 2001, username: "Student 10933", name: "Kai Moore" },
+  { id: 2002, username: "Student 10934", name: "Rowan Diaz" },
+  { id: 2003, username: "Student 10935", name: "Parker Lee" },
+  { id: 2004, username: "Student 10936", name: "Jamie Rivera" },
 ];
 
 const sampleTeams: Team[] = [
@@ -1050,31 +1050,31 @@ const sampleTeams: Team[] = [
     mentor: {
       id: "m1",
       username: "Teaching Assistant 10816",
-      fullName: "Teaching Assistant 10816",
+      name: "Teaching Assistant 10816",
     },
     members: [
       {
         id: 1001,
         username: "Student 10917",
-        fullName: "Avery Chen",
+        name: "Avery Chen",
         teamName: "sshivas MentoredTeam",
       },
       {
         id: 1002,
         username: "Student 10916",
-        fullName: "Jordan Park",
+        name: "Jordan Park",
         teamName: "sshivas MentoredTeam",
       },
       {
         id: 1003,
         username: "Teaching Assistant 10816 (Mentor)",
-        fullName: "Teaching Assistant 10816 (Mentor)",
+        name: "Teaching Assistant 10816 (Mentor)",
         teamName: "sshivas MentoredTeam",
       },
       {
         id: 1004,
         username: "Student 10928",
-        fullName: "Sam Patel",
+        name: "Sam Patel",
         teamName: "sshivas MentoredTeam",
       },
     ],
@@ -1085,13 +1085,13 @@ const sampleTeams: Team[] = [
     mentor: {
       id: "m2",
       username: "Teaching Assistant 10624",
-      fullName: "Teaching Assistant 10624",
+      name: "Teaching Assistant 10624",
     },
     members: [
       {
         id: 1005,
         username: "Student 10925",
-        fullName: "Riley Gomez",
+        name: "Riley Gomez",
         teamName: "agaudan MentoredTeam",
       },
     ],
@@ -1102,25 +1102,25 @@ const sampleTeams: Team[] = [
     mentor: {
       id: "m3",
       username: "Teaching Assistant 10199",
-      fullName: "Teaching Assistant 10199",
+      name: "Teaching Assistant 10199",
     },
     members: [
       {
         id: 1006,
         username: "Student 10909",
-        fullName: "Taylor Nguyen",
+        name: "Taylor Nguyen",
         teamName: "tjbrown8 MentoredTeam",
       },
       {
         id: 1007,
         username: "Student 10921",
-        fullName: "Casey Morgan",
+        name: "Casey Morgan",
         teamName: "tjbrown8 MentoredTeam",
       },
       {
         id: 1008,
         username: "Teaching Assistant 10199 (Mentor)",
-        fullName: "Teaching Assistant 10199 (Mentor)",
+        name: "Teaching Assistant 10199 (Mentor)",
         teamName: "tjbrown8 MentoredTeam",
       },
     ],
@@ -1131,19 +1131,19 @@ const sampleTeams: Team[] = [
     mentor: {
       id: "m4",
       username: "Teaching Assistant 10234",
-      fullName: "Teaching Assistant 10234",
+      name: "Teaching Assistant 10234",
     },
     members: [
       {
         id: 1009,
         username: "Student 10931",
-        fullName: "Aria Brooks",
+        name: "Aria Brooks",
         teamName: "IronMan2 MentoredTeam",
       },
       {
         id: 1010,
         username: "Student 10932",
-        fullName: "Noah Shah",
+        name: "Noah Shah",
         teamName: "IronMan2 MentoredTeam",
       },
     ],
@@ -1353,7 +1353,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
   ------------------------------------------------------------------------- */
 
   const displayName = useCallback(
-    (p?: Participant) => (p ? (showUsernames ? p.username : p.fullName || p.username) : ""),
+    (p?: Participant) => (p ? (showUsernames ? p.username : p.name || p.username) : ""),
     [showUsernames]
   );
 
@@ -1370,9 +1370,7 @@ const CreateTeams: React.FC<{ contextType?: ContextType; contextName?: string }>
     const idMatch = String(m.id) === String(team.mentor.id);
     const usernameMatch = normalize(m.username) === normalize(team.mentor.username);
     const nameMatch =
-      !!m.fullName &&
-      !!team.mentor.fullName &&
-      normalize(m.fullName) === normalize(team.mentor.fullName);
+      !!m.name && !!team.mentor.name && normalize(m.name) === normalize(team.mentor.name);
     return idMatch || usernameMatch || nameMatch;
   }, []);
 

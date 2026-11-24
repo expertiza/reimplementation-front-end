@@ -21,7 +21,7 @@ export const userColumns = (handleEdit: Fn, handleDelete: Fn) => [
   }),
 
   columnHelper.accessor("name", {
-    header: "Full Name",
+    header: "Name",
     enableSorting: true,
     enableMultiSort: true,
   }),

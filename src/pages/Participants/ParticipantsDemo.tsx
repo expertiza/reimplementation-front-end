@@ -18,8 +18,8 @@ import { useNavigate } from "react-router-dom";
 type Role = { id: number; name: string };
 type Participant = {
   id: number;
+  username: string;
   name: string;
-  full_name: string;
   email: string;
   role: Role;
   parent: { id: number | null; name: string | null };
@@ -39,8 +39,8 @@ const ALL_ROLES: Role[] = [
 const initialParticipants: Participant[] = [
   {
     id: 1,
-    name: "tjbrown8",
-    full_name: "Brown, Taylor",
+    username: "tjbrown8",
+    name: "Brown, Taylor",
     email: "taylor.brown@example.edu",
     role: ALL_ROLES[0],
     parent: { id: 101, name: "efg" },
@@ -48,8 +48,8 @@ const initialParticipants: Participant[] = [
   },
   {
     id: 2,
-    name: "jdoe3",
-    full_name: "Doe, Jane",
+    username: "jdoe3",
+    name: "Doe, Jane",
     email: "jane.doe@example.edu",
     role: ALL_ROLES[4],
     parent: { id: 102, name: "abz" },
@@ -57,16 +57,16 @@ const initialParticipants: Participant[] = [
   },
   {
     id: 3,
-    name: "sblack9",
-    full_name: "Black, Sam",
+    username: "sblack9",
+    name: "Black, Sam",
     email: "sam.black@example.edu",
     role: ALL_ROLES[3],
     parent: { id: 103, name: "efg" },
   },
   {
     id: 4,
-    name: "rgreen5",
-    full_name: "Green, Riley",
+    username: "rgreen5",
+    name: "Green, Riley",
     email: "riley.green@example.edu",
     role: ALL_ROLES[0],
     parent: { id: 104, name: "mno" },
@@ -74,8 +74,8 @@ const initialParticipants: Participant[] = [
   },
   {
     id: 5,
-    name: "mwhite7",
-    full_name: "White, Morgan",
+    username: "mwhite7",
+    name: "White, Morgan",
     email: "morgan.white@example.edu",
     role: ALL_ROLES[2],
     parent: { id: 105, name: "abz" },
@@ -130,7 +130,7 @@ const ParticipantsDemo: React.FC = () => {
   const onConfirmDelete = useCallback(() => {
     if (deleteModal.participant) {
       setParticipants((prev) => prev.filter((p) => p.id !== deleteModal.participant!.id));
-      showSuccess(`${deleteModal.participant.name} removed successfully`);
+      showSuccess(`${deleteModal.participant.username} removed successfully`);
     }
     setDeleteModal({ show: false, participant: null });
   }, [deleteModal.participant, showSuccess]);
@@ -171,7 +171,7 @@ const ParticipantsDemo: React.FC = () => {
           const cols = lines[i].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
           const [
             username = "",
-            fullName = "",
+            name = "",
             email = "",
             parentName = "",
             handle = "",
@@ -181,8 +181,8 @@ const ParticipantsDemo: React.FC = () => {
             ALL_ROLES.find((r) => r.name.toLowerCase() === roleName.toLowerCase()) ?? ALL_ROLES[0];
           added.push({
             id: 0,
-            name: username || `user${i}`,
-            full_name: fullName || "Last, First",
+            username: username || `user${i}`,
+            name: name || "Last, First",
             email: email || `user${i}@example.edu`,
             role,
             parent: { id: null, name: parentName || null },
@@ -210,8 +210,8 @@ const ParticipantsDemo: React.FC = () => {
     const csvRows = [headers.join(",")];
     rows.forEach((r) => {
       const row = [
-        r.name ?? "",
-        prettyName(r.full_name ?? ""),
+        r.username ?? "",
+        prettyName(r.name ?? ""),
         r.email ?? "",
         r.parent?.name ?? "",
         r.handle ?? "",
@@ -236,8 +236,8 @@ const ParticipantsDemo: React.FC = () => {
     const search = searchValue.toLowerCase();
     return participants.filter(
       (p) =>
+        p.username.toLowerCase().includes(search) ||
         p.name.toLowerCase().includes(search) ||
-        p.full_name.toLowerCase().includes(search) ||
         p.email.toLowerCase().includes(search) ||
         (p.handle && p.handle.toLowerCase().includes(search)) ||
         (p.parent?.name && p.parent.name.toLowerCase().includes(search))
@@ -246,17 +246,17 @@ const ParticipantsDemo: React.FC = () => {
 
   const columns = useMemo(() => {
     return [
-      columnHelper.accessor("name", {
+      columnHelper.accessor("username", {
         id: "username",
         header: "Username",
         cell: ({ row }) => (
           <div style={{ fontWeight: 600, color: "#1a202c", fontSize: "0.875rem" }}>
-            {row.original.name}
+            {row.original.username}
           </div>
         ),
         enableSorting: true,
       }),
-      columnHelper.accessor("full_name", {
+      columnHelper.accessor("name", {
         id: "name",
         header: "Name",
         cell: ({ row }) => {
@@ -264,7 +264,7 @@ const ParticipantsDemo: React.FC = () => {
           return (
             <div>
               <div style={{ color: "#2d3748", fontSize: "0.875rem", fontWeight: 500 }}>
-                {prettyName(row.original.full_name ?? "")}
+                {prettyName(row.original.name ?? "")}
               </div>
               {handle && (
                 <div style={{ color: "#a0aec0", fontSize: "0.75rem", marginTop: "0.15rem" }}>
@@ -791,7 +791,7 @@ const ParticipantsDemo: React.FC = () => {
                                 fontSize: "0.875rem",
                               }}
                             >
-                              {p.name}
+                              {p.username}
                             </div>
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
@@ -802,7 +802,7 @@ const ParticipantsDemo: React.FC = () => {
                                 fontWeight: 500,
                               }}
                             >
-                              {prettyName(p.full_name ?? "")}
+                              {prettyName(p.name ?? "")}
                             </div>
                           </td>
                           <td style={{ padding: "1rem", verticalAlign: "middle" }}>
@@ -960,7 +960,7 @@ const ParticipantsDemo: React.FC = () => {
         <Modal.Body style={{ padding: "1.5rem", backgroundColor: "#fff5f5" }}>
           <p style={{ fontSize: "0.9375rem", color: "#2d3748", marginBottom: "0.5rem" }}>
             Are you sure you want to remove{" "}
-            <strong style={{ color: "#1a202c" }}>{deleteModal.participant?.name}</strong>?
+            <strong style={{ color: "#1a202c" }}>{deleteModal.participant?.username}</strong>?
           </p>
           <p style={{ fontSize: "0.875rem", color: "#718096", marginBottom: 0 }}>
             This action cannot be undone.
