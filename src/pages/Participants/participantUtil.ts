@@ -101,9 +101,6 @@ export const transformParticipantResponse = (participantResponse: string) => {
   if (participant.email_on_submission) {
     participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_SUBMISSION);
   }
-  if (participant.email_on_review_of_review) {
-    participantValues.emailPreferences.push(EmailPreference.EMAIL_ON_META_REVIEW);
-  }
   return participantValues;
 };
 
@@ -118,7 +115,6 @@ export const transformAssignmentParticipant = (participant: any): IParticipantRe
     email: user.email ?? "",
     email_on_review: !!user.email_on_review,
     email_on_submission: !!user.email_on_submission,
-    email_on_review_of_review: !!user.email_on_review_of_review,
     role: { id: user.role?.id, name: user.role?.name },
     parent: { id: user.parent?.id ?? null, name: user.parent?.username ?? null },
     institution: { id: null, name: null },

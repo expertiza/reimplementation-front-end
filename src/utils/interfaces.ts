@@ -54,7 +54,6 @@ export interface IParticipantResponse {
   email: string;
   email_on_review: boolean;
   email_on_submission: boolean;
-  email_on_review_of_review: boolean;
   role: { id: number; name: string };
   parent: { id: number | null; name: string | null };
   institution: { id: number | null; name: string | null };
