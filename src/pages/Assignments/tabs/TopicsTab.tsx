@@ -4,6 +4,8 @@ import { Col, Row, Form, Button, Modal, FloatingLabel, Stack } from "react-boots
 import { BsPersonPlusFill } from "react-icons/bs";
 import TopicsTable from "pages/Assignments/components/TopicsTable";
 import DeleteTopics from "../TopicDelete";
+import ImportModal from "../../../components/Modals/ImportModal";
+import { parseCsv } from "../../../utils/csv";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 // project_topics.topic_identifier is a 10-character column with no server-side
@@ -20,38 +22,8 @@ interface TopicImportInput {
   link: string;
 }
 
-// Minimal CSV field splitter: honours double quotes so a comma inside a quoted
-// field (a topic name, typically) does not start a new column, and unwraps the
-// quotes rather than leaving them in the value. "" is an escaped quote.
-export const parseCsvLine = (line: string): string[] => {
-  const fields: string[] = [];
-  let field = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inQuotes) {
-      if (ch === '"' && line[i + 1] === '"') {
-        field += '"';
-        i++;
-      } else if (ch === '"') {
-        inQuotes = false;
-      } else {
-        field += ch;
-      }
-    } else if (ch === '"') {
-      inQuotes = true;
-    } else if (ch === ",") {
-      fields.push(field);
-      field = "";
-    } else {
-      field += ch;
-    }
-  }
-  fields.push(field);
-
-  return fields.map((f) => f.trim());
-};
+// One line of the paste box, split the same way the file preview splits a file.
+export const parseCsvLine = (line: string): string[] => parseCsv(line)[0] ?? [""];
 
 // A header row is only a header when the first TWO fields name header columns. A
 // real topic called "Topic Name" carries an identifier in field two and must survive.
@@ -194,6 +166,8 @@ const TopicsTab = ({
   // Selected topics state
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
+
+  const [showFileImport, setShowFileImport] = useState(false);
 
   // Import topics modal state
   const [showImportModal, setShowImportModal] = useState(false);
@@ -695,6 +669,9 @@ const TopicsTab = ({
           <Button variant="outline-secondary" onClick={handleShowImport}>
             Import topics
           </Button>
+          <Button variant="outline-secondary" onClick={() => setShowFileImport(true)}>
+            Import from file
+          </Button>
           <Button
             variant="outline-danger"
             onClick={handleDeleteSelected}
@@ -841,6 +818,18 @@ const TopicsTab = ({
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Mounted only while open, so each upload starts clean. */}
+      {showFileImport && (
+        <ImportModal
+          show
+          onHide={() => setShowFileImport(false)}
+          modelClass="ProjectTopic"
+          title="Topics from File"
+          assignmentId={assignmentId}
+          onImported={onTopicsChanged}
+        />
+      )}
 
       {/* Import Topics Modal */}
       <Modal show={showImportModal} onHide={handleCloseImport} centered size="lg">

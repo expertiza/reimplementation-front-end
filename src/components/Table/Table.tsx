@@ -208,6 +208,8 @@ const Table: React.FC<TableProps> = ({
     onExpandedChange: setExpanded,
     onPaginationChange: setPaginationState,
     getRowCanExpand,
+    // Page by top-level rows: sub-rows stay on their parent's page.
+    paginateExpandedRows: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

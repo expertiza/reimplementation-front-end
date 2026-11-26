@@ -382,7 +382,6 @@ const Courses = () => {
 
         <Table
           showGlobalFilter={false}
-          showPagination={false}
           data={unifiedData}
           columns={sizedColumns}
           // fixed, so the declared widths above are the final widths and the table is

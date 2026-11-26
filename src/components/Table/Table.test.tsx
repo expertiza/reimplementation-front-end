@@ -179,6 +179,29 @@ describe("Table showPagination={false}", () => {
   });
 });
 
+describe("Table pagination with sub-rows", () => {
+  it("pages by top-level rows, so expanding a parent does not push rows to the next page", () => {
+    const parents = rows(11);
+
+    const { container } = render(
+      <Table
+        data={parents}
+        columns={columns}
+        getSubRows={(row) => (row === parents[0] ? rows(4) : undefined)}
+        getRowCanExpand={(row) => row.original === parents[0]}
+      />
+    );
+    const bodyRows = () => container.querySelectorAll("tbody tr");
+
+    expect(bodyRows()).toHaveLength(10);
+    fireEvent.click(container.querySelector("tbody tr button.btn-link")!);
+
+    expect(bodyRows()).toHaveLength(10 + 4);
+    expect(screen.getByText("Person 9")).toBeInTheDocument();
+    expect(screen.queryByText("Person 10")).not.toBeInTheDocument();
+  });
+});
+
 describe("Table column filter clearing", () => {
   // Regression: raising the page size past the (now filtered) row count hid the
   // filter inputs via columnFilterVisible, but left columnFilters set, so the table

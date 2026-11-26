@@ -64,9 +64,12 @@ describe("ImportModal", () => {
     });
 
     // Section labels
-    await screen.findByText(/Mandatory fields/i);
-    await screen.findByText(/Optional fields/i);
-    await screen.findByText(/External fields/i);
+    const line = (label: RegExp) => screen.getByText(label).parentElement;
+    await screen.findByText(/Required columns/i);
+    expect(line(/Required columns/i)).toHaveTextContent("Required columns: Email");
+    expect(line(/Optional columns/i)).toHaveTextContent("Optional columns: Name");
+    expect(line(/External columns/i)).toHaveTextContent("External columns: External id");
+    expect(screen.getByText("Turn off to match columns yourself.")).toBeInTheDocument();
 
     // Duplicate handling radios
     expect(screen.getByText("SkipRecordAction")).toBeInTheDocument();
@@ -116,7 +119,7 @@ describe("ImportModal", () => {
     });
 
     // Wait for metadata to populate
-    await screen.findByText(/Mandatory fields/i);
+    await screen.findByText(/Required columns/i);
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
@@ -169,7 +172,7 @@ describe("ImportModal", () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
     });
 
-    await screen.findByText(/Mandatory fields/i);
+    await screen.findByText(/Required columns/i);
 
     const fileInput = screen.getByLabelText(/CSV file/i) as HTMLInputElement;
 
@@ -203,7 +206,7 @@ describe("ImportModal", () => {
       render(<ImportModal show={true} onHide={onHide} modelClass="Team" />);
     });
 
-    await screen.findByText(/Mandatory fields/i);
+    await screen.findByText(/Required columns/i);
 
     const cancelButton = screen.getByRole("button", { name: /cancel/i });
 
@@ -214,5 +217,109 @@ describe("ImportModal", () => {
     await waitFor(() => {
       expect(onHide).toHaveBeenCalled();
     });
+  });
+
+  const chooseFile = async (text: string) => {
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText(/CSV file/i), {
+        target: { files: [{ name: "t.csv", text: vi.fn().mockResolvedValue(text) }] as any },
+      });
+    });
+  };
+
+  const NO_DUPLICATE_ACTIONS = { ...IMPORT_METADATA, available_actions_on_dup: [] };
+
+  it("hides a column list that has nothing in it", async () => {
+    const data = { data: { ...IMPORT_METADATA, external_fields: [] } };
+    const sendRequest = vi.fn();
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ data, sendRequest }));
+
+    await act(async () => {
+      render(<ImportModal show={true} onHide={onHide} modelClass="ProjectTopic" />);
+    });
+
+    expect(screen.getByText(/Required columns/)).toBeInTheDocument();
+    expect(screen.queryByText(/External columns/)).not.toBeInTheDocument();
+  });
+
+  it("uses the readable title in the heading", async () => {
+    mockUseAPI.mockReturnValue(makeUseAPIResult({ data: undefined }));
+    await act(async () => {
+      render(
+        <ImportModal
+          show
+          onHide={onHide}
+          modelClass="ProjectTopic"
+          title="Topics"
+          assignmentId="7"
+        />
+      );
+    });
+    expect(screen.getByText("Import Topics")).toBeInTheDocument();
+  });
+
+  it("uploads with assignment_id after the preview is confirmed", async () => {
+    const user = userEvent.setup();
+    const sendRequest = vi.fn();
+    const metadata = { data: NO_DUPLICATE_ACTIONS };
+    let call = 0;
+    // The component calls useAPI twice per render: metadata first, then the upload.
+    mockUseAPI.mockImplementation(() =>
+      makeUseAPIResult({ data: call++ % 2 === 0 ? metadata : undefined, sendRequest })
+    );
+
+    await act(async () => {
+      render(<ImportModal show onHide={onHide} modelClass="ProjectTopic" assignmentId="7" />);
+    });
+    expect(screen.queryByText("Duplicate handling")).not.toBeInTheDocument();
+
+    await chooseFile('topic_name,topic_identifier\n"Design, build",T1');
+    await user.click(screen.getByRole("button", { name: /^Import$/ }));
+    expect(await screen.findByText("Design, build")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Confirm & Import/ }));
+
+    const upload = sendRequest.mock.calls.map(([c]) => c).find((c) => c.method === "POST");
+    expect(upload.url).toBe("/import/ProjectTopic");
+    expect(upload.data.get("assignment_id")).toBe("7");
+  });
+
+  it("calls onImported on success", async () => {
+    const onImported = vi.fn();
+    const success = { data: { message: "Topics imported" } };
+    let call = 0;
+    mockUseAPI.mockImplementation(() =>
+      makeUseAPIResult({ data: call++ % 2 === 0 ? undefined : success })
+    );
+
+    await act(async () => {
+      render(
+        <ImportModal show onHide={onHide} modelClass="ProjectTopic" onImported={onImported} />
+      );
+    });
+
+    expect(onImported).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the error, not an earlier success, and stays open", async () => {
+    const onImported = vi.fn();
+    const stale = { data: { message: "Topics imported" } };
+    let call = 0;
+    // Stable like the real hook; a new function per render would keep resetting the status.
+    const sendRequest = vi.fn();
+    mockUseAPI.mockImplementation(() =>
+      call++ % 2 === 0
+        ? makeUseAPIResult({ data: undefined, sendRequest })
+        : makeUseAPIResult({ data: stale, error: "Nothing was imported. Row 2: bad.", sendRequest })
+    );
+
+    await act(async () => {
+      render(
+        <ImportModal show onHide={onHide} modelClass="ProjectTopic" onImported={onImported} />
+      );
+    });
+
+    expect(screen.getByText(/Nothing was imported/)).toBeInTheDocument();
+    expect(onImported).not.toHaveBeenCalled();
+    expect(onHide).not.toHaveBeenCalled();
   });
 });
