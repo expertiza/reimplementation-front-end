@@ -80,11 +80,13 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       {
         accessorKey: "id",
         header: "Topic ID",
+        meta: { width: "13.5%" },
         cell: ({ row }) => <span style={{ whiteSpace: "nowrap" }}>{row.original.id}</span>,
       },
       {
         accessorKey: "name",
         header: "Topic Names",
+        meta: { width: "30.5%" },
         cell: ({ row }) => (
           <span>
             {row.original.name}
@@ -209,6 +211,7 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
         ? [
             {
               id: "select",
+              meta: { width: "40px" },
               header: () => (
                 <input
                   type="checkbox"
@@ -235,6 +238,7 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       {
         id: "actions",
         header: "Actions",
+        meta: { width: "80px" },
         cell: ({ row }) => (
           <div className="d-flex align-items-center" style={{ gap: 8 }}>
             {renderInstructorActions?.(row.original)}
@@ -264,6 +268,14 @@ const TopicsTable: React.FC<TopicsTableProps> = ({
       showGlobalFilter={false}
       showColumnFilter={true}
       showPagination={true}
+      // Fixed layout + a definite width so the percentage column widths resolve.
+      // Without it the two Search inputs force their columns to the input's
+      // intrinsic width and Topic ID ends up as wide as Topic Names.
+      // Columns with no declared width share what is left, equally.
+      // Scales with the container down to a floor, below which the Bootstrap
+      // .table-responsive wrapper scrolls horizontally rather than cramping the
+      // columns further.
+      tableStyle={{ width: "63%", minWidth: "760px", tableLayout: "fixed" }}
       renderSubComponent={
         renderDetails ? ({ row }) => renderDetails(row.original as TopicRow) : undefined
       }

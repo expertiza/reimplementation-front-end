@@ -113,9 +113,10 @@ const Duties = () => {
             <Table
               data={tableData}
               columns={columns}
-              showGlobalFilter={false}
+              disableGlobalFilter={true}
               showColumnFilter={true}
               showPagination={true}
+              tableStyle={{ width: "fit-content", margin: "0 auto" }}
               // your shared Table handles sorting/filtering/pagination/selection/expanders:contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
             />
           </Row>

@@ -342,7 +342,6 @@ const ReviewTableau: React.FC = () => {
                     data={tableData}
                     columns={columns}
                     showGlobalFilter={false}
-                    showColumnFilter={false}
                     showPagination={true}
                     columnVisibility={{}}
                     tableSize={{ span: 12, offset: 0 }}

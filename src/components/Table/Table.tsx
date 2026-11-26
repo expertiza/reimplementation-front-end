@@ -21,6 +21,9 @@ import RowSelectCheckBox from "./RowSelectCheckBox";
 import { FaSearch } from "react-icons/fa";
 import ToolTip from "components/ToolTip";
 
+// The column list type useReactTable expects for a given row type.
+type TableColumns<TRow> = Parameters<typeof useReactTable<TRow>>[0]["columns"];
+
 interface TableProps {
   data: Record<string, any>[];
   columns: ColumnDef<any, any>[];
@@ -69,7 +72,7 @@ const Table: React.FC<TableProps> = ({
   data: initialData,
   columns,
   showGlobalFilter = false,
-  showColumnFilter = true,
+  showColumnFilter = false,
   showPagination = true,
   onSelectionChange,
   columnVisibility = {},
@@ -94,6 +97,7 @@ const Table: React.FC<TableProps> = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState<string | number>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [paginationState, setPaginationState] = useState({ pageIndex: 0, pageSize: 10 });
   const [columnVisibilityState, setColumnVisibilityState] = useState(columnVisibility);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -132,7 +136,7 @@ const Table: React.FC<TableProps> = ({
       enableColumnFilter: false,
     };
 
-    const selectableColumn = selectable
+    const selectableColumn: typeof columns = selectable
       ? [
           {
             id: "select",
@@ -156,7 +160,7 @@ const Table: React.FC<TableProps> = ({
               />
             ),
             enableSorting: false,
-            enableFilter: false,
+            enableColumnFilter: false,
           },
         ]
       : [];
@@ -164,9 +168,29 @@ const Table: React.FC<TableProps> = ({
     return [...selectableColumn, expanderColumn, ...columns];
   }, [columns, selectable, renderSubComponent, getSubRows, getRowCanExpand]);
 
+  // When pagination controls are hidden, the table must not silently page the data:
+  // getPaginationRowModel always slices by pageSize regardless of showPagination, so
+  // without this override any list past the first page would just vanish with no way
+  // to reach it. The pagination row model slices the EXPANDED tree (top-level rows plus
+  // any expanded getSubRows children), not just initialData — deriving pageSize from
+  // initialData.length (top-level row count only) truncated away expanded sub-rows
+  // whenever a parent had more children than there were top-level rows (observed with
+  // a single expanded course and several assignment sub-rows, but the mismatch can go
+  // either way for any number of parents/children). A fixed, generously large page size
+  // avoids ever needing to count rows (nested or not) to disable pagination.
+  const UNPAGINATED_PAGE_SIZE = Number.MAX_SAFE_INTEGER;
+  const effectivePagination = showPagination
+    ? paginationState
+    : { pageIndex: 0, pageSize: UNPAGINATED_PAGE_SIZE };
+
   const table = useReactTable({
     data: initialData,
-    columns: colsPlusExpander,
+    // ColumnDef<any, any> doesn't structurally satisfy ColumnDef<Record<string, any>, any>
+    // (TanStack constrains accessorKey to `keyof TData & string`, which `any` can't match
+    // exactly) even though they're compatible at runtime — callers pass columns typed
+    // against their own row shape, not Record<string, any>. Cast at the boundary rather
+    // than loosening TableProps.columns for every caller.
+    columns: colsPlusExpander as TableColumns<(typeof initialData)[number]>,
     ...(getRowId ? { getRowId } : {}),
     ...(getSubRows ? { getSubRows } : {}),
     ...(getSubRows ? { filterFromLeafRows: true } : {}),
@@ -177,6 +201,7 @@ const Table: React.FC<TableProps> = ({
       rowSelection,
       columnVisibility: columnVisibilityState,
       expanded,
+      pagination: effectivePagination,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
@@ -184,7 +209,10 @@ const Table: React.FC<TableProps> = ({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibilityState,
     onExpandedChange: setExpanded,
+    onPaginationChange: setPaginationState,
     getRowCanExpand,
+    // Page by top-level rows: sub-rows stay on their parent's page.
+    paginateExpandedRows: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -213,6 +241,27 @@ const Table: React.FC<TableProps> = ({
   };
 
   const firstRenderRef = useRef(true);
+
+  // Filter inputs show when the data spans more than one page (rows > pageSize) or
+  // when "Show All" is picked (pageSize === rows) — the two cases ">=" covers. A page
+  // size larger than the data is neither, so they stay hidden.
+  //
+  // Counted on getCoreRowModel (the UNFILTERED rows) on purpose: getPrePaginationRowModel
+  // counts rows after filtering, so narrowing a table below one page used to unmount
+  // the inputs and strand the filter with no way to clear it.
+  const unfilteredRows = table.getCoreRowModel().rows.length;
+  const { pageSize } = table.getState().pagination;
+  const columnFilterVisible = showColumnFilter && unfilteredRows >= pageSize;
+
+  // Hiding the filter inputs must not leave an active filter applied invisibly.
+  // Without this, picking a larger page size after typing into a filter dropped the
+  // input (unfilteredRows < pageSize) while columnFilters stayed set, so rows stayed
+  // silently narrowed with no control left to clear them.
+  useEffect(() => {
+    if (!columnFilterVisible) {
+      setColumnFilters((prev) => (prev.length > 0 ? [] : prev));
+    }
+  }, [columnFilterVisible]);
 
   return (
     <>
@@ -248,7 +297,15 @@ const Table: React.FC<TableProps> = ({
               hover
               responsive
               size="sm"
-              style={{ margin: tableStyle ? "0 auto" : undefined, ...tableStyle }}
+              style={{
+                margin: tableStyle ? "0 auto" : undefined,
+                // A filter input changes a column's natural width, so lock widths whenever
+                // filters are enabled. Keyed off the prop rather than columnFilterVisible so
+                // the layout does not flip as the row count crosses pageSize.
+                // Callers opt out with tableStyle={{ tableLayout: "auto" }}.
+                ...(showColumnFilter ? { tableLayout: "fixed" as const } : {}),
+                ...tableStyle,
+              }}
             >
               {showHeader && (
                 <thead className="table-secondary">
@@ -269,6 +326,9 @@ const Table: React.FC<TableProps> = ({
                                     ...(m.maxWidth ? { maxWidth: m.maxWidth } : {}),
                                     ...(m.width ? { width: m.width } : {}),
                                     ...(m.whiteSpace ? { whiteSpace: m.whiteSpace } : {}),
+                                    // Free-form escape hatch, applied to header and body
+                                    // cells alike so a column can style its whole strip.
+                                    ...(m.style ?? {}),
                                   }
                                 : undefined;
                             })()}
@@ -290,7 +350,7 @@ const Table: React.FC<TableProps> = ({
                                     desc: " 🔽",
                                   }[header.column.getIsSorted() as string] ?? null}
                                 </div>
-                                {showColumnFilter && header.column.getCanFilter() ? (
+                                {columnFilterVisible && header.column.getCanFilter() ? (
                                   <ColumnFilter column={header.column} />
                                 ) : null}
                               </>
@@ -322,13 +382,25 @@ const Table: React.FC<TableProps> = ({
                               ...(colMeta.minWidth ? { minWidth: colMeta.minWidth } : {}),
                               ...(colMeta.maxWidth ? { maxWidth: colMeta.maxWidth } : {}),
                               ...(colMeta.whiteSpace ? { whiteSpace: colMeta.whiteSpace } : {}),
+                              ...(colMeta.style ?? {}),
                             }
                           : {};
                         return (
+                          // tdProps is spread BEFORE style: it carries its own style key,
+                          // so spreading it afterwards threw away every meta style.
                           <td
                             key={cell.id}
-                            style={{ ...colMetaStyle, ...(tdProps.style ?? {}) }}
                             {...tdProps}
+                            // overflowWrap break-word first, so a column can override it:
+                            // under table-layout:fixed a value with no space in it (an email
+                            // address, a URL) cannot wrap and spills over the next column.
+                            // break-word, not anywhere, so it does not shrink min-content
+                            // widths on the auto-layout tables.
+                            style={{
+                              overflowWrap: "break-word",
+                              ...colMetaStyle,
+                              ...(tdProps.style ?? {}),
+                            }}
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>

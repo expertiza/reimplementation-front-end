@@ -12,6 +12,37 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 axios.defaults.headers.put["Content-Type"] = "application/json";
 axios.defaults.headers.patch["Content-Type"] = "application/json";
 
+// Rails field keys arrive snake_case (e.g. "topic_identifier"); show them the way a
+// user expects to read them: "Topic Identifier".
+const humanizeField = (field: string): string =>
+  field
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+// Rails error bodies take several shapes across controllers: a plain string, an
+// array, a field => messages map (raw ActiveModel::Errors or wrapped in `message`/
+// `errors`), or `{ error: ... }`. Unwrap the common envelope keys and otherwise
+// walk the object so e.g. `{ message: { topic_identifier: ["has already been
+// taken"] } }` renders as "Topic Identifier has already been taken" instead of
+// "message: [object Object]".
+const flattenErrorPayload = (payload: unknown): string => {
+  if (payload == null) return "";
+  if (typeof payload === "string") return payload;
+  if (Array.isArray(payload)) return payload.map((item) => flattenErrorPayload(item)).join(", ");
+  if (typeof payload === "object") {
+    const obj = payload as Record<string, unknown>;
+    if ("message" in obj) return flattenErrorPayload(obj.message);
+    if ("error" in obj) return flattenErrorPayload(obj.error);
+    if ("errors" in obj) return flattenErrorPayload(obj.errors);
+    return Object.entries(obj)
+      .map(([field, value]) => `${humanizeField(field)} ${flattenErrorPayload(value)}`)
+      .join(", ");
+  }
+  return String(payload);
+};
+
 const useAPI = () => {
   const [data, setData] = useState<AxiosResponse>();
   const [error, setError] = useState<string | null>("");
@@ -49,12 +80,7 @@ const useAPI = () => {
 
         if (err.response) {
           console.log(err.response);
-          const errors = err.response.data;
-          const messages = Object.entries(errors).flatMap(([field, messages]) => {
-            if (Array.isArray(messages)) return messages.map((m) => `${field} ${m}`);
-            return `${field}: ${messages}`;
-          });
-          errorMessage = messages.join(", ");
+          errorMessage = flattenErrorPayload(err.response.data);
           if (err.response.status) setErrorStatus(err.response.status.toString());
         } else if (err.request) {
           console.log("The request was made but no response was received", err);

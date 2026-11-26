@@ -37,6 +37,14 @@ const DebouncedInput: React.FC<InputProps> = ({
         ...otherProps,
         value: value,
         onChange: (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+        // This is a live, debounced filter, not something meant to submit anything.
+        // Table is sometimes rendered inside a page-level <form> (e.g. the Formik
+        // form wrapping the whole assignment editor, including its Topics tab),
+        // so an unguarded Enter here bubbles up as a form submit and navigates
+        // away from the page the user was just searching on.
+        onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === "Enter") e.preventDefault();
+        },
       }}
     />
   );

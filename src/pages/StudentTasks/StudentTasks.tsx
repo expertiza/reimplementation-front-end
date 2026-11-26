@@ -212,7 +212,6 @@ const StudentTasks: React.FC = () => {
                 data={courseTasks}
                 columns={filteredColumns}
                 showGlobalFilter={false}
-                showColumnFilter={false}
                 showPagination={false}
                 fluid={true}
                 tableSize={{ span: 12, offset: 0 }}

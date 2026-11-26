@@ -66,7 +66,6 @@ const Roles = () => {
               data={tableData}
               columns={tableColumns}
               tableSize={{ span: 6, offset: 3 }}
-              showColumnFilter={false}
               showPagination={false}
             />
           </Row>

@@ -167,7 +167,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
     );
   }
 
-  return <Table columns={tableColumns} data={participants} />;
+  return <Table columns={tableColumns} data={participants} showColumnFilter={true} />;
 };
 
 export default ParticipantTable;

@@ -24,9 +24,13 @@ const Input: React.ForwardRefExoticComponent<InputProps> = React.forwardRef((pro
     props.label
   );
 
+  // Without a label the addon renders as an empty bordered box that still eats
+  // its own padding, so only render it when there is something to show.
+  const hasLabel = Boolean(props.label || props.tooltip);
+
   return (
     <InputGroup className={props.className}>
-      <InputGroup.Text id={props.id}>{displayLabel}</InputGroup.Text>
+      {hasLabel && <InputGroup.Text id={props.id}>{displayLabel}</InputGroup.Text>}
       <FormControl aria-label={props.label} ref={ref} {...props.input} />
     </InputGroup>
   );
