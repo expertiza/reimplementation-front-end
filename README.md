@@ -257,6 +257,54 @@ You can also build and run the service defined in `docker-compose.yml`:
 docker compose up --build
 ```
 
+### Containerized development
+
+The `frontend-dev` service runs the Vite development server in a Node.js container. The repository
+is mounted into the container, so React, TypeScript, and stylesheet changes are detected without
+rebuilding the image. Start only the development service with:
+
+```bash
+docker compose --profile dev up --build frontend-dev
+```
+
+Open `http://localhost:3000`. Stop only the development service with:
+
+```bash
+docker compose --profile dev stop frontend-dev
+```
+
+The development profile stores container-installed dependencies in the
+`frontend-node-modules` volume. When `package.json` or `package-lock.json` changes, refresh the image
+and its dependency volume without stopping the Nginx service:
+
+```bash
+docker compose --profile dev stop frontend-dev
+docker compose --profile dev build frontend-dev
+docker compose --profile dev run --rm frontend-dev npm ci
+docker compose --profile dev up frontend-dev
+```
+
+Docker file sharing does not always forward filesystem events reliably, so the development service
+enables polling at a 500 millisecond interval. Override the polling interval or published host port
+when needed:
+
+```bash
+CHOKIDAR_INTERVAL=1000 VITE_DEV_PORT=3001 \
+  docker compose --profile dev up --build frontend-dev
+```
+
+The browser-facing API URLs continue to use `http://localhost:3002`. Requests made through Vite's
+`/api` proxy are forwarded from the container to `http://host.docker.internal:3002`; the Compose
+configuration supplies the equivalent host mapping on Linux. Override the proxy destination when
+the backend is available at another address:
+
+```bash
+VITE_DEV_PROXY_TARGET=http://backend-host:3002 \
+  docker compose --profile dev up --build frontend-dev
+```
+
+If a dependency remains stale, repeat the dependency-refresh commands above.
+
 ### Published container image
 
 The `Publish frontend container image` GitHub Actions workflow builds the existing `Dockerfile` and
