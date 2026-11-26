@@ -88,6 +88,8 @@ const Icon: React.FC<{
 ));
 Icon.displayName = "Icon";
 
+type PreviewRow = Record<string, string>;
+
 /* ----------------------------------------
  *  Props
  * ---------------------------------------- */
@@ -292,7 +294,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
 
   const previewData = useMemo(() => {
     return csvData.map((row) => {
-      const obj: Record<string, any> = {};
+      const obj: PreviewRow = {};
       previewHeaders.forEach((h, i) => {
         const key = h || `col_${i}`;
         obj[key] = row[i] ?? "";
@@ -309,9 +311,9 @@ const ImportModal: React.FC<ImportModalProps> = ({
     [selectedFields, availableFields]
   );
 
-  const previewColumns = useMemo<ColumnDef<any, any>[]>(() => {
+  const previewColumns = useMemo<ColumnDef<PreviewRow, string>[]>(() => {
     return previewHeaders.map(
-      (header, idx): ColumnDef<any, any> => ({
+      (header, idx): ColumnDef<PreviewRow, string> => ({
         id: `col_${idx}`,
         // ColumnDef's header accepts a string or a render function, not a raw
         // JSX element — wrap the existing JSX/string branches in one.
@@ -339,7 +341,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
             transformField(header)
           ),
         accessorKey: header || `col_${idx}`,
-        cell: (info: any) => info.getValue() ?? "—",
+        cell: (info) => info.getValue() ?? "—",
       })
     );
   }, [previewHeaders, useHeader, selectedFields, availableFields]);

@@ -5,7 +5,7 @@ export const parseCsv = (text: string): string[][] => {
   let row: string[] = [];
   let field = "";
   let inQuotes = false;
-  const source = text.replace(/^﻿/, "");
+  const source = text.replace(/^\uFEFF/, "");
 
   const endField = (): void => {
     row.push(field.trim());

@@ -21,6 +21,9 @@ import RowSelectCheckBox from "./RowSelectCheckBox";
 import { FaSearch } from "react-icons/fa";
 import ToolTip from "components/ToolTip";
 
+// The column list type useReactTable expects for a given row type.
+type TableColumns<TRow> = Parameters<typeof useReactTable<TRow>>[0]["columns"];
+
 interface TableProps {
   data: Record<string, any>[];
   columns: ColumnDef<any, any>[];
@@ -133,7 +136,7 @@ const Table: React.FC<TableProps> = ({
       enableColumnFilter: false,
     };
 
-    const selectableColumn: ColumnDef<any, any>[] = selectable
+    const selectableColumn: typeof columns = selectable
       ? [
           {
             id: "select",
@@ -187,7 +190,7 @@ const Table: React.FC<TableProps> = ({
     // exactly) even though they're compatible at runtime — callers pass columns typed
     // against their own row shape, not Record<string, any>. Cast at the boundary rather
     // than loosening TableProps.columns for every caller.
-    columns: colsPlusExpander as ColumnDef<Record<string, any>, any>[],
+    columns: colsPlusExpander as TableColumns<(typeof initialData)[number]>,
     ...(getRowId ? { getRowId } : {}),
     ...(getSubRows ? { getSubRows } : {}),
     ...(getSubRows ? { filterFromLeafRows: true } : {}),

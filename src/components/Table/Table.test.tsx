@@ -150,7 +150,9 @@ describe("Table showPagination={false}", () => {
   // showPagination, so hiding the footer used to silently truncate the table to
   // the default page size (10) with no control left to reach the rest.
   it("renders every row even past the default page size when pagination is hidden", () => {
-    const { container } = render(<Table data={TWENTY_FOUR} columns={columns} showPagination={false} />);
+    const { container } = render(
+      <Table data={TWENTY_FOUR} columns={columns} showPagination={false} />
+    );
 
     expect(container.querySelectorAll("tbody tr")).toHaveLength(TWENTY_FOUR.length);
     expect(pageTurning()).not.toBeInTheDocument();

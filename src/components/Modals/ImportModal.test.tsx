@@ -222,7 +222,7 @@ describe("ImportModal", () => {
   const chooseFile = async (text: string) => {
     await act(async () => {
       fireEvent.change(screen.getByLabelText(/CSV file/i), {
-        target: { files: [{ name: "t.csv", text: vi.fn().mockResolvedValue(text) }] as any },
+        target: { files: [{ name: "t.csv", text: vi.fn().mockResolvedValue(text) }] },
       });
     });
   };
