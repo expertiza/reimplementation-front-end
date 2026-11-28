@@ -263,10 +263,7 @@ export const transformQuestionnaireRequest = (values: QuestionnaireFormValues) =
           const { size, alternatives } = getItemTypeHandler(type).toBackend(item);
 
           const rawWeight = item.weight;
-          const weight =
-            rawWeight === "" || rawWeight == null
-              ? null
-              : Number(rawWeight);
+          const weight = rawWeight === "" || rawWeight == null ? null : Number(rawWeight);
 
           return {
             ...item,
@@ -288,7 +285,9 @@ export type BackendQuestionnaire = Omit<QuestionnaireFormValues, "items"> & {
   items?: BackendItem[];
 };
 
-export const transformQuestionnaireResponse = (data: BackendQuestionnaire): QuestionnaireFormValues => {
+export const transformQuestionnaireResponse = (
+  data: BackendQuestionnaire
+): QuestionnaireFormValues => {
   return {
     id: data.id,
     name: data.name,

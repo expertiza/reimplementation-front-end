@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import QuestionnaireItemsFieldArray from "./QuestionnaireItemsFieldArray";
 import TeammateReviewOptions from "./TeammateReviewOptions";
 import {
@@ -60,7 +61,10 @@ const extractErrors = (errors: unknown): string[] => {
   return result;
 };
 
-const QuestionnaireForm = ({ initialValues, onSubmit }: {
+const QuestionnaireForm = ({
+  initialValues,
+  onSubmit,
+}: {
   initialValues: QuestionnaireFormValues;
   onSubmit: (values: QuestionnaireFormValues) => void | Promise<void>;
 }) => {
@@ -82,7 +86,9 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
 
   const finalItemTypes =
     Array.isArray(itemTypes?.data) && itemTypes.data.length > 0
-      ? itemTypes.data.map((t: string | { name?: string; label?: string }) => (typeof t === "object" ? t.name || t.label || String(t) : t))
+      ? itemTypes.data.map((t: string | { name?: string; label?: string }) =>
+          typeof t === "object" ? t.name || t.label || String(t) : t
+        )
       : fallbackItemTypes;
 
   const itemFields = Yup.object().shape({
@@ -108,42 +114,33 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
       .nullable()
       .notRequired(),
 
-    alternatives: Yup.string().when(
-      ["item_type", "_destroy"],
-      ([type, destroy], schema) => {
-        if (!destroy && (type === "Dropdown" || type === "Multiple choice")) {
-          return schema
-            .required("Options are required")
-            .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
-              if (!value) return false;
-              const options = value
-                .split(",")
-                .map((opt) => opt.trim())
-                .filter((opt) => opt !== "");
-              return options.length >= 2;
-            });
-        }
-        return schema.notRequired();
+    alternatives: Yup.string().when(["item_type", "_destroy"], ([type, destroy], schema) => {
+      if (!destroy && (type === "Dropdown" || type === "Multiple choice")) {
+        return schema
+          .required("Options are required")
+          .test("min-2-options", "Enter at least two options, separated by commas.", (value) => {
+            if (!value) return false;
+            const options = value
+              .split(",")
+              .map((opt) => opt.trim())
+              .filter((opt) => opt !== "");
+            return options.length >= 2;
+          });
       }
-    ),
+      return schema.notRequired();
+    }),
 
-    min_label: Yup.string().when(
-      ["item_type", "_destroy"],
-      ([type, destroy], schema) => {
-        return !destroy && type === "Scale"
-          ? schema.required("Minimum label is required")
-          : schema.notRequired();
-      }
-    ),
+    min_label: Yup.string().when(["item_type", "_destroy"], ([type, destroy], schema) => {
+      return !destroy && type === "Scale"
+        ? schema.required("Minimum label is required")
+        : schema.notRequired();
+    }),
 
-    max_label: Yup.string().when(
-      ["item_type", "_destroy"],
-      ([type, destroy], schema) => {
-        return !destroy && type === "Scale"
-          ? schema.required("Maximum label is required")
-          : schema.notRequired();
-      }
-    ),
+    max_label: Yup.string().when(["item_type", "_destroy"], ([type, destroy], schema) => {
+      return !destroy && type === "Scale"
+        ? schema.required("Maximum label is required")
+        : schema.notRequired();
+    }),
   });
 
   const validationSchema = Yup.object().shape({
@@ -303,10 +300,7 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   }
                 />
               </div>
-              <QuestionnaireItemsFieldArray
-                values={values}
-                itemTypes={finalItemTypes}
-              />
+              <QuestionnaireItemsFieldArray values={values} itemTypes={finalItemTypes} />
             </div>
 
             <div className="mt-4 pt-3 border-top" style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -320,9 +314,15 @@ const QuestionnaireForm = ({ initialValues, onSubmit }: {
                   </ul>
                 </div>
               )}
-              <Button type="submit" variant="primary" className="px-4">
-                Save
-              </Button>
+              <div className="d-flex justify-content-start gap-2" style={{ alignItems: "center" }}>
+                <Button type="submit" variant="outline-secondary">
+                  Save
+                </Button>{" "}
+                |
+                <Link to="/questionnaires" style={{ color: "#a4a366", textDecoration: "none" }}>
+                  Back
+                </Link>
+              </div>
             </div>
           </Form>
         )}

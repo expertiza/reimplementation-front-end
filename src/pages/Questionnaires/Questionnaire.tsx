@@ -2,7 +2,7 @@ import { Button, Col, Container, Modal, Row } from "react-bootstrap";
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom";
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { questionnaireColumns } from "./QuestionnaireColumns";
-import { RiHealthBookLine } from "react-icons/ri";
+import { IoIosAddCircle } from "react-icons/io";
 import { IItem, QuestionnaireResponse, getQuestionnaireTypes } from "./QuestionnaireUtils";
 import { Row as TRow } from "@tanstack/react-table";
 import Table from "components/Table/Table";
@@ -83,7 +83,7 @@ const Questionnaires = () => {
   const handleRowClick = async (questionnaire: QuestionnaireResponse) => {
     setSelectedQuestionnaire(questionnaire);
     if (typeof questionnaire.id === "number") {
-      await fetchItems({ url: `/questionnaires/${questionnaire.id}/items` });
+      await fetchItems({ url: `/items/show_all/questionnaire/${questionnaire.id}` });
     }
   };
 
@@ -91,7 +91,7 @@ const Questionnaires = () => {
     <>
       <Outlet />
       <main>
-        <Container fluid className="px-md-4">
+        <Container fluid className="px-md-4 mx-auto" style={{ maxWidth: "1100px" }}>
           <Row className="mt-4 mb-4">
             <Col className="text-center">
               <h1 className="text-dark" style={{ fontSize: "2rem", fontWeight: "600" }}>
@@ -100,9 +100,15 @@ const Questionnaires = () => {
             </Col>
           </Row>
           <Row className="mb-3">
-            <Col md={{ span: 1, offset: 11 }}>
-              <Button variant="outline-primary" onClick={() => setShowTypeModal(true)}>
-                <RiHealthBookLine />
+            <Col className="d-flex justify-content-end">
+              <Button
+                variant="link"
+                onClick={() => setShowTypeModal(true)}
+                title="New Questionnaire"
+                aria-label="New Questionnaire"
+                className="p-0"
+              >
+                <IoIosAddCircle size={38} color="#6abf69" />
               </Button>
             </Col>
           </Row>
