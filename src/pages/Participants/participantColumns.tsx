@@ -2,6 +2,16 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
+// Show a tick for true and nothing for false, like the Private column on the questionnaires list.
+const tickCell = (label: string) => (info: { getValue: () => unknown }) =>
+  info.getValue() ? (
+    <img
+      src={"/assets/icons/Check-icon.png"}
+      alt={label}
+      style={{ width: "18px", height: "18px" }}
+    />
+  ) : null;
+
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
 export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
@@ -43,18 +53,21 @@ export const participantColumns = (handleEdit: Fn, handleDelete: Fn) => [
     header: "Email Preferences",
     columns: [
       columnHelper.accessor("email_on_review", {
+        cell: tickCell("Email on review"),
         header: "Review",
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,
       }),
       columnHelper.accessor("email_on_submission", {
+        cell: tickCell("Email on submission"),
         header: "Submission",
         enableSorting: false,
         enableColumnFilter: false,
         enableGlobalFilter: false,
       }),
       columnHelper.accessor("email_on_review_of_review", {
+        cell: tickCell("Email on meta review"),
         header: "Meta Review",
         enableSorting: false,
         enableColumnFilter: false,

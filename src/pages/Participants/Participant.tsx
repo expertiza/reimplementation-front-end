@@ -21,6 +21,9 @@ interface IModel {
   id: Number;
 }
 
+// The backend nests user details under `user` (all optional on the row itself).
+type IParticipantRow = Partial<IParticipantResponse> & { user?: Partial<IParticipantResponse> };
+
 const Participants: React.FC<IModel> = ({ type, id }) => {
   const { error, isLoading, data: participantResponse, sendRequest: fetchParticipants } = useAPI();
   const auth = useSelector(
@@ -87,8 +90,8 @@ const Participants: React.FC<IModel> = ({ type, id }) => {
   const tableData = useMemo(() => {
     const rows = participantResponse?.data;
     if (isLoading || !Array.isArray(rows)) return [];
-    return rows.map((p: any) => {
-      const u = p.user || {};
+    return rows.map((p: IParticipantRow) => {
+      const u: Partial<IParticipantResponse> = p.user || {};
       return {
         ...p,
         name: u.name ?? p.name,
