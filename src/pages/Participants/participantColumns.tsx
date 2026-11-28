@@ -2,7 +2,7 @@ import { createColumnHelper, Row } from "@tanstack/react-table";
 import { Button } from "react-bootstrap";
 import { IParticipantResponse as IParticipant } from "../../utils/interfaces";
 
-// Show a tick for true and nothing for false, like the Private column on the questionnaires list.
+// Tick for true, red cross for false (same as the questionnaire details modal).
 const tickCell = (label: string) => (info: { getValue: () => unknown }) =>
   info.getValue() ? (
     <img
@@ -10,7 +10,11 @@ const tickCell = (label: string) => (info: { getValue: () => unknown }) =>
       alt={label}
       style={{ width: "18px", height: "18px" }}
     />
-  ) : null;
+  ) : (
+    <span role="img" aria-label={`Not ${label.toLowerCase()}`} style={{ fontSize: "14px" }}>
+      ❌
+    </span>
+  );
 
 type Fn = (row: Row<IParticipant>) => void;
 const columnHelper = createColumnHelper<IParticipant>();
